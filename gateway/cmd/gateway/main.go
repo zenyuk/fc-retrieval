@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 )
@@ -10,15 +9,15 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	// Maximum request is 1024 bytes.
 	request := make([]byte, 1024)
-	_, err := bufio.NewReader(conn).Read(request)
+	n, err := conn.Read(request)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 	// Print the request
-	fmt.Println(request)
+	fmt.Println(string(request[:n]))
 	// Send ACK response
-	_, err = bufio.NewWriter(conn).WriteString("Ack")
+	_, err = conn.Write([]byte("ACK"))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
