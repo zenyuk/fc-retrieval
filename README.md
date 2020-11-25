@@ -7,6 +7,10 @@ See also Filecoin Secondary Retrieval Market [gateway](https://github.com/Consen
 
 As an initial experiment, this project implemented a ping client. Usage:
 ```
+bash ./run.sh # runs the ping client in a Docker container
+```
+or
+```
 sudo go run ping.go # to ping example.com
 ```
 or
