@@ -1,41 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"net"
+	"log"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 )
 
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
-	// Maximum request is 1024 bytes.
-	request := make([]byte, 1024)
-	n, err := conn.Read(request)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	// Print the request
-	fmt.Println(string(request[:n]))
-	// Send ACK response
-	_, err = conn.Write([]byte("ACK"))
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-}
 
 func main() {
-	// By default, the gateway listens to port 8080
-	ln, err := net.Listen("tcp", ":8080")
+	log.Println("Filecoin Gateway Start-up Start: " + util.GetTimeNowString())
+
+	// Load settings.
+	settings, err := util.LoadSettings()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println("Error starting server: Settings: " + err.Error())
 		return
 	}
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		go handleConnection(conn)
+
+	// Set-up the REST API
+	err = api.StartRestAPI(settings)
+	if err != nil {
+		log.Println("Error starting server: REST API: " + err.Error())
+		return
 	}
+
+	// Configure what should be called if Control-C is hit.
+	util.SetUpCtrlCExit(gracefulExit)
+	log.Println("Filecoin Gateway Start-up Done: " + util.GetTimeNowString())
+
+	// Wait forever.
+	select{}
+}
+
+func gracefulExit() {
+	log.Println("Filecoin Gateway Start: " + util.GetTimeNowString())
+
+	// TODO
+
+	log.Println("Filecoin Gateway Shutdown End: " + util.GetTimeNowString())
 }
