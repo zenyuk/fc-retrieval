@@ -19,6 +19,9 @@ build:
 push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-gateway:${VERSION}
 
+utest:
+	go test ./...
+
 # remove previous images and containers
 clean:
 #	rm -f guestbook_bin
