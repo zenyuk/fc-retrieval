@@ -23,7 +23,7 @@ utest:
 
 # remove previous images and containers
 clean:
-	rm -f /etc/client/
+#	rm -f /etc/client/
 	docker rm -f ${REGISTRY}fc-retrieval-client-builder 2> /dev/null || true
 	docker rmi -f ${REGISTRY}fc-retrieval-client-builder || true
 	docker rmi -f "${REGISTRY}fc-retrieval-client:${VERSION}" || true
