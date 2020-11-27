@@ -9,13 +9,17 @@ import (
 
 
 func (r *Reputation) getClientReputation(clientNodeID *nodeid.NodeID) (val int, exists bool) {
-	val, exists = r.clients[clientNodeID.ToString()]
+	clientNodeIDStr := clientNodeID.ToString()
+	r.clientsMapLock.Lock()
+	val, exists = r.clients[clientNodeIDStr]
+	r.clientsMapLock.Unlock()
 	return
 }
 
 func (r *Reputation) setClientReputation(clientNodeID *nodeid.NodeID, val int) {
+	clientNodeIDStr := clientNodeID.ToString()
 	r.clientsMapLock.Lock()
-	r.clients[clientNodeID.ToString()] = val
+	r.clients[clientNodeIDStr] = val
 	r.clientsMapLock.Unlock()
 }
 
@@ -23,11 +27,12 @@ func (r *Reputation) changeClientReputation(clientNodeID *nodeid.NodeID, amount 
 	clientNodeIDStr := clientNodeID.ToString()
 	var val int
 	var exists bool
+	r.clientsMapLock.Lock()
 	val, exists = r.clients[clientNodeIDStr]
 	if (!exists) {
+		r.clientsMapLock.Unlock()
 		panic("changeClientReputation for non-existant client: " + clientNodeIDStr)
 	}
-	r.clientsMapLock.Lock()
 	r.clients[clientNodeIDStr] = val + amount
 	r.clientsMapLock.Unlock()
 }
