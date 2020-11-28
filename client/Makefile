@@ -19,7 +19,7 @@ push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-client:${VERSION}
 
 utest:
-	sudo go test ./...
+	go test ./...
 
 # remove previous images and containers
 clean:
