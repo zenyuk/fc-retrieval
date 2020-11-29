@@ -16,5 +16,3 @@ ADD client /
 WORKDIR /
 CMD ["/client"]
 #EXPOSE 8080 
-
-#CMD ["go test ./..."]
