@@ -16,13 +16,14 @@ package main
  */
 
 import (
-	"github.com/ConsenSys/fc-retrieval-client/pkg/client"
 	"log"
 	"os"
+
+	"github.com/ConsenSys/fc-retrieval-client/pkg/client"
 )
 
 var (
-	servername = "example.com"
+	servername = "localhost"
 	pingserver = servername
 )
 
