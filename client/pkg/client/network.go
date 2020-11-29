@@ -35,6 +35,7 @@ func Ping(pingserver string) bool {
 	}
 
 	p := fastping.NewPinger()
+	p.Network("udp")
 	ra, err := net.ResolveIPAddr("ip4:icmp", pingserver)
 	if err != nil {
 		log.Println(err)
