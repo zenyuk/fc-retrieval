@@ -75,3 +75,69 @@ func (r *Reputation) ClientEstablishmentChallenge(clientNodeID *nodeid.NodeID) {
 func (r *Reputation) OnChainDeposit(clientNodeID *nodeid.NodeID) {
 	r.changeClientReputation(clientNodeID, clientOnChainDeposit)
 }
+
+// ClientStdDiscOneCidOffer updates reputation given a response with one or more CID Offers.
+// Initial payment and final payment made.
+func (r *Reputation) ClientStdDiscOneCidOffer(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientStdDiscOneCidOffer)
+}
+
+// ClientStdDiscNoCidOffers updates reputation given a response with no CID Offers. Initial
+// payment payment made.
+func (r *Reputation) ClientStdDiscNoCidOffers(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientStdDiscNoCidOffers)
+}
+
+// ClientStdDiscLateCidOffers updates reputation given a response with one or more CID Offers. 
+// Response message sent after one second prior to TTL expiry. Initial payment payment made.
+func (r *Reputation) ClientStdDiscLateCidOffers(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientStdDiscLateCidOffers)
+}
+
+// ClientStdDiscNonPayment updates reputation given a response with one or more CID Offers. 
+// Response message sent prior to one second prior to TTL expiry. Initial payment payment 
+// made but final payment not paid.
+func (r *Reputation) ClientStdDiscNonPayment(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientStdDiscNonPayment)
+}
+
+// ClientDhtDiscOneCidOffer updates reputation given a response with one or more CID Offers 
+// from one or more Gateways. Initial payment and final payment made
+func (r *Reputation) ClientDhtDiscOneCidOffer(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientDhtDiscOneCidOffer)
+}
+
+// ClientDhtDiscNoCidOffers updates reputation given a response with no CID Offers. 
+// Initial payment made.
+func (r *Reputation) ClientDhtDiscNoCidOffers(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientDhtDiscNoCidOffers)
+}
+
+// ClientDhtDiscLateCidOffers updates reputation given a response with one or more CID
+// Offers. Response message sent after one second prior to TTL expiry. Initial payment 
+// payment made.
+func (r *Reputation) ClientDhtDiscLateCidOffers(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientDhtDiscLateCidOffers)
+}
+
+// ClientDhtDiscNonPayment updates reputation given a response with one or more CID 
+// Offers. Response message sent prior to one second prior to TTL expiry. Initial payment
+// payment made but final payments not paid.
+func (r *Reputation) ClientDhtDiscNonPayment(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientDhtDiscNonPayment)
+}
+
+// ClientMicroPayment updates reputation given a micro-payment paid for content via 
+// Gateway. Note that there will be many micro-payments during content retrieval.
+func (r *Reputation) ClientMicroPayment(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientMicroPayment)
+}
+
+// ClientInvalidMessage updates reputation given an invalid message received.
+func (r *Reputation) ClientInvalidMessage(clientNodeID *nodeid.NodeID) {
+	r.changeClientReputation(clientNodeID, clientInvalidMessage)
+}
+
+
+
+
