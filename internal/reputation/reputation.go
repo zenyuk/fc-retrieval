@@ -27,6 +27,12 @@ type Reputation struct {
 // Create a new instance
 func newInstance() *Reputation {
 	var r = Reputation{}
+	r.clients = make(map[string]int)
+	r.clientsMapLock = sync.RWMutex{}
+	r.gateways = make(map[string]int)
+	r.gatewaysMapLock = sync.RWMutex{}
+	r.providers = make(map[string]int)
+	r.providersMapLock = sync.RWMutex{}
 	return &r
 }
 
