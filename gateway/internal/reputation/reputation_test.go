@@ -34,28 +34,51 @@ func TestClientRepInitial(t *testing.T) {
 }
 
 func TestClientRepDeposit(t *testing.T) {
-	id := big.NewInt(2)
-	n := nodeid.NewNodeID(id)
-	r := GetSingleInstance()
-	r.EstablishClientReputation(n)
-	r.OnChainDeposit(n)
-	rep := r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + clientOnChainDeposit, rep, "reputation not set correctly")
+	testClientReputationChange(t, GetSingleInstance().OnChainDeposit, clientOnChainDeposit)
 }
 
 func TestClientRepEstablishmentChallenge(t *testing.T) {
-	id := big.NewInt(2)
-	n := nodeid.NewNodeID(id)
-	r := GetSingleInstance()
-	r.EstablishClientReputation(n)
+	testClientReputationChange(t, GetSingleInstance().ClientEstablishmentChallenge, clientEstablishmentChallenge)
+}
 
-	r.ClientEstablishmentChallenge(n)
-	rep := r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + clientEstablishmentChallenge, rep, "reputation not set correctly")
+func TestClientStdDiscOneCidOffer(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientStdDiscOneCidOffer, clientStdDiscOneCidOffer)
+}
 
-	r.ClientEstablishmentChallenge(n)
-	rep = r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + 2 * clientEstablishmentChallenge, rep, "reputation not set correctly")
+func TestClientStdDiscNoCidOffers(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientStdDiscNoCidOffers, clientStdDiscNoCidOffers)
+}
+
+func TestClientStdDiscLateCidOffers(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientStdDiscLateCidOffers, clientStdDiscLateCidOffers)
+}
+
+func TestClientStdDiscNonPayment(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientStdDiscNonPayment, clientStdDiscNonPayment)
+}
+
+func TestClientDhtDiscOneCidOffer(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientDhtDiscOneCidOffer, clientDhtDiscOneCidOffer)
+}
+
+func TestClientDhtDiscNoCidOffers(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientDhtDiscNoCidOffers, clientDhtDiscNoCidOffers)
+}
+
+func TestClientDhtDiscLateCidOffers(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientDhtDiscLateCidOffers, clientDhtDiscLateCidOffers)
+}
+
+func TestClientDhtDiscNonPayment(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientDhtDiscNonPayment, clientDhtDiscNonPayment)
+}
+
+func TestClientMicroPayment(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientMicroPayment, clientMicroPayment)
+}
+
+func TestClientInvalidMessage(t *testing.T) {
+	testClientReputationChange(t, GetSingleInstance().ClientInvalidMessage, clientInvalidMessage)
 }
 
 func TestClientRepMax(t *testing.T) {
@@ -71,4 +94,15 @@ func TestClientRepMax(t *testing.T) {
 	}
 	rep := r.GetClientReputation(n)
 	assert.Equal(t, clientMaxReputation, rep, "reputation does not equal max")
+}
+
+
+func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID), expectedChange int) {
+	id := big.NewInt(2)
+	n := nodeid.NewNodeID(id)
+	r := GetSingleInstance()
+	r.EstablishClientReputation(n)
+	f(n)
+	rep := r.GetClientReputation(n)
+	assert.Equal(t, clientInitialReputation + expectedChange, rep, "reputation not set correctly")
 }
