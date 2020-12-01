@@ -1,13 +1,17 @@
 package offers
+
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
-    "errors"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
-	"sync"
+	"bytes"
+	"time"
 	"container/list"
-)
+	"errors"
+	"sync"
 
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
+)
 
 // Single instance of the CID Offer system
 var instance = newInstance()
@@ -102,3 +106,70 @@ func (o *Offers) Add(newOffer *cidoffer.CidGroupOffer) error {
 	return nil
 }
 
+// GetOffers returns an array of offers that exist for a CID
+func (o *Offers) GetOffers(cidRequested *cid.ContentID) (cidOffers []*cidoffer.CidGroupOffer, exists bool) {
+	var groupOfferDigests [][cidoffer.CidGroupOfferDigestSize]byte
+	o.cidMapLock.Lock()
+	groupOfferDigests, exists = o.cidMap[cidRequested.ToString()]
+	o.cidMapLock.Unlock()
+
+	var setOfOffers []*cidoffer.CidGroupOffer
+	for _, groupOfferDigest := range groupOfferDigests {
+		setOfOffers = append(setOfOffers[:], o.cidOffers[groupOfferDigest])
+	}
+	
+	cidOffers = setOfOffers
+	return
+}
+
+// ExpireOffers removes all offers that have expiry dates in the past
+func (o *Offers) ExpireOffers() {
+	now := time.Now()
+	unixNow := now.Unix()
+
+	var expiredCidGroupDigests []*[cidoffer.CidGroupOfferDigestSize]byte
+
+	// Go through the list of CID Group digests to see if any have expired.
+	// Remove expired entries in the offerExpiry list.
+	o.offerExpiryLock.Lock()
+	for e := o.offerExpiry.Front(); e != nil; e = e.Next() {
+		var anOffer *expiringOffers
+		anOffer = e.Value.(*expiringOffers)
+		if unixNow <= anOffer.expiry {
+			break;
+		}
+		expiredCidGroupDigests = append(expiredCidGroupDigests[:], anOffer.offerDigest)
+		o.offerExpiry.Remove(e)
+	}
+	o.offerExpiryLock.Unlock()	
+
+	// If any CID Groups have expired, then remove them from the data structures
+	for _, expiredCidGroupDigest := range expiredCidGroupDigests {
+		o.cidOffersLock.Lock()
+		cidOffer := o.cidOffers[*expiredCidGroupDigest]
+		o.cidOffersLock.Unlock()
+
+		for _, aCid := range *cidOffer.GetCIDs() {
+			o.cidMapLock.Lock()
+			cidGroupOfferDigests := o.cidMap[aCid.ToString()]
+
+			// Find the digest to remove.
+			var ofs int
+			for ofs = range cidGroupOfferDigests {
+				if bytes.Compare(cidGroupOfferDigests[ofs][:], expiredCidGroupDigest[:]) == 0 {
+					break
+				}
+			}
+
+			cidGroupOfferDigests[ofs] = cidGroupOfferDigests[len(cidGroupOfferDigests) - 1] // Copy last element to index ofs
+			o.cidMap[aCid.ToString()] = cidGroupOfferDigests[:len(cidGroupOfferDigests)-1] // Create a slice without the last element
+			o.cidMapLock.Unlock()
+		}
+
+		// Remove from the list of offers
+		o.cidOffersLock.Lock()
+		delete(o.cidOffers, *expiredCidGroupDigest)
+		o.cidOffersLock.Unlock()
+	}
+
+}
