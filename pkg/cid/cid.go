@@ -1,4 +1,4 @@
-package cidoffer
+package cid
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -17,19 +17,29 @@ package cidoffer
 
 import (
     "math/big"
-    "testing"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
 )
 
 
-func TestGetPrice(t *testing.T) {
-    aCid := cid.NewContentID(big.NewInt(7))
-    cids := make([]cid.ContentID, 0)
-    cids = append(cids, *aCid)
-    price := uint64(5)
-    expiry := uint64(10)
-    c := NewCidGroupOffer(&cids, price, expiry)
-    if (c.GetPrice() != price) {
-        t.Errorf("Expected: %d, Actual: %d", price, c.GetPrice())
-    }
+
+// ContentID represents a CID
+type ContentID struct {
+    id big.Int
+}
+
+
+// NewContentID creates a CID object
+func NewContentID(id *big.Int) (*ContentID) {
+	var n = ContentID{}
+    n.id = *id
+	return &n
+}
+
+// ToString returns a string for the CID.
+func (n *ContentID) ToString() (string) {
+    return n.id.Text(16)
+}
+
+// ToBytes returns the byte array representation of the CID.
+func (n *ContentID) ToBytes() ([]byte) {
+    return n.id.Bytes()
 }
