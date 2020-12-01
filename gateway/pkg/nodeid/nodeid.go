@@ -38,3 +38,8 @@ func NewNodeID(id *big.Int) (*NodeID) {
 func (n *NodeID) ToString() (string) {
     return n.id.Text(16)
 }
+
+// ToBytes returns the byte array representation of the node id.
+func (n *NodeID) ToBytes() ([]byte) {
+    return n.id.Bytes()
+}
