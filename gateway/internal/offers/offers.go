@@ -95,12 +95,12 @@ func (o *Offers) Add(newOffer *cidoffer.CidGroupOffer) error {
 		var anOffer *expiringOffers
 		anOffer = e.Value.(*expiringOffers)
 		if expiry < anOffer.expiry {
-			o.offerExpiry.InsertBefore(newExpOff, e)
+			o.offerExpiry.InsertBefore(&newExpOff, e)
 			added = true
 		}
 	}
 	if (!added) {
-		o.offerExpiry.PushBack(newExpOff)
+		o.offerExpiry.PushBack(&newExpOff)
 	}
 	o.offerExpiryLock.Unlock()
 	return nil
