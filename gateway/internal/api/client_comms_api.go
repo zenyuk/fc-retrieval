@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -12,12 +12,12 @@ func (g *Gateway) HandleClientNetworkEstablishment(w rest.ResponseWriter, r *res
 	payload := ClientEstablishmentRequest{}
 	err := r.DecodeJsonPayload(&payload)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		rest.Error(w, "Fail to decode payload.", http.StatusBadRequest)
 		return
 	}
 	// TODO: For now just print the payload
-	fmt.Println(payload)
+	log.Println(payload)
 
 	// Dummy response
 	response := ClientEstablishmentResponse{}
@@ -31,12 +31,12 @@ func (g *Gateway) HandleClientStandardCIDDiscover(w rest.ResponseWriter, r *rest
 	payload := ClientStandardDiscoverRequest{}
 	err := r.DecodeJsonPayload(&payload)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		rest.Error(w, "Fail to decode payload.", http.StatusBadRequest)
 		return
 	}
 	// TODO: For now just print the payload
-	fmt.Println(payload)
+	log.Println(payload)
 
 	// Dummy response
 	response := ClientStandardDiscoverResponse{}
@@ -50,12 +50,12 @@ func (g *Gateway) HandleClientDHTCIDDiscover(w rest.ResponseWriter, r *rest.Requ
 	payload := ClientDHTDiscoverRequest{}
 	err := r.DecodeJsonPayload(&payload)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		rest.Error(w, "Fail to decode payload.", http.StatusBadRequest)
 		return
 	}
 	// TODO: For now just print the payload
-	fmt.Println(payload)
+	log.Println(payload)
 
 	// Dummy response
 	response := ClientDHTDiscoverResponse{}
