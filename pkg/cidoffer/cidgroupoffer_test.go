@@ -1,4 +1,5 @@
 package cidoffer
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,21 +15,26 @@ package cidoffer
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-    "math/big"
-    "testing"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"math/big"
+	"testing"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
 
 func TestGetPrice(t *testing.T) {
+    aNodeID := nodeid.NewNodeID(big.NewInt(7))
     aCid := cid.NewContentID(big.NewInt(7))
     cids := make([]cid.ContentID, 0)
     cids = append(cids, *aCid)
     price := uint64(5)
-    expiry := uint64(10)
-    c := NewCidGroupOffer(&cids, price, expiry)
+    expiry := int64(10)
+    c, err := NewCidGroupOffer(aNodeID, &cids, price, expiry)
+    if err != nil {
+        t.Errorf("Error returned by NewCidGroupOffer: %e", err)
+    }
     if (c.GetPrice() != price) {
         t.Errorf("Expected: %d, Actual: %d", price, c.GetPrice())
     }
