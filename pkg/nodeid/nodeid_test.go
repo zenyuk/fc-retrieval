@@ -16,38 +16,12 @@ package nodeid
 
 
 import (
-    "math/big"
+    "testing"
 )
 
-const wordSize = 32  // 32 bytes
 
-
-// NodeID represents a Gateway id
-type NodeID struct {
-    id big.Int
+func Test(t *testing.T) {
+    NewNodeID(CreateRandomIdentifier())
 }
-
-
-// NewNodeID creates a node id object
-func NewNodeID(id *big.Int) (*NodeID) {
-	var n = NodeID{}
-    n.id = *id
-	return &n
-}
-
-// ToString returns a string for the node id.
-func (n *NodeID) ToString() (string) {
-    return n.id.Text(16)
-}
-
-// ToBytes returns the byte array representation of the node id.
-func (n *NodeID) ToBytes() ([]byte) {
-    return n.id.Bytes()
-}
-
-
-
-
-
 
 
