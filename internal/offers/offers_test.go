@@ -23,6 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,6 +76,27 @@ func TestAddTwo(t *testing.T) {
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 2, len(cidOffers), "Should be only two CID offers")
 }
+
+
+func TestExpire(t *testing.T) {
+	o := newInstance()
+	o.Add(createNewSingleCidGroupOfferCidOne(t))
+
+	_, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+
+	now := time.Now()
+	nowSeconds := now.Unix()
+	mockNow := nowSeconds + 1001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+	util.SetRealClock()
+
+	_, exists = o.GetOffers(cidOne())
+	assert.False(t, exists, "Found offers for CID when it should have expired")
+}
+
 
 
 func createOldSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
