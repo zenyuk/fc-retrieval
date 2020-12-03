@@ -97,18 +97,53 @@ func TestExpire(t *testing.T) {
 	assert.False(t, exists, "Found offers for CID when it should have expired")
 }
 
+func TestExpireTwo(t *testing.T) {
+	o := newInstance()
+	o.Add(createNewSingleCidGroupOfferCidOne(t))
+	o.Add(createFutureSingleCidGroupOfferCidOne(t))
+
+	cidOffers, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+	assert.Equal(t, 2, len(cidOffers), "Should be only two CID offers")
+
+	now := time.Now()
+	nowSeconds := now.Unix()
+	mockNow := nowSeconds + 1001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+
+	cidOffers, exists = o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+	cidExp := cidOffers[0].GetExpiry()
+	assert.Greater(t, cidExp, mockNow, "Incorrect CID offer expired")
+
+	mockNow = nowSeconds + 2001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+	util.SetRealClock()
+
+	cidOffers, exists = o.GetOffers(cidOne())
+	assert.False(t, exists, "Found offers for CID when they should have expired")
+}
 
 
 func createOldSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), true)
+	return createSingleCidGroupOffer(t, cidOne(), 0)
 }
 
 func createNewSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), false)
+	return createSingleCidGroupOffer(t, cidOne(), 1)
+}
+
+func createFutureSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
+	return createSingleCidGroupOffer(t, cidOne(), 2)
 }
 
 
-func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, old bool) (*cidoffer.CidGroupOffer) {
+func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
     aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
     cids := make([]cid.ContentID, 0)
     cids = append(cids, *theCid)
@@ -116,9 +151,12 @@ func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, old bool) (*
 	now := time.Now()
 	nowSeconds := now.Unix()
 	var expiry int64
-	if (old) {
+	switch howNew {
+	case 0:
 		expiry = nowSeconds - 1
-	} else {
+	case 2:
+		expiry = nowSeconds + 2000
+	default:
 		expiry = nowSeconds + 1000
 	}
     c, err := cidoffer.NewCidGroupOffer(aNodeID, &cids, price, expiry)
