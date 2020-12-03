@@ -1,4 +1,4 @@
-package nodeid
+package cid
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -19,35 +19,27 @@ import (
     "math/big"
 )
 
-const wordSize = 32  // 32 bytes
 
 
-// NodeID represents a Gateway id
-type NodeID struct {
+// ContentID represents a CID
+type ContentID struct {
     id big.Int
 }
 
 
-// NewNodeID creates a node id object
-func NewNodeID(id *big.Int) (*NodeID) {
-	var n = NodeID{}
+// NewContentID creates a CID object
+func NewContentID(id *big.Int) (*ContentID) {
+	var n = ContentID{}
     n.id = *id
 	return &n
 }
 
-// ToString returns a string for the node id.
-func (n *NodeID) ToString() (string) {
+// ToString returns a string for the CID.
+func (n *ContentID) ToString() (string) {
     return n.id.Text(16)
 }
 
-// ToBytes returns the byte array representation of the node id.
-func (n *NodeID) ToBytes() ([]byte) {
+// ToBytes returns the byte array representation of the CID.
+func (n *ContentID) ToBytes() ([]byte) {
     return n.id.Bytes()
 }
-
-
-
-
-
-
-
