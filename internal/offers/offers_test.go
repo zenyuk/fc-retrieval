@@ -130,6 +130,27 @@ func TestExpireTwo(t *testing.T) {
 }
 
 
+func TestMultipleCids(t *testing.T) {
+	o := newInstance()
+	err := o.Add(createNewCidGroupOfferCidMultiple(t))
+	if err != nil {
+		t.Errorf("Error returned by Add: %e", err)
+	}
+
+	cidOffers, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+
+	cidOffers, exists = o.GetOffers(cidTwo())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+
+	cidOffers, exists = o.GetOffers(cidThree())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+}
+
+
 func createOldSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
 	return createSingleCidGroupOffer(t, cidOne(), 0)
 }
@@ -142,11 +163,24 @@ func createFutureSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffe
 	return createSingleCidGroupOffer(t, cidOne(), 2)
 }
 
+func createNewCidGroupOfferCidMultiple(t *testing.T) (*cidoffer.CidGroupOffer) {
+    cids := make([]cid.ContentID, 0)
+    cids = append(cids, *cidOne())
+    cids = append(cids, *cidTwo())
+    cids = append(cids, *cidThree())
+	return createCidGroupOffer(t, cids, 1)
+}
+
 
 func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
-    aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
     cids := make([]cid.ContentID, 0)
     cids = append(cids, *theCid)
+	return createCidGroupOffer(t, cids, howNew)
+}
+
+
+func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
+    aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
 	price := uint64(5)
 	now := time.Now()
 	nowSeconds := now.Unix()
@@ -166,10 +200,17 @@ func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) 
 	return c
 }
 
+
+
+
 func cidOne() *cid.ContentID {
 	return cid.NewContentID(big.NewInt(1))
 }
 
 func cidTwo() *cid.ContentID {
 	return cid.NewContentID(big.NewInt(2))
+}
+
+func cidThree() *cid.ContentID {
+	return cid.NewContentID(big.NewInt(3))
 }
