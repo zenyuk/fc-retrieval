@@ -23,6 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,26 +78,119 @@ func TestAddTwo(t *testing.T) {
 }
 
 
+func TestExpire(t *testing.T) {
+	o := newInstance()
+	o.Add(createNewSingleCidGroupOfferCidOne(t))
+
+	_, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+
+	now := time.Now()
+	nowSeconds := now.Unix()
+	mockNow := nowSeconds + 1001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+	util.SetRealClock()
+
+	_, exists = o.GetOffers(cidOne())
+	assert.False(t, exists, "Found offers for CID when it should have expired")
+}
+
+func TestExpireTwo(t *testing.T) {
+	o := newInstance()
+	o.Add(createNewSingleCidGroupOfferCidOne(t))
+	o.Add(createFutureSingleCidGroupOfferCidOne(t))
+
+	cidOffers, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+	assert.Equal(t, 2, len(cidOffers), "Should be only two CID offers")
+
+	now := time.Now()
+	nowSeconds := now.Unix()
+	mockNow := nowSeconds + 1001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+
+	cidOffers, exists = o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+	cidExp := cidOffers[0].GetExpiry()
+	assert.Greater(t, cidExp, mockNow, "Incorrect CID offer expired")
+
+	mockNow = nowSeconds + 2001
+	util.SetMockedClock(mockNow)
+
+	o.ExpireOffers()
+	util.SetRealClock()
+
+	cidOffers, exists = o.GetOffers(cidOne())
+	assert.False(t, exists, "Found offers for CID when they should have expired")
+}
+
+
+func TestMultipleCids(t *testing.T) {
+	o := newInstance()
+	err := o.Add(createNewCidGroupOfferCidMultiple(t))
+	if err != nil {
+		t.Errorf("Error returned by Add: %e", err)
+	}
+
+	cidOffers, exists := o.GetOffers(cidOne())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+
+	cidOffers, exists = o.GetOffers(cidTwo())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+
+	cidOffers, exists = o.GetOffers(cidThree())
+	assert.True(t, exists, "Can't find any offers for CID 1")
+	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
+}
+
+
 func createOldSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), true)
+	return createSingleCidGroupOffer(t, cidOne(), 0)
 }
 
 func createNewSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), false)
+	return createSingleCidGroupOffer(t, cidOne(), 1)
+}
+
+func createFutureSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
+	return createSingleCidGroupOffer(t, cidOne(), 2)
+}
+
+func createNewCidGroupOfferCidMultiple(t *testing.T) (*cidoffer.CidGroupOffer) {
+    cids := make([]cid.ContentID, 0)
+    cids = append(cids, *cidOne())
+    cids = append(cids, *cidTwo())
+    cids = append(cids, *cidThree())
+	return createCidGroupOffer(t, cids, 1)
 }
 
 
-func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, old bool) (*cidoffer.CidGroupOffer) {
-    aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
+func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
     cids := make([]cid.ContentID, 0)
     cids = append(cids, *theCid)
+	return createCidGroupOffer(t, cids, howNew)
+}
+
+
+func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
+    aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
 	price := uint64(5)
 	now := time.Now()
 	nowSeconds := now.Unix()
 	var expiry int64
-	if (old) {
+	switch howNew {
+	case 0:
 		expiry = nowSeconds - 1
-	} else {
+	case 2:
+		expiry = nowSeconds + 2000
+	default:
 		expiry = nowSeconds + 1000
 	}
     c, err := cidoffer.NewCidGroupOffer(aNodeID, &cids, price, expiry)
@@ -106,10 +200,17 @@ func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, old bool) (*
 	return c
 }
 
+
+
+
 func cidOne() *cid.ContentID {
 	return cid.NewContentID(big.NewInt(1))
 }
 
 func cidTwo() *cid.ContentID {
 	return cid.NewContentID(big.NewInt(2))
+}
+
+func cidThree() *cid.ContentID {
+	return cid.NewContentID(big.NewInt(3))
 }

@@ -4,13 +4,13 @@ package offers
 
 import (
 	"bytes"
-	"time"
 	"container/list"
 	"errors"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 )
 
 // Single instance of the CID Offer system
@@ -124,7 +124,7 @@ func (o *Offers) GetOffers(cidRequested *cid.ContentID) (cidOffers []*cidoffer.C
 
 // ExpireOffers removes all offers that have expiry dates in the past
 func (o *Offers) ExpireOffers() {
-	now := time.Now()
+	now := util.GetTimeImpl().Now()
 	unixNow := now.Unix()
 
 	var expiredCidGroupDigests []*[cidoffer.CidGroupOfferDigestSize]byte
@@ -161,8 +161,12 @@ func (o *Offers) ExpireOffers() {
 				}
 			}
 
-			cidGroupOfferDigests[ofs] = cidGroupOfferDigests[len(cidGroupOfferDigests) - 1] // Copy last element to index ofs
-			o.cidMap[aCid.ToString()] = cidGroupOfferDigests[:len(cidGroupOfferDigests)-1] // Create a slice without the last element
+			if (len(cidGroupOfferDigests) - 1 > 0) {
+				cidGroupOfferDigests[ofs] = cidGroupOfferDigests[len(cidGroupOfferDigests) - 1] // Copy last element to index ofs
+				o.cidMap[aCid.ToString()] = cidGroupOfferDigests[:len(cidGroupOfferDigests)-1] // Create a slice without the last element
+			} else {
+				delete(o.cidMap, aCid.ToString())
+			}
 			o.cidMapLock.Unlock()
 		}
 
