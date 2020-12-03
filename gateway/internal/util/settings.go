@@ -1,27 +1,35 @@
 package util
+
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
-"log"
-"io/ioutil"
-"encoding/json"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 )
 
 const settingsFileName = "settings.json"
 const settingsLocDev = settingsFileName
 const settingsLocContainer = "/etc/gateway/" + settingsFileName
 
-
 const settingsDefaultBindRestAPI = "8080"
+const settingsDefaultBindProviderAPI = "8090"
+const settingsDefaultBindGatewayAPI = "8091"
 const settingsDefaultVerbose = true
 
 // AppSettings defines the server configuraiton
 type AppSettings struct {
-	BindRestAPI string // Port number to bind to for REST API.
-	Verbose bool       // If true, then more logging is shown.
+	BindRestAPI     string `json:"bindrestapi"`     // Port number to bind to for client REST API.
+	BindProviderAPI string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
+	BindGatewayAPI  string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
+	Verbose         bool   `json:"verbose"`         // If true, then more logging is shown.
 }
 
-var defaults = AppSettings{settingsDefaultBindRestAPI, settingsDefaultVerbose}
+var defaults = AppSettings{
+	settingsDefaultBindRestAPI,
+	settingsDefaultBindProviderAPI,
+	settingsDefaultBindGatewayAPI,
+	settingsDefaultVerbose}
 
 var settings = defaults
 
@@ -49,4 +57,3 @@ func LoadSettings() (set AppSettings, err error) {
 	set = settings
 	return
 }
-
