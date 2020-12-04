@@ -1,6 +1,6 @@
 {
     "bindrestapi" : "80",
-    "bindproviderapi": "8090",
-    "bindgatewayapi": "8091",
+    "bindproviderapi": ":8090",
+    "bindgatewayapi": ":8091",
     "verbose": true
 }
