@@ -15,17 +15,15 @@ import (
 
 // StartRestAPI starts the REST API as a separate go routine.
 // Any start-up errors are returned.
-func StartRestAPI(settings util.AppSettings) error {
+// Any start-up errors are returned.
+func StartRestAPI(settings util.AppSettings, g *Gateway) error {
 	// Start the REST API and block until the error code is set.
 	errChan := make(chan error, 1)
-	go startRestAPI(settings, errChan)
+	go startRestAPI(settings, g, errChan)
 	return <-errChan
 }
 
-func startRestAPI(settings util.AppSettings, errChannel chan<- error) {
-
-	// Initialise a dummy gateway instance.
-	g := Gateway{ProtocolVersion: 1, ProtocolSupported: []int{1, 2}}
+func startRestAPI(settings util.AppSettings, g *Gateway, errChannel chan<- error) {
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)

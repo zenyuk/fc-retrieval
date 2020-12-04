@@ -2,10 +2,10 @@ package main
 
 import (
 	"log"
+
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 )
-
 
 func main() {
 	log.Println("Filecoin Gateway Start-up Start: " + util.GetTimeNowString())
@@ -17,10 +17,18 @@ func main() {
 		return
 	}
 
+	// Initialise a dummy gateway instance.
+	g := api.Gateway{ProtocolVersion: 1, ProtocolSupported: []int{1, 2}}
+
 	// Set-up the REST API
-	err = api.StartRestAPI(settings)
+	err = api.StartRestAPI(settings, &g)
 	if err != nil {
 		log.Println("Error starting server: REST API: " + err.Error())
+		return
+	}
+	err = api.StartTCPAPI(settings, &g)
+	if err != nil {
+		log.Println("Error starting tcp server: " + err.Error())
 		return
 	}
 
@@ -29,7 +37,7 @@ func main() {
 	log.Println("Filecoin Gateway Start-up Done: " + util.GetTimeNowString())
 
 	// Wait forever.
-	select{}
+	select {}
 }
 
 func gracefulExit() {
