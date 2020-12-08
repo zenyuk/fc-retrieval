@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 )
 
@@ -17,16 +18,17 @@ func main() {
 		return
 	}
 
-	// Initialise a dummy gateway instance.
-	g := api.Gateway{ProtocolVersion: 1, ProtocolSupported: []int{1, 2}}
-
-	// Set-up the REST API
-	err = api.StartRestAPI(settings, &g)
+	_, err = gateway.Create(settings)
 	if err != nil {
-		log.Println("Error starting server: REST API: " + err.Error())
+		log.Println("Error starting server: Client REST API: " + err.Error())
 		return
 	}
-	err = api.StartTCPAPI(settings, &g)
+
+
+	// Initialise a dummy gateway instance.
+	g1 := api.Gateway{ProtocolVersion: 1, ProtocolSupported: []int{1, 2}}
+
+	err = api.StartTCPAPI(settings, &g1)
 	if err != nil {
 		log.Println("Error starting tcp server: " + err.Error())
 		return

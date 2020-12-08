@@ -27,7 +27,7 @@ func StartTCPAPI(settings util.AppSettings, g *Gateway) error {
 			go handleProviderCommunication(conn, g)
 		}
 	}(ln)
-	log.Println("Running provider communication API on: " + settings.BindProviderAPI)
+	log.Printf("Listening on %s for connections from Providers", settings.BindProviderAPI)
 
 	// For handling requests from gateway.
 	ln2, err := net.Listen("tcp", settings.BindGatewayAPI)
@@ -45,7 +45,7 @@ func StartTCPAPI(settings util.AppSettings, g *Gateway) error {
 			go handleGatewayCommunication(conn, g)
 		}
 	}(ln2)
-	log.Println("Running gateway communication API on: " + settings.BindGatewayAPI)
+	log.Printf("Listening on %s for connections from other Gateways", settings.BindGatewayAPI)
 
 	return nil
 }
