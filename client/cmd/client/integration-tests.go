@@ -18,6 +18,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/client"
 )
@@ -28,13 +29,28 @@ var (
 )
 
 func main() {
+	log.Println("Integration Test: Start")
+	integrationTests()
+	log.Println("Integration Test: End")
+}
 
+func integrationTests() {
+	log.Println(" Wait one second for the gateway to deploy and be ready for requests")
+	time.Sleep(time.Second)
+
+	//ping()
+	addGateway()
+}
+
+func addGateway() {
+	log.Println("Test: addGateway")
+	fc := client.NewFilecoinRetrievalClient()
+	fc.AddGateway("gateway")
+}
+
+func ping() {
 	if len(os.Args[1:]) > 0 {
 		pingserver = os.Args[1]
 	}
-
-	log.Println("Attempting to ping " + pingserver)
-
 	client.Ping(pingserver)
-
 }
