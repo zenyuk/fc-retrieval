@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	clientAPIProtocolVersion = 1
+	clientAPIProtocolVersion     = 1
 	clientAPIProtocolSupportedHi = 1
 )
+
 // Can't have constant slices so create this at runtime.
 // Order the API versions from most desirable to least desirable.
-var clientAPIProtocolSupported []int
-
+var clientAPIProtocolSupported []int32
 
 // ClientAPI holds the information for API between the Client and the Gateway.
 type ClientAPI struct {
@@ -26,14 +26,12 @@ type ClientAPI struct {
 	// TODO: Add mutex for accessing gateway information.
 }
 
-
-
 // StartClientRestAPI starts the REST API as a separate go routine.
 // Any start-up errors are returned.
 func StartClientRestAPI(settings util.AppSettings) (*ClientAPI, error) {
 	c := ClientAPI{}
 
-	clientAPIProtocolSupported = make([]int, 1)
+	clientAPIProtocolSupported = make([]int32, 1)
 	clientAPIProtocolSupported[0] = clientAPIProtocolSupportedHi
 
 	// Start the REST API and block until the error code is set.
@@ -69,7 +67,6 @@ func startRestAPI(settings util.AppSettings, c *ClientAPI, errChannel chan<- err
 	log.Fatal(http.ListenAndServe(":"+settings.BindRestAPI, api.MakeHandler()))
 }
 
-
 func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	payload := messages.CommonRequestMessageFields{}
 	err := r.DecodeJsonPayload(&payload)
@@ -80,13 +77,13 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Only process the rest of the message if the protocol version is understood.
-	if (payload.ProtocolVersion != clientAPIProtocolVersion) {
+	if payload.ProtocolVersion != clientAPIProtocolVersion {
 		// Go through the protocol versions supported by the client and the
-		// gateway from most desirable to least desirable, prioritising 
+		// gateway from most desirable to least desirable, prioritising
 		// the gateway preference over the client preference.
 		for _, clientProvVer := range payload.ProtocolSupported {
-			for gatewayProtVer := range clientAPIProtocolSupported {
-				if (clientProvVer == gatewayProtVer) {
+			for _, gatewayProtVer := range clientAPIProtocolSupported {
+				if clientProvVer == gatewayProtVer {
 					// Request the client switch to this protocol version
 					response := messages.ProtocolChangeResponse{}
 					response.MessageType = messages.ProtocolChange
@@ -103,11 +100,9 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	switch (payload.MessageType) {
+	switch payload.MessageType {
 	case messages.ClientEstablishmentRequestType:
 		c.HandleClientNetworkEstablishment(w, r)
 	}
-
-
 
 }

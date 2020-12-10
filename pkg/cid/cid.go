@@ -1,4 +1,5 @@
 package cid
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,32 +15,48 @@ package cid
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-    "math/big"
+	"errors"
+	"math/big"
 )
-
-
 
 // ContentID represents a CID
 type ContentID struct {
-    id big.Int
+	id big.Int
 }
 
-
 // NewContentID creates a CID object
-func NewContentID(id *big.Int) (*ContentID) {
+func NewContentID(id *big.Int) *ContentID {
 	var n = ContentID{}
-    n.id = *id
+	n.id = *id
 	return &n
 }
 
 // ToString returns a string for the CID.
-func (n *ContentID) ToString() (string) {
-    return n.id.Text(16)
+func (n *ContentID) ToString() string {
+	return n.id.Text(16)
 }
 
 // ToBytes returns the byte array representation of the CID.
-func (n *ContentID) ToBytes() ([]byte) {
-    return n.id.Bytes()
+func (n *ContentID) ToBytes() []byte {
+	return n.id.Bytes()
+}
+
+// MarshalJSON is used to marshal NodeID into bytes
+func (n ContentID) MarshalJSON() ([]byte, error) {
+	return []byte(n.ToString()), nil
+}
+
+// UnmarshalJSON is used to unmarshal bytes into NodeID
+func (n *ContentID) UnmarshalJSON(p []byte) error {
+	if string(p) == "null" {
+		return nil
+	}
+	var z big.Int
+	_, ok := z.SetString(string(p), 16)
+	if !ok {
+		return errors.New("Not a valid big integer: " + string(p))
+	}
+	n.id = z
+	return nil
 }

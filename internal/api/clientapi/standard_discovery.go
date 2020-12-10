@@ -1,17 +1,17 @@
 package clientapi
+
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
 	"log"
 	"net/http"
 
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
 )
-
 
 // HandleClientStandardCIDDiscover is used to handle client request for cid offer
 func (g *ClientAPI) HandleClientStandardCIDDiscover(w rest.ResponseWriter, r *rest.Request) {
-	payload := api.ClientStandardDiscoverRequest{}
+	payload := messages.ClientStandardDiscoverRequest{}
 	err := r.DecodeJsonPayload(&payload)
 	if err != nil {
 		log.Println(err.Error())
@@ -22,8 +22,6 @@ func (g *ClientAPI) HandleClientStandardCIDDiscover(w rest.ResponseWriter, r *re
 	log.Println(payload)
 
 	// Dummy response
-	response := api.ClientStandardDiscoverResponse{}
-	response.CommonFields.ProtocolVersion = clientAPIProtocolVersion
-	response.CommonFields.ProtocolSupported = clientAPIProtocolSupported
+	response := messages.ClientStandardDiscoverResponse{MessageType: messages.ClientStandardDiscoverResponseType}
 	w.WriteJson(response)
 }
