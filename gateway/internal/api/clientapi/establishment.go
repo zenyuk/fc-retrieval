@@ -1,12 +1,13 @@
 package clientapi
+
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
 	"log"
 	"net/http"
 
-	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HandleClientNetworkEstablishment is used to handle initial establishment http request from client
@@ -22,7 +23,7 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, r *r
 	log.Println(payload)
 
 	now := util.GetTimeImpl().Now().Unix()
-	if (payload.TTL > now) {
+	if payload.TTL > now {
 		// TODO how to just drop the connection?
 
 	}
@@ -33,4 +34,3 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, r *r
 	response.Signature = "TODO: NONE YET!!!"
 	w.WriteJson(response)
 }
-

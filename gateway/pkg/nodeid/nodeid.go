@@ -1,4 +1,5 @@
 package nodeid
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,40 +15,50 @@ package nodeid
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-    "math/big"
+	"errors"
+	"math/big"
 )
 
-const wordSize = 32  // 32 bytes
-
+const wordSize = 32 // 32 bytes
 
 // NodeID represents a Gateway id
 type NodeID struct {
-    id big.Int
+	id big.Int
 }
 
-
 // NewNodeID creates a node id object
-func NewNodeID(id *big.Int) (*NodeID) {
+func NewNodeID(id *big.Int) *NodeID {
 	var n = NodeID{}
-    n.id = *id
+	n.id = *id
 	return &n
 }
 
 // ToString returns a string for the node id.
-func (n *NodeID) ToString() (string) {
-    return n.id.Text(16)
+func (n *NodeID) ToString() string {
+	return n.id.Text(16)
 }
 
 // ToBytes returns the byte array representation of the node id.
-func (n *NodeID) ToBytes() ([]byte) {
-    return n.id.Bytes()
+func (n *NodeID) ToBytes() []byte {
+	return n.id.Bytes()
 }
 
+// MarshalJSON is used to marshal NodeID into bytes
+func (n NodeID) MarshalJSON() ([]byte, error) {
+	return []byte(n.ToString()), nil
+}
 
-
-
-
-
-
+// UnmarshalJSON is used to unmarshal bytes into NodeID
+func (n *NodeID) UnmarshalJSON(p []byte) error {
+	if string(p) == "null" {
+		return nil
+	}
+	var z big.Int
+	_, ok := z.SetString(string(p), 16)
+	if !ok {
+		return errors.New("Not a valid big integer: " + string(p))
+	}
+	n.id = z
+	return nil
+}
