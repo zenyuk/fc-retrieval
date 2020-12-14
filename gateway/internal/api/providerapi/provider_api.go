@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
@@ -15,7 +14,7 @@ import (
 )
 
 // StartProviderAPI starts the TCP API as a separate go routine.
-func StartProviderAPI(settings util.AppSettings, g *api.Gateway) error {
+func StartProviderAPI(settings util.AppSettings, g *gateway.Gateway) error {
 	// Start server
 	ln, err := net.Listen("tcp", settings.BindProviderAPI)
 	if err != nil {
@@ -36,9 +35,9 @@ func StartProviderAPI(settings util.AppSettings, g *api.Gateway) error {
 	return nil
 }
 
-func handleProviderCommunication(conn net.Conn, g *api.Gateway) {
+func handleProviderCommunication(conn net.Conn, g *gateway.Gateway) {
 	// Init struct, Set register status to false
-	pComms := api.CommunicationThread{
+	pComms := gateway.CommunicationChannels{
 		CommsRequestChan:  make(chan []byte),
 		CommsResponseChan: make(chan []byte),
 	}
