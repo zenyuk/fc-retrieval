@@ -2,50 +2,60 @@ package gateway
 
 import (
 	"errors"
-	"log"
+	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
+const (
+	protocolVersion   = 1 // Main protocol version
+	protocolSupported = 1 // Alternative protocol version
+)
+
+// CommunicationChannels holds the node id and internal communication channels for a live tcp connection
+type CommunicationChannels struct {
+	NodeID                              nodeid.NodeID
+	CommsRequestChan, CommsResponseChan chan []byte
+}
+
+// Gateway holds the main data structure for the whole gateway.
+type Gateway struct {
+	ProtocolVersion   int32
+	ProtocolSupported []int32
+
+	// ActiveGateways store connected active gateways
+	// A map from gateway id (big int in string repr)
+	// to a CommunicationThread
+	ActiveGateways     map[string](*CommunicationChannels)
+	ActiveGatewaysLock sync.RWMutex
+
+	// ActiveProviders store connected active providers
+	// A map from provider id (big in in string repr)
+	// to a CommunicationThread
+	ActiveProviders     map[string](*CommunicationChannels)
+	ActiveProvidersLock sync.RWMutex
+}
+
 // Single instance of the gateway
-var instance *api.Gateway
-
-// Create a new instance
-func newInstance(settings util.AppSettings) (*api.Gateway, error) {
-	var err error
-	var g = api.Gateway{}
-
-	// Set-up the REST API
-	g.ClientAPI, err = clientapi.StartClientRestAPI(settings)
-	if err != nil {
-		log.Println("Error starting server: REST API: " + err.Error())
-		return nil, err
-	}
-
-	return &g, nil
-}
-
-// Create is a factory method to get the single instance of the gateway
-func Create(settings util.AppSettings) (*api.Gateway, error) {
-	if instance != nil {
-		return nil, errors.New("Error: instance already created")
-	}
-	return newInstance(settings)
-}
+var instance *Gateway
+var doOnce sync.Once
 
 // GetSingleInstance returns the single instance of the gateway
-func GetSingleInstance() (*api.Gateway, error) {
-	if instance == nil {
-		return nil, errors.New("Error: instance not created")
-	}
-	return instance, nil
+func GetSingleInstance() *Gateway {
+	doOnce.Do(func() {
+		instance = &Gateway{
+			ProtocolVersion:     protocolVersion,
+			ProtocolSupported:   []int32{protocolVersion, protocolSupported},
+			ActiveGateways:      make(map[string](*CommunicationChannels)),
+			ActiveGatewaysLock:  sync.RWMutex{},
+			ActiveProviders:     make(map[string](*CommunicationChannels)),
+			ActiveProvidersLock: sync.RWMutex{}}
+	})
+	return instance
 }
 
 // RegisterGatewayCommunication registers a gateway communication
-func RegisterGatewayCommunication(id nodeid.NodeID, gComms *api.CommunicationThread) error {
+func RegisterGatewayCommunication(id nodeid.NodeID, gComms *CommunicationChannels) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}
@@ -73,7 +83,7 @@ func DeregisterGatewayCommunication(id nodeid.NodeID) {
 }
 
 // RegisterProviderCommunication registers a provider communication
-func RegisterProviderCommunication(id nodeid.NodeID, pComms *api.CommunicationThread) error {
+func RegisterProviderCommunication(id nodeid.NodeID, pComms *CommunicationChannels) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}

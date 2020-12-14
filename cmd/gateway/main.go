@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/api"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
@@ -20,22 +20,22 @@ func main() {
 		return
 	}
 
-	_, err = gateway.Create(settings)
+	// Initialise a dummy gateway instance.
+	g := gateway.GetSingleInstance()
+
+	_, err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		log.Println("Error starting server: Client REST API: " + err.Error())
 		return
 	}
 
-	// Initialise a dummy gateway instance.
-	g1 := api.Gateway{ProtocolVersion: 1, ProtocolSupported: []int{1, 2}}
-
-	err = gatewayapi.StartGatewayAPI(settings, &g1)
+	err = gatewayapi.StartGatewayAPI(settings, g)
 	if err != nil {
 		log.Println("Error starting gateway tcp server: " + err.Error())
 		return
 	}
 
-	err = providerapi.StartProviderAPI(settings, &g1)
+	err = providerapi.StartProviderAPI(settings, g)
 	if err != nil {
 		log.Println("Error starting provider tcp server: " + err.Error())
 		return
