@@ -7,18 +7,16 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+
 )
 
-func main() {
-	log.Println("Filecoin Gateway Start-up Start: " + util.GetTimeNowString())
 
-	// Load settings.
-	settings, err := util.LoadSettings()
-	if err != nil {
-		log.Println("Error starting server: Settings: " + err.Error())
-		return
-	}
+func main() {
+	settings := settings.LoadSettings()
+	logging.Info("Filecoin Gateway Start-up: Started")
 
 	// Initialise a dummy gateway instance.
 	g := gateway.GetSingleInstance()
@@ -43,16 +41,18 @@ func main() {
 
 	// Configure what should be called if Control-C is hit.
 	util.SetUpCtrlCExit(gracefulExit)
-	log.Println("Filecoin Gateway Start-up Done: " + util.GetTimeNowString())
+
+	logging.Info("Filecoin Gateway Start-up Complete")
 
 	// Wait forever.
 	select {}
 }
 
 func gracefulExit() {
-	log.Println("Filecoin Gateway Start: " + util.GetTimeNowString())
+	logging.Info("Filecoin Gateway Shutdown: Start")
 
+	logging.Error("graceful shutdown code not written yet!")
 	// TODO
 
-	log.Println("Filecoin Gateway Shutdown End: " + util.GetTimeNowString())
+	logging.Info("Filecoin Gateway Shutdown: Completed")
 }
