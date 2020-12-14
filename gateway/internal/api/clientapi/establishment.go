@@ -3,6 +3,7 @@ package clientapi
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
 	"net/http"
+	"encoding/json"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
@@ -11,12 +12,12 @@ import (
 )
 
 // HandleClientNetworkEstablishment is used to handle initial establishment http request from client
-func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, r *rest.Request) {
+func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, content []byte) {
 	payload := messages.ClientEstablishmentRequest{}
-	err := r.DecodeJsonPayload(&payload)
+	err := json.Unmarshal(content, &payload)
 	if err != nil {
-		s := "Client Establishment: Failed to decode payload." + err.Error()
-		logging.Error(s)
+		s := "Client Establishment: Failed to decode payload."
+		logging.Error(s + err.Error())
 		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}

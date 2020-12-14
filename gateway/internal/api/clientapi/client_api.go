@@ -4,6 +4,8 @@ package clientapi
 
 import (
 	"net/http"
+	"io/ioutil"
+	"encoding/json"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
@@ -69,8 +71,21 @@ func startRestAPI(settings settings.AppSettings, c *ClientAPI, errChannel chan<-
 
 func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	logging.Trace("Received request via /v1 API")
+	content, err := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+	if err != nil {
+		logging.Error("Error reading request: %s.", err.Error())
+		rest.Error(w, "Error reading request", http.StatusBadRequest)
+		return
+	}
+	if len(content) == 0 {
+		logging.Error("Error empty request")
+		rest.Error(w, "Error empty request", http.StatusBadRequest)
+		return
+	}
+
 	payload := messages.CommonRequestMessageFields{}
-	err := r.DecodeJsonPayload(&payload)
+	err = json.Unmarshal(content, &payload)
 	if err != nil {
 		logging.Error("Failed to decode payload: %s.", err.Error())
 		rest.Error(w, "Failed to decode payload: " + err.Error(), http.StatusBadRequest)
@@ -117,7 +132,7 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 
 	switch payload.MessageType {
 	case messages.ClientEstablishmentRequestType:
-		c.HandleClientNetworkEstablishment(w, r)
+		c.HandleClientNetworkEstablishment(w, content)
 	}
 
 }

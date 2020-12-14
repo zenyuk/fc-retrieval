@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"log"
+	"sync"
 )
 
 const (
@@ -35,6 +36,8 @@ const (
 
 var logLevel = int(LogLevelTrace)
 var logTarget = int(logTargetStdOutInt)
+var mutex sync.RWMutex
+
 
 // SetLogLevel allows the log level to be specified.
 func SetLogLevel(level string) {
@@ -98,6 +101,14 @@ func Error1(err error) {
 	}
 }
 
+// ErrorAndPanic logs an error and then calls panic with the same message.
+func ErrorAndPanic(msg string, args ...interface{}) {
+	if (LogLevelError <= logLevel) {
+		printf(LogLevelStrError, msg, args...)
+	}
+	panic(fmt.Sprintf(msg, args...))
+}
+
 // Warn prints out msg to the log target if the log level is WARN or lower. 
 // msg is interpreted as a format string and args as parameters to the format
 // string is there are any args.
@@ -141,6 +152,9 @@ func printf(level string, msg string, args ...interface{}) {
 
 	switch (logTarget) {
 	case logTargetStdOutInt:
+		// TODO will need to do better than this in the server so we don't block all of the time!
+		mutex.Lock()
+		defer mutex.Unlock()
 		log.Println(s)
 	default:
 		panic("Unknown log target")
