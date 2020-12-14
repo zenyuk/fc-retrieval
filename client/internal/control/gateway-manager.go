@@ -22,6 +22,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-client/internal/contracts"
 	"github.com/ConsenSys/fc-retrieval-client/internal/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-client/internal/prng"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
 // GatewayManager managers the pool of gateways and the connections to them.
@@ -56,6 +57,8 @@ var singleInstance *GatewayManager
 func GetGatewayManager(settings ...*GatewayManagerSettings) *GatewayManager {
     doOnce.Do(func() {
 		if len(settings) != 1 {
+			// TODO replace with ErrorAndPanic once available
+			logging.Error("Unexpected number of parameter passed to first call of GetGatewayManager")
 			panic("Unexpected number of parameter passed to first call of GetGatewayManager")
 		}
 		startGatewayManager(settings[0])
