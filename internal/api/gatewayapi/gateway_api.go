@@ -3,18 +3,22 @@ package gatewayapi
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"net"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
 
 // StartGatewayAPI starts the TCP API as a separate go routine.
+<<<<<<< HEAD
+func StartGatewayAPI(settings settings.AppSettings, g *api.Gateway) error {
+=======
 func StartGatewayAPI(settings util.AppSettings, g *gateway.Gateway) error {
+>>>>>>> main
 	// Start server
 	ln, err := net.Listen("tcp", settings.BindGatewayAPI)
 	if err != nil {
@@ -24,14 +28,14 @@ func StartGatewayAPI(settings util.AppSettings, g *gateway.Gateway) error {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
-				log.Println(err.Error())
+				logging.Error1(err)
 				continue
 			}
-			log.Printf("Incoming connection from gateway at :%s\n", conn.RemoteAddr())
+			logging.Info("Incoming connection from gateway at :%s", conn.RemoteAddr())
 			go handleGatewayCommunication(conn, g)
 		}
 	}(ln)
-	log.Printf("Listening on %s for connections from Gateways\n", settings.BindGatewayAPI)
+	logging.Info("Listening on %s for connections from Gateways", settings.BindGatewayAPI)
 	return nil
 }
 
@@ -61,17 +65,17 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
 			if err != nil {
 				// Connection has something wrong, exit the routine
-				log.Println(err.Error())
+				logging.Error1(err)
 				return
 			}
 			if msgType == messages.GatewayDHTDiscoverRequestType {
 				request := messages.GatewayDHTDiscoverRequest{}
 				if json.Unmarshal(data, &request) != nil {
-					log.Printf("Message from gateway: %s can not be parsed\n", conn.RemoteAddr())
+					logging.Error("Message from gateway: %s can not be parsed\n", conn.RemoteAddr())
 					err = tcpcomms.SendInvalidMessage(writer)
 					if err != nil {
 						// Connection has something wrong, exit the routine
-						log.Println(err.Error())
+						logging.Error1(err)
 						return
 					}
 				} else {
@@ -83,7 +87,7 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 						err = gateway.RegisterGatewayCommunication(gComms.NodeID, &gComms)
 						if err != nil {
 							// This gateway can not be registered, exit the routine
-							log.Println(err.Error())
+							logging.Error1(err)
 							return
 						}
 						// Deregister upon exiting the routine
@@ -92,22 +96,22 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 					err = handleGatewayDHTDiscoverRequest(reader, writer, &request)
 					if err != nil {
 						// Connection has something wrong, exit the routine
-						log.Println(err.Error())
+						logging.Error1(err)
 						return
 					}
 				}
 			} else {
-				log.Printf("Message from gateway: %s is of wrong type\n", conn.RemoteAddr())
+				logging.Warn("Message from gateway: %s is of wrong type", conn.RemoteAddr())
 				err = tcpcomms.SendInvalidMessage(writer)
 				if err != nil {
 					// Connection has something wrong, exit the routine
-					log.Println(err.Error())
+					logging.Error1(err)
 					return
 				}
 			}
 		case request := <-gComms.CommsRequestChan:
 			// Do something about the internal requeest
-			log.Printf("Internal request: %s\n", request)
+			logging.Info("Internal request: %s", request)
 			// Send the response to the internal requester
 			response := []byte{1, 2, 3}
 			gComms.CommsResponseChan <- response

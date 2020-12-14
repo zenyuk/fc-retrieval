@@ -2,11 +2,11 @@ package clientapi
 
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
-	"log"
 	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
@@ -15,12 +15,13 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, r *r
 	payload := messages.ClientEstablishmentRequest{}
 	err := r.DecodeJsonPayload(&payload)
 	if err != nil {
-		log.Println(err.Error())
-		rest.Error(w, "Fail to decode payload.", http.StatusBadRequest)
+		s := "Client Establishment: Failed to decode payload." + err.Error()
+		logging.Error(s)
+		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}
 	// TODO: For now just print the payload
-	log.Println(payload)
+	logging.Info("Payload %+v", payload)
 
 	now := util.GetTimeImpl().Now().Unix()
 	if payload.TTL > now {

@@ -5,11 +5,7 @@ import (
 	"time"
 )
 
-// GetTimeNowString returns the time now in a standard format.
-func GetTimeNowString() string {
-	t := time.Now()
-	return t.Format("2006-01-02 15:04:05")
-}
+
 
 
 // Clock allows the time.Now to be mocked out for testing
