@@ -14,11 +14,7 @@ import (
 )
 
 // StartGatewayAPI starts the TCP API as a separate go routine.
-<<<<<<< HEAD
-func StartGatewayAPI(settings settings.AppSettings, g *api.Gateway) error {
-=======
-func StartGatewayAPI(settings util.AppSettings, g *gateway.Gateway) error {
->>>>>>> main
+func StartGatewayAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 	// Start server
 	ln, err := net.Listen("tcp", settings.BindGatewayAPI)
 	if err != nil {
