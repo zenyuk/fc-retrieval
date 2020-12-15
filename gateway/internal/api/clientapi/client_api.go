@@ -3,13 +3,14 @@ package clientapi
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
 
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
@@ -24,14 +25,16 @@ var clientAPIProtocolSupported []int32
 
 // ClientAPI holds the information for API between the Client and the Gateway.
 type ClientAPI struct {
+	gateway *gateway.Gateway
 	// TODO: Add more fields (privkey, gateway id, etc.)
 	// TODO: Add mutex for accessing gateway information.
 }
 
 // StartClientRestAPI starts the REST API as a separate go routine.
 // Any start-up errors are returned.
-func StartClientRestAPI(settings settings.AppSettings) (*ClientAPI, error) {
+func StartClientRestAPI(settings settings.AppSettings, gateway *gateway.Gateway) (*ClientAPI, error) {
 	c := ClientAPI{}
+	c.gateway = gateway
 
 	clientAPIProtocolSupported = make([]int32, 1)
 	clientAPIProtocolSupported[0] = clientAPIProtocolSupportedHi

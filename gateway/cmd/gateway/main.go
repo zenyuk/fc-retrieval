@@ -15,13 +15,14 @@ import (
 
 
 func main() {
+	logging.Init()
 	settings := settings.LoadSettings()
 	logging.Info("Filecoin Gateway Start-up: Started")
 
 	// Initialise a dummy gateway instance.
 	g := gateway.GetSingleInstance()
 
-	_, err := clientapi.StartClientRestAPI(settings)
+	_, err := clientapi.StartClientRestAPI(settings, g)
 	if err != nil {
 		log.Println("Error starting server: Client REST API: " + err.Error())
 		return

@@ -25,7 +25,10 @@ import (
 
 
 func TestGetPrice(t *testing.T) {
-    aNodeID := nodeid.NewNodeID(big.NewInt(7))
+    aNodeID, err := nodeid.NewNodeID(big.NewInt(7))
+    if err != nil {
+        panic(err)
+    }
     aCid := cid.NewContentID(big.NewInt(7))
     cids := make([]cid.ContentID, 0)
     cids = append(cids, *aCid)

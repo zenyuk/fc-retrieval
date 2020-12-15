@@ -70,7 +70,7 @@ func TestAdd(t *testing.T) {
 func TestAddTwo(t *testing.T) {
 	o := newInstance()
 	o.Add(createNewSingleCidGroupOfferCidOne(t))
-	o.Add(createNewSingleCidGroupOfferCidOne(t))
+	o.Add(createFutureSingleCidGroupOfferCidOne(t))
 
 	cidOffers, exists := o.GetOffers(cidOne())
 	assert.True(t, exists, "Can't find any offers for CID 1")
@@ -180,7 +180,10 @@ func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) 
 
 
 func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
-    aNodeID := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
+	aNodeID, err := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
+	if err != nil {
+		panic(err)
+	}
 	price := uint64(5)
 	now := time.Now()
 	nowSeconds := now.Unix()
