@@ -1,34 +1,31 @@
 package fcrclient
+
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
-	"log"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
 const (
 	defaultSettingsFileName = "fcrsettings.json"
-	defaultSettingsFile = "/etc/client/" + defaultSettingsFileName
-	
-	defaultSettingsVerbose = true
+	defaultSettingsFile     = "/etc/client/" + defaultSettingsFileName
+
+	defaultSettingsVerbose     = true
 	defaultMaxEstablishmentTTL = int64(100)
 )
 
 // FilecoinRetrievalClientSettings holds the library configuration
 type FilecoinRetrievalClientSettings struct {
-	MaxEstablishmentTTL int64 
-	Verbose bool       // If true, then more logging is shown.
+	MaxEstablishmentTTL int64
+	Verbose             bool // If true, then more logging is shown.
+	NodeID              *nodeid.NodeID
 }
 
-var defaults = FilecoinRetrievalClientSettings{
-	defaultMaxEstablishmentTTL,
-	defaultSettingsVerbose}
-
-var settings = &defaults
-
-
-
+var settings *FilecoinRetrievalClientSettings
 
 // LoadSettings loads the app settings from the settings file.
 func LoadSettings(settingsFile ...string) (*FilecoinRetrievalClientSettings, error) {
