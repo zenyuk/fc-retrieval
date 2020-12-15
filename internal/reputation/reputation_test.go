@@ -25,7 +25,10 @@ import (
 
 func TestClientRepInitial(t *testing.T) {
 	id := big.NewInt(2)
-	n := nodeid.NewNodeID(id)
+	n, err := nodeid.NewNodeID(id)
+	if err != nil {
+		panic(err)
+	}
 	r := GetSingleInstance()
 	r.EstablishClientReputation(n)
 
@@ -83,7 +86,10 @@ func TestClientInvalidMessage(t *testing.T) {
 
 func TestClientRepMax(t *testing.T) {
 	id := big.NewInt(2)
-	n := nodeid.NewNodeID(id)
+	n, err := nodeid.NewNodeID(id)
+	if err != nil {
+		panic(err)
+	}
 	r := GetSingleInstance()
 	r.EstablishClientReputation(n)
 
@@ -99,7 +105,10 @@ func TestClientRepMax(t *testing.T) {
 
 func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID), expectedChange int) {
 	id := big.NewInt(2)
-	n := nodeid.NewNodeID(id)
+	n, err := nodeid.NewNodeID(id)
+	if err != nil {
+		panic(err)
+	}
 	r := GetSingleInstance()
 	r.EstablishClientReputation(n)
 	f(n)

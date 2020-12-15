@@ -2,12 +2,12 @@ package clientapi
 
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
@@ -21,8 +21,8 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, cont
 		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}
-	// TODO: For now just print the payload
-	logging.Info("Payload %+v", payload)
+
+	logging.Trace("Client Establishment %+v", payload)
 
 	now := util.GetTimeImpl().Now().Unix()
 	if payload.TTL > now {
@@ -30,9 +30,14 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, cont
 
 	}
 
-	response := messages.ClientEstablishmentResponse{}
+	response, err :=	g.gateway.GatewayClient.Establishment(&payload)
+	if err != nil {
+		s := "Client Establishment: Error decodeing payload."
+		logging.Error(s + err.Error())
+		rest.Error(w, s, http.StatusBadRequest)
+	}
+
 	response.ProtocolVersion = clientAPIProtocolVersion
-	response.Challenge = payload.Challenge
 	response.Signature = "TODO: NONE YET!!!"
 	w.WriteJson(response)
 }

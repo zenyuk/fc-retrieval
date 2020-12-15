@@ -12,14 +12,17 @@ type ClientEstablishmentRequest struct {
 	MessageType       int32   `json:"message_type"`
 	ProtocolVersion   int32   `json:"protocol_version"`
 	ProtocolSupported []int32 `json:"protocol_supported"`
+	ClientID          string  `json:"client_id"`
 	Challenge         string  `json:"challenge"`
 	TTL               int64   `json:"ttl"`
+	Signature         string  `json:"signature:`
 }
 
 // ClientEstablishmentResponse is the response to ClientEstablishmentRequest
 type ClientEstablishmentResponse struct {
 	MessageType     int32  `json:"message_type"`
 	ProtocolVersion int32  `json:"protocol_version"`
+	GatewayID       string `json:"gateway_id"`
 	Challenge       string `json:"challenge"`
 	Signature       string `json:"signature"`
 }
