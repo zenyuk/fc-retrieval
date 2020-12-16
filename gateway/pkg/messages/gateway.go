@@ -56,7 +56,7 @@ type GatewayDHTDiscoverRequest struct {
 type GatewayDHTDiscoverResponse struct {
 	MessageType     int32                 `json:"message_type"`
 	ProtocolVersion int32                 `json:"protocol_version"`
-	PieceCID        int64                 `json:"piece_cid"`
+	PieceCID        cid.ContentID         `json:"piece_cid"`
 	Nonce           int64                 `json:"nonce"`
 	Found           bool                  `json:"found"`
 	Signature       string                `json:"signature"`

@@ -1,4 +1,5 @@
 package cidoffer
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,89 +15,90 @@ package cidoffer
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-    "errors"
-    "time"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
-    "crypto/sha512"
-    "encoding/binary"
+	"crypto/sha512"
+	"encoding/binary"
+	"errors"
+	"time"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
 // CidGroupOfferDigestSize is the size of message digest used for CidGroupOffers
 const CidGroupOfferDigestSize = sha512.Size256
 
-// CidGroupOffer represents a CID Group Offer. That is, an offer to deliver content 
+// CidGroupOffer represents a CID Group Offer. That is, an offer to deliver content
 // for Piece CIDs at a certain price
 type CidGroupOffer struct {
-    nodeID *nodeid.NodeID
-    cids []cid.ContentID
-    price uint64
-    expiry int64
-    // TODO signature
+	NodeID *nodeid.NodeID
+	Cids   []cid.ContentID
+	Price  uint64
+	Expiry int64
+	QoS    uint64
+	// TODO:
+	// 1. Provider signature
+	// 2. Merkle Proof
+	// 3. Funded Payment channel
 }
-
 
 // NewCidGroupOffer creates an unsigned CID Group Offer.
 func NewCidGroupOffer(providerID *nodeid.NodeID, cids *[]cid.ContentID, price uint64, expiry int64) (*CidGroupOffer, error) {
-    var c = CidGroupOffer{}
-    c.nodeID = providerID
-    if (len(*cids) < 1) {
-        return nil, errors.New("CID Group Offer: provide 1 or more CIDs")
-    }
-    c.cids = *cids
-    if (price < 0) {
-        return nil, errors.New("CID Group Offer: price must be greater than or equal to zero")
-    }
-    c.price = price
-    // TODO check that the expiry is in the future (are there scenarios where an expired offer should be loadable?)
-    c.expiry = expiry
+	var c = CidGroupOffer{}
+	c.NodeID = providerID
+	if len(*cids) < 1 {
+		return nil, errors.New("CID Group Offer: provide 1 or more CIDs")
+	}
+	c.Cids = *cids
+	if price < 0 {
+		return nil, errors.New("CID Group Offer: price must be greater than or equal to zero")
+	}
+	c.Price = price
+	// TODO check that the expiry is in the future (are there scenarios where an expired offer should be loadable?)
+	c.Expiry = expiry
 	return &c, nil
 }
 
 // GetCIDs returns the CIDs this offer relates to.
 func (c *CidGroupOffer) GetCIDs() *[]cid.ContentID {
-    return &c.cids
+	return &c.Cids
 }
 
 // GetPrice returns the price that the content for the CIDs will be supplied at.
-func (c *CidGroupOffer) GetPrice() (uint64) {
-    return c.price
+func (c *CidGroupOffer) GetPrice() uint64 {
+	return c.Price
 }
 
 // GetExpiry returns the expiry time of the offer
-func (c *CidGroupOffer) GetExpiry() (int64) {
-    return c.expiry
+func (c *CidGroupOffer) GetExpiry() int64 {
+	return c.Expiry
 }
 
-
 // GetMessageDigest calculate the message digest of this CID Group Offer.
-// Note that the methodology used here should not be externally visible. The 
+// Note that the methodology used here should not be externally visible. The
 // message digest should only be used within the gateway.
 func (c *CidGroupOffer) GetMessageDigest() (sum256 [CidGroupOfferDigestSize]byte) {
-    b := c.nodeID.ToBytes()
+	b := c.NodeID.ToBytes()
 
-    for _, aCid := range c.cids  {
-        cidBytes := aCid.ToBytes()
-        b = append(b[:], cidBytes[:]...)
-    }
+	for _, aCid := range c.Cids {
+		cidBytes := aCid.ToBytes()
+		b = append(b[:], cidBytes[:]...)
+	}
 
-    bPrice := make([]byte, 8)
-	binary.BigEndian.PutUint64(bPrice, uint64(c.price))
-    b = append(b[:], bPrice[:]...)
+	bPrice := make([]byte, 8)
+	binary.BigEndian.PutUint64(bPrice, uint64(c.Price))
+	b = append(b[:], bPrice[:]...)
 
-    bExpiry := make([]byte, 8)
-	binary.BigEndian.PutUint64(bExpiry, uint64(c.expiry))
-    b = append(b[:], bExpiry[:]...)
+	bExpiry := make([]byte, 8)
+	binary.BigEndian.PutUint64(bExpiry, uint64(c.Expiry))
+	b = append(b[:], bExpiry[:]...)
 
-
-    return sha512.Sum512_256(b)
+	return sha512.Sum512_256(b)
 }
 
 // HasExpired returns true if the offer expiry date is in the past.
 func (c *CidGroupOffer) HasExpired() bool {
-    expiryTime := time.Unix(c.expiry, 0)
-    now := time.Now()
-    return expiryTime.Before(now)
+	expiryTime := time.Unix(c.Expiry, 0)
+	now := time.Now()
+	return expiryTime.Before(now)
 }
