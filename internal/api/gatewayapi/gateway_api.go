@@ -8,8 +8,8 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
 
@@ -60,6 +60,11 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 		case <-triggerChan:
 			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
 			if err != nil {
+				if _, ok := err.(*tcpcomms.TimeoutError); ok {
+					// A regular timeout, continue
+					controlChan <- true
+					continue
+				}
 				// Connection has something wrong, exit the routine
 				logging.Error1(err)
 				return
@@ -105,12 +110,38 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 					return
 				}
 			}
+			// Resume detecting routine.
+			controlChan <- true
 		case request := <-gComms.CommsRequestChan:
-			// Do something about the internal requeest
-			logging.Info("Internal request: %s", request)
-			// Send the response to the internal requester
-			response := []byte{1, 2, 3}
-			gComms.CommsResponseChan <- response
+			// Pause the detecting routine
+			controlChan <- true
+			// Assume the internal request is already a formatted request.
+			err := tcpcomms.SendTCPMessage(writer, request[0], request[1:])
+			if err != nil {
+				// Connection has something wrong, exit the routine
+				// Respond with a nil
+				gComms.CommsResponseChan <- nil
+				logging.Error1(err)
+				return
+			}
+			// Getting a response
+			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
+			if err != nil {
+				if _, ok := err.(*tcpcomms.TimeoutError); ok {
+					// A regular timeout, continue
+					gComms.CommsResponseChan <- nil
+					controlChan <- true
+					continue
+				}
+				// Connection has something wrong, exit the routine
+				gComms.CommsRequestChan <- nil
+				logging.Error1(err)
+				return
+			}
+			// Respond to internal requester
+			gComms.CommsResponseChan <- append([]byte{msgType}, data...)
+			// Resume detecting routine.
+			controlChan <- true
 		}
 	}
 }
@@ -118,10 +149,8 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 // This starts a go-routine that checks if reader's buffer has any content every 100ms
 // Returns a channel of boolean for trigger and control
 // Send true to control channel to toggle between starting detecting and pausing detecting.
-// By default, detecting is paused. Each time
-// Send the channel with a true to toggle between starting detecting and pausing detecting, by default, the detecting is paused.
-// Send the channel with a false to shutdown the go routine.
-// The channel will gets a true signal if there is content detected.
+// By default, detecting is paused.
+// Each time the go-routine detects any incoming messages, it will send a true signal to trigger channel and the detecting is paused.
 func startDetectingRequest(reader *bufio.Reader) (chan bool, chan bool) {
 	triggerChan := make(chan bool)
 	controlChan := make(chan bool)

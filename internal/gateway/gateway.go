@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway/clients"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
@@ -37,6 +38,9 @@ type Gateway struct {
 	ActiveProvidersLock sync.RWMutex
 
 	GatewayClient *clients.GatewayClientInteraction
+
+	// Offers, it is threadsafe.
+	Offers *offers.Offers
 }
 
 // Single instance of the gateway
@@ -53,7 +57,8 @@ func GetSingleInstance() *Gateway {
 			ActiveGatewaysLock:  sync.RWMutex{},
 			ActiveProviders:     make(map[string](*CommunicationChannels)),
 			ActiveProvidersLock: sync.RWMutex{},
-			GatewayClient:		 &clients.GatewayClientInteraction{}}
+			GatewayClient:       &clients.GatewayClientInteraction{},
+			Offers:              offers.GetSingleInstance()}
 	})
 	return instance
 }

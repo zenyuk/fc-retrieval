@@ -38,9 +38,9 @@ type InsufficientFundsResponse struct {
 // TODO: Maybe use class in cidgroupoffer
 type CIDGroupInformation struct {
 	ProviderID           nodeid.NodeID `json:"provider_id"`
-	Price                int64         `json:"price_per_byte"`
+	Price                uint64        `json:"price_per_byte"`
 	Expiry               int64         `json:"expiry_date"`
-	QoS                  int64         `json:"qos"`
+	QoS                  uint64        `json:"qos"`
 	Signature            string        `json:"signature"`
 	MerkleProof          string        `json:"merkle_proof"`
 	FundedPaymentChannel bool          `json:"funded_payment_channel"` // TODO: Is this boolean?
