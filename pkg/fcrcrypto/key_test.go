@@ -1,4 +1,5 @@
-package nodeid
+package fcrcrypto
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,20 +15,28 @@ package nodeid
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-    "math/big"
-    "crypto/rand"
+	"testing"
+
+    "github.com/stretchr/testify/assert"
 )
 
 
-// TODO use fcrcrypto
 
-// CreateRandomIdentifier generates a random id in the range 0 to 256**wordSize - 1
-// This is used for testing purposes only!!!!
-func CreateRandomIdentifier() (*big.Int) {
-    var max big.Int
-    max.Exp(big.NewInt(2), big.NewInt(8 * wordSize), nil)
-	n, _ := rand.Int(rand.Reader, &max)
-	return n
+func TestKeyEncodeDecode(t *testing.T) {
+    privateKey, err := GenKeyPair()
+    if err != nil {
+        panic(err)
+    }
+
+    pKeyStr := EncodePrivateKey(privateKey)
+    pKey := DecodePrivateKey(pKeyStr)
+    pKeyStr1 := EncodePrivateKey(pKey)
+    assert.Equal(t, pKeyStr, pKeyStr1, "Private Key round trip not working")
+
+    pubKeyStr := EncodePublicKey(&privateKey.PublicKey)
+    pubKey := DecodePublicKey(pubKeyStr)
+    pubKeyStr1 := EncodePublicKey(pubKey)
+    assert.Equal(t, pubKeyStr, pubKeyStr1, "Public Key round trip not working")
 }
+

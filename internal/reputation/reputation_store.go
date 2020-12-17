@@ -8,7 +8,7 @@ import (
 // NOTE: At present all reputation is stored in memory. This will need to change as we move beyond a PoC.
 
 
-func (r *Reputation) getClientReputation(clientNodeID *nodeid.NodeID) (val int, exists bool) {
+func (r *Reputation) getClientReputation(clientNodeID *nodeid.NodeID) (val int64, exists bool) {
 	clientNodeIDStr := clientNodeID.ToString()
 	r.clientsMapLock.Lock()
 	val, exists = r.clients[clientNodeIDStr]
@@ -16,16 +16,16 @@ func (r *Reputation) getClientReputation(clientNodeID *nodeid.NodeID) (val int, 
 	return
 }
 
-func (r *Reputation) setClientReputation(clientNodeID *nodeid.NodeID, val int) {
+func (r *Reputation) setClientReputation(clientNodeID *nodeid.NodeID, val int64) {
 	clientNodeIDStr := clientNodeID.ToString()
 	r.clientsMapLock.Lock()
 	r.clients[clientNodeIDStr] = val
 	r.clientsMapLock.Unlock()
 }
 
-func (r *Reputation) changeClientReputation(clientNodeID *nodeid.NodeID, amount int) {
+func (r *Reputation) changeClientReputation(clientNodeID *nodeid.NodeID, amount int64) int64 {
 	clientNodeIDStr := clientNodeID.ToString()
-	var val int
+	var val int64
 	var exists bool
 	r.clientsMapLock.Lock()
 	val, exists = r.clients[clientNodeIDStr]
@@ -42,4 +42,6 @@ func (r *Reputation) changeClientReputation(clientNodeID *nodeid.NodeID, amount 
 
 	r.clients[clientNodeIDStr] = newVal
 	r.clientsMapLock.Unlock()
+
+	return newVal
 }

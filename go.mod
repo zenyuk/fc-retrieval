@@ -7,4 +7,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/xyproto/simpleredis v0.0.0-20201022102402-3ef49f016e6f
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
