@@ -20,7 +20,7 @@ func main() {
 	logging.Info("Filecoin Gateway Start-up: Started")
 
 	// Initialise a dummy gateway instance.
-	g := gateway.GetSingleInstance()
+	g := gateway.GetSingleInstance(&settings)
 
 	_, err := clientapi.StartClientRestAPI(settings, g)
 	if err != nil {

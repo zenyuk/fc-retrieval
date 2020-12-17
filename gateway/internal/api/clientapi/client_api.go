@@ -137,5 +137,5 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	case messages.ClientEstablishmentRequestType:
 		c.HandleClientNetworkEstablishment(w, content)
 	}
-
 }
+

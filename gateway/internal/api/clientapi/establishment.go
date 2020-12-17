@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -30,14 +31,26 @@ func (g *ClientAPI) HandleClientNetworkEstablishment(w rest.ResponseWriter, cont
 
 	}
 
-	response, err :=	g.gateway.GatewayClient.Establishment(&payload)
+	response, err := g.gateway.GatewayClient.Establishment(&payload)
 	if err != nil {
 		s := "Client Establishment: Error decodeing payload."
 		logging.Error(s + err.Error())
 		rest.Error(w, s, http.StatusBadRequest)
+		return
 	}
 
 	response.ProtocolVersion = clientAPIProtocolVersion
-	response.Signature = "TODO: NONE YET!!!"
+	response.GatewayID = g.gateway.GatewayID.ToString()
+
+	sig, err1 := fcrcrypto.Sign(g.gateway.GatewayPrivateKey, *g.gateway.GatewayPrivateKeyVersion, *g.gateway.GatewayPrivateKeySigAlg, *response)
+	if err1 != nil {
+		// TODO for the moment just blow up!
+		panic(err1)
+		// s := "Client Establishment: Internal error signing."
+		// logging.Error(s + err.Error())
+		// rest.Error(w, s, http.StatusInternalServerError)
+
+	}
+	response.Signature = *sig
 	w.WriteJson(response)
 }

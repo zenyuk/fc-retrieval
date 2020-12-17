@@ -16,9 +16,9 @@ package nodeid
  */
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
-	"encoding/hex"
 )
 
 const wordSize = 32 // 32 bytes
@@ -36,16 +36,20 @@ func NewNodeID(id *big.Int) (*NodeID, error) {
 	if l > wordSize {
 		return nil, fmt.Errorf("NodeID: Incorrect size1: %d", l)
 	}
-	copy(n.id, id.Bytes())
+	idBytes := id.Bytes()
+	n.id = make([]byte, len(idBytes))
+	copy(n.id, idBytes)
 	return &n, nil
 }
 
 // NewNodeIDFromBytes creates a node id object
 func NewNodeIDFromBytes(id []byte) (*NodeID, error) {
 	var n = NodeID{}
-	if len(id) > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size2: %d", len(id))
+	lenID := len(id)
+	if lenID > wordSize {
+		return nil, fmt.Errorf("NodeID: Incorrect size2: %d", lenID)
 	}
+	n.id = make([]byte, lenID)
 	copy(n.id, id)
 	return &n, nil
 }
@@ -66,9 +70,17 @@ func NewNodeIDFromString(id string) (*NodeID, error) {
 
 }
 
+
+
+
+
 // ToString returns a string for the node id.
 func (n *NodeID) ToString() string {
-	return hex.EncodeToString(n.id)
+	str := hex.EncodeToString(n.id)
+	if str == "" {
+		str = "00"
+	}
+	return str
 }
 
 // ToBytes returns the byte array representation of the node id.

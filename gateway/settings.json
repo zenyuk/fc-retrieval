@@ -3,5 +3,9 @@
     "bindproviderapi": ":8090",
     "bindgatewayapi": ":8091",
     "logtarget": "STDOUT",
-    "loglevel": "INFO"
+    "loglevel": "INFO",
+    "gatewayid": "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F",
+    "privatekey": "-----BEGIN PRIVATE KEY-----\r\nMHcCAQEEII2I+bdAfb9Bj9w/Q6RlC1mUtrjKOS6vnbvJqJMPAqr9oAoGCCqGSM49\r\nAwEHoUQDQgAEi5SZsVcctoJ4oIA/UxwMPZaGg8KwTAMVB29dInLt7qxKPYs4syRN\r\n54ZPNSGTx4xH0R/Hl8/OwXYIWg/coQWVJw==\r\n-----END PRIVATE KEY-----",
+    "keyversion": 0,
+    "sigalg": 1
 }
