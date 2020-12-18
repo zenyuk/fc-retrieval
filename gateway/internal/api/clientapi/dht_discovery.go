@@ -2,6 +2,7 @@ package clientapi
 
 // Copyright (C) 2020 ConsenSys Software Inc
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -11,9 +12,9 @@ import (
 )
 
 // HandleClientDHTCIDDiscover is used to handle client request for cid offer
-func (c *ClientAPI) HandleClientDHTCIDDiscover(w rest.ResponseWriter, r *rest.Request) {
+func (c *ClientAPI) HandleClientDHTCIDDiscover(w rest.ResponseWriter, content []byte) {
 	payload := messages.ClientDHTDiscoverRequest{}
-	err := r.DecodeJsonPayload(&payload)
+	err := json.Unmarshal(content, &payload)
 	if err != nil {
 		s := "Client DHT CID Discovery: Failed to decode payload."
 		logging.Error(s + err.Error())

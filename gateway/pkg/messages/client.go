@@ -15,7 +15,7 @@ type ClientEstablishmentRequest struct {
 	ClientID          string  `json:"client_id"`
 	Challenge         string  `json:"challenge"`
 	TTL               int64   `json:"ttl"`
-	Signature         string  `json:"signature:`
+	Signature         string  `json:"signature"`
 }
 
 // ClientEstablishmentResponse is the response to ClientEstablishmentRequest
@@ -35,6 +35,7 @@ type ClientStandardDiscoverRequest struct {
 	PieceCID          cid.ContentID `json:"piece_cid"`
 	Nonce             int64         `json:"nonce"`
 	TTL               int64         `json:"ttl"`
+	Signature         string 		`json:"signature"`
 }
 
 // ClientStandardDiscoverResponse is the response to ClientStandardDiscoverResponse
