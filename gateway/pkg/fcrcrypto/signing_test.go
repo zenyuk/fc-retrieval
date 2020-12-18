@@ -16,10 +16,10 @@ package fcrcrypto
  */
 
 import (
-    "log"
 	"testing"
 
     "github.com/stretchr/testify/assert"
+    "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
     "github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 )
 
@@ -31,7 +31,7 @@ func TestEstablishMessage(t *testing.T) {
         panic(err)
     }
 
-    log.Printf("Private Key: %s", EncodePrivateKey(privateKey))
+    logging.Test("Private Key: %s", EncodePrivateKey(privateKey))
 
     resp := messages.ClientEstablishmentResponse{}
     resp.MessageType = messages.ClientEstablishmentResponseType

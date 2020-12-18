@@ -3,7 +3,8 @@ package storage
 
 import (
 	"github.com/xyproto/simpleredis"
-	"log"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
 
@@ -59,7 +60,7 @@ func (s *RedisStorage) Type() SType {
 func (s *RedisStorage) Put(key, value string) {
 	err := s.kv.Set(key, value)
 	if err != nil {
-		log.Fatal(err)
+		logging.ErrorAndPanic(err.Error())
 	}
 }
 
