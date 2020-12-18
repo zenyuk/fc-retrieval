@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	logLevelStrTest = "TEST"
 	// LogLevelStrNone log level should be used when no logging should be emitted
 	LogLevelStrNone = "NONE"
 	// LogLevelStrError log level should be used when only Error level logging should be emitted
@@ -96,6 +97,17 @@ func InfoEnabled() bool {
 func TraceEnabled() bool {
 	return LogLevelTrace <= logLevel
 }
+
+// Test prints out msg to the log target independant of the log level. 
+// This function should only be called from test code.
+// The idea is that using the logging framework will put messages from test
+// code in the context of the other messages that are emitted.
+// msg is interpreted as a format string and args as parameters to the format
+// string is there are any args.
+func Test(msg string, args ...interface{}) {
+	printf(logLevelStrTest, msg, args...)
+}
+
 
 // Error prints out msg to the log target if the log level is ERROR or lower. 
 // msg is interpreted as a format string and args as parameters to the format

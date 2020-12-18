@@ -3,12 +3,12 @@ package providerapi
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"net"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
@@ -24,14 +24,14 @@ func StartProviderAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
-				log.Println(err.Error())
+				logging.Error1(err)
 				continue
 			}
-			log.Printf("Incoming connection from provider at :%s\n", conn.RemoteAddr())
+			logging.Info("Incoming connection from provider at :%s\n", conn.RemoteAddr())
 			go handleProviderCommunication(conn, g)
 		}
 	}(ln)
-	log.Printf("Listening on %s for connections from Providers\n", settings.BindProviderAPI)
+	logging.Info("Listening on %s for connections from Providers\n", settings.BindProviderAPI)
 	return nil
 }
 
@@ -61,18 +61,18 @@ func handleProviderCommunication(conn net.Conn, g *gateway.Gateway) {
 			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
 			if err != nil {
 				// Connection has something wrong, exit the routine
-				log.Println(err.Error())
+				logging.Error1(err)
 				return
 			}
 			// Start from here.
 			if msgType == messages.ProviderDHTPublishGroupCIDRequestType {
 				request := messages.ProviderDHTPublishGroupCIDRequest{}
 				if json.Unmarshal(data, &request) != nil {
-					log.Printf("Message from provider %s can not be parsed\n", conn.RemoteAddr())
+					logging.Info("Message from provider %s can not be parsed\n", conn.RemoteAddr())
 					err = tcpcomms.SendInvalidMessage(writer)
 					if err != nil {
 						// Connection has something wrong, exit the routine
-						log.Println(err.Error())
+						logging.Error1(err)
 						return
 					}
 				} else {
@@ -81,29 +81,29 @@ func handleProviderCommunication(conn net.Conn, g *gateway.Gateway) {
 						pComms.NodeID = request.ProviderID
 						err = gateway.RegisterProviderCommunication(pComms.NodeID, &pComms)
 						if err != nil {
-							log.Println(err.Error())
+							logging.Error1(err)
 							return
 						}
 						defer gateway.DeregisterProviderCommunication(pComms.NodeID)
 					}
 					err = handleProviderDHTPublishGroupCIDRequest(reader, writer, &request)
 					if err != nil {
-						log.Println(err.Error())
+						logging.Error1(err)
 						return
 					}
 				}
 			} else {
-				log.Printf("Message from provider: %s is of wrong type\n", conn.RemoteAddr())
+				logging.Info("Message from provider: %s is of wrong type\n", conn.RemoteAddr())
 				err = tcpcomms.SendInvalidMessage(writer)
 				if err != nil {
 					// Connection has something wrong, exit the routine
-					log.Println(err.Error())
+					logging.Error1(err)
 					return
 				}
 			}
 		case request := <-pComms.CommsRequestChan:
 			// Do something about the internal requeest
-			log.Printf("Internal request: %s\n", request)
+			logging.Info("Internal request: %s\n", request)
 			// Send the response to the internal requester
 			response := []byte{1, 2, 3}
 			pComms.CommsResponseChan <- response

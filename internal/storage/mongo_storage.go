@@ -1,15 +1,14 @@
 package storage
+
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 )
 
-
 // Storage for key-value pairs using mongodb.
-
 
 // Name of mongodb host.
 const mongoHostname = "mongodb"
@@ -67,7 +66,7 @@ func (s *MongoStorage) Put(key, value string) {
 
 	err := collection.Insert(kv)
 	if err != nil {
-		log.Fatal(err)
+		logging.ErrorAndPanic(err.Error())
 	}
 }
 

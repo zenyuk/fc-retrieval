@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
@@ -24,19 +22,19 @@ func main() {
 
 	_, err := clientapi.StartClientRestAPI(settings, g)
 	if err != nil {
-		log.Println("Error starting server: Client REST API: " + err.Error())
+		logging.Error("Error starting server: Client REST API: %s", err.Error())
 		return
 	}
 
 	err = gatewayapi.StartGatewayAPI(settings, g)
 	if err != nil {
-		log.Println("Error starting gateway tcp server: " + err.Error())
+		logging.Error("Error starting gateway tcp server: %s", err.Error())
 		return
 	}
 
 	err = providerapi.StartProviderAPI(settings, g)
 	if err != nil {
-		log.Println("Error starting provider tcp server: " + err.Error())
+		logging.Error("Error starting provider tcp server: %s", err.Error())
 		return
 	}
 

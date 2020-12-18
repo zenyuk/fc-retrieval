@@ -5,12 +5,12 @@ package clientapi
 // Contains debug APIs
 
 import (
-	"log"
 	"net"
 	"os"
 	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
 func getTime(w rest.ResponseWriter, r *rest.Request) {
@@ -20,7 +20,7 @@ func getTime(w rest.ResponseWriter, r *rest.Request) {
 func getHostname(w rest.ResponseWriter, r *rest.Request) {
 	name, err := os.Hostname()
 	if err != nil {
-		log.Printf("Get host name1: %v\n", err)
+		logging.Info("Get host name1: %s", err.Error()) 
 		return
 	}
 
@@ -30,13 +30,13 @@ func getHostname(w rest.ResponseWriter, r *rest.Request) {
 func getIP(w rest.ResponseWriter, r *rest.Request) {
 	name, err := os.Hostname()
 	if err != nil {
-		log.Printf("Get host name2: %v\n", err)
+		logging.Info("Get host name2: %s", err.Error())
 		return
 	}
 
 	addrs, err := net.LookupHost(name)
 	if err != nil {
-		log.Printf("Lookup host: %v\n", err)
+		logging.Info("Lookup host: %s", err.Error())
 		return
 	}
 

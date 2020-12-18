@@ -1,7 +1,6 @@
 package fcrcrypto
 
 import (
-	"log"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha512"
@@ -83,8 +82,6 @@ func Sign(pKey *ecdsa.PrivateKey, keyVersion KeyVersion, sigAlg SigAlg, msg inte
 	}
 	
 	tbs := getToBeSigned(msg)
-	log.Printf("Sign tbs: %s", tbs)
-
 	hash := sha512.Sum512_256([]byte(tbs))
 	r, s, err := ecdsa.Sign(rand.Reader, pKey, hash[:])
 	if err != nil {
@@ -122,8 +119,6 @@ func Verify(pubKey *ecdsa.PublicKey, sigAlg SigAlg, signature *string, msg inter
 		return false, err
 	}
 	tbs := getToBeSigned(msg)
-	log.Printf("Verify tbs: %s", tbs)
-
 	hash := sha512.Sum512_256([]byte(tbs))
 
 	verified := ecdsa.Verify(pubKey, hash[:], r, s)
