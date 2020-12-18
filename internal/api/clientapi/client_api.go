@@ -54,9 +54,6 @@ func startRestAPI(settings settings.AppSettings, c *ClientAPI, errChannel chan<-
 		rest.Get("/ip", getIP),         // Get IP address.
 		rest.Get("/host", getHostname), // Get host name.
 
-//		rest.Post("/client/establishment", c.HandleClientNetworkEstablishment),       // Handle network establishment.
-		rest.Post("/client/standard_request_cid", c.HandleClientStandardCIDDiscover), // Handle client standard cid request.
-		rest.Post("/client/dht_request_cid", c.HandleClientDHTCIDDiscover),           // Handle DHT client cid request.
 		rest.Post("/v1", c.msgRouter),
 	)
 	if err != nil {
@@ -126,7 +123,7 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 		}
 		// No common protocol versions supported.
 		// TODO what can we get from request object?
-		logging.Info("Client request from (TODO) with unsupported protocol version(s): %d", payload.ProtocolVersion)
+		logging.Warn("Client Request: Unsupported protocol version(s): %d", payload.ProtocolVersion)
 		response := messages.ProtocolMismatchResponse{}
 		response.MessageType = messages.ProtocolMismatch
 		w.WriteJson(response)
@@ -136,6 +133,13 @@ func (c *ClientAPI) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	switch payload.MessageType {
 	case messages.ClientEstablishmentRequestType:
 		c.HandleClientNetworkEstablishment(w, content)
+	case messages.ClientStandardDiscoverRequestType:
+		c.HandleClientStandardCIDDiscover(w, content)
+	case messages.ClientDHTDiscoverRequestType:
+		c.HandleClientDHTCIDDiscover(w, content)
+	default:
+		logging.Warn("Client Request: Unknown message type: %d", payload.MessageType)
+		rest.Error(w, "Unknown message type", http.StatusBadRequest)
 	}
 }
 
