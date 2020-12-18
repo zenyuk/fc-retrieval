@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
@@ -36,15 +37,20 @@ func StartProviderAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 }
 
 func handleProviderCommunication(conn net.Conn, g *gateway.Gateway) {
-	// Init struct, Set register status to false
-	pComms := gateway.CommunicationChannels{
-		CommsRequestChan:  make(chan []byte),
-		CommsResponseChan: make(chan []byte),
-	}
-	registered := false
 	// Initialise a reader and a writer
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
+	// Init struct, Set register status to false
+	pComms := gateway.CommunicationChannels{
+		CommsLock:                 sync.RWMutex{},
+		InterruptRequestChan:      make(chan bool),
+		InterruptResponseChan:     make(chan bool),
+		CommsRequestChan:          make(chan []byte),
+		CommsResponseChan:         make(chan []byte),
+		CommsResponseError:        make(chan error),
+		CommsResponseErrorIgnored: make(chan bool),
+	}
+	registered := false
 	defer conn.Close()
 	// Start a go routine checks if any new message from the other gateway
 	triggerChan, controlChan := startDetectingRequest(reader)
@@ -54,59 +60,113 @@ func handleProviderCommunication(conn net.Conn, g *gateway.Gateway) {
 	}(controlChan)
 	// Start detecting
 	controlChan <- true
+	// There are two states, listening mode and interrupt mode.
+	// By default, the thread is in listening mode.
+	listening := true
 	// Start loop
 	for {
-		select {
-		case <-triggerChan:
-			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
-			if err != nil {
-				// Connection has something wrong, exit the routine
-				logging.Error1(err)
-				return
-			}
-			// Start from here.
-			if msgType == messages.ProviderDHTPublishGroupCIDRequestType {
-				request := messages.ProviderDHTPublishGroupCIDRequest{}
-				if json.Unmarshal(data, &request) != nil {
-					logging.Info("Message from provider %s can not be parsed\n", conn.RemoteAddr())
-					err = tcpcomms.SendInvalidMessage(writer)
+		switch listening {
+		case true:
+			// This is in listening mode.
+			select {
+			case <-triggerChan:
+				// There is a message received.
+				msgType, data, err := tcpcomms.ReadTCPMessage(reader)
+				if err != nil {
+					// Connection error can not be ignored here. exit the routine.
+					logging.Error1(err)
+					return
+				}
+				// No error in reading the message.
+				if msgType == messages.ProviderDHTPublishGroupCIDRequestType {
+					request := messages.ProviderDHTPublishGroupCIDRequest{}
+					if json.Unmarshal(data, &request) != nil {
+						logging.Warn("Message from provider: %s can not be parsed.\n", conn.RemoteAddr())
+						err = tcpcomms.SendInvalidMessage(writer)
+						if err != nil {
+							// This error can not be ignored. exit the routine.
+							logging.Error1(err)
+							return
+						}
+						// Unable to parse json error can be ignored. continue
+						controlChan <- true
+						continue
+					}
+					// Request is legal and correct.
+					if !registered {
+						// Haven’t registered yet.
+						err = gateway.RegisterProviderCommunication(&request.ProviderID, &pComms)
+						if err != nil {
+							// This provider can not be registered, exit the routine
+							logging.Error1(err)
+							return
+						}
+						// Deregister upon exiting the routine
+						defer gateway.DeregisterProviderCommunication(&request.ProviderID)
+					}
+					// Handle request
+					err = handleProviderDHTPublishGroupCIDRequest(reader, writer, &request)
 					if err != nil {
-						// Connection has something wrong, exit the routine
+						// Connection error can not be ignored here. exit the routine.
 						logging.Error1(err)
 						return
 					}
 				} else {
-					// Request is legal and correct
-					if !registered {
-						pComms.NodeID = request.ProviderID
-						err = gateway.RegisterProviderCommunication(pComms.NodeID, &pComms)
-						if err != nil {
-							logging.Error1(err)
-							return
-						}
-						defer gateway.DeregisterProviderCommunication(pComms.NodeID)
-					}
-					err = handleProviderDHTPublishGroupCIDRequest(reader, writer, &request)
+					logging.Warn("Message from provider: %s is of wrong type", conn.RemoteAddr())
+					err = tcpcomms.SendInvalidMessage(writer)
 					if err != nil {
+						// Connection error can not be ignored here. exit the routine.
 						logging.Error1(err)
 						return
 					}
 				}
-			} else {
-				logging.Info("Message from provider: %s is of wrong type\n", conn.RemoteAddr())
-				err = tcpcomms.SendInvalidMessage(writer)
+				// The request has been handled properly. Resume the detecting routine.
+				controlChan <- true
+			case interrupt := <-pComms.InterruptRequestChan:
+				if interrupt {
+					// Pause the detecting routine.
+					controlChan <- true
+					// Switch the state to interrupt mode.
+					listening = false
+					// Respond with a true to indicate readiness
+					pComms.InterruptResponseChan <- true
+				}
+			}
+		case false:
+			// This is in interrupt mode.
+			select {
+			case interrupt := <-pComms.InterruptRequestChan:
+				if !interrupt {
+					// Resume the detecting routine.
+					controlChan <- true
+					// Switch the state to listening mode.
+					listening = true
+				}
+			case request := <-pComms.CommsRequestChan:
+				// Assume the internal request is always a formatted request
+				err := tcpcomms.SendTCPMessage(writer, request[0], request[1:])
 				if err != nil {
-					// Connection has something wrong, exit the routine
+					// Error here can not be ignored.
+					pComms.CommsResponseError <- err
 					logging.Error1(err)
 					return
 				}
+				// Waiting for a response
+				msgType, data, err := tcpcomms.ReadTCPMessage(reader)
+				if err != nil {
+					if _, ok := err.(*tcpcomms.TimeoutError); ok {
+						// Timeout can be ignored, continue
+						pComms.CommsResponseChan <- nil
+						continue
+					}
+					// Connection error can not be ignored, exit the routine
+					pComms.CommsResponseError <- err
+					logging.Error1(err)
+					return
+				}
+				// Respond to internal requester
+				pComms.CommsResponseChan <- append([]byte{msgType}, data...)
 			}
-		case request := <-pComms.CommsRequestChan:
-			// Do something about the internal requeest
-			logging.Info("Internal request: %s\n", request)
-			// Send the response to the internal requester
-			response := []byte{1, 2, 3}
-			pComms.CommsResponseChan <- response
 		}
 	}
 }

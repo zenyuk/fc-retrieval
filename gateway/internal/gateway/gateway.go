@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway/clients"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
@@ -17,10 +17,22 @@ const (
 	protocolSupported = 1 // Alternative protocol version
 )
 
-// CommunicationChannels holds the node id and internal communication channels for a live tcp connection
+// CommunicationChannels holds channels necessary to manage the live tcp connection thread
+// CommsLock is used to ensure only one thread can access the tcp connection thread.
+// Send true to InterruptRequestChan to indicate the attempt to interrupt tcp connection thread.
+// When tcp connection thread is ready, it will send true to interruptResponseChan.
+// Send any request in bytes directly to CommsRequestChan.
+// The connection thread will send the response to CommsResponseChan if there’s any response expected.
+// The connection thread will also send any error to the CommsResponseError or nil if the request is successful.
+// Send false to InterruptRequestChan to indicate the attempt to end the interruption.
 type CommunicationChannels struct {
-	NodeID                              nodeid.NodeID
-	CommsRequestChan, CommsResponseChan chan []byte
+	CommsLock                 sync.RWMutex
+	InterruptRequestChan      chan bool
+	InterruptResponseChan     chan bool
+	CommsRequestChan          chan []byte
+	CommsResponseChan         chan []byte
+	CommsResponseError        chan error
+	CommsResponseErrorIgnored chan bool
 }
 
 // Gateway holds the main data structure for the whole gateway.
@@ -74,7 +86,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		conf := confs[0]
 
 		gatewayPrivateKey := fcrcrypto.DecodePrivateKey(conf.GatewayPrivKey)
-		gatewayID, err2 := nodeid.NewNodeIDFromString(conf.GatewayID) 
+		gatewayID, err2 := nodeid.NewNodeIDFromString(conf.GatewayID)
 		if err2 != nil {
 			panic(err2)
 		}
@@ -83,25 +95,25 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		gatewayPrivateKeySigAlg := fcrcrypto.DecodeSigAlg(conf.GatewaySigAlg)
 
 		instance = &Gateway{
-			ProtocolVersion:     protocolVersion,
-			ProtocolSupported:   []int32{protocolVersion, protocolSupported},
-			ActiveGateways:      make(map[string](*CommunicationChannels)),
-			ActiveGatewaysLock:  sync.RWMutex{},
-			ActiveProviders:     make(map[string](*CommunicationChannels)),
-			ActiveProvidersLock: sync.RWMutex{},
-			GatewayClient:		 &clients.GatewayClientInteraction{},
-			GatewayPrivateKey:	 gatewayPrivateKey,
+			ProtocolVersion:          protocolVersion,
+			ProtocolSupported:        []int32{protocolVersion, protocolSupported},
+			ActiveGateways:           make(map[string](*CommunicationChannels)),
+			ActiveGatewaysLock:       sync.RWMutex{},
+			ActiveProviders:          make(map[string](*CommunicationChannels)),
+			ActiveProvidersLock:      sync.RWMutex{},
+			GatewayClient:            &clients.GatewayClientInteraction{},
+			GatewayPrivateKey:        gatewayPrivateKey,
 			GatewayPrivateKeyVersion: gatewayPrivateKeyVersion,
-			GatewayPrivateKeySigAlg: gatewayPrivateKeySigAlg,
-			GatewayID:			 gatewayID, 
-			Offers:              offers.GetSingleInstance(),
+			GatewayPrivateKeySigAlg:  gatewayPrivateKeySigAlg,
+			GatewayID:                gatewayID,
+			Offers:                   offers.GetSingleInstance(),
 		}
 	})
 	return instance
 }
 
 // RegisterGatewayCommunication registers a gateway communication
-func RegisterGatewayCommunication(id nodeid.NodeID, gComms *CommunicationChannels) error {
+func RegisterGatewayCommunication(id *nodeid.NodeID, gComms *CommunicationChannels) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}
@@ -117,7 +129,7 @@ func RegisterGatewayCommunication(id nodeid.NodeID, gComms *CommunicationChannel
 
 // DeregisterGatewayCommunication deregisters a gateway communication
 // Fail silently
-func DeregisterGatewayCommunication(id nodeid.NodeID) {
+func DeregisterGatewayCommunication(id *nodeid.NodeID) {
 	if instance != nil {
 		instance.ActiveGatewaysLock.Lock()
 		defer instance.ActiveGatewaysLock.Unlock()
@@ -129,7 +141,7 @@ func DeregisterGatewayCommunication(id nodeid.NodeID) {
 }
 
 // RegisterProviderCommunication registers a provider communication
-func RegisterProviderCommunication(id nodeid.NodeID, pComms *CommunicationChannels) error {
+func RegisterProviderCommunication(id *nodeid.NodeID, pComms *CommunicationChannels) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}
@@ -144,7 +156,7 @@ func RegisterProviderCommunication(id nodeid.NodeID, pComms *CommunicationChanne
 }
 
 // DeregisterProviderCommunication deregisters a provider communication
-func DeregisterProviderCommunication(id nodeid.NodeID) error {
+func DeregisterProviderCommunication(id *nodeid.NodeID) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}

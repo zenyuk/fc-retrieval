@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
@@ -36,15 +37,20 @@ func StartGatewayAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 }
 
 func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
-	// Init struct, Set register status to false
-	gComms := gateway.CommunicationChannels{
-		CommsRequestChan:  make(chan []byte),
-		CommsResponseChan: make(chan []byte),
-	}
-	registered := false
 	// Initialise a reader and a writer
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
+	// Init struct, Set register status to false
+	gComms := gateway.CommunicationChannels{
+		CommsLock:                 sync.RWMutex{},
+		InterruptRequestChan:      make(chan bool),
+		InterruptResponseChan:     make(chan bool),
+		CommsRequestChan:          make(chan []byte),
+		CommsResponseChan:         make(chan []byte),
+		CommsResponseError:        make(chan error),
+		CommsResponseErrorIgnored: make(chan bool),
+	}
+	registered := false
 	defer conn.Close()
 	// Start a go routine checks if any new message from the other gateway
 	triggerChan, controlChan := startDetectingRequest(reader)
@@ -54,94 +60,113 @@ func handleGatewayCommunication(conn net.Conn, g *gateway.Gateway) {
 	}(controlChan)
 	// Start detecting
 	controlChan <- true
+	// There are two states, listening mode and interrupt mode.
+	// By default, the thread is in listening mode.
+	listening := true
 	// Start loop
 	for {
-		select {
-		case <-triggerChan:
-			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
-			if err != nil {
-				if _, ok := err.(*tcpcomms.TimeoutError); ok {
-					// A regular timeout, continue
-					controlChan <- true
-					continue
+		switch listening {
+		case true:
+			// This is in listening mode.
+			select {
+			case <-triggerChan:
+				// There is a message received.
+				msgType, data, err := tcpcomms.ReadTCPMessage(reader)
+				if err != nil {
+					// Connection error can not be ignored here. exit the routine.
+					logging.Error1(err)
+					return
 				}
-				// Connection has something wrong, exit the routine
-				logging.Error1(err)
-				return
-			}
-			if msgType == messages.GatewayDHTDiscoverRequestType {
-				request := messages.GatewayDHTDiscoverRequest{}
-				if json.Unmarshal(data, &request) != nil {
-					logging.Error("Message from gateway: %s can not be parsed\n", conn.RemoteAddr())
-					err = tcpcomms.SendInvalidMessage(writer)
-					if err != nil {
-						// Connection has something wrong, exit the routine
-						logging.Error1(err)
-						return
+				// No error in reading the message.
+				if msgType == messages.GatewayDHTDiscoverRequestType {
+					request := messages.GatewayDHTDiscoverRequest{}
+					if json.Unmarshal(data, &request) != nil {
+						logging.Warn("Message from gateway: %s can not be parsed.\n", conn.RemoteAddr())
+						err = tcpcomms.SendInvalidMessage(writer)
+						if err != nil {
+							// This error can not be ignored. exit the routine.
+							logging.Error1(err)
+							return
+						}
+						// Unable to parse json error can be ignored. continue
+						controlChan <- true
+						continue
 					}
-				} else {
-					// Request is legal and correct
+					// Request is legal and correct.
 					if !registered {
-						// Haven't registered yet.
-						// Register.
-						gComms.NodeID = request.GatewayID
-						err = gateway.RegisterGatewayCommunication(gComms.NodeID, &gComms)
+						// Haven’t registered yet.
+						err = gateway.RegisterGatewayCommunication(&request.GatewayID, &gComms)
 						if err != nil {
 							// This gateway can not be registered, exit the routine
 							logging.Error1(err)
 							return
 						}
 						// Deregister upon exiting the routine
-						defer gateway.DeregisterProviderCommunication(gComms.NodeID)
+						defer gateway.DeregisterGatewayCommunication(&request.GatewayID)
 					}
+					// Handle request
 					err = handleGatewayDHTDiscoverRequest(reader, writer, &request)
 					if err != nil {
-						// Connection has something wrong, exit the routine
+						// Connection error can not be ignored here. exit the routine.
+						logging.Error1(err)
+						return
+					}
+				} else {
+					logging.Warn("Message from gateway: %s is of wrong type", conn.RemoteAddr())
+					err = tcpcomms.SendInvalidMessage(writer)
+					if err != nil {
+						// Connection error can not be ignored here. exit the routine.
 						logging.Error1(err)
 						return
 					}
 				}
-			} else {
-				logging.Warn("Message from gateway: %s is of wrong type", conn.RemoteAddr())
-				err = tcpcomms.SendInvalidMessage(writer)
+				// The request has been handled properly. Resume the detecting routine.
+				controlChan <- true
+			case interrupt := <-gComms.InterruptRequestChan:
+				if interrupt {
+					// Pause the detecting routine.
+					controlChan <- true
+					// Switch the state to interrupt mode.
+					listening = false
+					// Respond with a true to indicate readiness
+					gComms.InterruptResponseChan <- true
+				}
+			}
+		case false:
+			// This is in interrupt mode.
+			select {
+			case interrupt := <-gComms.InterruptRequestChan:
+				if !interrupt {
+					// Resume the detecting routine.
+					controlChan <- true
+					// Switch the state to listening mode.
+					listening = true
+				}
+			case request := <-gComms.CommsRequestChan:
+				// Assume the internal request is always a formatted request
+				err := tcpcomms.SendTCPMessage(writer, request[0], request[1:])
 				if err != nil {
-					// Connection has something wrong, exit the routine
+					// Error here can not be ignored.
+					gComms.CommsResponseError <- err
 					logging.Error1(err)
 					return
 				}
-			}
-			// Resume detecting routine.
-			controlChan <- true
-		case request := <-gComms.CommsRequestChan:
-			// Pause the detecting routine
-			controlChan <- true
-			// Assume the internal request is already a formatted request.
-			err := tcpcomms.SendTCPMessage(writer, request[0], request[1:])
-			if err != nil {
-				// Connection has something wrong, exit the routine
-				// Respond with a nil
-				gComms.CommsResponseChan <- nil
-				logging.Error1(err)
-				return
-			}
-			// Getting a response
-			msgType, data, err := tcpcomms.ReadTCPMessage(reader)
-			if err != nil {
-				if _, ok := err.(*tcpcomms.TimeoutError); ok {
-					// A regular timeout, continue
-					gComms.CommsResponseChan <- nil
-					controlChan <- true
-					continue
+				// Waiting for a response
+				msgType, data, err := tcpcomms.ReadTCPMessage(reader)
+				if err != nil {
+					if _, ok := err.(*tcpcomms.TimeoutError); ok {
+						// Timeout can be ignored, continue
+						gComms.CommsResponseChan <- nil
+						continue
+					}
+					// Connection error can not be ignored, exit the routine
+					gComms.CommsResponseError <- err
+					logging.Error1(err)
+					return
 				}
-				// Connection has something wrong, exit the routine
-				gComms.CommsRequestChan <- nil
-				logging.Error1(err)
-				return
+				// Respond to internal requester
+				gComms.CommsResponseChan <- append([]byte{msgType}, data...)
 			}
-			// Respond to internal requester
-			gComms.CommsResponseChan <- append([]byte{msgType}, data...)
-			// Resume detecting routine.
-			controlChan <- true
 		}
 	}
 }
