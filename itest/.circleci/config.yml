@@ -1,0 +1,116 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2.1
+jobs:
+  release:
+    docker:
+      # specify the version
+      - image: circleci/golang:1.15
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+    #### TEMPLATE_NOTE: go expects specific checkout path representing url
+    #### expecting it in the form of
+    ####   /go/src/github.com/circleci/go-tool
+    ####   /go/src/bitbucket.org/circleci/go-tool
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+    steps:
+      # git clone the Client and change to the correct branch.
+      - checkout
+      # git clone the Gateway and Provider and switch to a branch which matches the 
+      # name of the branch on the Client repo. If no such branch exists, just use main
+      - run: 
+          name: "Git clone Gateway, and Provider"
+          command: |
+              git clone https://github.com/ConsenSys/fc-retrieval-gateway
+              git clone https://github.com/ConsenSys/fc-retrieval-provider
+          working_directory: /go/src/github.com/ConsenSys/
+      - run: 
+          name: "Git get correct branch for Gateway"
+          #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
+          #git --git-dir=fc-retrieval-gateway/.git reset --hard "$head"
+          command: |
+              echo Circle Branch "$CIRCLE_BRANCH"
+              if [ -z "$CIRCLE_BRANCH" ]; then
+                echo Gateway repos is using main
+              else 
+                existed_in_local1=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+                if [ -z "$existed_in_local1" ]; then 
+                  echo Gateway repo branch is main
+                else 
+                  echo Gateway branch is "$CIRCLE_BRANCH"
+                  git fetch
+                  git checkout "$CIRCLE_BRANCH"
+                fi
+              fi
+              git rev-parse HEAD
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway
+      - run: 
+          name: "Git get correct branch for Provider"
+          command: |
+              echo Circle Branch "$CIRCLE_BRANCH"
+              if [ -z "$CIRCLE_BRANCH" ]; then
+                echo Provider repos is using main
+              else 
+                existed_in_local2=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+                if [ -z "$existed_in_local2" ]; then 
+                  echo Provider repo branch is main
+                else
+                  echo Provider branch is "$CIRCLE_BRANCH"
+                  git fetch
+                  git checkout "$CIRCLE_BRANCH"
+                fi
+              fi
+              git rev-parse HEAD
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - run: 
+          name: Make Client
+          command: make
+      - run:
+          name: Make Gateway
+          command: make
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+      - run: 
+          name: What branch is the gateway on!
+          command: |
+              pwd
+              ls -al
+              git branch -a 
+              cat Makefile
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+      - run: 
+          name: Itegration Tests
+          command: make itest
+          no_output_timeout: 30s
+      - run:
+          name: Display Gateway Container Log
+          command: docker container logs gateway
+
+  utest:
+    docker:
+      # specify the version
+      - image: circleci/golang:1.15
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+    #### TEMPLATE_NOTE: go expects specific checkout path representing url
+    #### expecting it in the form of
+    ####   /go/src/github.com/circleci/go-tool
+    ####   /go/src/bitbucket.org/circleci/go-tool
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+    steps:
+      - checkout
+      - run: make utest
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - utest
+      - release
