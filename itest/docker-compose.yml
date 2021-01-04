@@ -1,7 +1,7 @@
 version: "3.8"
 services:
-  client:
-    image: fc-retrieval-client:v1
+  itest:
+    image: fc-retrieval-itest:v1
     container_name: itest
     ports:
       - "80:80"
