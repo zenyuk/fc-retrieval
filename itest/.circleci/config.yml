@@ -15,7 +15,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       # git clone the Client and change to the correct branch.
       - checkout
@@ -69,7 +69,7 @@ jobs:
           version: 19.03.13
           docker_layer_caching: true
       - run: 
-          name: Make Client
+          name: Make Integration Tests
           command: make
       - run:
           name: Make Gateway
@@ -103,7 +103,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
       - run: make utest
