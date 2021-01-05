@@ -25,6 +25,9 @@ const settingsDefaultPrivateKey = "01"
 const settingsDefaultPrivKeyVer = 0xff
 const settingsDefaultPrivKeySigAlg = 0xff
 
+// DefaultTCPInactivityTimeoutMs is the default timeout for TCP inactivity
+const DefaultTCPInactivityTimeoutMs = 100
+
 // AppSettings defines the server configuraiton
 type AppSettings struct {
 	BindRestAPI     string `json:"bindrestapi"`     // Port number to bind to for client REST API.
