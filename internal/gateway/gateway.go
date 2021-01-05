@@ -3,6 +3,7 @@ package gateway
 import (
 	"crypto/ecdsa"
 	"errors"
+	"net"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway/clients"
@@ -25,14 +26,13 @@ const (
 // The connection thread will send the response to CommsResponseChan if there’s any response expected.
 // The connection thread will also send any error to the CommsResponseError or nil if the request is successful.
 // Send false to InterruptRequestChan to indicate the attempt to end the interruption.
-type CommunicationChannels struct {
-	CommsLock                 sync.RWMutex
-	InterruptRequestChan      chan bool
-	InterruptResponseChan     chan bool
-	CommsRequestChan          chan []byte
-	CommsResponseChan         chan []byte
-	CommsResponseError        chan error
-	CommsResponseErrorIgnored chan bool
+
+// CommunicationChannel holds the connection for sending outgoing TCP requests.
+// CommsLock is used to ensure only one thread can access the tcp connection at any time.
+// Conn is the net connection for sending outgoing TCP requests.
+type CommunicationChannel struct {
+	CommsLock sync.RWMutex
+	Conn      net.Conn
 }
 
 // Gateway holds the main data structure for the whole gateway.
@@ -52,16 +52,22 @@ type Gateway struct {
 	// GatewayPrivateKeySigAlg is the signing algorithm to be used with the private key.
 	GatewayPrivateKeySigAlg *fcrcrypto.SigAlg
 
-	// ActiveGateways store connected active gateways
-	// A map from gateway id (big int in string repr)
-	// to a CommunicationThread
-	ActiveGateways     map[string](*CommunicationChannels)
+	// GatewayAddressMap stores mapping from gateway id (big int in string repr) to its address.
+	GatewayAddressMap     map[string](string)
+	GatewayAddressMapLock sync.RWMutex
+
+	// ProviderAddressMap stores mapping from provider id (big int in string repr) to its address.
+	ProviderAddressMap     map[string](string)
+	ProviderAddressMapLock sync.RWMutex
+
+	// ActiveGateways store connected active gateways for outgoing request:
+	// A map from gateway id (big int in string repr) to a CommunicationChannel.
+	ActiveGateways     map[string](*CommunicationChannel)
 	ActiveGatewaysLock sync.RWMutex
 
-	// ActiveProviders store connected active providers
-	// A map from provider id (big in in string repr)
-	// to a CommunicationThread
-	ActiveProviders     map[string](*CommunicationChannels)
+	// ActiveProviders store connected active providers for outgoing request:
+	// A map from provider id (big in in string repr) to a CommunicationChannel.
+	ActiveProviders     map[string](*CommunicationChannel)
 	ActiveProvidersLock sync.RWMutex
 
 	GatewayClient *clients.GatewayClientInteraction
@@ -97,9 +103,13 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		instance = &Gateway{
 			ProtocolVersion:          protocolVersion,
 			ProtocolSupported:        []int32{protocolVersion, protocolSupported},
-			ActiveGateways:           make(map[string](*CommunicationChannels)),
+			GatewayAddressMap:        make(map[string](string)),
+			GatewayAddressMapLock:    sync.RWMutex{},
+			ProviderAddressMap:       make(map[string](string)),
+			ProviderAddressMapLock:   sync.RWMutex{},
+			ActiveGateways:           make(map[string](*CommunicationChannel)),
 			ActiveGatewaysLock:       sync.RWMutex{},
-			ActiveProviders:          make(map[string](*CommunicationChannels)),
+			ActiveProviders:          make(map[string](*CommunicationChannel)),
 			ActiveProvidersLock:      sync.RWMutex{},
 			GatewayClient:            &clients.GatewayClientInteraction{},
 			GatewayPrivateKey:        gatewayPrivateKey,
@@ -113,7 +123,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 }
 
 // RegisterGatewayCommunication registers a gateway communication
-func RegisterGatewayCommunication(id *nodeid.NodeID, gComms *CommunicationChannels) error {
+func RegisterGatewayCommunication(id *nodeid.NodeID, gComm *CommunicationChannel) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}
@@ -123,7 +133,7 @@ func RegisterGatewayCommunication(id *nodeid.NodeID, gComms *CommunicationChanne
 	if exist {
 		return errors.New("Error: connection existed")
 	}
-	instance.ActiveGateways[id.ToString()] = gComms
+	instance.ActiveGateways[id.ToString()] = gComm
 	return nil
 }
 
@@ -141,7 +151,7 @@ func DeregisterGatewayCommunication(id *nodeid.NodeID) {
 }
 
 // RegisterProviderCommunication registers a provider communication
-func RegisterProviderCommunication(id *nodeid.NodeID, pComms *CommunicationChannels) error {
+func RegisterProviderCommunication(id *nodeid.NodeID, pComm *CommunicationChannel) error {
 	if instance == nil {
 		return errors.New("Error: instance not created")
 	}
@@ -151,7 +161,7 @@ func RegisterProviderCommunication(id *nodeid.NodeID, pComms *CommunicationChann
 	if exist {
 		return errors.New("Error: connection existed")
 	}
-	instance.ActiveProviders[id.ToString()] = pComms
+	instance.ActiveProviders[id.ToString()] = pComm
 	return nil
 }
 

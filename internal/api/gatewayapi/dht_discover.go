@@ -1,16 +1,17 @@
 package gatewayapi
 
 import (
-	"bufio"
 	"encoding/json"
+	"net"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
 
-func handleGatewayDHTDiscoverRequest(reader *bufio.Reader, writer *bufio.Writer, request *messages.GatewayDHTDiscoverRequest) error {
+func handleGatewayDHTDiscoverRequest(conn net.Conn, request *messages.GatewayDHTDiscoverRequest) error {
 	// First check if the message can be discarded.
 	if time.Now().Unix() > request.TTL {
 		// Message discarded.
@@ -48,5 +49,5 @@ func handleGatewayDHTDiscoverRequest(reader *bufio.Reader, writer *bufio.Writer,
 	response.Signature = "TODO" // TODO, Sign the fields
 	// Send message
 	data, _ := json.Marshal(response)
-	return tcpcomms.SendTCPMessage(writer, messages.GatewayDHTDiscoverResponseType, data)
+	return tcpcomms.SendTCPMessage(conn, messages.GatewayDHTDiscoverResponseType, data, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
 }
