@@ -19,6 +19,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 )
 
 const wordSize = 32 // 32 bytes
@@ -27,6 +29,17 @@ const wordSize = 32 // 32 bytes
 type NodeID struct {
 	id []byte
 }
+
+
+// NewRandomNodeID creates a random node id object
+func NewRandomNodeID() (*NodeID, error) {
+	var n = NodeID{}
+	n.id = make([]byte, wordSize)
+	fcrcrypto.GenerateRandomBytes(n.id)
+	return &n, nil
+}
+
+
 
 // NewNodeID creates a node id object
 func NewNodeID(id *big.Int) (*NodeID, error) {
