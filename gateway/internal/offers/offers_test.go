@@ -180,7 +180,7 @@ func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) 
 
 
 func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
-	aNodeID, err := nodeid.NewNodeID(nodeid.CreateRandomIdentifier())
+	aNodeID, err := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
 	}

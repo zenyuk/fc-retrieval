@@ -104,8 +104,7 @@ func TestClientRepMax(t *testing.T) {
 
 
 func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID), expectedChange int64) {
-	id := nodeid.CreateRandomIdentifier()
-	n, err := nodeid.NewNodeID(id)
+	n, err := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
 	}
@@ -117,8 +116,7 @@ func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID
 }
 
 func testClientReputationChange1(t *testing.T, f func(clientNodeID *nodeid.NodeID) int64, expectedChange int64) {
-	id := nodeid.CreateRandomIdentifier()
-	n, err := nodeid.NewNodeID(id)
+	n, err := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
 	}

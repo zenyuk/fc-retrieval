@@ -16,13 +16,13 @@ package cid
  */
 
 import (
+	"math/big"
 	"testing"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
 
 func Test(t *testing.T) {
-    NewContentID(nodeid.CreateRandomIdentifier())
+    NewContentID(big.NewInt(5))
 }
 
 

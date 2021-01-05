@@ -20,7 +20,21 @@ import (
 
     "github.com/stretchr/testify/assert"
     "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+)
+
+
+// CopiedClientEstablishmentResponse is a copy of a message used in the messages module. The
+// struct has been copied here to remove the circular dependancy.
+type CopiedClientEstablishmentResponse struct {
+	MessageType     int32  `json:"message_type"`
+	ProtocolVersion int32  `json:"protocol_version"`
+	GatewayID       string `json:"gateway_id"`
+	Challenge       string `json:"challenge"`
+	Signature       string `json:"signature"`
+}
+
+const (
+	CopiedClientEstablishmentResponseType             = 1
 )
 
 
@@ -33,8 +47,8 @@ func TestEstablishMessage(t *testing.T) {
 
     logging.Test("Private Key: %s", EncodePrivateKey(privateKey))
 
-    resp := messages.ClientEstablishmentResponse{}
-    resp.MessageType = messages.ClientEstablishmentResponseType
+    resp := CopiedClientEstablishmentResponse{}
+    resp.MessageType = CopiedClientEstablishmentResponseType
     resp.ProtocolVersion = int32(1)
 	resp.GatewayID = "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0"
     resp.Challenge     = "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef"

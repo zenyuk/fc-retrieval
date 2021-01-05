@@ -25,7 +25,7 @@ import (
 
 
 func Test(t *testing.T) {
-    NewNodeID(CreateRandomIdentifier())
+    NewRandomNodeID()
 }
 
 func TestRoundTripBigInt(t *testing.T) {
