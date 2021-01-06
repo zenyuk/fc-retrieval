@@ -20,9 +20,9 @@ import (
 	"testing"
 )
 
-
 func Test(t *testing.T) {
-    NewContentID(big.NewInt(5))
+	cid, err := NewContentID(big.NewInt(5))
+	if err != nil {
+		t.Errorf("Error returned by NewContentID for CID %cid: %e", cid, err)
+	}
 }
-
-
