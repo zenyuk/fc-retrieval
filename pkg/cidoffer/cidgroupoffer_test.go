@@ -23,22 +23,24 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
-
 func TestGetPrice(t *testing.T) {
-    aNodeID, err := nodeid.NewNodeID(big.NewInt(7))
-    if err != nil {
-        panic(err)
-    }
-    aCid := cid.NewContentID(big.NewInt(7))
-    cids := make([]cid.ContentID, 0)
-    cids = append(cids, *aCid)
-    price := uint64(5)
-    expiry := int64(10)
-    c, err := NewCidGroupOffer(aNodeID, &cids, price, expiry)
-    if err != nil {
-        t.Errorf("Error returned by NewCidGroupOffer: %e", err)
-    }
-    if (c.GetPrice() != price) {
-        t.Errorf("Expected: %d, Actual: %d", price, c.GetPrice())
-    }
+	aNodeID, err := nodeid.NewNodeID(big.NewInt(7))
+	if err != nil {
+		panic(err)
+	}
+	aCid, ciderr := cid.NewContentID(big.NewInt(7))
+	cids := make([]cid.ContentID, 0)
+	cids = append(cids, *aCid)
+	price := uint64(5)
+	expiry := int64(10)
+	c, cidgerr := NewCidGroupOffer(aNodeID, &cids, price, expiry)
+	if ciderr != nil {
+		t.Errorf("Error returned by NewContentID: %e", err)
+	}
+	if cidgerr != nil {
+		t.Errorf("Error returned by NewCidGroupOffer: %e", err)
+	}
+	if c.GetPrice() != price {
+		t.Errorf("Expected: %d, Actual: %d", price, c.GetPrice())
+	}
 }

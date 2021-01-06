@@ -20,13 +20,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/stretchr/testify/assert"
 )
-
 
 func TestOffersInitial(t *testing.T) {
 	GetSingleInstance()
@@ -35,16 +34,15 @@ func TestOffersInitial(t *testing.T) {
 func TestEmpty(t *testing.T) {
 	o := GetSingleInstance()
 
-	_, exists := o.GetOffers(cidOne())
+	_, exists := o.GetOffers(cidOne(t))
 	assert.False(t, exists, "Found CID offer despite empty offer system")
 }
-
 
 func TestAddOld(t *testing.T) {
 	o := GetSingleInstance()
 	err := o.Add(createOldSingleCidGroupOfferCidOne(t))
 	if err == nil {
-        t.Errorf("Didn't return error due to CID having expired.")
+		t.Errorf("Didn't return error due to CID having expired.")
 	}
 
 }
@@ -56,33 +54,31 @@ func TestAdd(t *testing.T) {
 		t.Errorf("Error returned by Add: %e", err)
 	}
 
-	cidOffers, exists := o.GetOffers(cidOne())
+	cidOffers, exists := o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 
 	o.ExpireOffers()
-	cidOffers, exists = o.GetOffers(cidOne())
+	cidOffers, exists = o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 }
-
 
 func TestAddTwo(t *testing.T) {
 	o := newInstance()
 	o.Add(createNewSingleCidGroupOfferCidOne(t))
 	o.Add(createFutureSingleCidGroupOfferCidOne(t))
 
-	cidOffers, exists := o.GetOffers(cidOne())
+	cidOffers, exists := o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 2, len(cidOffers), "Should be only two CID offers")
 }
-
 
 func TestExpire(t *testing.T) {
 	o := newInstance()
 	o.Add(createNewSingleCidGroupOfferCidOne(t))
 
-	_, exists := o.GetOffers(cidOne())
+	_, exists := o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID")
 
 	now := time.Now()
@@ -93,7 +89,7 @@ func TestExpire(t *testing.T) {
 	o.ExpireOffers()
 	util.SetRealClock()
 
-	_, exists = o.GetOffers(cidOne())
+	_, exists = o.GetOffers(cidOne(t))
 	assert.False(t, exists, "Found offers for CID when it should have expired")
 }
 
@@ -102,7 +98,7 @@ func TestExpireTwo(t *testing.T) {
 	o.Add(createNewSingleCidGroupOfferCidOne(t))
 	o.Add(createFutureSingleCidGroupOfferCidOne(t))
 
-	cidOffers, exists := o.GetOffers(cidOne())
+	cidOffers, exists := o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID")
 	assert.Equal(t, 2, len(cidOffers), "Should be only two CID offers")
 
@@ -113,7 +109,7 @@ func TestExpireTwo(t *testing.T) {
 
 	o.ExpireOffers()
 
-	cidOffers, exists = o.GetOffers(cidOne())
+	cidOffers, exists = o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 	cidExp := cidOffers[0].GetExpiry()
@@ -125,10 +121,9 @@ func TestExpireTwo(t *testing.T) {
 	o.ExpireOffers()
 	util.SetRealClock()
 
-	cidOffers, exists = o.GetOffers(cidOne())
+	cidOffers, exists = o.GetOffers(cidOne(t))
 	assert.False(t, exists, "Found offers for CID when they should have expired")
 }
-
 
 func TestMultipleCids(t *testing.T) {
 	o := newInstance()
@@ -137,49 +132,46 @@ func TestMultipleCids(t *testing.T) {
 		t.Errorf("Error returned by Add: %e", err)
 	}
 
-	cidOffers, exists := o.GetOffers(cidOne())
+	cidOffers, exists := o.GetOffers(cidOne(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 
-	cidOffers, exists = o.GetOffers(cidTwo())
+	cidOffers, exists = o.GetOffers(cidTwo(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 
-	cidOffers, exists = o.GetOffers(cidThree())
+	cidOffers, exists = o.GetOffers(cidThree(t))
 	assert.True(t, exists, "Can't find any offers for CID 1")
 	assert.Equal(t, 1, len(cidOffers), "Should be only one CID offer")
 }
 
-
-func createOldSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), 0)
+func createOldSingleCidGroupOfferCidOne(t *testing.T) *cidoffer.CidGroupOffer {
+	return createSingleCidGroupOffer(t, cidOne(t), 0)
 }
 
-func createNewSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), 1)
+func createNewSingleCidGroupOfferCidOne(t *testing.T) *cidoffer.CidGroupOffer {
+	return createSingleCidGroupOffer(t, cidOne(t), 1)
 }
 
-func createFutureSingleCidGroupOfferCidOne(t *testing.T) (*cidoffer.CidGroupOffer) {
-	return createSingleCidGroupOffer(t, cidOne(), 2)
+func createFutureSingleCidGroupOfferCidOne(t *testing.T) *cidoffer.CidGroupOffer {
+	return createSingleCidGroupOffer(t, cidOne(t), 2)
 }
 
-func createNewCidGroupOfferCidMultiple(t *testing.T) (*cidoffer.CidGroupOffer) {
-    cids := make([]cid.ContentID, 0)
-    cids = append(cids, *cidOne())
-    cids = append(cids, *cidTwo())
-    cids = append(cids, *cidThree())
+func createNewCidGroupOfferCidMultiple(t *testing.T) *cidoffer.CidGroupOffer {
+	cids := make([]cid.ContentID, 0)
+	cids = append(cids, *cidOne(t))
+	cids = append(cids, *cidTwo(t))
+	cids = append(cids, *cidThree(t))
 	return createCidGroupOffer(t, cids, 1)
 }
 
-
-func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
-    cids := make([]cid.ContentID, 0)
-    cids = append(cids, *theCid)
+func createSingleCidGroupOffer(t *testing.T, theCid *cid.ContentID, howNew int) *cidoffer.CidGroupOffer {
+	cids := make([]cid.ContentID, 0)
+	cids = append(cids, *theCid)
 	return createCidGroupOffer(t, cids, howNew)
 }
 
-
-func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidoffer.CidGroupOffer) {
+func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) *cidoffer.CidGroupOffer {
 	aNodeID, err := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
@@ -196,24 +188,33 @@ func createCidGroupOffer(t *testing.T, cids []cid.ContentID, howNew int) (*cidof
 	default:
 		expiry = nowSeconds + 1000
 	}
-    c, err := cidoffer.NewCidGroupOffer(aNodeID, &cids, price, expiry)
-    if err != nil {
-        t.Errorf("Error returned by NewCidGroupOffer: %e", err)
+	c, err := cidoffer.NewCidGroupOffer(aNodeID, &cids, price, expiry)
+	if err != nil {
+		t.Errorf("Error returned by NewCidGroupOffer: %e", err)
 	}
 	return c
 }
 
-
-
-
-func cidOne() *cid.ContentID {
-	return cid.NewContentID(big.NewInt(1))
+func cidOne(t *testing.T) *cid.ContentID {
+	cid, err := cid.NewContentID(big.NewInt(1))
+	if err != nil {
+		t.Errorf("Error returned by NewContentID for CID %cid: %e", cid, err)
+	}
+	return cid
 }
 
-func cidTwo() *cid.ContentID {
-	return cid.NewContentID(big.NewInt(2))
+func cidTwo(t *testing.T) *cid.ContentID {
+	cid, err := cid.NewContentID(big.NewInt(2))
+	if err != nil {
+		t.Errorf("Error returned by NewContentID for CID %cid: %e", cid, err)
+	}
+	return cid
 }
 
-func cidThree() *cid.ContentID {
-	return cid.NewContentID(big.NewInt(3))
+func cidThree(t *testing.T) *cid.ContentID {
+	cid, err := cid.NewContentID(big.NewInt(3))
+	if err != nil {
+		t.Errorf("Error returned by NewContentID for CID %cid: %e", cid, err)
+	}
+	return cid
 }
