@@ -9,33 +9,41 @@ import (
 
 // GatewaySingleCIDOfferPublishRequest is the request from gateway to provider during start-up asking for cid offers
 type GatewaySingleCIDOfferPublishRequest struct {
-	MessageType       int32         `json:"message_type"`
-	ProtocolVersion   int32         `json:"protocol_version"`
-	ProtocolSupported []int32       `json:"protocol_supported"`
-	GatewayID         nodeid.NodeID `json:"gateway_id"`
-	Nonce             int64         `json:"nonce"`
-	Signature         string        `json:"signature"`
+	MessageType        int32         `json:"message_type"`
+	ProtocolVersion    int32         `json:"protocol_version"`
+	ProtocolSupported  []int32       `json:"protocol_supported"`
+	CIDMin             cid.ContentID `json:"cid_min"`
+	CIDMax             cid.ContentID `json:"cid_max"`
+	BlockHash          string        `json:"block_hash"`
+	TransactionReceipt string        `json:"transaction_receipt"`
+	MerkleProof        string        `json:"merkle_proof"`
 }
 
 // GatewaySingleCIDOfferPublishResponse is the repsonse to GatewaySingleCIDOfferPublishRequest
 type GatewaySingleCIDOfferPublishResponse struct {
-	MessageType       int32   `json:"message_type"`
-	ProtocolVersion   int32   `json:"protocol_version"`
-	ProtocolSupported []int32 `json:"protocol_supported"`
-	CIDOffers         []struct {
-		Price     int64         `json:"price_per_byte"`
-		Expiry    int64         `json:"expiry_date"`
-		QoS       int64         `json:"qos"`
-		Signature string        `json:"signature"`
-		PieceCID  cid.ContentID `json:"piece_cid"`
-	} `json:"cid_offers"` // TODO: Need to check if this is right.
+	MessageType        int32   `json:"message_type"`
+	ProtocolVersion    int32   `json:"protocol_version"`
+	ProtocolSupported  []int32 `json:"protocol_supported"`
+	PublishedGroupCIDs []struct {
+		Nonce      int64         `json:"nonce"`
+		ProviderID nodeid.NodeID `json:"provider_id"`
+		NumOffers  int64         `json:"num_of_offers"`
+		CIDOffers  []struct {
+			Price     int64         `json:"price_per_byte"`
+			Expiry    int64         `json:"expiry_date"`
+			QoS       int64         `json:"qos"`
+			Signature string        `json:"signature"`
+			PieceCID  cid.ContentID `json:"piece_cid"`
+		} `json:"cid_offers"`
+	} `json:"published_group_cids"` // TODO: Need to check if this is right.
 }
 
 // GatewaySingleCIDOfferPublishResponseAck is the acknowledgement to GatewaySingleCIDOfferPublishResponse
 type GatewaySingleCIDOfferPublishResponseAck struct {
-	MessageType     int32 `json:"message_type"`
-	ProtocolVersion int32 `json:"protocol_version"`
-	CIDOffersAck    []struct {
+	MessageType       int32   `json:"message_type"`
+	ProtocolVersion   int32   `json:"protocol_version"`
+	ProtocolSupported []int32 `json:"protocol_supported"`
+	CIDOffersAck      []struct {
 		Nonce     int64  `json:"nonce"`
 		Signature string `json:"signature"`
 	} `json:"cid_offers_ack"` // TODO: Need to check if this is right.
@@ -46,7 +54,6 @@ type GatewayDHTDiscoverRequest struct {
 	MessageType       int32         `json:"message_type"`
 	ProtocolVersion   int32         `json:"protocol_version"`
 	ProtocolSupported []int32       `json:"protocol_supported"`
-	GatewayID         nodeid.NodeID `json:"gateway_id"`
 	PieceCID          cid.ContentID `json:"piece_cid"`
 	Nonce             int64         `json:"nonce"`
 	TTL               int64         `json:"ttl"`

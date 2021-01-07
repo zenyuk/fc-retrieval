@@ -28,17 +28,20 @@ const settingsDefaultPrivKeySigAlg = 0xff
 // DefaultTCPInactivityTimeoutMs is the default timeout for TCP inactivity
 const DefaultTCPInactivityTimeoutMs = 100
 
+// DefaultLongTCPInactivityTimeoutMs is the default timeout for long TCP inactivity. This timeout should never be ignored.
+const DefaultLongTCPInactivityTimeoutMs = 5000
+
 // AppSettings defines the server configuraiton
 type AppSettings struct {
-	BindRestAPI     string `json:"bindrestapi"`     // Port number to bind to for client REST API.
-	BindProviderAPI string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
-	BindGatewayAPI  string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
-	LogLevel        string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
-	LogTarget       string `json:"logtarget"`       // Log Level: STDOUT
-	GatewayID       string `json:"gatewayid"`       // Node id of this gateway
-	GatewayPrivKey  string `json:"privatekey"`      // Gateway private key
+	BindRestAPI           string `json:"bindrestapi"`     // Port number to bind to for client REST API.
+	BindProviderAPI       string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
+	BindGatewayAPI        string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
+	LogLevel              string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
+	LogTarget             string `json:"logtarget"`       // Log Level: STDOUT
+	GatewayID             string `json:"gatewayid"`       // Node id of this gateway
+	GatewayPrivKey        string `json:"privatekey"`      // Gateway private key
 	GatewayPrivKeyVersion uint8  `json:"keyversion"`      // Key version of gateway private key
-	GatewaySigAlg   uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
+	GatewaySigAlg         uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
 }
 
 var defaults = AppSettings{
@@ -57,7 +60,7 @@ var defaults = AppSettings{
 var settings = defaults
 
 // LoadSettings loads the app settings from the settings file.
-func LoadSettings() (AppSettings) {
+func LoadSettings() AppSettings {
 	// Load settings.
 	settingsBytes, err := ioutil.ReadFile(settingsLocContainer)
 	if err != nil {
@@ -82,5 +85,3 @@ func LoadSettings() (AppSettings) {
 
 	return settings
 }
-
-
