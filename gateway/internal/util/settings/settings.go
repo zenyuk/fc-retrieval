@@ -1,6 +1,19 @@
 package settings
 
-// Copyright (C) 2020 ConsenSys Software Inc
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import (
 	"encoding/json"
@@ -16,6 +29,7 @@ const settingsLocContainer = "/etc/gateway/" + settingsFileName
 const settingsDefaultBindRestAPI = "8080"
 const settingsDefaultBindProviderAPI = "8090"
 const settingsDefaultBindGatewayAPI = "8091"
+const settingsDefaultBindAdminAPI = "8092"
 const settingsDefaultLogLevel = "TRACE"
 const settingsDefaultLogTarget = "STDOUT"
 
@@ -36,6 +50,7 @@ type AppSettings struct {
 	BindRestAPI           string `json:"bindrestapi"`     // Port number to bind to for client REST API.
 	BindProviderAPI       string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
 	BindGatewayAPI        string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
+	BindAdminAPI          string `json:"bindadminapi"`    // Port number to bind to for admin TCP communication API.
 	LogLevel              string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
 	LogTarget             string `json:"logtarget"`       // Log Level: STDOUT
 	GatewayID             string `json:"gatewayid"`       // Node id of this gateway
@@ -48,6 +63,7 @@ var defaults = AppSettings{
 	settingsDefaultBindRestAPI,
 	settingsDefaultBindProviderAPI,
 	settingsDefaultBindGatewayAPI,
+	settingsDefaultBindAdminAPI,
 	settingsDefaultLogLevel,
 	settingsDefaultLogTarget,
 	settingsDefaultGatewayID,

@@ -1,16 +1,17 @@
 package main
 
+// Copyright (C) 2020 ConsenSys Software Inc
+
 import (
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/adminapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-
 )
-
 
 func main() {
 	logging.Init()
@@ -35,6 +36,12 @@ func main() {
 	err = providerapi.StartProviderAPI(settings, g)
 	if err != nil {
 		logging.Error("Error starting provider tcp server: %s", err.Error())
+		return
+	}
+
+	err = adminapi.StartAdminAPI(settings, g)
+	if err != nil {
+		logging.Error("Error starting admin tcp server: %s", err.Error())
 		return
 	}
 

@@ -1,6 +1,19 @@
-package gatewayapi
+package adminapi
 
-// Copyright (C) 2020 ConsenSys Software Inc
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import (
 	"encoding/json"
@@ -16,10 +29,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
 
-// StartGatewayAPI starts the TCP API as a separate go routine.
-func StartGatewayAPI(settings settings.AppSettings, g *gateway.Gateway) error {
+// StartAdminAPI starts the TCP API as a separate go routine.
+func StartAdminAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 	// Start server
-	ln, err := net.Listen("tcp", settings.BindGatewayAPI)
+	ln, err := net.Listen("tcp", settings.BindAdminAPI)
 	if err != nil {
 		return err
 	}
@@ -30,15 +43,15 @@ func StartGatewayAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 				logging.Error1(err)
 				continue
 			}
-			logging.Info("Incoming connection from gateway at :%s", conn.RemoteAddr())
-			go handleIncomingGatewayConnection(conn, g)
+			logging.Info("Incoming connection from admin client at :%s", conn.RemoteAddr())
+			go handleIncomingAdminConnection(conn, g)
 		}
 	}(ln)
-	logging.Info("Listening on %s for connections from Gateways", settings.BindGatewayAPI)
+	logging.Info("Listening on %s for connections from admin clients", settings.BindAdminAPI)
 	return nil
 }
 
-func handleIncomingGatewayConnection(conn net.Conn, g *gateway.Gateway) {
+func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 	// Close connection on exit.
 	defer conn.Close()
 
@@ -50,11 +63,12 @@ func handleIncomingGatewayConnection(conn net.Conn, g *gateway.Gateway) {
 			logging.Error1(err)
 			return
 		}
-		if msgType == messages.GatewayDHTDiscoverRequestType {
-			request := messages.GatewayDHTDiscoverRequest{}
+		//	TODO: Rework for new admin message types. Start with getReputationChallenge(clientId)
+		if msgType == messages.AdminGetReputationChallengeType {
+			request := messages.AdminGetReputationChallenge{}
 			if json.Unmarshal(data, &request) == nil {
 				// Message is valid.
-				err = handleGatewayDHTDiscoverRequest(conn, &request)
+				err = handleAdminGetReputationChallenge(conn, &request)
 				if err != nil && !tcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
@@ -73,11 +87,11 @@ func handleIncomingGatewayConnection(conn net.Conn, g *gateway.Gateway) {
 	}
 }
 
-// GetConnForRequestingGateway returns the connection for sending request to a gateway with given id.
+// GetConnForRequestingAdminClient returns the connection for sending request to an admin client with given id.
 // It will reuse any active connection.
-func GetConnForRequestingGateway(gatewayID *nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
+func GetConnForRequestingAdminClient(gatewayID nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
 	// Check if there is an active connection.
-	g.ActiveGatewaysLock.RLock()
+	g.ActiveGatewaysLock.RLock() // TODO: Check this
 	gComm := g.ActiveGateways[gatewayID.ToString()]
 	g.ActiveGatewaysLock.RUnlock()
 	if gComm == nil {
@@ -91,7 +105,7 @@ func GetConnForRequestingGateway(gatewayID *nodeid.NodeID, g *gateway.Gateway) (
 		gComm = &gateway.CommunicationChannel{
 			CommsLock: sync.RWMutex{},
 			Conn:      conn}
-		if gateway.RegisterGatewayCommunication(gatewayID, gComm) != nil {
+		if gateway.RegisterGatewayCommunication(&gatewayID, gComm) != nil {
 			conn.Close()
 			return nil, err
 		}

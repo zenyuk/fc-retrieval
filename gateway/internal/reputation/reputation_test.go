@@ -1,4 +1,5 @@
 package reputation
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -14,14 +15,13 @@ package reputation
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-    "math/big"
+	"math/big"
 	"testing"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 	"github.com/stretchr/testify/assert"
 )
-
 
 func TestClientRepInitial(t *testing.T) {
 	id := big.NewInt(2)
@@ -33,7 +33,7 @@ func TestClientRepInitial(t *testing.T) {
 	r.ClientEstablishmentChallenge(n)
 
 	rep, _ := r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + clientEstablishmentChallenge, rep, "Initial reputation not set correctly")
+	assert.Equal(t, clientInitialReputation+clientEstablishmentChallenge, rep, "Initial reputation not set correctly")
 }
 
 func TestClientRepDeposit(t *testing.T) {
@@ -102,7 +102,6 @@ func TestClientRepMax(t *testing.T) {
 	assert.Equal(t, clientMaxReputation, rep, "reputation does not equal max")
 }
 
-
 func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID), expectedChange int64) {
 	n, err := nodeid.NewRandomNodeID()
 	if err != nil {
@@ -112,7 +111,7 @@ func testClientReputationChange(t *testing.T, f func(clientNodeID *nodeid.NodeID
 	r.ClientEstablishmentChallenge(n)
 	f(n)
 	rep, _ := r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + clientEstablishmentChallenge + expectedChange, rep, "reputation not set correctly")
+	assert.Equal(t, clientInitialReputation+clientEstablishmentChallenge+expectedChange, rep, "reputation not set correctly")
 }
 
 func testClientReputationChange1(t *testing.T, f func(clientNodeID *nodeid.NodeID) int64, expectedChange int64) {
@@ -124,5 +123,5 @@ func testClientReputationChange1(t *testing.T, f func(clientNodeID *nodeid.NodeI
 	r.ClientEstablishmentChallenge(n)
 	f(n)
 	rep, _ := r.GetClientReputation(n)
-	assert.Equal(t, clientInitialReputation + clientEstablishmentChallenge + expectedChange, rep, "reputation not set correctly")
+	assert.Equal(t, clientInitialReputation+clientEstablishmentChallenge+expectedChange, rep, "reputation not set correctly")
 }
