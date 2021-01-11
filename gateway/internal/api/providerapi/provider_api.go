@@ -73,7 +73,7 @@ func handleIncomingProviderConnection(conn net.Conn, g *gateway.Gateway) {
 
 // GetConnForRequestingProvider returns the connection for sending request to a provider with given id.
 // It will reuse any active connection.
-func GetConnForRequestingProvider(providerID nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
+func GetConnForRequestingProvider(providerID *nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
 	// Check if there is an active connection.
 	g.ActiveProvidersLock.RLock()
 	pComm := g.ActiveProviders[providerID.ToString()]
@@ -89,7 +89,7 @@ func GetConnForRequestingProvider(providerID nodeid.NodeID, g *gateway.Gateway) 
 		pComm = &gateway.CommunicationChannel{
 			CommsLock: sync.RWMutex{},
 			Conn:      conn}
-		if gateway.RegisterProviderCommunication(&providerID, pComm) != nil {
+		if gateway.RegisterProviderCommunication(providerID, pComm) != nil {
 			conn.Close()
 			return nil, err
 		}

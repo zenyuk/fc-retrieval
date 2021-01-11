@@ -74,6 +74,13 @@ type Gateway struct {
 
 	// Offers, it is threadsafe.
 	Offers *offers.Offers
+
+	// RegistrationBlockHash is the hash of the block that registers this gateway
+	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
+	// RegistrationMerkleProof proves the transaction receipt is part of the block
+	RegistrationBlockHash          string
+	RegistrationTransactionReceipt string
+	RegistrationMerkleProof        string
 }
 
 // Single instance of the gateway
@@ -117,6 +124,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 			GatewayPrivateKeySigAlg:  gatewayPrivateKeySigAlg,
 			GatewayID:                gatewayID,
 			Offers:                   offers.GetSingleInstance(),
+			RegistrationBlockHash:    "TODO",
 		}
 	})
 	return instance

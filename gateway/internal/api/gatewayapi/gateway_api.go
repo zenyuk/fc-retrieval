@@ -75,7 +75,7 @@ func handleIncomingGatewayConnection(conn net.Conn, g *gateway.Gateway) {
 
 // GetConnForRequestingGateway returns the connection for sending request to a gateway with given id.
 // It will reuse any active connection.
-func GetConnForRequestingGateway(gatewayID nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
+func GetConnForRequestingGateway(gatewayID *nodeid.NodeID, g *gateway.Gateway) (*gateway.CommunicationChannel, error) {
 	// Check if there is an active connection.
 	g.ActiveGatewaysLock.RLock()
 	gComm := g.ActiveGateways[gatewayID.ToString()]
@@ -91,7 +91,7 @@ func GetConnForRequestingGateway(gatewayID nodeid.NodeID, g *gateway.Gateway) (*
 		gComm = &gateway.CommunicationChannel{
 			CommsLock: sync.RWMutex{},
 			Conn:      conn}
-		if gateway.RegisterGatewayCommunication(&gatewayID, gComm) != nil {
+		if gateway.RegisterGatewayCommunication(gatewayID, gComm) != nil {
 			conn.Close()
 			return nil, err
 		}
