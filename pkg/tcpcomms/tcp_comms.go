@@ -40,7 +40,7 @@ func ReadTCPMessage(conn net.Conn, timeout time.Duration) (byte, []byte, error) 
 	return request[0], request[1:], nil
 }
 
-// SendTCPMessage sends a tcp message to a given writer
+// SendTCPMessage sends a tcp message to a given connection
 func SendTCPMessage(conn net.Conn, msgType byte, data []byte, timeout time.Duration) error {
 	// Initialise a writer
 	writer := bufio.NewWriter(conn)
@@ -57,14 +57,20 @@ func SendTCPMessage(conn net.Conn, msgType byte, data []byte, timeout time.Durat
 	return writer.Flush()
 }
 
-// SendProtocolMismatch sends a protocol mistmatch message to a given writer
+// SendProtocolMismatch sends a protocol mistmatch message to a given connection
 func SendProtocolMismatch(conn net.Conn, timeout time.Duration) error {
 	data, _ := json.Marshal(messages.ProtocolMismatchResponse{MessageType: messages.ProtocolMismatch})
 	return SendTCPMessage(conn, messages.ProtocolMismatch, data, timeout)
 }
 
-// SendInvalidMessage sends an invalid message to a given writer
+// SendInvalidMessage sends an invalid message to a given connection
 func SendInvalidMessage(conn net.Conn, timeout time.Duration) error {
 	data, _ := json.Marshal(messages.InvalidMessageResponse{MessageType: messages.InvalidMessage})
 	return SendTCPMessage(conn, messages.InvalidMessage, data, timeout)
+}
+
+// SendMessageWithType sends a given message with a given type to a given connection
+func SendMessageWithType(conn net.Conn, msgType byte, v interface{}, timeout time.Duration) error {
+	data, _ := json.Marshal(v)
+	return SendTCPMessage(conn, msgType, data, timeout)
 }
