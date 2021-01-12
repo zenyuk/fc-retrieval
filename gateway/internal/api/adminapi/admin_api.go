@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
@@ -57,28 +56,45 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
 			return
 		}
-		//	TODO: Rework for new admin message types. Start with getReputationChallenge(clientId)
-		if msgType == messages.AdminGetReputationChallengeType {
-			request := messages.AdminGetReputationChallenge{}
-			if json.Unmarshal(data, &request) == nil {
-				// Message is valid.
-				err = handleAdminGetReputationChallenge(conn, &request)
-				if err != nil && !tcpcomms.IsTimeoutError(err) {
-					// Error in tcp communication, drop the connection.
-					logging.Error1(err)
-					return
+		// Respond to requests for a client's reputation.
+		if err == nil {
+			if msgType == messages.AdminGetReputationChallengeType {
+				request := messages.AdminGetReputationChallenge{}
+				if json.Unmarshal(data, &request) == nil {
+					// Message is valid.
+					err = handleAdminGetReputationChallenge(conn, &request)
+					if err != nil && !tcpcomms.IsTimeoutError(err) {
+						// Error in tcp communication, drop the connection.
+						logging.Error1(err)
+						return
+					}
+					continue
 				}
-				continue
 			}
 		}
+
+		/*
+			   TODO: Add additional message types:
+			   - reset reputation of Client / other gateway / provider.
+			   - Remove Piece CID offers from the standard cache.
+			   - Remove Piece CID offers from the DHT cache.
+			   - Remove all Piece CID offers from a certain provider from the standard or DHT cache.
+			   - generate a key pair for the gateway. The API should have an optional parameter which
+				is protocol version. The API should return a hex encoded private key that the user
+				could put into the gateway settings file (for the moment this is where the private
+				key will live, though before this goes into production we will need to use something
+				like EthSigner so the private key can be in a HSM). There will probably also need to
+				be an API to register the public key on the blockchain.
+		*/
+
 		// Message is invalid.
-		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
