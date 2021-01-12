@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
@@ -42,7 +41,7 @@ func handleIncomingProviderConnection(conn net.Conn, g *gateway.Gateway) {
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
@@ -62,7 +61,7 @@ func handleIncomingProviderConnection(conn net.Conn, g *gateway.Gateway) {
 			}
 		}
 		// Message is invalid.
-		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)

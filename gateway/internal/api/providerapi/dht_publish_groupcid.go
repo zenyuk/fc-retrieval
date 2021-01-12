@@ -3,7 +3,6 @@ package providerapi
 import (
 	"encoding/json"
 	"net"
-	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
@@ -21,5 +20,5 @@ func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *messages.Pr
 		MessageType: messages.GatewayDHTDiscoverResponseType,
 		// This is just a dummy response
 	})
-	return tcpcomms.SendTCPMessage(conn, messages.ProviderDHTPublishGroupCIDResponseType, response, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+	return tcpcomms.SendTCPMessage(conn, messages.ProviderDHTPublishGroupCIDResponseType, response, settings.DefaultTCPInactivityTimeout)
 }

@@ -17,8 +17,11 @@ package cid
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 )
 
 const wordSize = 32 // 32 bytes
@@ -44,6 +47,14 @@ func NewContentID(id *big.Int) (*ContentID, error) {
 	return &n, nil
 }
 
+// NewRandomContentID creates a random content id object
+func NewRandomContentID() (*ContentID, error) {
+	var n = ContentID{}
+	n.id = make([]byte, wordSize)
+	fcrcrypto.GenerateRandomBytes(n.id)
+	return &n, nil
+}
+
 // ToString returns a string for the CID.
 func (n *ContentID) ToString() string {
 	//return n.id.Text(16)
@@ -61,24 +72,21 @@ func (n *ContentID) ToBytes() []byte {
 
 // MarshalJSON is used to marshal NodeID into bytes
 func (n ContentID) MarshalJSON() ([]byte, error) {
-	return n.id, nil
+	return json.Marshal(n.id)
 }
 
-// UnmarshalJSON is used to unmarshal bytes into NodeID
+// UnmarshalJSON is used to unmarshal bytes into ContentID
 func (n *ContentID) UnmarshalJSON(p []byte) error {
-	// if string(p) == "null" {
-	// 	return nil
-	// }
-	// var z big.Int
-	// _, ok := z.SetString(string(p), 16)
-	// if !ok {
-	// 	return errors.New("Not a valid big integer: " + string(p))
-	// }
-	// n.id = z
-	// return nil
-	if len(p) != wordSize {
-		return fmt.Errorf("NodeID: Incorrect size: %d", len(p))
+	var id []byte
+	err := json.Unmarshal(p, &id)
+	if err != nil {
+		return err
 	}
-	copy(p, n.id)
+
+	if len(id) != wordSize {
+		return fmt.Errorf("ContentID: Incorrect size: %d", len(id))
+	}
+	n.id = make([]byte, wordSize)
+	copy(n.id, id)
 	return nil
 }

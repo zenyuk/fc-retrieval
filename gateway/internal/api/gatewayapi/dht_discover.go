@@ -52,7 +52,7 @@ func handleGatewayDHTDiscoverRequest(conn net.Conn, request *messages.GatewayDHT
 	response.Signature = "TODO" // TODO, Sign the fields
 	// Send message
 	data, _ := json.Marshal(response)
-	return tcpcomms.SendTCPMessage(conn, messages.GatewayDHTDiscoverResponseType, data, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+	return tcpcomms.SendTCPMessage(conn, messages.GatewayDHTDiscoverResponseType, data, settings.DefaultTCPInactivityTimeout)
 }
 
 // RequestGatewayDHTDiscover is used to request a DHT CID Discover
@@ -75,14 +75,14 @@ func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID, g *
 		Nonce:             1,                                       // TODO, Add nonce
 		TTL:               time.Now().Add(10 * time.Second).Unix(), // TODO, ADD TTL, for now 10 seconds
 	}
-	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewayDHTDiscoverRequestType, &request, settings.DefaultTCPInactivityTimeoutMs)
+	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewayDHTDiscoverRequestType, &request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
 		pComm.Conn.Close()
 		gateway.DeregisterGatewayCommunication(gatewayID)
 		return nil, err
 	}
 	// Get a response
-	msgType, data, err := tcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultLongTCPInactivityTimeoutMs)
+	msgType, data, err := tcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultLongTCPInactivityTimeout)
 	if err != nil && tcpcomms.IsTimeoutError(err) {
 		// Timeout can be ignored. Since this message can expire.
 		return nil, nil
