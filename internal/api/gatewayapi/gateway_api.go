@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
@@ -44,31 +43,33 @@ func handleIncomingGatewayConnection(conn net.Conn, g *gateway.Gateway) {
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		msgType, data, err := tcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
 			return
 		}
-		if msgType == messages.GatewayDHTDiscoverRequestType {
-			request := messages.GatewayDHTDiscoverRequest{}
-			if json.Unmarshal(data, &request) == nil {
-				// Message is valid.
-				err = handleGatewayDHTDiscoverRequest(conn, &request)
-				if err != nil && !tcpcomms.IsTimeoutError(err) {
-					// Error in tcp communication, drop the connection.
-					logging.Error1(err)
-					return
+		if err == nil {
+			if msgType == messages.GatewayDHTDiscoverRequestType {
+				request := messages.GatewayDHTDiscoverRequest{}
+				if json.Unmarshal(data, &request) == nil {
+					// Message is valid.
+					err = handleGatewayDHTDiscoverRequest(conn, &request)
+					if err != nil && !tcpcomms.IsTimeoutError(err) {
+						// Error in tcp communication, drop the connection.
+						logging.Error1(err)
+						return
+					}
+					continue
 				}
-				continue
 			}
-		}
-		// Message is invalid.
-		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
-		if err != nil && !tcpcomms.IsTimeoutError(err) {
-			// Error in tcp communication, drop the connection.
-			logging.Error1(err)
-			return
+			// Message is invalid.
+			err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
+			if err != nil && !tcpcomms.IsTimeoutError(err) {
+				// Error in tcp communication, drop the connection.
+				logging.Error1(err)
+				return
+			}
 		}
 	}
 }

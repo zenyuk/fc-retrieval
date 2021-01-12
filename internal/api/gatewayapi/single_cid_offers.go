@@ -35,14 +35,14 @@ func RequestSingleCIDOffers(cidMin, cidMax cid.ContentID, providerID *nodeid.Nod
 		BlockHash:          g.RegistrationBlockHash,
 		TransactionReceipt: g.RegistrationTransactionReceipt,
 		MerkleProof:        g.RegistrationMerkleProof}
-	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewayDHTDiscoverRequestType, &request, settings.DefaultTCPInactivityTimeoutMs)
+	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewayDHTDiscoverRequestType, &request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
 		pComm.Conn.Close()
 		gateway.DeregisterProviderCommunication(providerID)
 		return nil, err
 	}
 	// Get a response.
-	msgType, data, err := tcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultLongTCPInactivityTimeoutMs)
+	msgType, data, err := tcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultLongTCPInactivityTimeout)
 	if err != nil {
 		pComm.Conn.Close()
 		gateway.DeregisterProviderCommunication(providerID)
@@ -84,7 +84,7 @@ func AcknowledgeSingleCIDOffers(response *messages.GatewaySingleCIDOfferPublishR
 		ProtocolVersion:   g.ProtocolVersion,
 		ProtocolSupported: g.ProtocolSupported,
 		CIDOffersAck:      cidOffersAck}
-	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewaySingleCIDOfferPublishResponseAckType, &request, settings.DefaultTCPInactivityTimeoutMs)
+	err = tcpcomms.SendMessageWithType(pComm.Conn, messages.GatewaySingleCIDOfferPublishResponseAckType, &request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
 		pComm.Conn.Close()
 		gateway.DeregisterProviderCommunication(providerID)

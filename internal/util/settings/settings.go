@@ -18,6 +18,7 @@ package settings
 import (
 	"encoding/json"
 	"io/ioutil"
+	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
@@ -39,11 +40,11 @@ const settingsDefaultPrivateKey = "01"
 const settingsDefaultPrivKeyVer = 0xff
 const settingsDefaultPrivKeySigAlg = 0xff
 
-// DefaultTCPInactivityTimeoutMs is the default timeout for TCP inactivity
-const DefaultTCPInactivityTimeoutMs = 100
+// DefaultTCPInactivityTimeout is the default timeout for TCP inactivity
+const DefaultTCPInactivityTimeout = 100 * time.Millisecond
 
-// DefaultLongTCPInactivityTimeoutMs is the default timeout for long TCP inactivity. This timeout should never be ignored.
-const DefaultLongTCPInactivityTimeoutMs = 5000
+// DefaultLongTCPInactivityTimeout is the default timeout for long TCP inactivity. This timeout should never be ignored.
+const DefaultLongTCPInactivityTimeout = 5000 * time.Millisecond
 
 // AppSettings defines the server configuraiton
 type AppSettings struct {

@@ -17,6 +17,7 @@ package nodeid
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -30,7 +31,6 @@ type NodeID struct {
 	id []byte
 }
 
-
 // NewRandomNodeID creates a random node id object
 func NewRandomNodeID() (*NodeID, error) {
 	var n = NodeID{}
@@ -38,8 +38,6 @@ func NewRandomNodeID() (*NodeID, error) {
 	fcrcrypto.GenerateRandomBytes(n.id)
 	return &n, nil
 }
-
-
 
 // NewNodeID creates a node id object
 func NewNodeID(id *big.Int) (*NodeID, error) {
@@ -83,10 +81,6 @@ func NewNodeIDFromString(id string) (*NodeID, error) {
 
 }
 
-
-
-
-
 // ToString returns a string for the node id.
 func (n *NodeID) ToString() string {
 	str := hex.EncodeToString(n.id)
@@ -109,14 +103,21 @@ func (n *NodeID) AsBytes32() (result [wordSize]byte) {
 
 // MarshalJSON is used to marshal NodeID into bytes
 func (n NodeID) MarshalJSON() ([]byte, error) {
-	return n.id, nil
+	return json.Marshal(n.id)
 }
 
 // UnmarshalJSON is used to unmarshal bytes into NodeID
 func (n *NodeID) UnmarshalJSON(p []byte) error {
-	if len(p) != wordSize {
-		return fmt.Errorf("NodeID: Incorrect size: %d", len(p))
+	var id []byte
+	err := json.Unmarshal(p, &id)
+	if err != nil {
+		return err
 	}
-	copy(p, n.id)
+
+	if len(id) != wordSize {
+		return fmt.Errorf("NodeID: Incorrect size: %d", len(id))
+	}
+	n.id = make([]byte, wordSize)
+	copy(n.id, id)
 	return nil
 }
