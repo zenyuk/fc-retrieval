@@ -35,7 +35,7 @@ type NodeID struct {
 func NewRandomNodeID() (*NodeID, error) {
 	var n = NodeID{}
 	n.id = make([]byte, wordSize)
-	fcrcrypto.GenerateRandomBytes(n.id)
+	fcrcrypto.GeneratePublicRandomBytes(n.id)
 	return &n, nil
 }
 

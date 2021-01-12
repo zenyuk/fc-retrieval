@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"crypto/ecdsa"
 	"errors"
 	"net"
 	"sync"
@@ -10,6 +9,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
@@ -43,14 +43,11 @@ type Gateway struct {
 	// GatewayID of this gateway
 	GatewayID *nodeid.NodeID
 
-	// Gateway Private Key ID of this gateway
-	GatewayPrivateKey *ecdsa.PrivateKey
+	// Gateway Private Key and algorithm of this gateway
+	GatewayPrivateKey *fcrcrypto.KeyPair
 
 	// GatewayPrivateKeyVersion is the key version number of the private key.
 	GatewayPrivateKeyVersion *fcrcrypto.KeyVersion
-
-	// GatewayPrivateKeySigAlg is the signing algorithm to be used with the private key.
-	GatewayPrivateKeySigAlg *fcrcrypto.SigAlg
 
 	// GatewayAddressMap stores mapping from gateway id (big int in string repr) to its address.
 	GatewayAddressMap     map[string](string)
@@ -91,21 +88,23 @@ var doOnce sync.Once
 func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 	doOnce.Do(func() {
 		if len(confs) == 0 {
-			panic("No settings supplied to Gateway start-up")
+			logging.ErrorAndPanic("No settings supplied to Gateway start-up")
 		}
 		if len(confs) != 1 {
-			panic("More than one sets of settings supplied to Gateway start-up")
+			logging.ErrorAndPanic("More than one sets of settings supplied to Gateway start-up")
 		}
 		conf := confs[0]
 
-		gatewayPrivateKey := fcrcrypto.DecodePrivateKey(conf.GatewayPrivKey)
-		gatewayID, err2 := nodeid.NewNodeIDFromString(conf.GatewayID)
-		if err2 != nil {
-			panic(err2)
+		gatewayPrivateKey, err := fcrcrypto.DecodePrivateKey(conf.GatewayPrivKey)
+		if err != nil {
+			logging.ErrorAndPanic("Error decoding Gateway Private Key: %s", err)
+		}
+		gatewayID, err := nodeid.NewNodeIDFromString(conf.GatewayID)
+		if err != nil {
+			logging.ErrorAndPanic("Error decoding node id: %s", err)
 		}
 
 		gatewayPrivateKeyVersion := fcrcrypto.DecodeKeyVersion(conf.GatewayPrivKeyVersion)
-		gatewayPrivateKeySigAlg := fcrcrypto.DecodeSigAlg(conf.GatewaySigAlg)
 
 		instance = &Gateway{
 			ProtocolVersion:          protocolVersion,
@@ -121,7 +120,6 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 			GatewayClient:            &clients.GatewayClientInteraction{},
 			GatewayPrivateKey:        gatewayPrivateKey,
 			GatewayPrivateKeyVersion: gatewayPrivateKeyVersion,
-			GatewayPrivateKeySigAlg:  gatewayPrivateKeySigAlg,
 			GatewayID:                gatewayID,
 			Offers:                   offers.GetSingleInstance(),
 			RegistrationBlockHash:    "TODO",

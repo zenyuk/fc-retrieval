@@ -15,28 +15,35 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import (
-	"testing"
 
-    "github.com/stretchr/testify/assert"
+import (
+	"sync"
 )
 
+// This file contains the Pseudo Random Number Generator (PRNG) to be used for generating 
+// public values. 
 
 
-func TestKeyEncodeDecode(t *testing.T) {
-    privateKey, err := GenKeyPair()
-    if err != nil {
-        panic(err)
-    }
-
-    pKeyStr := EncodePrivateKey(privateKey)
-    pKey := DecodePrivateKey(pKeyStr)
-    pKeyStr1 := EncodePrivateKey(pKey)
-    assert.Equal(t, pKeyStr, pKeyStr1, "Private Key round trip not working")
-
-    pubKeyStr := EncodePublicKey(&privateKey.PublicKey)
-    pubKey := DecodePublicKey(pubKeyStr)
-    pubKeyStr1 := EncodePublicKey(pubKey)
-    assert.Equal(t, pubKeyStr, pubKeyStr1, "Public Key round trip not working")
+// GeneratePublicRandomBytes generates zero or more random numbers
+func GeneratePublicRandomBytes(b []byte) {
+	GetPublicPRNG().ReadBytes(b)
 }
+
+
+
+// Single instance of the gateway
+var publicPRNG Random
+var doOnce sync.Once
+
+// GetPublicPRNG returns the PRNG that should be used for generating random values
+// that will become public.
+func GetPublicPRNG() Random {
+	doOnce.Do(func() {
+		publicPRNG = NewPRNG([]byte("public"))
+		prngPool = append(prngPool, publicPRNG)
+	})
+	return publicPRNG
+}
+
+
 

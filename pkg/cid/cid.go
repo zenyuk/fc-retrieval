@@ -51,7 +51,7 @@ func NewContentID(id *big.Int) (*ContentID, error) {
 func NewRandomContentID() (*ContentID, error) {
 	var n = ContentID{}
 	n.id = make([]byte, wordSize)
-	fcrcrypto.GenerateRandomBytes(n.id)
+	fcrcrypto.GeneratePublicRandomBytes(n.id)
 	return &n, nil
 }
 

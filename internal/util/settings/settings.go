@@ -48,16 +48,16 @@ const DefaultLongTCPInactivityTimeout = 5000 * time.Millisecond
 
 // AppSettings defines the server configuraiton
 type AppSettings struct {
-	BindRestAPI           string `json:"bindrestapi"`     // Port number to bind to for client REST API.
-	BindProviderAPI       string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
-	BindGatewayAPI        string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
+	BindRestAPI     string `json:"bindrestapi"`     // Port number to bind to for client REST API.
+	BindProviderAPI string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
+	BindGatewayAPI  string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
 	BindAdminAPI          string `json:"bindadminapi"`    // Port number to bind to for admin TCP communication API.
-	LogLevel              string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
-	LogTarget             string `json:"logtarget"`       // Log Level: STDOUT
-	GatewayID             string `json:"gatewayid"`       // Node id of this gateway
-	GatewayPrivKey        string `json:"privatekey"`      // Gateway private key
-	GatewayPrivKeyVersion uint8  `json:"keyversion"`      // Key version of gateway private key
-	GatewaySigAlg         uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
+	LogLevel        string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
+	LogTarget       string `json:"logtarget"`       // Log Level: STDOUT
+	GatewayID       string `json:"gatewayid"`       // Node id of this gateway
+	GatewayPrivKey  string `json:"privatekey"`      // Gateway private key
+	GatewayPrivKeyVersion uint32  `json:"keyversion"`      // Key version of gateway private key
+	GatewaySigAlg   uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
 }
 
 var defaults = AppSettings{

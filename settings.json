@@ -5,7 +5,7 @@
     "logtarget": "STDOUT",
     "loglevel": "INFO",
     "gatewayid": "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F",
-    "privatekey": "-----BEGIN PRIVATE KEY-----\r\nMHcCAQEEII2I+bdAfb9Bj9w/Q6RlC1mUtrjKOS6vnbvJqJMPAqr9oAoGCCqGSM49\r\nAwEHoUQDQgAEi5SZsVcctoJ4oIA/UxwMPZaGg8KwTAMVB29dInLt7qxKPYs4syRN\r\n54ZPNSGTx4xH0R/Hl8/OwXYIWg/coQWVJw==\r\n-----END PRIVATE KEY-----",
+    "privatekey": "011931227b03383f3f6417aaad6316acb400937f64346f43e3f1b3c80eb29d7447",
     "keyversion": 0,
     "sigalg": 1
 }

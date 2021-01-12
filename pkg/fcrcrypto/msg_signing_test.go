@@ -40,12 +40,12 @@ const (
 
 
 func TestEstablishMessage(t *testing.T) {
-    privateKey, err := GenKeyPair()
+    keyPair, err := GenerateRetrievalV1KeyPair()
     if err != nil {
         panic(err)
     }
 
-    logging.Test("Private Key: %s", EncodePrivateKey(privateKey))
+    logging.Test("Private Key: %s", keyPair.EncodePrivateKey())
 
     resp := CopiedClientEstablishmentResponse{}
     resp.MessageType = CopiedClientEstablishmentResponseType
@@ -54,36 +54,34 @@ func TestEstablishMessage(t *testing.T) {
     resp.Challenge     = "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef"
     resp.Signature = ""
 
-    publicKey := privateKey.PublicKey
 
-    sigAlgorithm := SigAlg{Alg: SigAlgEcdsaP256Sha512_256}
-    keyVersionInt := uint8(0x97)
-    keyVersion := KeyVersion{Ver: keyVersionInt}
+    keyVersionInt := uint32(0x97)
+    keyVersion := DecodeKeyVersion(keyVersionInt)
 
-    signature, err2 := Sign(privateKey, keyVersion, sigAlgorithm, resp)
-    if err2 != nil {
-        panic(err2)
+    signature, err := SignMessage(keyPair, keyVersion, resp)
+    if err != nil {
+        panic(err)
     }
-    assert.NotEqual(t, "", *signature)
+    assert.NotEqual(t, "", signature)
 
-    resp.Signature = *signature
+    resp.Signature = signature
 
     // In the system, the message would be communicated to the entity receiving the data.
 
 
-    foundKeyV, err1 := ExtractKeyVersion(&resp.Signature)
-    if err1 != nil {
-        panic(err1)
+    foundKeyV, err := ExtractKeyVersionFromMessage(resp.Signature)
+    if err != nil {
+        panic(err)
     }
-    assert.Equal(t, keyVersionInt, foundKeyV.Ver)
+    assert.True(t, foundKeyV.Equals(keyVersion))
 
     // In the system, the public key and signature algorithm would be fetched based on the key version.
     sigToBeVerified := resp.Signature
     resp.Signature = ""
 
-    verified, err1 := Verify(&publicKey, sigAlgorithm, &sigToBeVerified, resp)
-    if err1 != nil {
-        panic(err1)
+    verified, err := VerifyMessage(keyPair, sigToBeVerified, resp)
+    if err != nil {
+        panic(err)
     }
     assert.True(t, verified, "Signature failed to verify")
 }
