@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"net"
 	"strconv"
-	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/reputation"
@@ -49,7 +48,7 @@ func handleAdminGetReputationChallenge(conn net.Conn, request *messages.AdminGet
 	if err != nil {
 		logging.Info("Cannot find clientID: %s", err)
 		// Message is invalid.
-		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+		err = tcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
 		if err != nil && !tcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
@@ -62,5 +61,5 @@ func handleAdminGetReputationChallenge(conn net.Conn, request *messages.AdminGet
 	// Send message
 	data, _ := json.Marshal(response)
 	logging.Info("Admin action: Returned %s for client %s", strconv.FormatInt(response.Reputation, 10), clientID)
-	return tcpcomms.SendTCPMessage(conn, messages.AdminGetReputationResponseType, data, settings.DefaultTCPInactivityTimeoutMs*time.Millisecond)
+	return tcpcomms.SendTCPMessage(conn, messages.AdminGetReputationResponseType, data, settings.DefaultTCPInactivityTimeout)
 }
