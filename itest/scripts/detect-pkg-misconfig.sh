@@ -10,6 +10,11 @@ go mod tidy
 if cmp -s ../go.mod ../go.mod.temp; then
     echo go.mod file correctly configured.
 else 
+echo here
+cat ../go.mod
+echo here1
+cat ../go.mod.temp
+echo here2
     echo ERROR: go.mod file not configured correctly. 
     echo Please execute:
     echo   bash use-remote-repos.sh
