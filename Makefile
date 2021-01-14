@@ -21,6 +21,12 @@ build:
 push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-client:${VERSION}
 
+detectlocal:
+	cd scripts; bash detect-local-gateway-repo.sh
+
+detectmisconfig:
+	cd scripts; bash detect-gateway-misconfig.sh
+
 utest:
 	go test ./...
 
@@ -37,5 +43,5 @@ clean:
 	docker rmi -f "${REGISTRY}fc-retrieval-client:${VERSION}" || true
 
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest build release push
+.PHONY: clean itest utest build release push detectmisconfig detectlocal
 
