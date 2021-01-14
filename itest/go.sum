@@ -1,8 +1,15 @@
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210105213955-ed98d9008596 h1:/Bz4wmY7wZqnm9jUHBM4tRdnaiacCKecV+a7KURcBlo=
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210105213955-ed98d9008596/go.mod h1:9aByhm1lCYRi0UW2AFxr1khhqcJWABfwMRp0UNPHoJ4=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210114064215-0a3c55a77a3d h1:0IN1npmdr1JiwNJNWfG4dHgTmqzlCk4wCOwfoNp5LBE=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210114064215-0a3c55a77a3d/go.mod h1:vrQ1EBH9tHT3bI7UW+QSGZ6klWrQtEMRohkJBN/HhKI=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210104095632-42e428e9b279/go.mod h1:d2x9BwRHPR/6Pln2KjK+j0SlaXuT2wjvlgZV9jP4Me8=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210113064916-ab0faa2aca82/go.mod h1:POZ2s7Ajs0RQ9gJB7w8qfagGe83zywHIyCMJTOaDg0o=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210114004524-7023b06389f1 h1:STnYetn9XBbf+IbU8TA0blsXbnFTgxd6kKU5o5TjwBk=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210114004524-7023b06389f1/go.mod h1:POZ2s7Ajs0RQ9gJB7w8qfagGe83zywHIyCMJTOaDg0o=
+github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210114013727-f14a1ccaefd8 h1:jskQqfLDpDZllOfpXmXdN6r3NdFuyLHD/QLzXJ/ch0M=
+github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210114013727-f14a1ccaefd8/go.mod h1:r51jk/123HiGKlUk78UpoFzOCM74tNk8YXBNNHgaN/0=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210114013939-cb719dad281c h1:kKiIHsyVecd/Oiuqm0J3V8zwRWkGX/ImJOjOpbArXMU=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210114013939-cb719dad281c/go.mod h1:5P83B73ADXYprsPrCPdSDsZ6Yuf0ndpOJH9oPqZbHdo=
 github.com/ant0ine/go-json-rest v3.3.2+incompatible/go.mod h1:q6aCt0GfU6LhpBsnZ/2U+mwe+0XB5WStbmwyoPfc+sk=
 github.com/bitly/go-simplejson v0.5.0 h1:6IH+V8/tVMab511d5bn4M7EwGXZf9Hj6i2xSwkNEM+Y=
 github.com/bitly/go-simplejson v0.5.0/go.mod h1:cXHtHw4XUPsvGaxgjIAn8PhEWG9NfngEKAMDJEczWVA=
@@ -38,6 +45,7 @@ golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad h1:DN0cp81fZ3njFcrLCytUHR
 golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad/go.mod h1:jdWPYTVW3xRLrWPugEBEK3UY2ZEsg3UU495nc5E+M+I=
 golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
 golang.org/x/net v0.0.0-20201209123823-ac852fbbde11/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
+golang.org/x/net v0.0.0-20201224014010-6772e930b67b/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
