@@ -21,6 +21,9 @@ build:
 push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-client:${VERSION}
 
+detectmisconfig:
+	cd scripts; bash detect-pkg-misconfig.sh
+
 utest:
 	go test ./...
 
@@ -37,5 +40,5 @@ clean:
 	docker rmi -f "${REGISTRY}fc-retrieval-itest:${VERSION}" || true
 
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest build release push
+.PHONY: clean itest utest build release push detectmisconfig
 
