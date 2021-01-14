@@ -22,8 +22,9 @@ jobs:
       # git clone the Gateway and Provider and switch to a branch which matches the 
       # name of the branch on the Client repo. If no such branch exists, just use main
       - run: 
-          name: "Git clone Gateway, and Provider"
+          name: "Git clone Client, Gateway, and Provider"
           command: |
+              git clone https://github.com/ConsenSys/fc-retrieval-client
               git clone https://github.com/ConsenSys/fc-retrieval-gateway
               git clone https://github.com/ConsenSys/fc-retrieval-provider
           working_directory: /go/src/github.com/ConsenSys/
@@ -65,6 +66,24 @@ jobs:
               fi
               git rev-parse HEAD
           working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider
+      - run: 
+          name: "Git get correct branch for Client"
+          command: |
+              echo Circle Branch "$CIRCLE_BRANCH"
+              if [ -z "$CIRCLE_BRANCH" ]; then
+                echo Provider repos is using main
+              else 
+                existed_in_local2=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+                if [ -z "$existed_in_local2" ]; then 
+                  echo Client repo branch is main
+                else
+                  echo Client branch is "$CIRCLE_BRANCH"
+                  git fetch
+                  git checkout "$CIRCLE_BRANCH"
+                fi
+              fi
+              git rev-parse HEAD
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client
       - setup_remote_docker:
           version: 19.03.13
           docker_layer_caching: true
