@@ -8,13 +8,15 @@ commands:
     parameters:
       repo:
         type: string
+      workdir:
+        type: string
     steps:
       # git clone the repos and switch to a branch which matches the 
       # name of the branch on the Client repo. If no such branch exists, just use main
       - run: 
           name: "Git clone repo"
           command: |
-              git clone https://github.com/ConsenSys/<< parameters.repo >>
+              git clone << parameters.repo >>
           working_directory: /go/src/github.com/ConsenSys/
       - run: 
           name: "Git get correct branch for << parameters.repo >>"
@@ -36,7 +38,7 @@ commands:
               fi
               # echo to the screen the git hash
               git rev-parse HEAD
-          working_directory: /go/src/github.com/ConsenSys/<< parameters.repo >>
+          working_directory: << parameters.workdir >>
 
 jobs:
   release:
@@ -56,15 +58,20 @@ jobs:
       # git clone the Client and change to the correct branch.
       - checkout
       - getrepobranch:
-          repo: "client"
+          repo: "https://github.com/ConsenSys/client"
+          workdir: "/go/src/github.com/ConsenSys/client"
       - getrepobranch:
-          repo: "gateway"
+          repo: "https://github.com/ConsenSys/gateway"
+          workdir: "/go/src/github.com/ConsenSys/gateway"
       - getrepobranch:
-          repo: "gateway-admin"
+          repo: "https://github.com/ConsenSys/gateway-admin"
+          workdir: "/go/src/github.com/ConsenSys/gateway-admin"
       - getrepobranch:
-          repo: "provider"
+          repo: "https://github.com/ConsenSys/provider"
+          workdir: "/go/src/github.com/ConsenSys/provider"
       - getrepobranch:
-          repo: "provider-admin"
+          repo: "https://github.com/ConsenSys/provider-admin"
+          workdir: "/go/src/github.com/ConsenSys/provider-admin"
       - run: make detectmisconfig
       - setup_remote_docker:
           version: 19.03.13
