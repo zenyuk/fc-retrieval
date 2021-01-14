@@ -55,11 +55,16 @@ jobs:
     steps:
       # git clone the Client and change to the correct branch.
       - checkout
-      - getrepobranch client
-      - getrepobranch gateway
-      - getrepobranch gateway-admin
-      - getrepobranch provider
-      - getrepobranch provider-admin
+      - getrepobranch:
+          repo: "client"
+      - getrepobranch:
+          repo: "gateway"
+      - getrepobranch:
+          repo: "gateway-admin"
+      - getrepobranch:
+          repo: "provider"
+      - getrepobranch:
+          repo: "provider-admin"
       - run: make detectmisconfig
       - setup_remote_docker:
           version: 19.03.13
