@@ -58,20 +58,20 @@ jobs:
       # git clone the Client and change to the correct branch.
       - checkout
       - getrepobranch:
-          repo: "https://github.com/ConsenSys/client"
-          workdir: "/go/src/github.com/ConsenSys/client"
+          repo: "https://github.com/ConsenSys/fc-retrieval-client"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-client"
       - getrepobranch:
-          repo: "https://github.com/ConsenSys/gateway"
-          workdir: "/go/src/github.com/ConsenSys/gateway"
+          repo: "https://github.com/ConsenSys/fc-retrieval-gateway"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway"
       - getrepobranch:
-          repo: "https://github.com/ConsenSys/gateway-admin"
-          workdir: "/go/src/github.com/ConsenSys/gateway-admin"
+          repo: "https://github.com/ConsenSys/fc-retrieval-gateway-admin"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
       - getrepobranch:
-          repo: "https://github.com/ConsenSys/provider"
-          workdir: "/go/src/github.com/ConsenSys/provider"
+          repo: "https://github.com/ConsenSys/fc-retrieval-provider"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider"
       - getrepobranch:
-          repo: "https://github.com/ConsenSys/provider-admin"
-          workdir: "/go/src/github.com/ConsenSys/provider-admin"
+          repo: "https://github.com/ConsenSys/fc-retrieval-provider-admin"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
       - run: make detectmisconfig
       - setup_remote_docker:
           version: 19.03.13
