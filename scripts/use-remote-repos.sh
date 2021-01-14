@@ -8,9 +8,9 @@ echo "**************************************************************************
 cd ..
 
 # Remove any local references
-sed '/replace .*/d' go.mod > go.mod.temp
+sed '/replace .*/d' go.mod > go.mod.temp1
 rm go.mod
-mv go.mod.temp go.mod
+mv go.mod.temp1 go.mod
 
 ITEST_DIR="../fc-retrieval-itest"
 ITEST_BRANCH=`git rev-parse --abbrev-ref HEAD`
