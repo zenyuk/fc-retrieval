@@ -13,8 +13,7 @@ release: clean utest build
 
 # builds a docker image that builds the app and packages it into a minimal docker image
 build:
-	docker build -t ${REGISTRY}fc-retrieval-itest-builder .
-	docker run --rm ${REGISTRY}fc-retrieval-itest-builder | docker build --pull -t "${REGISTRY}fc-retrieval-itest:${VERSION}" -
+	docker build -t ${REGISTRY}fc-retrieval-itest:${VERSION} .
 
 
 # push the image to an registry
@@ -34,7 +33,6 @@ itest:
 
 # remove previous images and containers
 clean:
-#	rm -f /etc/client/
 	docker rm -f ${REGISTRY}fc-retrieval-itest-builder 2> /dev/null || true
 	docker rmi -f ${REGISTRY}fc-retrieval-itest-builder || true
 	docker rmi -f "${REGISTRY}fc-retrieval-itest:${VERSION}" || true
