@@ -37,22 +37,24 @@ func configureAPI(api *operations.FilecoinRetrievalRegisterAPI) http.Handler {
 	api.UseSwaggerUI()
 	// To continue using redoc as your UI, uncomment the following line
 	api.UseRedoc()
-	
+
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.RegistersGetRegistersHandler = registers.GetRegistersHandlerFunc(func(params registers.GetRegistersParams) middleware.Responder {
-		return handlers.GetRegisters(params)
-	})
-	
-	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
-		return handlers.HomepageHandler()
-	})
 
 	api.RegistersAddRegisterHandler = registers.AddRegisterHandlerFunc(func(params registers.AddRegisterParams) middleware.Responder {
 		return handlers.AddRegister(params)
 	})
+
+	api.RegistersGetRegistersHandler = registers.GetRegistersHandlerFunc(func(params registers.GetRegistersParams) middleware.Responder {
+		return handlers.GetRegisters(params)
+	})
+
+	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
+		return handlers.HomepageHandler()
+	})
+
 
 	api.PreServerShutdown = func() {}
 

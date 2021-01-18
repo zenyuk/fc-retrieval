@@ -9,11 +9,16 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
 // AddRegisterURL generates an URL for the add register operation
 type AddRegisterURL struct {
+	Type string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -35,7 +40,14 @@ func (o *AddRegisterURL) SetBasePath(bp string) {
 func (o *AddRegisterURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/registers"
+	var _path = "/registers/{type}"
+
+	typeVar := o.Type
+	if typeVar != "" {
+		_path = strings.Replace(_path, "{type}", typeVar, -1)
+	} else {
+		return nil, errors.New("type is required on AddRegisterURL")
+	}
 
 	_basePath := o._basePath
 	if _basePath == "" {

@@ -271,11 +271,11 @@ func (o *FilecoinRetrievalRegisterAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/registers"] = registers.NewAddRegister(o.context, o.RegistersAddRegisterHandler)
+	o.handlers["POST"]["/registers/{type}"] = registers.NewAddRegister(o.context, o.RegistersAddRegisterHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/registers"] = registers.NewGetRegisters(o.context, o.RegistersGetRegistersHandler)
+	o.handlers["GET"]["/registers/{type}"] = registers.NewGetRegisters(o.context, o.RegistersGetRegistersHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
