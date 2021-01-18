@@ -31,7 +31,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   # Registers
-  /registers:
+  /registers/{type}:
     post:
       tags:
         - Registers
@@ -39,6 +39,12 @@ paths:
       operationId: addRegister
       description: <b>Add a register</b>
       parameters:
+        - in: "path"
+          name: "type"
+          description: "Register type"
+          required: true
+          type: string
+          enum: [gateway, provider]
         - in: "body"
           name: "register"
           description: "Add a register"
@@ -60,6 +66,13 @@ paths:
       summary: Get register list
       operationId: getRegisters
       description: <b>Get register list</b>
+      parameters:
+        - in: "path"
+          name: "type"
+          description: "Register type"
+          required: true
+          type: string
+          enum: [gateway, provider]
       responses:
         200:
           description: Register list

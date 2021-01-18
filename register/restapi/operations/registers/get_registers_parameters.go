@@ -10,6 +10,8 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 )
 
 // NewGetRegistersParams creates a new GetRegistersParams object
@@ -27,6 +29,12 @@ type GetRegistersParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*Register type
+	  Required: true
+	  In: path
+	*/
+	Type string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -38,8 +46,42 @@ func (o *GetRegistersParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	o.HTTPRequest = r
 
+	rType, rhkType, _ := route.Params.GetOK("type")
+	if err := o.bindType(rType, rhkType, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindType binds and validates parameter Type from path.
+func (o *GetRegistersParams) bindType(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
+
+	o.Type = raw
+
+	if err := o.validateType(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateType carries on validations for parameter Type
+func (o *GetRegistersParams) validateType(formats strfmt.Registry) error {
+
+	if err := validate.EnumCase("type", "path", o.Type, []interface{}{"gateway", "provider"}, true); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -58,7 +58,7 @@ func init() {
         }
       }
     },
-    "/registers": {
+    "/registers/{type}": {
       "get": {
         "description": "\u003cb\u003eGet register list\u003c/b\u003e",
         "tags": [
@@ -66,6 +66,19 @@ func init() {
         ],
         "summary": "Get register list",
         "operationId": "getRegisters",
+        "parameters": [
+          {
+            "enum": [
+              "gateway",
+              "provider"
+            ],
+            "type": "string",
+            "description": "Register type",
+            "name": "type",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Register list",
@@ -92,6 +105,17 @@ func init() {
         "summary": "Add a register",
         "operationId": "addRegister",
         "parameters": [
+          {
+            "enum": [
+              "gateway",
+              "provider"
+            ],
+            "type": "string",
+            "description": "Register type",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
           {
             "description": "Add a register",
             "name": "register",
@@ -222,7 +246,7 @@ func init() {
         }
       }
     },
-    "/registers": {
+    "/registers/{type}": {
       "get": {
         "description": "\u003cb\u003eGet register list\u003c/b\u003e",
         "tags": [
@@ -230,6 +254,19 @@ func init() {
         ],
         "summary": "Get register list",
         "operationId": "getRegisters",
+        "parameters": [
+          {
+            "enum": [
+              "gateway",
+              "provider"
+            ],
+            "type": "string",
+            "description": "Register type",
+            "name": "type",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Register list",
@@ -256,6 +293,17 @@ func init() {
         "summary": "Add a register",
         "operationId": "addRegister",
         "parameters": [
+          {
+            "enum": [
+              "gateway",
+              "provider"
+            ],
+            "type": "string",
+            "description": "Register type",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
           {
             "description": "Add a register",
             "name": "register",

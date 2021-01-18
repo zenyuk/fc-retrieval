@@ -29,7 +29,7 @@ func NewGetRegisters(ctx *middleware.Context, handler GetRegistersHandler) *GetR
 	return &GetRegisters{Context: ctx, Handler: handler}
 }
 
-/*GetRegisters swagger:route GET /registers Registers getRegisters
+/*GetRegisters swagger:route GET /registers/{type} Registers getRegisters
 
 Get register list
 

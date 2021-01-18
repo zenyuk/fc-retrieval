@@ -13,10 +13,10 @@ import (
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
 )
 
-var redisHash = "registers"
-
 // Add a register
 func AddRegister(params op.AddRegisterParams) middleware.Responder {
+	redisHash := params.Type
+
 	register := params.Register
 	ctx := context.Background()
 
@@ -40,6 +40,8 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 
 // Get register list
 func GetRegisters(params op.GetRegistersParams) middleware.Responder {
+	redisHash := params.Type
+
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
