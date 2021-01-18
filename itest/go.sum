@@ -1,8 +1,16 @@
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210114064215-0a3c55a77a3d h1:0IN1npmdr1JiwNJNWfG4dHgTmqzlCk4wCOwfoNp5LBE=
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210114064215-0a3c55a77a3d/go.mod h1:vrQ1EBH9tHT3bI7UW+QSGZ6klWrQtEMRohkJBN/HhKI=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210117220747-c3e8b133af1d h1:RrAhBxVVjXh0QqdJ+wlAfFVRc0E0282UVdmToJYHy68=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210117220747-c3e8b133af1d/go.mod h1:81hMx3Fm2tlDimtNyDAXOsDTl/HwFnNAovqAiMAbBmU=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210113064916-ab0faa2aca82/go.mod h1:POZ2s7Ajs0RQ9gJB7w8qfagGe83zywHIyCMJTOaDg0o=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210114064302-56d2d5dc0163 h1:huZk0IBNNwTS7PXnf0Hor9Sfxj7MeLb2VJOwbs+Z0DY=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210114064302-56d2d5dc0163/go.mod h1:POZ2s7Ajs0RQ9gJB7w8qfagGe83zywHIyCMJTOaDg0o=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210115025137-e17461d43715 h1:cT77Jtsw1/NAwO0RdY+rN0aI8/UyttjSks2YThs/x+4=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210115025137-e17461d43715/go.mod h1:POZ2s7Ajs0RQ9gJB7w8qfagGe83zywHIyCMJTOaDg0o=
+github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210114013727-f14a1ccaefd8 h1:jskQqfLDpDZllOfpXmXdN6r3NdFuyLHD/QLzXJ/ch0M=
+github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210114013727-f14a1ccaefd8/go.mod h1:r51jk/123HiGKlUk78UpoFzOCM74tNk8YXBNNHgaN/0=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210114013939-cb719dad281c h1:kKiIHsyVecd/Oiuqm0J3V8zwRWkGX/ImJOjOpbArXMU=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210114013939-cb719dad281c/go.mod h1:5P83B73ADXYprsPrCPdSDsZ6Yuf0ndpOJH9oPqZbHdo=
 github.com/ant0ine/go-json-rest v3.3.2+incompatible/go.mod h1:q6aCt0GfU6LhpBsnZ/2U+mwe+0XB5WStbmwyoPfc+sk=
 github.com/bitly/go-simplejson v0.5.0 h1:6IH+V8/tVMab511d5bn4M7EwGXZf9Hj6i2xSwkNEM+Y=
 github.com/bitly/go-simplejson v0.5.0/go.mod h1:cXHtHw4XUPsvGaxgjIAn8PhEWG9NfngEKAMDJEczWVA=
