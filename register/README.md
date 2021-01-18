@@ -51,10 +51,10 @@ Once the service is started, Swagger Ui can be found at `<service_url>/docs`.
 
 ### Demo
 
-Register a Gateway or a Provider
+Register a Gateway
 
 ```
-curl --location --request POST 'http://localhost:8080/registers' \
+curl --location --request POST 'http://localhost:8080/registers/gateway' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "address": "f01234",
@@ -65,10 +65,31 @@ curl --location --request POST 'http://localhost:8080/registers' \
 }'
 ```
 
-Get register list
+Get gateway register list
 
 ```
-curl --location --request GET 'http://localhost:8080/registers'
+curl --location --request GET 'http://localhost:8080/registers/gateway'
+```
+
+
+Register a Provider
+
+```
+curl --location --request POST 'http://localhost:8080/registers/gateway' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "address": "f01234",
+    "networkInfo": "127.0.0.1:80",
+    "regionCode": "FR",
+    "rootSigningKey": "0xABCDE123456789",
+    "sigingKey": "0x987654321EDCBA"
+}'
+```
+
+Get provider register list
+
+```
+curl --location --request GET 'http://localhost:8080/registers/provider'
 ```
 
 ## Development

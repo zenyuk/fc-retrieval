@@ -29,7 +29,7 @@ func NewAddRegister(ctx *middleware.Context, handler AddRegisterHandler) *AddReg
 	return &AddRegister{Context: ctx, Handler: handler}
 }
 
-/*AddRegister swagger:route POST /registers Registers addRegister
+/*AddRegister swagger:route POST /registers/{type} Registers addRegister
 
 Add a register
 
