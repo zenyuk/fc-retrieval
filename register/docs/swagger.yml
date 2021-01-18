@@ -1,0 +1,120 @@
+swagger: "2.0"
+info:
+  title: Filecoin Retrieval Register
+  version: "0.0.1"
+  description: |
+    Retrieval Providers and Retrieval Gateways register.
+produces:
+  - application/json
+consumes:
+  - application/json
+schemes:
+  - http
+
+basePath: /
+
+paths:
+  # Homepage
+  /:
+    get:
+      tags:
+        - Homepage
+      summary: Homepage
+      operationId: homepage
+      responses:
+        200:
+          description: homepage response
+          schema:
+            $ref: "#/definitions/Ack"
+        default:
+          description: user validation error
+          schema:
+            $ref: "#/definitions/Error"
+  # Registers
+  /registers:
+    post:
+      tags:
+        - Registers
+      summary: Add a register
+      operationId: addRegister
+      description: <b>Add a register</b>
+      parameters:
+        - in: "body"
+          name: "register"
+          description: "Add a register"
+          required: true
+          schema:
+            $ref: "#/definitions/Register"
+      responses:
+        200:
+          description: Register added
+          schema:
+            $ref: "#/definitions/Register"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - Registers
+      summary: Get register list
+      operationId: getRegisters
+      description: <b>Get register list</b>
+      responses:
+        200:
+          description: Register list
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Register"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+  # Register
+  Register:
+    type: object
+    description: Register entry
+    properties:
+      address:
+        type: string
+        description: Filecoin Account to be used with payment channels.
+      rootSigningKey:
+        type: string
+        description: Retrieval provider Root Signing Public Key.
+      sigingKey:
+        type: string
+        description: Used for signing CID Group Offers and Single CID Offers.
+      networkInfo:
+        type: string
+        description: Network addressing information.
+      regionCode:
+        type: string
+        description: Region Code.
+
+  # Responses
+  Ack:
+    type: object
+    properties:
+      status:
+        type: string
+      message:
+        type: string
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+    required:
+      - code
+      - message
+  Principal:
+    type: string
