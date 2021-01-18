@@ -14,7 +14,7 @@ else
     echo go.mod is:
     cat ../go.mod.temp
     echo go mod should be
-    cat ../go.mod.
+    cat ../go.mod
     echo
     echo Please execute:
     echo   bash use-remote-repos.sh
