@@ -1,9 +1,7 @@
 version: "3"
 services:
   fc-retrieval-register:
-    build:
-      dockerfile: Dockerfile.dev
-      context: .
+    image: fc-retrieval-register:v1
     ports:
       - "8080:80"
     volumes:
