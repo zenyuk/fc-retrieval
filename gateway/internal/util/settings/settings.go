@@ -55,9 +55,9 @@ type AppSettings struct {
 	LogLevel        string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
 	LogTarget       string `json:"logtarget"`       // Log Level: STDOUT
 	GatewayID       string `json:"gatewayid"`       // Node id of this gateway
-	GatewayPrivKey  string `json:"privatekey"`      // Gateway private key
-	GatewayPrivKeyVersion uint32  `json:"keyversion"`      // Key version of gateway private key
-	GatewaySigAlg   uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
+	GatewayPrivKey  string `json:"gatewayprivkey"`      // Gateway private key
+	GatewayPrivKeyVersion uint32  `json:"gatewayprivkeyversion"`      // Key version of gateway private key
+	GatewaySigAlg   uint8  `json:"gatewaysigalg"`          // Signature algorithm to be used by private key.
 }
 
 var defaults = AppSettings{

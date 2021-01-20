@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  gateway:
+    image: fc-retrieval-gateway:v1
+    container_name: gateway
+    networks:
+      - shared
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "8090:8090"
+      - "8091:8091"
+      - "8092:8092"
+     
+networks:
+  shared:
+    name: shared
+    external: true
