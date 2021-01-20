@@ -2,12 +2,11 @@
 FROM golang:1.15-alpine as builder
 
 RUN apk add --no-cache make gcc musl-dev linux-headers git
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-gateway
 
 # Add code to be run.
 # Also grab dependancies from source directory, to improve build speed.
-ADD pkg /go/src/github.com/ConsenSys/fc-retrieval-gateway/pkg
-ADD cmd /go/src/github.com/ConsenSys/fc-retrieval-gateway/cmd
-ADD internal /go/src/github.com/ConsenSys/fc-retrieval-gateway/internal
+COPY . .
 
 
 # Add the settings file needed at runtime to the bin directory so it
