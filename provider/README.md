@@ -1,4 +1,5 @@
-# fc-retrieval-provider
+# Filecoin Retrieval Pro
+
 Filecoin Secondary Retrieval Market Provider 
 
 ## Start the service
@@ -21,6 +22,20 @@ make start
 
 The server should be available at `http://localhost:8080`
 
+
+The server should be available at `http://localhost:8080`
+
+
+## Development
+
+### Start the service with Docker
+
+Start the project with Docker:
+
+```
+make dev
+```
+
 ### Start the service manually
 
 Start the project manually:
@@ -29,7 +44,6 @@ Start the project manually:
 make start-dev
 ```
 
-The server should be available at `http://localhost:8080`
 
 ## Config
 
