@@ -9,7 +9,7 @@ services:
     volumes:
       - ./:/app
     networks:
-      - retrievalnetwork
+      - shared
     restart: unless-stopped
 
   redis:
@@ -19,8 +19,10 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
-      - retrievalnetwork
+      - shared
     restart: always
 
 networks:
-  retrievalnetwork:
+  shared:
+    name: shared
+    external: true
