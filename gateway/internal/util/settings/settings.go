@@ -16,11 +16,7 @@ package settings
  */
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"time"
-
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
 const settingsFileName = "settings.json"
@@ -33,6 +29,12 @@ const settingsDefaultBindGatewayAPI = "8091"
 const settingsDefaultBindAdminAPI = "8092"
 const settingsDefaultLogLevel = "TRACE"
 const settingsDefaultLogTarget = "STDOUT"
+const settingsDefaultLogDir = "/var/log/fc-retrieval/fc-retrieval-gateway"
+const settingsDefaultLogFile = "gateway.log"
+const settingsDefaultLogMaxBackups = 3
+const settingsDefaultLogMaxAge = 28
+const settingsDefaultLogMaxSize = 500
+const settingsDefaultLogCompress = false
 
 // TODO id doesn't make sense to have defaults for these values.
 const settingsDefaultGatewayID = "01"
@@ -54,6 +56,12 @@ type AppSettings struct {
 	BindAdminAPI          string `mapstructure:"BIND_ADMIN_API"`    		// Port number to bind to for admin TCP communication API.
 	LogLevel        			string `mapstructure:"LOG_LEVEL"`        			// Log Level: NONE, ERROR, WARN, INFO, TRACE
 	LogTarget       			string `mapstructure:"LOG_TARGET"`       			// Log Level: STDOUT
+	LogDir       					string `mapstructure:"LOG_DIR"`       				// Log Dir: /var/log/fc-retrieval/fc-retrieval-gateway
+	LogFile       				string `mapstructure:"LOG_FILE"`       				// Log File: gateway.log
+	LogMaxBackups       	int 	 `mapstructure:"LOG_MAX_BACKUPS"`       // Log max backups: 3
+	LogMaxAge       			int 	 `mapstructure:"LOG_MAX_AGE"`       		// Log max age (days): 28
+	LogMaxSize       			int 	 `mapstructure:"LOG_MAX_SIZE"`       		// Log max size (MB): 500
+	LogCompress       		bool 	 `mapstructure:"LOG_COMPRESS"`       		// Log compress: false
 	GatewayID       			string `mapstructure:"GATEWAY_ID"`       			// Node id of this gateway
 	GatewayPrivKey  			string `mapstructure:"GATEWAY_PRIVATE_KEY"`		// Gateway private key
 	GatewayKeyVersion 		uint32 `mapstructure:"GATEWAY_KEY_VERSION"`   // Key version of gateway private key
@@ -67,38 +75,14 @@ var defaults = AppSettings{
 	settingsDefaultBindAdminAPI,
 	settingsDefaultLogLevel,
 	settingsDefaultLogTarget,
+	settingsDefaultLogDir,
+	settingsDefaultLogFile,
+	settingsDefaultLogMaxBackups,
+	settingsDefaultLogMaxAge,
+	settingsDefaultLogMaxSize,
+	settingsDefaultLogCompress,
 	settingsDefaultGatewayID,
 	settingsDefaultPrivateKey,
 	settingsDefaultPrivKeyVer,
 	settingsDefaultPrivKeySigAlg,
-}
-
-// TODO at present there is no way to get this global object. Do we need this?
-var settings = defaults
-
-// LoadSettings loads the app settings from the settings file.
-func LoadSettings() AppSettings {
-	// Load settings.
-	settingsBytes, err := ioutil.ReadFile(settingsLocContainer)
-	if err != nil {
-		settingsBytes, err = ioutil.ReadFile(settingsLocDev)
-		if err != nil {
-			e := "Failed to read settings.json" + err.Error()
-			logging.Error(e)
-			panic(e)
-		}
-	}
-
-	err = json.Unmarshal(settingsBytes, &settings)
-	if err != nil {
-		e := ("Failed to parse settings.json: " + err.Error())
-		logging.Error(e)
-		panic(e)
-	}
-
-	logging.SetLogLevel(settings.LogLevel)
-	logging.SetLogTarget(settings.LogTarget)
-	logging.Info("Settings: (%+v)\n", settings)
-
-	return settings
 }

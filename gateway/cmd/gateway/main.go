@@ -16,8 +16,9 @@ import (
 )
 
 func main() {
-	settings := config.NewConfig()
-	logging.Init()
+	conf := config.NewConfig()
+	settings := config.Map(conf)
+	logging.Init(conf)
 	logging.Info("Filecoin Gateway Start-up: Started")
 
 	// Initialise a dummy gateway instance.
