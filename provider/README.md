@@ -37,7 +37,7 @@ Config variables description:
 
 | name           | description    | options | default                     |
 | -------------- | -------------- | ------- | --------------------------- |
-| LOGGING_LEVEL  | logging level  |         | info                        |
+| LOG_LEVEL      | logging level  |         | INFO                        |
 | SERVICE_HOST   | service host   |         | provider                    |
 | SERVICE_PORT   | service port   |         | 8080                        |
 | SERVICE_SCHEME | service scheme |         | http                        |
