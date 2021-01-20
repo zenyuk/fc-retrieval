@@ -17,8 +17,8 @@ clean:
 start:
 	docker-compose up -d
 
-start-dev:
-	go run cmd/provider/main.go --host 0.0.0.0 --port $(PORT)
+dev:
+	docker-compose -f docker-compose.dev.yml up
 
 stop:
 	docker-compose stop
