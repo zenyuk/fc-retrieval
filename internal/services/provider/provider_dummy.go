@@ -29,7 +29,6 @@ func generateDummyMessage() CIDMessage {
 	providerID, _ := nodeid.NewRandomNodeID()
 
 	contentID, _ := cid.NewRandomContentID()
-	// pieceCIDs := []string{"a", "b", "c", "d", "e"}
 	pieceCIDs := []cid.ContentID{*contentID}
 	dummyMessage := CIDMessage{
 
