@@ -7,10 +7,12 @@ services:
     volumes:
       - ./:/app
     networks:
-      - retrievalnetwork
+      - shared
     environment: 
       - REGISTER_API_URL=http://fc-retrieval-register:80
     restart: unless-stopped
 
 networks:
-  retrievalnetwork:
+  shared:
+    name: shared
+    external: true
