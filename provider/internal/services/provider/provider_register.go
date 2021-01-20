@@ -1,6 +1,7 @@
 package provider
 
 import (
+	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
 )
 
@@ -14,5 +15,8 @@ func register(url string) {
 		SigingKey:      "0x987654321EDCBA",
 	}
 
-	request.PostJSON(url, providerReg)
+	err := request.PostJSON(url, providerReg)
+	if err != nil {
+		log.Error("%+v", err)
+	}
 }
