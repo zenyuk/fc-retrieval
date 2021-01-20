@@ -16,5 +16,7 @@ docker-compose.yml
 Dockerfile
 
 # Others
+.circleci
 main
+Makefile
 README.md

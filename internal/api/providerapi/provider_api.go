@@ -16,7 +16,7 @@ import (
 // StartProviderAPI starts the TCP API as a separate go routine.
 func StartProviderAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 	// Start server
-	ln, err := net.Listen("tcp", settings.BindProviderAPI)
+	ln, err := net.Listen("tcp", ":" + settings.BindProviderAPI)
 	if err != nil {
 		return err
 	}
