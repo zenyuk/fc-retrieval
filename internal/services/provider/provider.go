@@ -89,6 +89,7 @@ func Start(p *Provider) {
 	host := p.conf.GetString("SERVICE_HOST")
 	port := p.conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
+	p.loop()
 }
 
 func generateDummyMessage() CIDMessage {
