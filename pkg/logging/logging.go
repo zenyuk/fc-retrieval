@@ -60,8 +60,9 @@ func SetLogLevel(logLevel string) {
 	level, err := zerolog.ParseLevel(logLevel)
 	if err != nil {
 		log.Error().Err(err).Str("level", logLevel).Msg("can't parse log level")
+	} else {
+		zerolog.SetGlobalLevel(level)
 	}
-	zerolog.SetGlobalLevel(level)
 }
 
 func Trace(msg string, args ...interface{}) {
@@ -92,7 +93,8 @@ func Panic(msg string, args ...interface{}) {
 	log.Panic().Msgf(msg, args...)
 }
 
-/* TODO: Remove */
+/* TODO: Keep to avoid issues */
+
 func ErrorAndPanic(msg string, args ...interface{}) {
 	log.Error().Msgf(msg, args...)
 }
@@ -100,3 +102,5 @@ func ErrorAndPanic(msg string, args ...interface{}) {
 func Error1(err error) {
 	log.Error().Err(err).Msg("Error")
 }
+
+/* END TODO */
