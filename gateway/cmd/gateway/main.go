@@ -3,6 +3,8 @@ package main
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
+	_ "github.com/joho/godotenv/autoload"
+	
 	"github.com/ConsenSys/fc-retrieval-gateway/config"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/adminapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"

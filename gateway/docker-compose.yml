@@ -7,11 +7,12 @@ services:
     networks:
       - shared
     ports:
-      - "80:80"
-      - "8080:8080"
-      - "8090:8090"
-      - "8091:8091"
-      - "8092:8092"
+      - "${BIND_REST_API}:${BIND_REST_API}"
+      - "${BIND_PROVIDER_API}:${BIND_PROVIDER_API}"
+      - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
+      - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
+    env_file:
+      - .env
      
 networks:
   shared:

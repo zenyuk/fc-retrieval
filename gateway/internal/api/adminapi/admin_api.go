@@ -31,7 +31,7 @@ import (
 // StartAdminAPI starts the TCP API as a separate go routine.
 func StartAdminAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 	// Start server
-	ln, err := net.Listen("tcp", settings.BindAdminAPI)
+	ln, err := net.Listen("tcp", ":" + settings.BindAdminAPI)
 	if err != nil {
 		return err
 	}
