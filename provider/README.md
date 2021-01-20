@@ -22,10 +22,6 @@ make start
 
 The server should be available at `http://localhost:8080`
 
-
-The server should be available at `http://localhost:8080`
-
-
 ## Development
 
 ### Start the service with Docker
