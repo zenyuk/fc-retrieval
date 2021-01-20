@@ -1,23 +1,19 @@
 package main
 
 import (
-  "github.com/ConsenSys/fc-retrieval-provider/internal/config"
-  "github.com/ConsenSys/fc-retrieval-provider/internal/logger"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/services/provider"
 	_ "github.com/joho/godotenv/autoload"
-  "github.com/rs/zerolog/log"
-  "go.uber.org/fx"
+	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+
+	"github.com/ConsenSys/fc-retrieval-provider/config"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/logging"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/services/provider"
 )
 
 func main() {
   conf := config.NewConfig()
-  logger.InitLogger(conf)
+  logging.InitLogger(conf)
 
-  log.Debug().Msg("Running app ...")
-  app := fx.New(
-    config.Module,
-    provider.Module,
-    fx.Invoke(provider.Start),
-  )
-  app.Run()
+	log.Info("Running app ...")
+	p := provider.NewProvider(conf)
+	provider.Start(p)
 }
