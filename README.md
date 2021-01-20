@@ -1,5 +1,7 @@
 # Filecoin Retrieval Register
 
+Filecoin Secondary Retrieval Market Register 
+
 ## Start the service
 
 ### Create a config file
@@ -10,12 +12,16 @@ Create a `.env` file, using [.env.example](./.env.example) as a reference:
 cp .env.example .env
 ```
 
+
+
+## Development
+
 ### Start the service with Docker
 
 Start the project with Docker:
 
 ```
-make start
+make dev
 ```
 
 The API should be available at `http://localhost:8080`
