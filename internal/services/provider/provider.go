@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"time"
 
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
@@ -41,17 +40,17 @@ func Start(p *Provider) {
 
 func (p *Provider) loop() {
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-
 	register(url)
 	for {
+		log.Info(".")
 		gateways := []Register{}
 		request.GetJSON(url, &gateways)
 
 		for _, gateway := range gateways {
 			message := generateDummyMessage()
-			fmt.Println("TODO, post to this gateway")
-			fmt.Println(gateway)
-			fmt.Println(message)
+			log.Info("TODO, post to this gateway")
+			log.Info("%+v", gateway)
+			log.Info("%+v", message)
 		}
 		time.Sleep(25 * time.Second)
 	}
