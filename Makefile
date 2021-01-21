@@ -1,5 +1,5 @@
 REGISTRY?=
-VERSION?=v1
+VERSION?=dev
 
 start:
 	docker-compose up
