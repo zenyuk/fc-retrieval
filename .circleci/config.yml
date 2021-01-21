@@ -28,6 +28,6 @@ workflows:
       - publishDocker:
           filters:
             branches:
-              only: feat/ci
+              only: main
           context:
             - dockerhub-quorumengineering-rw
