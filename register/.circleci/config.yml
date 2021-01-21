@@ -5,14 +5,14 @@ jobs:
     environment:
       REGISTRY: consensys/
       IMAGE_NAME: consensys/fc-retrieval-register
-      IMAGE_VERSION: v1
+      IMAGE_VERSION: dev
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker image
+          name: Publish Docker
           command: |
             make build REGISTRY=$REGISTRY VERSION=$IMAGE_VERSION
             echo "$DOCKER_PASSWORD_RW" | docker login -u "$DOCKER_USER_RW" --password-stdin
@@ -20,9 +20,11 @@ jobs:
 
 workflows:
   version: 2
-  build-master:
+  release:
     jobs:
       - publishDocker:
           filters:
             branches:
               only: feat/ci
+          context:
+            - dockerhub-quorumengineering-rw
