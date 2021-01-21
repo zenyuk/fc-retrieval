@@ -3,19 +3,21 @@ package main
 // Copyright (C) 2020 ConsenSys Software Inc
 
 import (
+	_ "github.com/joho/godotenv/autoload"
+	
+	"github.com/ConsenSys/fc-retrieval-gateway/config"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/adminapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
 func main() {
+	settings := config.NewConfig()
 	logging.Init()
-	settings := settings.LoadSettings()
 	logging.Info("Filecoin Gateway Start-up: Started")
 
 	// Initialise a dummy gateway instance.

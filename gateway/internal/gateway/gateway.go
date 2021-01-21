@@ -104,7 +104,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 			logging.ErrorAndPanic("Error decoding node id: %s", err)
 		}
 
-		gatewayPrivateKeyVersion := fcrcrypto.DecodeKeyVersion(conf.GatewayPrivKeyVersion)
+		gatewayPrivateKeyVersion := fcrcrypto.DecodeKeyVersion(conf.GatewayKeyVersion)
 
 		instance = &Gateway{
 			ProtocolVersion:          protocolVersion,
