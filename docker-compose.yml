@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  gateway:
+    image: fc-retrieval-gateway:v1
+    container_name: gateway
+    networks:
+      - shared
+    ports:
+      - "${BIND_REST_API}:${BIND_REST_API}"
+      - "${BIND_PROVIDER_API}:${BIND_PROVIDER_API}"
+      - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
+      - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
+    env_file:
+      - .env
+     
+networks:
+  shared:
+    name: shared
+    external: true

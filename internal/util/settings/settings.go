@@ -48,16 +48,16 @@ const DefaultLongTCPInactivityTimeout = 5000 * time.Millisecond
 
 // AppSettings defines the server configuraiton
 type AppSettings struct {
-	BindRestAPI     string `json:"bindrestapi"`     // Port number to bind to for client REST API.
-	BindProviderAPI string `json:"bindproviderapi"` // Port number to bind to for provider TCP communication API.
-	BindGatewayAPI  string `json:"bindgatewayapi"`  // Port number to bind to for gateway TCP communication API.
-	BindAdminAPI          string `json:"bindadminapi"`    // Port number to bind to for admin TCP communication API.
-	LogLevel        string `json:"loglevel"`        // Log Level: NONE, ERROR, WARN, INFO, TRACE
-	LogTarget       string `json:"logtarget"`       // Log Level: STDOUT
-	GatewayID       string `json:"gatewayid"`       // Node id of this gateway
-	GatewayPrivKey  string `json:"privatekey"`      // Gateway private key
-	GatewayPrivKeyVersion uint32  `json:"keyversion"`      // Key version of gateway private key
-	GatewaySigAlg   uint8  `json:"sigalg"`          // Signature algorithm to be used by private key.
+	BindRestAPI     			string `mapstructure:"BIND_REST_API"`     		// Port number to bind to for client REST API.
+	BindProviderAPI 			string `mapstructure:"BIND_PROVIDER_API"` 		// Port number to bind to for provider TCP communication API.
+	BindGatewayAPI  			string `mapstructure:"BIND_GATEWAY_API"`  		// Port number to bind to for gateway TCP communication API.
+	BindAdminAPI          string `mapstructure:"BIND_ADMIN_API"`    		// Port number to bind to for admin TCP communication API.
+	LogLevel        			string `mapstructure:"LOG_LEVEL"`        			// Log Level: NONE, ERROR, WARN, INFO, TRACE
+	LogTarget       			string `mapstructure:"LOG_TARGET"`       			// Log Level: STDOUT
+	GatewayID       			string `mapstructure:"GATEWAY_ID"`       			// Node id of this gateway
+	GatewayPrivKey  			string `mapstructure:"GATEWAY_PRIVATE_KEY"`		// Gateway private key
+	GatewayKeyVersion 		uint32 `mapstructure:"GATEWAY_KEY_VERSION"`   // Key version of gateway private key
+	GatewaySigAlg   			uint8  `mapstructure:"GATEWAY_SIG_ALG"`       // Signature algorithm to be used by private key.
 }
 
 var defaults = AppSettings{
