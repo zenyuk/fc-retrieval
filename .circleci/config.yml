@@ -12,9 +12,12 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Publish Docker
+          name: Build Docker image
           command: |
             make build REGISTRY=$REGISTRY VERSION=$IMAGE_VERSION
+      - run:
+          name: Publish Docker image
+          command: |
             echo "$DOCKER_PASSWORD_RW" | docker login -u "$DOCKER_USER_RW" --password-stdin
             docker push $IMAGE_NAME:$IMAGE_VERSION
 
