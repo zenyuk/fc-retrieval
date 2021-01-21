@@ -45,7 +45,7 @@ func TestEstablishMessage(t *testing.T) {
         panic(err)
     }
 
-    logging.Test("Private Key: %s", keyPair.EncodePrivateKey())
+    logging.Debug("Private Key: %s", keyPair.EncodePrivateKey())
 
     resp := CopiedClientEstablishmentResponse{}
     resp.MessageType = CopiedClientEstablishmentResponseType
