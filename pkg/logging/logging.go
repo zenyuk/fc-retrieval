@@ -28,7 +28,7 @@ func setLogLevel(conf *viper.Viper) {
 	if err != nil {
 		log.Error().Err(err).Msg("can't parse log level")
 		level = zerolog.InfoLevel
-		log.Info().Msgf("using level '%v' as default", level)
+		log.Warn().Msgf("using level '%v' as default", level)
 	}
 	zerolog.SetGlobalLevel(level)
 }
@@ -41,6 +41,7 @@ func getLogTarget(conf *viper.Viper) io.Writer {
 	}
 }
 
+// TODO: Log file not created. We need to fix it
 func newLogTargetFile(conf *viper.Viper) io.Writer {
 	logDir := conf.GetString("LOG_DIR")
 	if err := os.MkdirAll(logDir, 0744); err != nil {
