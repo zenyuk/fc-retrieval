@@ -1,7 +1,7 @@
 version: "3"
 services:
   fc-retrieval-register:
-    image: fc-retrieval-register:v1
+    image: consensys/fc-retrieval-register:dev
     ports:
       - "8080:80"
     volumes:
