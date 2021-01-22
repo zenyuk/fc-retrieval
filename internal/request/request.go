@@ -9,7 +9,7 @@ import (
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-// GetJSON request http Get method
+// GetJSON request Get JSON
 func GetJSON(url string, target interface{}) error {
 	r, err := httpClient.Get(url)
 	if err != nil {
@@ -20,8 +20,8 @@ func GetJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-// PostJSON request http Post method
-func PostJSON(url string, data interface{}) error {
+// SendJSON request Send JSON
+func SendJSON(url string, data interface{}) error {
 	json, _ := json.Marshal(data)
 	req, err := http.NewRequest("POST", url, bytes.NewReader(json))
 	req.Header.Set("Content-Type", "application/json")
