@@ -43,7 +43,7 @@ Config variables description:
 | LOG_FILE        | logging file        |               |                             |
 | LOG_MAX_BACKUPS | logging max backups |               |                             |
 | LOG_MAX_AGE     | logging max age     |               |                             |
-| LOG_MAX_SIZE    | logging max size    |               | INFO                        |
+| LOG_MAX_SIZE    | logging max size    |               |                             |
 | LOG_COMPRESS    | logging compress    | true / false  |                             |
 | SERVICE_HOST    | service host        |               | provider                    |
 | SERVICE_PORT    | service port        |               | 8080                        |
