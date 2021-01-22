@@ -93,7 +93,7 @@ func (g *GatewayManager) gatewayManagerRunner() {
 	gatewayInfo := g.gatewayRegistrationContract.GetGateways(10)
 	logging.Info("Gateway Manager: GetGateways returned %d gateways", len(gatewayInfo))
 	for _, info := range gatewayInfo {
-		comms, err := gatewayapi.NewGatewayAPIComms(info.Hostname, g.settings.ClientID())
+		comms, err := gatewayapi.NewGatewayAPIComms(&info, &g.settings)
 		if err != nil {
 			panic(err)
 		} 
@@ -101,7 +101,7 @@ func (g *GatewayManager) gatewayManagerRunner() {
 		// Try to do the establishment with the new gateway
 		var challenge [32]byte
 		fcrcrypto.GeneratePublicRandomBytes(challenge[:])
-		comms.GatewayClientEstablishment(g.settings.EstablishmentTTL(), challenge)
+		comms.GatewayClientEstablishment(challenge)
 
 		activeGateway := ActiveGateway{info, comms}
 		g.gateways = append(g.gateways, activeGateway)
