@@ -76,7 +76,7 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 					}
 					continue
 				}
-			} else if msgType == messages.AdminGetReputationChallengeType {
+			} else if msgType == messages.AdminSetReputationChallengeType {
 				request := messages.AdminSetReputationChallenge{}
 				if json.Unmarshal(data, &request) == nil {
 					// Message is valid.
