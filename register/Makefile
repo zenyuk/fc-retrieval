@@ -1,5 +1,5 @@
-REGISTRY?=
-VERSION?=v1
+REGISTRY?=consensys/
+VERSION?=dev
 
 start:
 	docker-compose up
