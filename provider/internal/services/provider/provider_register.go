@@ -15,7 +15,7 @@ func register(url string) {
 		SigingKey:      "0x987654321EDCBA",
 	}
 
-	err := request.PostJSON(url, providerReg)
+	err := request.SendJSON(url, providerReg)
 	if err != nil {
 		log.Error("%+v", err)
 	}
