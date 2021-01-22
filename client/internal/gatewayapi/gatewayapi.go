@@ -8,8 +8,11 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/ConsenSys/fc-retrieval-client/internal/contracts"
+	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/bitly/go-simplejson"
 )
 
@@ -33,11 +36,15 @@ var clientAPIProtocolSupported []int
 // Comms holds the communications specific data
 type Comms struct {
 	apiURL string
-	nodeID *nodeid.NodeID
+	gatewayPubKey *fcrcrypto.KeyPair
+	gatewayPubKeyVer *fcrcrypto.KeyVersion
+	settings *settings.ClientSettings
 }
 
 // NewGatewayAPIComms creates a connection with a gateway
-func NewGatewayAPIComms(host string, nodeID *nodeid.NodeID) (*Comms, error){
+func NewGatewayAPIComms(gatewayInfo *contracts.GatewayInformation, settings *settings.ClientSettings) (*Comms, error){
+	host := gatewayInfo.Hostname
+
 	// Create the constant array.
 	if (clientAPIProtocolSupported == nil) {
 		clientAPIProtocolSupported = make([]int, 1)
@@ -53,26 +60,28 @@ func NewGatewayAPIComms(host string, nodeID *nodeid.NodeID) (*Comms, error){
 
 	netComms := Comms{}
 	netComms.apiURL = apiURLStart + host + apiURLEnd
-	netComms.nodeID = nodeID
+	netComms.gatewayPubKey = gatewayInfo.GatewayRetrievalPublicKey
+	netComms.gatewayPubKeyVer = gatewayInfo.GatewayRetrievalPublicKeyVersion
+	netComms.settings = settings
 	return &netComms, nil
 }
 
+
 // GatewayCall calls the Gateway's REST API
-func (n *Comms) gatewayCall(method int32, args map[string]interface{}) (*simplejson.Json) {
-	args["protocol_version"] = int32(1)
-	args["protocol_supported"] = []int32{1}
-	args["message_type"] = method
-	args["node_id"] = n.nodeID.ToString()
-	mJSON, _ := json.Marshal(args)
+func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json) {
+
+	// Create HTTP request.
+	mJSON, _ := json.Marshal(msg)
 	logging.Info("JSON sent: %s", string(mJSON))
 	contentReader := bytes.NewReader(mJSON)
-	req, _ := http.NewRequest("POST", n.apiURL, contentReader)
+	req, _ := http.NewRequest("POST", c.apiURL, contentReader)
 	req.Header.Set("Content-Type", "application/json")
 
+	// Send request and receive response.
 	client := &http.Client{}
-	resp, errs := client.Do(req)
-	if errs != nil {
-		panic(errs)
+	resp, err := client.Do(req)
+	if err != nil {
+		logging.ErrorAndPanic("Client - Gateway communications (%s): %s", c.apiURL, err)
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
@@ -98,4 +107,37 @@ func validateHostName(host string) error {
 	}
 	logging.Info("Resolved %s as %s\n", host, ra.String())
 	return nil
+}
+
+func (c *Comms) addCommonFieldsAndSign(method int32, msg *messages.ClientCommonRequestFields, wholeMessage interface{}) {
+	msg.Set(method, int32(1), []int32{1}, c.settings.ClientID().ToString(), c.settings.EstablishmentTTL())
+
+	// Sign fields.
+	sig, err := fcrcrypto.SignMessage(c.settings.RetrievalPrivateKey(), 
+		c.settings.RetrievalPrivateKeyVer(), wholeMessage)
+	if err != nil {
+		logging.ErrorAndPanic("Issue signing message: %s", err)
+		panic(err)
+	}
+	msg.SetSignature(sig)
+}
+
+func (c *Comms) verifyMessage(signature string, wholeMessage interface{}) bool {
+	keyVersion, err := fcrcrypto.ExtractKeyVersionFromMessage(signature)
+	if err != nil {
+		logging.Warn("Error decodign signature: %+v", err)
+		return false
+	}
+	if keyVersion.NotEquals(c.gatewayPubKeyVer) {
+		// TODO need to allow for multiple key versions, and fetch correct key
+		// TODO based on version.
+		logging.Error("Unknown Key Version used by gateway: %d", keyVersion.EncodeKeyVersion())
+	}
+
+	verified, err := fcrcrypto.VerifyMessage(c.gatewayPubKey, signature, wholeMessage)
+	if err != nil {
+		logging.Warn("Signature verification error: %+v", err)
+		return false
+	}
+	return verified
 }
