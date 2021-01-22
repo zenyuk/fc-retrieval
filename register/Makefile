@@ -1,4 +1,4 @@
-REGISTRY?=
+REGISTRY?=consensys/
 VERSION?=dev
 
 start:
