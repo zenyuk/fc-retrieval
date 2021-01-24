@@ -17,54 +17,28 @@ import (
 
 // SendMessage to gateway
 func SendMessage() {
-
-	peerID, _ := nodeid.NewRandomNodeID()
-	cid, _ := cid.NewRandomContentID()
-
-	fmt.Println(peerID)
-	fmt.Println(cid)
-
-	// Initialise a dummy gateway instance.
-	// g := gateway.GetSingleInstance(&settings)
-
-	// response, _ := RequestGatewayDHTDiscover(cid, peerID, g)
-	// data, _ := json.Marshal(response)
-	// var prettyJSON bytes.Buffer
-	// json.Indent(&prettyJSON, data, "", "\t")
-	// fmt.Println(string(prettyJSON.Bytes()))
-
+	providerID, _ := nodeid.NewRandomNodeID()
+	contentID, _ := cid.NewRandomContentID()
+	pieceCIDs := []cid.ContentID{*contentID}
 	conn, err := net.Dial("tcp", "localhost:8090")
 	if err != nil {
 		log.Error("Fail to dial")
 		os.Exit(1)
 	}
-
-	// request := messages.GatewayDHTDiscoverRequest{
-	// 	MessageType:       messages.GatewayDHTDiscoverRequestType,
-	// 	ProtocolVersion:   1,
-	// 	ProtocolSupported: []int32{1},
-	// 	Nonce:             1,                                       // TODO, Add nonce
-	// 	TTL:               time.Now().Add(10 * time.Second).Unix(), // TODO, ADD TTL, for now 10 seconds
-	// }
-
-	// err = tcpcomms.SendMessageWithType(
-	// 	conn,
-	// 	messages.GatewayDHTDiscoverRequestType,
-	// 	&request,
-	// 30000)
-
-	request := messages.GatewayDHTDiscoverRequest{
-		MessageType:       messages.GatewayDHTDiscoverRequestType,
+	request := messages.ProviderPublishGroupCIDRequest{
+		MessageType:       messages.ProviderPublishGroupCIDRequestType,
 		ProtocolVersion:   1,
 		ProtocolSupported: []int32{1},
-		PieceCID:          *cid,
 		Nonce:             1,                                       // TODO, Add nonce
-		TTL:               time.Now().Add(10 * time.Second).Unix(), // TODO, ADD TTL, for now 10 seconds
+		ProviderID:        *providerID,
+		Price:						 100,
+		Expiry:						 time.Now().Add(10 * time.Second).Unix(),
+		QoS:							 50,
+		PieceCIDs:         pieceCIDs,
 	}
-
 	err = tcpcomms.SendMessageWithType(
 		conn,
-		messages.GatewayDHTDiscoverRequestType,
+		messages.ProviderPublishGroupCIDRequestType,
 		&request,
 		30000)
 
