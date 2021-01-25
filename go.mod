@@ -12,6 +12,7 @@ require (
 	github.com/go-openapi/validate v0.20.1
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/joho/godotenv v1.3.0
 	github.com/rs/cors v1.7.0
 	github.com/rs/zerolog v1.20.0
 	github.com/spf13/viper v1.7.1
