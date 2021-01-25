@@ -35,9 +35,16 @@ The server should be available at `http://localhost:8080`
 
 Config variables description:
 
-| name           | description    | options | default                     |
-| -------------- | -------------- | ------- | --------------------------- |
-| LOG_LEVEL      | logging level  |         | INFO                        |
-| SERVICE_HOST   | service host   |         | provider                    |
-| SERVICE_PORT   | service port   |         | 8080                        |
-| SERVICE_SCHEME | service scheme |         | http                        |
+| name            | description         | options       | default                     |
+| --------------- | ------------------- | ------------- | --------------------------- |
+| LOG_LEVEL       | logging level       |               | INFO                        |
+| LOG_TARGET      | logging target      | STDOUT / FILE | STDOUT                      |
+| LOG_DIR         | logging directory   |               |                             |
+| LOG_FILE        | logging file        |               |                             |
+| LOG_MAX_BACKUPS | logging max backups |               |                             |
+| LOG_MAX_AGE     | logging max age     |               |                             |
+| LOG_MAX_SIZE    | logging max size    |               |                             |
+| LOG_COMPRESS    | logging compress    | true / false  |                             |
+| SERVICE_HOST    | service host        |               | provider                    |
+| SERVICE_PORT    | service port        |               | 8080                        |
+| SERVICE_SCHEME  | service scheme      |               | http                        |
