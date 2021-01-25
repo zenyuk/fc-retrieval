@@ -1,9 +1,11 @@
 package provider
 
 import (
+	"fmt"
 	"time"
 
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
 	"github.com/spf13/viper"
 )
@@ -41,21 +43,21 @@ func Start(p *Provider) {
 	p.loop()
 }
 
+// Start infinite loop
 func (p *Provider) loop() {
-
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
+
 	// connect to gateway and store connection
 	for {
 		log.Info(".")
 		gateways := []Register{}
 		request.GetJSON(url, &gateways)
 
-		for _, gateway := range gateways {
+		for _, gw := range gateways {
 			message := generateDummyMessage()
-			log.Info("TODO, SEND to this gateway")
-			log.Info("%+v", gateway)
-			log.Info("%+v", message)
-			// get connection or recreate it, and send tcp message
+			fmt.Println(message)
+			fmt.Println(gw)
+			gateway.SendMessage()
 		}
 		time.Sleep(25 * time.Second)
 	}

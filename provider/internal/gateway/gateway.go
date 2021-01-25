@@ -1,186 +1,92 @@
 package gateway
 
 import (
+	"fmt"
 	"net"
-	"sync"
+	"os"
+	"time"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway/clients"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	_ "github.com/joho/godotenv/autoload"
+
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/tcpcomms"
 )
 
-const (
-	protocolVersion   = 1 // Main protocol version
-	protocolSupported = 1 // Alternative protocol version
-)
+// SendMessage to gateway
+func SendMessage() {
 
-// CommunicationChannels holds channels necessary to manage the live tcp connection thread
-// CommsLock is used to ensure only one thread can access the tcp connection thread.
-// Send true to InterruptRequestChan to indicate the attempt to interrupt tcp connection thread.
-// When tcp connection thread is ready, it will send true to interruptResponseChan.
-// Send any request in bytes directly to CommsRequestChan.
-// The connection thread will send the response to CommsResponseChan if there’s any response expected.
-// The connection thread will also send any error to the CommsResponseError or nil if the request is successful.
-// Send false to InterruptRequestChan to indicate the attempt to end the interruption.
+	peerID, _ := nodeid.NewRandomNodeID()
+	cid, _ := cid.NewRandomContentID()
 
-// CommunicationChannel holds the connection for sending outgoing TCP requests.
-// CommsLock is used to ensure only one thread can access the tcp connection at any time.
-// Conn is the net connection for sending outgoing TCP requests.
-type CommunicationChannel struct {
-	CommsLock sync.RWMutex
-	Conn      net.Conn
+	fmt.Println(peerID)
+	fmt.Println(cid)
+
+	// Initialise a dummy gateway instance.
+	// g := gateway.GetSingleInstance(&settings)
+
+	// response, _ := RequestGatewayDHTDiscover(cid, peerID, g)
+	// data, _ := json.Marshal(response)
+	// var prettyJSON bytes.Buffer
+	// json.Indent(&prettyJSON, data, "", "\t")
+	// fmt.Println(string(prettyJSON.Bytes()))
+
+	conn, err := net.Dial("tcp", "localhost:8090")
+	if err != nil {
+		log.Error("Fail to dial")
+		os.Exit(1)
+	}
+
+	// request := messages.GatewayDHTDiscoverRequest{
+	// 	MessageType:       messages.GatewayDHTDiscoverRequestType,
+	// 	ProtocolVersion:   1,
+	// 	ProtocolSupported: []int32{1},
+	// 	Nonce:             1,                                       // TODO, Add nonce
+	// 	TTL:               time.Now().Add(10 * time.Second).Unix(), // TODO, ADD TTL, for now 10 seconds
+	// }
+
+	// err = tcpcomms.SendMessageWithType(
+	// 	conn,
+	// 	messages.GatewayDHTDiscoverRequestType,
+	// 	&request,
+	// 30000)
+
+	request := messages.GatewayDHTDiscoverRequest{
+		MessageType:       messages.GatewayDHTDiscoverRequestType,
+		ProtocolVersion:   1,
+		ProtocolSupported: []int32{1},
+		PieceCID:          *cid,
+		Nonce:             1,                                       // TODO, Add nonce
+		TTL:               time.Now().Add(10 * time.Second).Unix(), // TODO, ADD TTL, for now 10 seconds
+	}
+
+	err = tcpcomms.SendMessageWithType(
+		conn,
+		messages.GatewayDHTDiscoverRequestType,
+		&request,
+		30000)
+
+	fmt.Println("MY MESSAGE", request)
+	fmt.Println("-------------------------------------------")
+	fmt.Println(err)
+
+	// if err != nil && tcpcomms.IsTimeoutError(err) {
+	// 	// Timeout can be ignored. Since this message can expire.
+	// 	return nil, nil
+	// } else if err != nil {
+	// 	pComm.Conn.Close()
+	// 	gateway.DeregisterGatewayCommunication(gatewayID)
+	// 	return nil, err
+	// }
+	// if msgType == messages.GatewayDHTDiscoverResponseType {
+	// 	response := messages.GatewayDHTDiscoverResponse{}
+	// 	if json.Unmarshal(data, &response) == nil {
+	// 		// Message is valid.
+	// 		return &response, nil
+	// 	}
+	// }
+
+	fmt.Println("-------------------------------------------")
 }
-
-// Gateway holds the main data structure for the whole gateway.
-type Gateway struct {
-	ProtocolVersion   int32
-	ProtocolSupported []int32
-
-	// GatewayID of this gateway
-	GatewayID *nodeid.NodeID
-
-	// Gateway Private Key and algorithm of this gateway
-	GatewayPrivateKey *fcrcrypto.KeyPair
-
-	// GatewayPrivateKeyVersion is the key version number of the private key.
-	GatewayPrivateKeyVersion *fcrcrypto.KeyVersion
-
-	// GatewayAddressMap stores mapping from gateway id (big int in string repr) to its address.
-	GatewayAddressMap     map[string](string)
-	GatewayAddressMapLock sync.RWMutex
-
-	// ProviderAddressMap stores mapping from provider id (big int in string repr) to its address.
-	ProviderAddressMap     map[string](string)
-	ProviderAddressMapLock sync.RWMutex
-
-	// ActiveGateways store connected active gateways for outgoing request:
-	// A map from gateway id (big int in string repr) to a CommunicationChannel.
-	ActiveGateways     map[string](*CommunicationChannel)
-	ActiveGatewaysLock sync.RWMutex
-
-	// ActiveProviders store connected active providers for outgoing request:
-	// A map from provider id (big in in string repr) to a CommunicationChannel.
-	ActiveProviders     map[string](*CommunicationChannel)
-	ActiveProvidersLock sync.RWMutex
-
-	GatewayClient *clients.GatewayClientInteraction
-
-	// Offers, it is threadsafe.
-	Offers *offers.Offers
-
-	// RegistrationBlockHash is the hash of the block that registers this gateway
-	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
-	// RegistrationMerkleProof proves the transaction receipt is part of the block
-	RegistrationBlockHash          string
-	RegistrationTransactionReceipt string
-	RegistrationMerkleProof        string
-}
-
-// Single instance of the gateway
-var instance *Gateway
-var doOnce sync.Once
-
-// GetSingleInstance returns the single instance of the gateway
-func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
-	doOnce.Do(func() {
-		if len(confs) == 0 {
-			logging.ErrorAndPanic("No settings supplied to Gateway start-up")
-		}
-		if len(confs) != 1 {
-			logging.ErrorAndPanic("More than one sets of settings supplied to Gateway start-up")
-		}
-		conf := confs[0]
-
-		gatewayPrivateKey, err := fcrcrypto.DecodePrivateKey(conf.GatewayPrivKey)
-		if err != nil {
-			logging.ErrorAndPanic("Error decoding Gateway Private Key: %s", err)
-		}
-		gatewayID, err := nodeid.NewNodeIDFromString(conf.GatewayID)
-		if err != nil {
-			logging.ErrorAndPanic("Error decoding node id: %s", err)
-		}
-
-		gatewayPrivateKeyVersion := fcrcrypto.DecodeKeyVersion(conf.GatewayPrivKeyVersion)
-
-		instance = &Gateway{
-			ProtocolVersion:          protocolVersion,
-			ProtocolSupported:        []int32{protocolVersion, protocolSupported},
-			GatewayAddressMap:        make(map[string](string)),
-			GatewayAddressMapLock:    sync.RWMutex{},
-			ProviderAddressMap:       make(map[string](string)),
-			ProviderAddressMapLock:   sync.RWMutex{},
-			ActiveGateways:           make(map[string](*CommunicationChannel)),
-			ActiveGatewaysLock:       sync.RWMutex{},
-			ActiveProviders:          make(map[string](*CommunicationChannel)),
-			ActiveProvidersLock:      sync.RWMutex{},
-			GatewayClient:            &clients.GatewayClientInteraction{},
-			GatewayPrivateKey:        gatewayPrivateKey,
-			GatewayPrivateKeyVersion: gatewayPrivateKeyVersion,
-			GatewayID:                gatewayID,
-			Offers:                   offers.GetSingleInstance(),
-			RegistrationBlockHash:    "TODO",
-		}
-	})
-	return instance
-}
-
-// // RegisterGatewayCommunication registers a gateway communication
-// func RegisterGatewayCommunication(id *nodeid.NodeID, gComm *CommunicationChannel) error {
-// 	if instance == nil {
-// 		return errors.New("Error: instance not created")
-// 	}
-// 	instance.ActiveGatewaysLock.Lock()
-// 	defer instance.ActiveGatewaysLock.Unlock()
-// 	_, exist := instance.ActiveGateways[id.ToString()]
-// 	if exist {
-// 		return errors.New("Error: connection existed")
-// 	}
-// 	instance.ActiveGateways[id.ToString()] = gComm
-// 	return nil
-// }
-
-// // DeregisterGatewayCommunication deregisters a gateway communication
-// // Fail silently
-// func DeregisterGatewayCommunication(id *nodeid.NodeID) {
-// 	if instance != nil {
-// 		instance.ActiveGatewaysLock.Lock()
-// 		defer instance.ActiveGatewaysLock.Unlock()
-// 		_, exist := instance.ActiveGateways[id.ToString()]
-// 		if exist {
-// 			delete(instance.ActiveGateways, id.ToString())
-// 		}
-// 	}
-// }
-
-// // RegisterProviderCommunication registers a provider communication
-// func RegisterProviderCommunication(id *nodeid.NodeID, pComm *CommunicationChannel) error {
-// 	if instance == nil {
-// 		return errors.New("Error: instance not created")
-// 	}
-// 	instance.ActiveProvidersLock.Lock()
-// 	defer instance.ActiveProvidersLock.Unlock()
-// 	_, exist := instance.ActiveProviders[id.ToString()]
-// 	if exist {
-// 		return errors.New("Error: connection existed")
-// 	}
-// 	instance.ActiveProviders[id.ToString()] = pComm
-// 	return nil
-// }
-
-// // DeregisterProviderCommunication deregisters a provider communication
-// func DeregisterProviderCommunication(id *nodeid.NodeID) error {
-// 	if instance == nil {
-// 		return errors.New("Error: instance not created")
-// 	}
-// 	instance.ActiveProvidersLock.Lock()
-// 	defer instance.ActiveProvidersLock.Unlock()
-// 	_, exist := instance.ActiveProviders[id.ToString()]
-// 	if !exist {
-// 		return errors.New("Error: connection not existed")
-// 	}
-// 	delete(instance.ActiveProviders, id.ToString())
-// 	return nil
-// }
