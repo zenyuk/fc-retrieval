@@ -5,24 +5,11 @@ import (
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
-// CIDMessage data model
-type CIDMessage struct {
-	MessageType       int32           `json:"message_type"`
-	ProtocolVersion   int32           `json:"protocol_version"`
-	ProtocolSupported []int32         `json:"protocol_supported"`
-	Nonce             int64           `json:"nonce"`
-	ProviderID        nodeid.NodeID   `json:"provider_id"`
-	Price             uint64          `json:"price_per_byte"`
-	Expiry            int64           `json:"expiry_date"`
-	QoS               uint64          `json:"qos"`
-	Signature         string          `json:"signature"`
-	PieceCIDs         []cid.ContentID `json:"piece_cids"`
-}
-
-func generateDummyMessage() CIDMessage {
+func generateDummyMessage() messages.ProviderPublishGroupCIDRequest {
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
 	protocolSupported := []int32{1, 2}
@@ -30,7 +17,7 @@ func generateDummyMessage() CIDMessage {
 
 	contentID, _ := cid.NewRandomContentID()
 	pieceCIDs := []cid.ContentID{*contentID}
-	dummyMessage := CIDMessage{
+	dummyMessage := messages.ProviderPublishGroupCIDRequest{
 
 		MessageType:       123,
 		ProtocolVersion:   1,
