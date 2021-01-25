@@ -42,7 +42,6 @@ func configureAPI(api *operations.FilecoinRetrievalRegisterAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-
 	api.RegistersAddRegisterHandler = registers.AddRegisterHandlerFunc(func(params registers.AddRegisterParams) middleware.Responder {
 		return handlers.AddRegister(params)
 	})
@@ -54,7 +53,6 @@ func configureAPI(api *operations.FilecoinRetrievalRegisterAPI) http.Handler {
 	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
 		return handlers.HomepageHandler()
 	})
-
 
 	api.PreServerShutdown = func() {}
 
