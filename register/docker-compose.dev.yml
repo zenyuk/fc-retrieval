@@ -1,6 +1,8 @@
-version: "3"
+version: '3.7'
+
 services:
   fc-retrieval-register:
+    container_name: fc-retrieval-register
     build:
       dockerfile: Dockerfile.dev
       context: .
@@ -13,6 +15,7 @@ services:
     restart: unless-stopped
 
   redis:
+    container_name: fc-retrieval-redis
     image: "redis:alpine"
     ports:
       - "6379:6379"
