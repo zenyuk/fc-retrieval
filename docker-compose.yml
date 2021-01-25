@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   provider:
-    image: fc-retrieval-provider:v1
+    image: consensys/fc-retrieval-provider:dev
     container_name: provider
     networks:
       - shared
@@ -13,3 +13,5 @@ services:
      
 networks:
   shared:
+    name: shared
+    external: true
