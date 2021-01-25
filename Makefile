@@ -1,11 +1,11 @@
 REGISTRY?=consensys/
 VERSION?=dev
 
-start:
-	docker-compose up
+dev:
+	docker-compose -f docker-compose.dev.yml up
 
-stop:
-	docker-compose stop
+# stop:
+# 	docker-compose stop
 
 build:
 	docker build -f Dockerfile.dev -t ${REGISTRY}fc-retrieval-register:${VERSION} .
