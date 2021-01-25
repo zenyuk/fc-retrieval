@@ -1,0 +1,18 @@
+version: "3"
+services:
+  fc-retrieval-provider:
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
+    volumes:
+      - ./:/app
+    networks:
+      - shared
+    environment: 
+      - REGISTER_API_URL=http://fc-retrieval-register:80
+    restart: unless-stopped
+
+networks:
+  shared:
+    name: shared
+    external: true
