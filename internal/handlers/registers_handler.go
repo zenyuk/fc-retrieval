@@ -13,7 +13,7 @@ import (
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
 )
 
-// Add a register
+// AddRegister to create a register
 func AddRegister(params op.AddRegisterParams) middleware.Responder {
 	redisHash := params.Type
 
@@ -23,7 +23,7 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
 		Password: apiconfig.GetString("REDIS_PASSWORD"),
-		DB:       0,  // use default DB
+		DB:       0, // use default DB
 	})
 
 	err := rdb.HSet(ctx, redisHash, register, 0).Err()
@@ -32,13 +32,13 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 		panic(err)
 	}
 
-	log.Info().Msg("Register created")
+	log.Info().Msg("Register created for %v", redisHash)
 
 	// Response
 	return op.NewAddRegisterOK().WithPayload(register)
 }
 
-// Get register list
+// GetRegisters retrieve register list
 func GetRegisters(params op.GetRegistersParams) middleware.Responder {
 	redisHash := params.Type
 
@@ -47,16 +47,16 @@ func GetRegisters(params op.GetRegistersParams) middleware.Responder {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
 		Password: apiconfig.GetString("REDIS_PASSWORD"),
-		DB:       0,  // use default DB
+		DB:       0, // use default DB
 	})
-	
+
 	registers, err := rdb.HGetAll(ctx, redisHash).Result()
 	if err != nil {
 		log.Error().Msg("Unable to get Redis value")
 		panic(err)
 	}
 
-	payload :=  []*models.Register{}
+	payload := []*models.Register{}
 	for registerJson, _ := range registers {
 		registerData := models.Register{}
 		json.Unmarshal([]byte(registerJson), &registerData)
