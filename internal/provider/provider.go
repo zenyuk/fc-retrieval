@@ -38,11 +38,11 @@ func Start(p *Provider) {
 	port := p.conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
-	register(url)
+	register(url, p)
 
 	// Temp register gateway
 	urlGw := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-	register(urlGw)
+	register(urlGw, p)
 	p.loop()
 }
 
