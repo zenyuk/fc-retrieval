@@ -1,6 +1,6 @@
 PORT ?= 8080
-REGISTRY?=
-VERSION?=v1
+REGISTRY?=consensys/
+VERSION?=dev
 
 .PHONY: build build-dev start start-dev stop
 
