@@ -39,22 +39,19 @@ func Start(p *Provider) {
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
 	register(url, p)
-
-	// Temp register gateway
-	urlGw := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-	register(urlGw, p)
-	p.loop()
 }
 
 // Start infinite loop
 func (p *Provider) loop() {
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
 
-	// connect to gateway and store connection
 	for {
-		log.Info(".")
 		gateways := []Register{}
 		request.GetJSON(url, &gateways)
+
+		if len(gateways) == 0 {
+			log.Warn("No gateways found")
+		}
 
 		for _, gw := range gateways {
 			message := generateDummyMessage()

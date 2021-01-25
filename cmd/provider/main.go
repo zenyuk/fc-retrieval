@@ -8,11 +8,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider/internal/provider"
 )
 
+// Start Provider service
 func main() {
 	conf := config.NewConfig()
 	log.Init(conf)
 
-	log.Info("Running app ...")
+	log.Info("Start Provider service...")
 	p := provider.NewProvider(conf)
 	provider.Start(p)
 }
