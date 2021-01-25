@@ -5,6 +5,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
 )
 
+// Register a provider
 func register(url string, p *Provider) {
 
 	providerReg := Register{
