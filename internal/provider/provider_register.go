@@ -8,8 +8,8 @@ import (
 func register(url string) {
 
 	providerReg := Register{
-		Address:        "f01213",
-		NetworkInfo:    "127.0.0.1:80",
+		Address:        "f0121345",
+		NetworkInfo:    "127.0.0.1:8090",
 		RegionCode:     "US",
 		RootSigningKey: "0xABCDE123456789",
 		SigingKey:      "0x987654321EDCBA",

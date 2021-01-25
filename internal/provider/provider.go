@@ -33,13 +33,16 @@ func NewProvider(conf *viper.Viper) *Provider {
 
 // Start a new provider
 func Start(p *Provider) {
-
-	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
 	scheme := p.conf.GetString("SERVICE_SCHEME")
 	host := p.conf.GetString("SERVICE_HOST")
 	port := p.conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
+	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
 	register(url)
+
+	// Temp register gateway
+	urlGw := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
+	register(urlGw)
 	p.loop()
 }
 
@@ -56,8 +59,8 @@ func (p *Provider) loop() {
 		for _, gw := range gateways {
 			message := generateDummyMessage()
 			fmt.Println(message)
-			fmt.Println(gw)
-			gateway.SendMessage()
+			gwURL := gw.NetworkInfo
+			gateway.SendMessage(gwURL, message)
 		}
 		time.Sleep(25 * time.Second)
 	}
