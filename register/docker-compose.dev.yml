@@ -2,10 +2,7 @@ version: '3.7'
 
 services:
   fc-retrieval-register:
-    container_name: fc-retrieval-register
-    build:
-      dockerfile: Dockerfile.dev
-      context: .
+    image: consensys/fc-retrieval-register:dev
     ports:
       - "8080:80"
     volumes:
