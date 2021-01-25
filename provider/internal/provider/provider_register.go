@@ -5,14 +5,14 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
 )
 
-func register(url string) {
+func register(url string, p *Provider) {
 
 	providerReg := Register{
-		Address:        "f0121345",
-		NetworkInfo:    "127.0.0.1:8090",
-		RegionCode:     "US",
-		RootSigningKey: "0xABCDE123456789",
-		SigingKey:      "0x987654321EDCBA",
+		Address:        p.conf.GetString("PROVIDER_ADDRESS"),
+		NetworkInfo:    p.conf.GetString("PROVIDER_NETWORK_INFO"),
+		RegionCode:     p.conf.GetString("PROVIDER_REGION_CODE"),
+		RootSigningKey: p.conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
+		SigingKey:      p.conf.GetString("PROVIDER_SIGNING_KEY"),
 	}
 
 	err := request.SendJSON(url, providerReg)
