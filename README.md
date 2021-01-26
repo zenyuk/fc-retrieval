@@ -42,7 +42,11 @@ Config variables description:
 
 | name            | description         | options       | default                     |
 | --------------- | ------------------- | ------------- | --------------------------- |
-| LOG_LEVEL       | logging level       |               | INFO                        |
+| SERVICE_NAME    | service name        |               | Filecoin Retrieval Register |
+| REDIS_URL       | redis url           |               | redis                       |
+| REDIS_PORT      | redis port          |               | 6379                        |
+| REDIS_PASSWORD  | redis password      |               | ""                          |
+| LOG_LEVEL       | logging level       |               | info                        |
 | LOG_TARGET      | logging target      | STDOUT / FILE | STDOUT                      |
 | LOG_DIR         | logging directory   |               |                             |
 | LOG_FILE        | logging file        |               |                             |
@@ -50,10 +54,6 @@ Config variables description:
 | LOG_MAX_AGE     | logging max age     |               |                             |
 | LOG_MAX_SIZE    | logging max size    |               |                             |
 | LOG_COMPRESS    | logging compress    | true / false  |                             |
-| SERVICE_NAME    | service name        |               | Filecoin Retrieval Register |
-| REDIS_URL       | redis url           |               | redis                       |
-| REDIS_PORT      | redis port          |               | 6379                        |
-| REDIS_PASSWORD  | redis password      |               | ""                          |
 
 ## Usage
 
