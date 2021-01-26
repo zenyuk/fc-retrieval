@@ -17,7 +17,7 @@ import (
 // StartGatewayAPI starts the TCP API as a separate go routine.
 func StartGatewayAPI(settings settings.AppSettings) error {
 	// Start server
-	ln, err := net.Listen("tcp", ":" + settings.BindGatewayAPI)
+	ln, err := net.Listen("tcp", ":"+settings.BindGatewayAPI)
 	if err != nil {
 		return err
 	}
@@ -33,6 +33,11 @@ func StartGatewayAPI(settings settings.AppSettings) error {
 		}
 	}(ln)
 	logging.Info("Listening on %s for connections from Gateways", settings.BindGatewayAPI)
+
+	// Gateway registration
+	url := settings.RegisterAPIURL + "/registers/gateway"
+	gateway.Registration(url, settings)
+
 	return nil
 }
 
