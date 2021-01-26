@@ -5,30 +5,26 @@ import (
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
+	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
-func generateDummyMessage() messages.ProviderPublishGroupCIDRequest {
-	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-
-	protocolSupported := []int32{1, 2}
+func generateDummyMessage() *fcrmessages.FCRMessage {
 	providerID, _ := nodeid.NewRandomNodeID()
-
+	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 	contentID, _ := cid.NewRandomContentID()
 	pieceCIDs := []cid.ContentID{*contentID}
-	dummyMessage := messages.ProviderPublishGroupCIDRequest{
-
-		MessageType:       123,
-		ProtocolVersion:   1,
-		ProtocolSupported: protocolSupported,
-		Nonce:             rand.Int63n(100000),
-		ProviderID:        *providerID,
-		Price:             42,
-		Expiry:            expiryDate,
-		QoS:               42,
-		Signature:         "Signature",
-		PieceCIDs:         pieceCIDs,
+	dummyMessage, err := fcrmessages.EncodeProviderPublishGroupCIDRequest(
+		rand.Int63n(100000),
+		providerID,
+		42,
+		expiryDate,
+		42,
+		pieceCIDs,
+	)
+	if err != nil {
+		log.Error("Error when encoding message: %v", err)
 	}
 	return dummyMessage
 }
