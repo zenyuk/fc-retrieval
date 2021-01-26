@@ -6,7 +6,7 @@ import (
 )
 
 // Register a provider
-func register(url string, p *Provider) {
+func Registration(url string, p *Provider) {
 
 	providerReg := Register{
 		Address:        p.conf.GetString("PROVIDER_ADDRESS"),
