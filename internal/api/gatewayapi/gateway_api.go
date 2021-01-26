@@ -34,10 +34,6 @@ func StartGatewayAPI(settings settings.AppSettings) error {
 	}(ln)
 	logging.Info("Listening on %s for connections from Gateways", settings.BindGatewayAPI)
 
-	// Gateway registration
-	url := settings.RegisterAPIURL + "/registers/gateway"
-	gateway.Registration(url, settings)
-
 	return nil
 }
 
