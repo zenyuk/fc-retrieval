@@ -5,9 +5,9 @@ import (
 
 	"encoding/json"
 
+	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	middleware "github.com/go-openapi/runtime/middleware"
 	redis "github.com/go-redis/redis/v8"
-	"github.com/rs/zerolog/log"
 
 	"github.com/ConsenSys/fc-retrieval-register/models"
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
@@ -28,7 +28,7 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 
 	err := rdb.HSet(ctx, redisHash, register, 0).Err()
 	if err != nil {
-		log.Error().Msg("Unable to set Redis value")
+		log.Error("Unable to set Redis value")
 		panic(err)
 	}
 
@@ -52,7 +52,7 @@ func GetRegisters(params op.GetRegistersParams) middleware.Responder {
 
 	registers, err := rdb.HGetAll(ctx, redisHash).Result()
 	if err != nil {
-		log.Error().Msg("Unable to get Redis value")
+		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
