@@ -5,8 +5,8 @@ import (
 	"time"
 
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/gateway"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
 	"github.com/spf13/viper"
 )
 
