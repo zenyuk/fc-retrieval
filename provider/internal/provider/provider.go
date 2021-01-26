@@ -38,7 +38,8 @@ func Start(p *Provider) {
 	port := p.conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
-	register(url, p)
+	Registration(url, p)
+	p.loop()
 }
 
 // Start infinite loop
