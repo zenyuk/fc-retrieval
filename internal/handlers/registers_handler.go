@@ -32,7 +32,7 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 		panic(err)
 	}
 
-	log.Info().Str("type", redisHash).Msg("Register created")
+	log.Info("Register created %v", redisHash)
 
 	// Response
 	return op.NewAddRegisterOK().WithPayload(register)
