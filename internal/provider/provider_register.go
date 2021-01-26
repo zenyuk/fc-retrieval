@@ -2,7 +2,7 @@ package provider
 
 import (
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
 )
 
 // Register a provider
