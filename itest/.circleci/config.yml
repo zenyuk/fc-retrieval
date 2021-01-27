@@ -116,6 +116,12 @@ jobs:
     ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
+      - run: 
+        name: "Check parameters"
+        command: |
+          BRANCH=<< pipeline.parameters.repo-branch >>
+          echo Repo Branch: "$BRANCH", Circle Branch "$CIRCLE_BRANCH"
+
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
           workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
