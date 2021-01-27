@@ -18,6 +18,14 @@ func Init(conf *viper.Viper) {
 	log.Logger = zerolog.New(writer)
 }
 
+// Init1 initialises the logger without a Viper object
+func Init1(logLevel string, logTarget string) {
+	conf := viper.New()
+	conf.Set("LOG_LEVEL", logLevel)
+	conf.Set("LOG_TARGET", logTarget)
+	Init(conf)
+}
+
 func setTimeFormat() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 }
@@ -94,14 +102,18 @@ func Panic(msg string, args ...interface{}) {
 	log.Panic().Msgf(msg, args...)
 }
 
-/* TODO: Keep to avoid issues */
-
+// ErrorAndPanic is now deprecated. It is equivalent to Panic.
 func ErrorAndPanic(msg string, args ...interface{}) {
-	log.Error().Msgf(msg, args...)
+	Panic(msg, args...)
 }
 
+// Error1 prints an Error level log for an error
 func Error1(err error) {
-	log.Error().Err(err).Msg("Error")
+	Error("Error: %s", err)
 }
 
-/* END TODO */
+// InfoEnabled returns true if Info log level is enabled.
+func InfoEnabled() bool {
+	return log.Info().Enabled()
+}
+
