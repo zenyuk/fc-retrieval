@@ -1,18 +1,19 @@
 package main
 
 import (
-	_ "github.com/joho/godotenv/autoload"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/ConsenSys/fc-retrieval-provider/config"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/services/provider"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/provider"
 )
 
+// Start Provider service
 func main() {
-  conf := config.NewConfig()
-  log.Init(conf)
+	conf := config.NewConfig()
+	log.Init(conf)
 
-	log.Info("Running app ...")
+	log.Info("Start Provider service...")
 	p := provider.NewProvider(conf)
 	provider.Start(p)
 }
