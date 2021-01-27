@@ -2,6 +2,10 @@
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2.1
+parameters:
+  image-tag:
+    type: repo-branch
+    default: ""
 commands:
   getrepobranch:
     description: "Get correct branch on repo"
@@ -23,17 +27,22 @@ commands:
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
           #git --git-dir=fc-retrieval-gateway/.git reset --hard "$head"
           command: |
-              echo Circle Branch "$CIRCLE_BRANCH"
-              if [ -z "$CIRCLE_BRANCH" ]; then
-                echo itest repos is using main
+              BRANCH=<< pipeline.parameters.repo-branch >>
+              echo Repo Branch: "$BRANCH", Circle Branch "$CIRCLE_BRANCH"
+              if [ -z "$BRANCH" ]; then
+                BRANCH=$CIRCLE_BRANCH
+              fi
+              if [ -z "$BRANCH" ]; then
+                echo Using main
+                BRANCH=main
               else 
-                existed_in_local=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+                existed_in_local=$(git branch -r --list origin/"$BRANCH")
                 if [ -z "$existed_in_local" ]; then 
                   echo << parameters.repo >> repo branch is main
                 else 
-                  echo << parameters.repo >> branch is "$CIRCLE_BRANCH"
+                  echo << parameters.repo >> branch is "$BRANCH"
                   git fetch
-                  git checkout "$CIRCLE_BRANCH"
+                  git checkout "$BRANCH"
                 fi
               fi
               # echo to the screen the git hash
@@ -55,8 +64,9 @@ jobs:
     ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
-      # git clone the Client and change to the correct branch.
-      - checkout
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-client"
           workdir: "/go/src/github.com/ConsenSys/fc-retrieval-client"
@@ -106,7 +116,9 @@ jobs:
     ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
-      - checkout
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
       - run: make utest
 
 workflows:
