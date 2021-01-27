@@ -189,6 +189,10 @@ func init() {
           "description": "Network addressing information.",
           "type": "string"
         },
+        "nodeId": {
+          "description": "Node ID.",
+          "type": "string"
+        },
         "regionCode": {
           "description": "Region Code.",
           "type": "string"
@@ -375,6 +379,10 @@ func init() {
         },
         "networkInfo": {
           "description": "Network addressing information.",
+          "type": "string"
+        },
+        "nodeId": {
+          "description": "Node ID.",
           "type": "string"
         },
         "regionCode": {

@@ -91,6 +91,9 @@ definitions:
     type: object
     description: Register entry
     properties:
+      nodeId:
+        type: string
+        description: Node ID.
       address:
         type: string
         description: Filecoin Account to be used with payment channels.
