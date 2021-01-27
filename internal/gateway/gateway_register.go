@@ -8,6 +8,7 @@ import (
 
 // Register data model
 type Register struct {
+	NodeID         string
 	Address        string
 	NetworkInfo    string
 	RegionCode     string
@@ -19,6 +20,7 @@ type Register struct {
 func Registration(url string, settings settings.AppSettings) {
 
 	providerReg := Register{
+		NodeID:         settings.GatewayID,
 		Address:        settings.GatewayAddress,
 		NetworkInfo:    settings.GatewayNetworkInfo,
 		RegionCode:     settings.GatewayRegionCode,
