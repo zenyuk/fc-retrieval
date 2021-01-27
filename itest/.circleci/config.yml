@@ -118,7 +118,8 @@ jobs:
     steps:
       - run: 
           name: "Check parameters"
-          command: echo "Repo Branch: << pipeline.parameters.repo-branch >>, Circle Branch $CIRCLE_BRANCH"
+          command: |
+            echo Repo Branch: << pipeline.parameters.repo-branch >>, Circle Branch $CIRCLE_BRANCH
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
           workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
