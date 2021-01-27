@@ -27,7 +27,7 @@ commands:
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
           #git --git-dir=fc-retrieval-gateway/.git reset --hard "$head"
           command: |
-              BRANCH=<< pipeline.parameters.repo-branch >>
+              BRANCH=<< pipeline.parameters.repox-branch >>
               echo Repo Branch: "$BRANCH", Circle Branch "$CIRCLE_BRANCH"
               if [ -z "$BRANCH" ]; then
                 BRANCH=$CIRCLE_BRANCH
