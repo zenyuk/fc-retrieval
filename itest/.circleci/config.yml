@@ -5,7 +5,7 @@ version: 2.1
 parameters:
   repox-branch:
     type: string
-    default: ""
+    default: "NOTSET"
 commands:
   getrepobranch:
     description: "Get correct branch on repo"
