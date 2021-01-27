@@ -23,6 +23,9 @@ type Register struct {
 	// Network addressing information.
 	NetworkInfo string `json:"networkInfo,omitempty"`
 
+	// Node ID.
+	NodeID string `json:"nodeId,omitempty"`
+
 	// Region Code.
 	RegionCode string `json:"regionCode,omitempty"`
 
