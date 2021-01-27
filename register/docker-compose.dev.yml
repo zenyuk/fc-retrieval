@@ -2,16 +2,19 @@ version: '3.7'
 
 services:
   fc-retrieval-register:
+    container_name: fc-retrieval-register
     image: consensys/fc-retrieval-register:dev
     ports:
       - "8080:80"
     volumes:
       - ./:/app
+    env_file:
+      - .env
     networks:
       - shared
     restart: unless-stopped
 
-  redis:
+  fc-retrieval-redis:
     container_name: fc-retrieval-redis
     image: "redis:alpine"
     ports:
