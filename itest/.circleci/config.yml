@@ -3,7 +3,7 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2.1
 parameters:
-  repo-branch:
+  repox-branch:
     type: string
     default: ""
 commands:
@@ -119,8 +119,8 @@ jobs:
       - run: 
           name: "Check parameters"
           command: |
-            BRA=<< pipeline.parameters.repo-branch >>
-            echo pipeline.parameters.repo-branch: $BRA
+            BRA=<< pipeline.parameters.repox-branch >>
+            echo pipeline.parameters.repox-branch: $BRA
             echo Circle Branch: $CIRCLE_BRANCH
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
