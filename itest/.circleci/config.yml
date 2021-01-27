@@ -114,13 +114,14 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
+    environment:
+      REPOBRANCH: << pipeline.parameters.repox-branch >>
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - run: 
           name: "Check parameters"
           command: |
-            BRA=<< pipeline.parameters.repox-branch >>
-            echo pipeline.parameters.repox-branch: $BRA
+            echo "pipeline.parameters.repox-branch: ${REPOBRANCH}"
             echo Circle Branch: $CIRCLE_BRANCH
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
