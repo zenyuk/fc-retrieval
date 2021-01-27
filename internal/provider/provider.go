@@ -1,10 +1,12 @@
 package provider
 
 import (
+	"fmt"
 	"time"
 
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/request"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/gateway"
 	"github.com/spf13/viper"
 )
 
@@ -35,22 +37,28 @@ func Start(p *Provider) {
 	host := p.conf.GetString("SERVICE_HOST")
 	port := p.conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
+	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
+	Registration(url, p)
 	p.loop()
 }
 
+// Start infinite loop
 func (p *Provider) loop() {
 	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-	register(url)
+
 	for {
-		log.Info(".")
 		gateways := []Register{}
 		request.GetJSON(url, &gateways)
 
-		for _, gateway := range gateways {
+		if len(gateways) == 0 {
+			log.Warn("No gateways found")
+		}
+
+		for _, gw := range gateways {
 			message := generateDummyMessage()
-			log.Info("TODO, post to this gateway")
-			log.Info("%+v", gateway)
-			log.Info("%+v", message)
+			fmt.Println(message)
+			gwURL := gw.NetworkInfo
+			gateway.SendMessage(gwURL, message)
 		}
 		time.Sleep(25 * time.Second)
 	}
