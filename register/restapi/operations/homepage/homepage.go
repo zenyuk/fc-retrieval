@@ -29,7 +29,7 @@ func NewHomepage(ctx *middleware.Context, handler HomepageHandler) *Homepage {
 	return &Homepage{Context: ctx, Handler: handler}
 }
 
-/*Homepage swagger:route GET / Homepage homepage
+/* Homepage swagger:route GET / Homepage homepage
 
 Homepage
 
@@ -45,14 +45,12 @@ func (o *Homepage) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewHomepageParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

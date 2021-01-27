@@ -31,7 +31,7 @@ The API should be available at `http://localhost:8080`
 Start the project manually:
 
 ```
-go run cmd/filecoin-retrieval-register-server/main.go --host 0.0.0.0 --port 8080
+go run cmd/register-server/main.go --host 0.0.0.0 --port 8080
 ```
 
 The API should be available at `http://localhost:8080`
@@ -115,7 +115,7 @@ curl --location --request GET 'http://localhost:8080/registers/provider'
 Routes can be changed in `docs/swagger.yml`. To generate or regenerate the project with updated routes, execute:
 
 ```
-swagger generate server -f docs/swagger.yml
+swagger generate server -f docs/swagger.yml -A register
 ```
 
 ### FAQ
