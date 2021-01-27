@@ -29,7 +29,7 @@ func NewGetRegisters(ctx *middleware.Context, handler GetRegistersHandler) *GetR
 	return &GetRegisters{Context: ctx, Handler: handler}
 }
 
-/*GetRegisters swagger:route GET /registers/{type} Registers getRegisters
+/* GetRegisters swagger:route GET /registers/{type} Registers getRegisters
 
 Get register list
 
@@ -47,14 +47,12 @@ func (o *GetRegisters) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetRegistersParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

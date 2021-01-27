@@ -13,7 +13,8 @@ import (
 )
 
 // NewHomepageParams creates a new HomepageParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewHomepageParams() HomepageParams {
 
 	return HomepageParams{}

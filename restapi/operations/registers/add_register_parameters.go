@@ -6,6 +6,7 @@ package registers
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -19,7 +20,8 @@ import (
 )
 
 // NewAddRegisterParams creates a new AddRegisterParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAddRegisterParams() AddRegisterParams {
 
 	return AddRegisterParams{}
@@ -70,6 +72,11 @@ func (o *AddRegisterParams) BindRequest(r *http.Request, route *middleware.Match
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Register = &body
 			}
@@ -77,11 +84,11 @@ func (o *AddRegisterParams) BindRequest(r *http.Request, route *middleware.Match
 	} else {
 		res = append(res, errors.Required("register", "body", ""))
 	}
+
 	rType, rhkType, _ := route.Params.GetOK("type")
 	if err := o.bindType(rType, rhkType, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -97,7 +104,6 @@ func (o *AddRegisterParams) bindType(rawData []string, hasKey bool, formats strf
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Type = raw
 
 	if err := o.validateType(formats); err != nil {

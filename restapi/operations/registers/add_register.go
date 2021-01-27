@@ -29,7 +29,7 @@ func NewAddRegister(ctx *middleware.Context, handler AddRegisterHandler) *AddReg
 	return &AddRegister{Context: ctx, Handler: handler}
 }
 
-/*AddRegister swagger:route POST /registers/{type} Registers addRegister
+/* AddRegister swagger:route POST /registers/{type} Registers addRegister
 
 Add a register
 
@@ -47,14 +47,12 @@ func (o *AddRegister) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewAddRegisterParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
