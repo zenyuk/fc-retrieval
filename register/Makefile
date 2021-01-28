@@ -12,3 +12,6 @@ build:
 
 build-dev:
 	go build -v cmd/filecoin-retrieval-register-server/main.go
+
+uselocal:
+	cd scripts; bash use-local-repos.sh
