@@ -30,8 +30,11 @@ detectlocal:
 detectmisconfig:
 	cd scripts; bash detect-pkg-misconfig.sh
 
-useremoteconfig:
+useremote:
 	cd scripts; bash use-remote-repos.sh
+
+uselocal:
+	cd scripts; bash use-local-repos.sh
 
 utest:
 	go test ./...
