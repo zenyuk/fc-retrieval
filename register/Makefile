@@ -15,3 +15,6 @@ build-dev:
 
 uselocal:
 	cd scripts; bash use-local-repos.sh
+
+useremote:
+	cd scripts; bash use-remote-repos.sh
