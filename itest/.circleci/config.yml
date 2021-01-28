@@ -5,7 +5,7 @@ version: 2.1
 parameters:
   repox-branch:
     type: string
-    default: "NOTSET"
+    default: ""
 commands:
   getrepobranch:
     description: "Get correct branch on repo"
@@ -18,7 +18,7 @@ commands:
       # git clone the repos and switch to a branch which matches the 
       # name of the branch on the Client repo. If no such branch exists, just use main
       - run: 
-          name: "Git clone repo"
+          name: "Git clone repo << parameters.repo >>"
           command: |
               git clone << parameters.repo >>
           working_directory: /go/src/github.com/ConsenSys/
@@ -27,11 +27,7 @@ commands:
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
           #git --git-dir=fc-retrieval-gateway/.git reset --hard "$head"
           command: |
-              BRANCH=<< pipeline.parameters.repox-branch >>
-              echo Repo Branch: "$BRANCH", Circle Branch "$CIRCLE_BRANCH"
-              if [ -z "$BRANCH" ]; then
-                BRANCH=$CIRCLE_BRANCH
-              fi
+              BRANCH=$CIRCLE_BRANCH
               if [ -z "$BRANCH" ]; then
                 echo Using main
                 BRANCH=main
@@ -50,7 +46,7 @@ commands:
           working_directory: << parameters.workdir >>
 
 jobs:
-  release:
+  integrationtest:
     docker:
       # specify the version
       - image: circleci/golang:1.15
@@ -82,18 +78,53 @@ jobs:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider-admin"
           workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
-      - run: make detectmisconfig
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval-register"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-register"
+      - run:
+          name: Register - Use remote config
+          command: make useremote
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
+      - run:
+          name: Provider - Use remote config
+          command: make useremote
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+      - run:
+          name: Client - Use remote config
+          command: make useremote
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+      - run:
+          name: Gateway Admin - Use remote config
+          command: make useremote
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
+      - run:
+          name: ITest - Use remote config
+          command: make useremote
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
       - setup_remote_docker:
           version: 19.03.13
           docker_layer_caching: true
       - run: 
+          command: cat go.mod
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+      - run: 
+          command: cat go.mod
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+      - run: 
           name: Make Integration Tests
-          command: make
+          command: make clean build
       - run:
           name: Make Gateway
-          command: make
+          command: make clean build
           working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
-      # TODO make Provider when it is ready
+      - run:
+          name: Make Provider
+          command: make clean build
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+      - run:
+          name: Make Register
+          command: make clean build
+          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
       - run: 
           name: Run Itegration Tests
           command: make itest
@@ -102,18 +133,23 @@ jobs:
           name: Display Gateway Container Log
           command: docker container logs gateway
 
-  utest:
+  # Do a local build first, just to make sure the integration test code builds.
+  localbuild:
     docker:
-      # specify the version
       - image: circleci/golang:1.15
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-    #### TEMPLATE_NOTE: go expects specific checkout path representing url
-    #### expecting it in the form of
-    ####   /go/src/github.com/circleci/go-tool
-    ####   /go/src/bitbucket.org/circleci/go-tool
+    environment:
+      REPOBRANCH: << pipeline.parameters.repox-branch >>
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+    steps:
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
+      - run: make lbuild
+
+  # check parameter passing
+  checkparam:
+    docker:
+      - image: circleci/golang:1.15
     environment:
       REPOBRANCH: << pipeline.parameters.repox-branch >>
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
@@ -123,14 +159,13 @@ jobs:
           command: |
             echo "pipeline.parameters.repox-branch: ${REPOBRANCH}"
             echo Circle Branch: $CIRCLE_BRANCH
-      - getrepobranch:
-          repo: "https://github.com/ConsenSys/fc-retrieval-itest"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
-      - run: make utest
+
 
 workflows:
   version: 2
   test_and_release:
     jobs:
-      - utest
-      - release
+      - localbuild
+      - integrationtest:
+          requires:
+            - localbuild
