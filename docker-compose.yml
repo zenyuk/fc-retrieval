@@ -1,23 +1,58 @@
 version: "3.8"
 services:
   itest:
-    image: fc-retrieval-itest:v1
+    image: fc-retrieval-itest:dev
     container_name: itest
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8090:8090"
-      - "8091:8091"
     networks:
       - shared
     depends_on: 
       - gateway
                 
   gateway:
-    image: fc-retrieval-gateway:v1
+    image: fc-retrieval-gateway:dev
     container_name: gateway
     networks:
       - shared
+    env_file:
+      - .env
+    ports:
+      - "80"
+      - "443"
+      - "8090"
+      - "8091"
+
+  provider:
+    image: consensys/fc-retrieval-provider:dev
+    container_name: provider
+    networks:
+      - shared
+    ports:
+      - "80"
+    env_file:
+      - .env
+
+  fc-retrieval-register:
+    image: consensys/fc-retrieval-register:dev
+    ports:
+      - "80"
+    volumes:
+      - ./:/app
+    networks:
+      - shared
+    restart: unless-stopped
+
+  redis:
+    container_name: fc-retrieval-redis
+    image: "redis:alpine"
+    ports:
+      - "6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - shared
+    restart: always
+
+
 
 #  dbg:
 #   image: busybox

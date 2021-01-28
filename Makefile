@@ -4,7 +4,7 @@
 
 # Usage:
 #   [VERSION=v3] [REGISTRY="gcr.io/google_containers"] make build
-VERSION?=v1
+VERSION?=dev
 REGISTRY?=
 
 # This target (the first target in the build file) is the one that is executed if no 
@@ -20,11 +20,22 @@ build:
 push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-client:${VERSION}
 
+uselocal:
+	cd scripts; bash use-local-repos.sh
+
+useremote:
+	cd scripts; bash use-remote-repos.sh
+
 detectmisconfig:
 	cd scripts; bash detect-pkg-misconfig.sh
 
 utest:
 	go test ./...
+
+# Local build: make sure the test code compiles.
+lbuild:
+	go build ./...
+
 
 itest:
 	docker-compose down
@@ -33,8 +44,6 @@ itest:
 
 # remove previous images and containers
 clean:
-	docker rm -f ${REGISTRY}fc-retrieval-itest-builder 2> /dev/null || true
-	docker rmi -f ${REGISTRY}fc-retrieval-itest-builder || true
 	docker rmi -f "${REGISTRY}fc-retrieval-itest:${VERSION}" || true
 
 # Alays assume these targets are out of date.
