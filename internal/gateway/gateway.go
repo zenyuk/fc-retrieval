@@ -17,7 +17,7 @@ func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPo
 	}
 	gComm.CommsLock.Lock()
 	defer gComm.CommsLock.Unlock()
-	log.Info("Send message to: %v, message: %v", nodeID, message)
+	log.Info("Send message to: %v, message: %v", nodeID.ToString(), message)
 	err = fcrtcpcomms.SendTCPMessage(
 		gComm.Conn,
 		message,
