@@ -20,6 +20,12 @@ build:
 push:
 #	gcloud docker -- push ${REGISTRY}/fc-retrieval-gateway-admin:${VERSION}
 
+uselocal:
+	cd scripts; bash use-local-repos.sh
+
+useremote:
+	cd scripts; bash use-remote-repos.sh
+
 detectlocal:
 	cd scripts; bash detect-local-gateway-repo.sh
 
