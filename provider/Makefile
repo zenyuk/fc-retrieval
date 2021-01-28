@@ -25,3 +25,6 @@ stop:
 
 utest:
 	go test ./...
+
+uselocal:
+	cd scripts; bash use-local-repos.sh
