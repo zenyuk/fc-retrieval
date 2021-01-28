@@ -15,5 +15,5 @@ func main() {
 
 	log.Info("Start Provider service...")
 	p := provider.NewProvider(conf)
-	provider.Start(p)
+	p.Start()
 }
