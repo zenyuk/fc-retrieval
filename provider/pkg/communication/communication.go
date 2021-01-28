@@ -44,9 +44,9 @@ func NewCommunicationPool() CommunicationPool {
 func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeID) (*CommunicationChannel, error) {
 	// Check if there is an active connection.
 	commPool.ActiveNodesLock.RLock()
-	commChan := commPool.ActiveNodes[nodeID.ToString()]
+	comm := commPool.ActiveNodes[nodeID.ToString()]
 	commPool.ActiveNodesLock.RUnlock()
-	if commChan == nil {
+	if comm == nil {
 		// No active connection, connect to peer.
 		commPool.NodeAddressMapLock.RLock()
 		conn, err := net.Dial("tcp", commPool.NodeAddressMap[nodeID.ToString()])
@@ -55,17 +55,17 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 			log.Error("Unable to get connection: %v", err)
 			return nil, err
 		}
-		commChan = &CommunicationChannel{
+		comm = &CommunicationChannel{
 			CommsLock: sync.RWMutex{},
 			Conn:      conn}
-		err = commPool.RegisterNodeCommunication(nodeID, commChan)
+		err = commPool.RegisterNodeCommunication(nodeID, comm)
 		if err != nil {
 			log.Error("Unable to register node communication: %v", err)
 			conn.Close()
 			return nil, err
 		}
 	}
-	return commChan, nil
+	return comm, nil
 }
 
 // RegisterNodeAddress registers a node address
@@ -87,14 +87,14 @@ func (commPool *CommunicationPool) DeregisterNodeAddress(nodeID *nodeid.NodeID) 
 }
 
 // RegisterNodeCommunication registers a node communication
-func (commPool *CommunicationPool) RegisterNodeCommunication(nodeID *nodeid.NodeID, commChan *CommunicationChannel) error {
+func (commPool *CommunicationPool) RegisterNodeCommunication(nodeID *nodeid.NodeID, comm *CommunicationChannel) error {
 	commPool.ActiveNodesLock.Lock()
 	defer commPool.ActiveNodesLock.Unlock()
 	_, exist := commPool.ActiveNodes[nodeID.ToString()]
 	if exist {
 		return errors.New("Error: connection existed")
 	}
-	commPool.ActiveNodes[nodeID.ToString()] = commChan
+	commPool.ActiveNodes[nodeID.ToString()] = comm
 	return nil
 }
 
