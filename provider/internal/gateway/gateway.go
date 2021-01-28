@@ -9,11 +9,17 @@ import (
 )
 
 // SendMessage to gateway
-func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *communication.CommunicationPool) {
+func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *communication.CommunicationPool) error {
 	gComm, err := gCommPool.GetConnForRequestingNode(nodeID)
 	if err != nil {
-		gComm.Conn.Close()
+		log.Error("Conection issue: %v", err)
+		if gComm != nil {
+			log.Debug("Closing connection ...")
+			gComm.Conn.Close()
+		}
+		log.Debug("Removing connection from pool ...")
 		gCommPool.DeregisterNodeCommunication(nodeID)
+		return err
 	}
 	gComm.CommsLock.Lock()
 	defer gComm.CommsLock.Unlock()
@@ -23,8 +29,14 @@ func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPo
 		message,
 		30000)
 	if err != nil {
-		log.Error("Message sent with error: %v", err)
-		gComm.Conn.Close()
+		log.Error("Message not sent: %v", err)
+		if gComm != nil {
+			log.Debug("Closing connection ...")
+			gComm.Conn.Close()
+		}
+		log.Debug("Removing connection from pool ...")
 		gCommPool.DeregisterNodeCommunication(nodeID)
+		return err
 	}
+	return nil
 }
