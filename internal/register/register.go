@@ -20,14 +20,14 @@ type Register struct {
 func RegisterProvider(conf *viper.Viper) error {
 	log.Info("Register provider")
 	url := conf.GetString("REGISTER_API_URL") + "/registers/provider"
-	providerReg := Register{
+	reg := Register{
 		Address:        conf.GetString("PROVIDER_ADDRESS"),
 		NetworkInfo:    conf.GetString("PROVIDER_NETWORK_INFO"),
 		RegionCode:     conf.GetString("PROVIDER_REGION_CODE"),
 		RootSigningKey: conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
 		SigingKey:      conf.GetString("PROVIDER_SIGNING_KEY"),
 	}
-	err := request.SendJSON(url, providerReg)
+	err := request.SendJSON(url, reg)
 	if err != nil {
 		log.Error("%+v", err)
 		return err
