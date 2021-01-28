@@ -42,14 +42,16 @@ func NewCommunicationPool() CommunicationPool {
 // GetConnForRequestingNode returns the connection for sending request to a node with given id.
 // It will reuse any active connection.
 func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeID) (*CommunicationChannel, error) {
-	// Check if there is an active connection.
+	log.Info("Get active connection, nodeID: %v", nodeID.ToString())
 	commPool.ActiveNodesLock.RLock()
 	comm := commPool.ActiveNodes[nodeID.ToString()]
 	commPool.ActiveNodesLock.RUnlock()
 	if comm == nil {
-		// No active connection, connect to peer.
+		log.Info("No active connection, connect to peer")
 		commPool.NodeAddressMapLock.RLock()
-		conn, err := net.Dial("tcp", commPool.NodeAddressMap[nodeID.ToString()])
+		address := commPool.NodeAddressMap[nodeID.ToString()]
+		log.Debug("Got address: %v", address)
+		conn, err := net.Dial("tcp", address)
 		commPool.NodeAddressMapLock.RUnlock()
 		if err != nil {
 			log.Error("Unable to get connection: %v", err)
