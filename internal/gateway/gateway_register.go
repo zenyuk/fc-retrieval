@@ -4,28 +4,22 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
-// Register data model
-type Register struct {
-	NodeID         string
-	Address        string
-	NetworkInfo    string
-	RegionCode     string
-	RootSigningKey string
-	SigingKey      string
-}
-
-// Register a provider
+// Registration for Gateway
 func Registration(url string, settings settings.AppSettings) {
 
-	providerReg := Register{
-		NodeID:         settings.GatewayID,
-		Address:        settings.GatewayAddress,
-		NetworkInfo:    settings.GatewayNetworkInfo,
-		RegionCode:     settings.GatewayRegionCode,
-		RootSigningKey: settings.GatewayRootSigningKey,
-		SigingKey:      settings.GatewaySigningKey,
+	providerReg := register.GatewayRegister{
+		NodeID:              settings.GatewayID,
+		Address:             settings.GatewayAddress,
+		NetworkGatewayInfo:  settings.GatewayNetworkInfo,
+		NetworkProviderInfo: settings.GatewayNetworkInfo,
+		NetworkClientInfo:   settings.GatewayNetworkInfo,
+		NetworkAdminInfo:    settings.GatewayNetworkInfo,
+		RegionCode:          settings.GatewayRegionCode,
+		RootSigningKey:      settings.GatewayRootSigningKey,
+		SigingKey:           settings.GatewaySigningKey,
 	}
 
 	err := request.SendJSON(url, providerReg)
