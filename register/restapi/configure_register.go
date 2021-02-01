@@ -11,8 +11,9 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/ConsenSys/fc-retrieval-register/restapi/operations"
+	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
 	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
+	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
 
 	"github.com/ConsenSys/fc-retrieval-register/internal/handlers"
 	"github.com/rs/cors"
@@ -36,20 +37,24 @@ func configureAPI(api *operations.RegisterAPI) http.Handler {
 
 	api.UseSwaggerUI()
 	// To continue using redoc as your UI, uncomment the following line
-	// api.UseRedoc()
+	api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.RegistersAddRegisterHandler = registers.AddRegisterHandlerFunc(func(params registers.AddRegisterParams) middleware.Responder {
-		return handlers.AddRegister(params)
+	api.GatewayAddGatewayRegisterHandler = gateway.AddGatewayRegisterHandlerFunc(func(params gateway.AddGatewayRegisterParams) middleware.Responder {
+		return handlers.AddGatewayRegister(params)
 	})
-
-	api.RegistersGetRegistersHandler = registers.GetRegistersHandlerFunc(func(params registers.GetRegistersParams) middleware.Responder {
-		return handlers.GetRegisters(params)
+	api.ProviderAddProviderRegisterHandler = provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
+		return handlers.AddProviderRegister(params)
 	})
-
+	api.GatewayGetGatewayRegistersHandler = gateway.GetGatewayRegistersHandlerFunc(func(params gateway.GetGatewayRegistersParams) middleware.Responder {
+		return handlers.GetGatewayRegisters(params)
+	})
+	api.ProviderGetProviderRegistersHandler = provider.GetProviderRegistersHandlerFunc(func(params provider.GetProviderRegistersParams) middleware.Responder {
+		return handlers.GetProviderRegisters(params)
+	})
 	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
 		return handlers.HomepageHandler()
 	})
@@ -80,7 +85,7 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
-// So this is a good place to plug in a panic handling middleware, logging and metrics
+// So this is a good place to plug in a panic handling middleware, logging and metrics.
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{"*"}, //TODO(magicking) restrict headers list

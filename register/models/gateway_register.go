@@ -12,16 +12,25 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Register Register entry
+// GatewayRegister Register entry
 //
-// swagger:model Register
-type Register struct {
+// swagger:model GatewayRegister
+type GatewayRegister struct {
 
 	// Filecoin Account to be used with payment channels.
 	Address string `json:"address,omitempty"`
 
-	// Network addressing information.
-	NetworkInfo string `json:"networkInfo,omitempty"`
+	// Admin network addressing information.
+	NetworkAdminInfo string `json:"networkAdminInfo,omitempty"`
+
+	// Client network addressing information.
+	NetworkClientInfo string `json:"networkClientInfo,omitempty"`
+
+	// Gateway network addressing information.
+	NetworkGatewayInfo string `json:"networkGatewayInfo,omitempty"`
+
+	// Provider network addressing information.
+	NetworkProviderInfo string `json:"networkProviderInfo,omitempty"`
 
 	// Node ID.
 	NodeID string `json:"nodeId,omitempty"`
@@ -36,18 +45,18 @@ type Register struct {
 	SigingKey string `json:"sigingKey,omitempty"`
 }
 
-// Validate validates this register
-func (m *Register) Validate(formats strfmt.Registry) error {
+// Validate validates this gateway register
+func (m *GatewayRegister) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this register based on context it is used
-func (m *Register) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this gateway register based on context it is used
+func (m *GatewayRegister) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Register) MarshalBinary() ([]byte, error) {
+func (m *GatewayRegister) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -55,8 +64,8 @@ func (m *Register) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Register) UnmarshalBinary(b []byte) error {
-	var res Register
+func (m *GatewayRegister) UnmarshalBinary(b []byte) error {
+	var res GatewayRegister
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
