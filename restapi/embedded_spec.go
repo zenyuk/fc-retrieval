@@ -58,34 +58,21 @@ func init() {
         }
       }
     },
-    "/registers/{type}": {
+    "/registers/gateway": {
       "get": {
-        "description": "\u003cb\u003eGet register list\u003c/b\u003e",
+        "description": "\u003cb\u003eGet Gateway register list\u003c/b\u003e",
         "tags": [
-          "Registers"
+          "Gateway"
         ],
         "summary": "Get register list",
-        "operationId": "getRegisters",
-        "parameters": [
-          {
-            "enum": [
-              "gateway",
-              "provider"
-            ],
-            "type": "string",
-            "description": "Register type",
-            "name": "type",
-            "in": "path",
-            "required": true
-          }
-        ],
+        "operationId": "getGatewayRegisters",
         "responses": {
           "200": {
-            "description": "Register list",
+            "description": "Gateway register list",
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Register"
+                "$ref": "#/definitions/GatewayRegister"
               }
             }
           },
@@ -98,39 +85,88 @@ func init() {
         }
       },
       "post": {
-        "description": "\u003cb\u003eAdd a register\u003c/b\u003e",
+        "description": "\u003cb\u003eAdd a Gateway register\u003c/b\u003e",
         "tags": [
-          "Registers"
+          "Gateway"
         ],
-        "summary": "Add a register",
-        "operationId": "addRegister",
+        "summary": "Add a Gateway register",
+        "operationId": "addGatewayRegister",
         "parameters": [
           {
-            "enum": [
-              "gateway",
-              "provider"
-            ],
-            "type": "string",
-            "description": "Register type",
-            "name": "type",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Add a register",
+            "description": "Add a Gateway register",
             "name": "register",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Register"
+              "$ref": "#/definitions/GatewayRegister"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Register added",
+            "description": "Gateway register added",
             "schema": {
-              "$ref": "#/definitions/Register"
+              "$ref": "#/definitions/GatewayRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/registers/provider": {
+      "get": {
+        "description": "\u003cb\u003eGet Provider register list\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Get Provider register list",
+        "operationId": "getProviderRegisters",
+        "responses": {
+          "200": {
+            "description": "Provider register list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ProviderRegister"
+              }
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "\u003cb\u003eAdd a Provider register\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Add a Provider register",
+        "operationId": "addProviderRegister",
+        "parameters": [
+          {
+            "description": "Add a Provider register",
+            "name": "register",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider register added",
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
             }
           },
           "default": {
@@ -174,10 +210,52 @@ func init() {
         }
       }
     },
+    "GatewayRegister": {
+      "description": "Register entry",
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Filecoin Account to be used with payment channels.",
+          "type": "string"
+        },
+        "networkAdminInfo": {
+          "description": "Admin network addressing information.",
+          "type": "string"
+        },
+        "networkClientInfo": {
+          "description": "Client network addressing information.",
+          "type": "string"
+        },
+        "networkGatewayInfo": {
+          "description": "Gateway network addressing information.",
+          "type": "string"
+        },
+        "networkProviderInfo": {
+          "description": "Provider network addressing information.",
+          "type": "string"
+        },
+        "nodeId": {
+          "description": "Node ID.",
+          "type": "string"
+        },
+        "regionCode": {
+          "description": "Region Code.",
+          "type": "string"
+        },
+        "rootSigningKey": {
+          "description": "Retrieval provider Root Signing Public Key.",
+          "type": "string"
+        },
+        "sigingKey": {
+          "description": "Used for signing CID Group Offers and Single CID Offers.",
+          "type": "string"
+        }
+      }
+    },
     "Principal": {
       "type": "string"
     },
-    "Register": {
+    "ProviderRegister": {
       "description": "Register entry",
       "type": "object",
       "properties": {
@@ -250,34 +328,21 @@ func init() {
         }
       }
     },
-    "/registers/{type}": {
+    "/registers/gateway": {
       "get": {
-        "description": "\u003cb\u003eGet register list\u003c/b\u003e",
+        "description": "\u003cb\u003eGet Gateway register list\u003c/b\u003e",
         "tags": [
-          "Registers"
+          "Gateway"
         ],
         "summary": "Get register list",
-        "operationId": "getRegisters",
-        "parameters": [
-          {
-            "enum": [
-              "gateway",
-              "provider"
-            ],
-            "type": "string",
-            "description": "Register type",
-            "name": "type",
-            "in": "path",
-            "required": true
-          }
-        ],
+        "operationId": "getGatewayRegisters",
         "responses": {
           "200": {
-            "description": "Register list",
+            "description": "Gateway register list",
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Register"
+                "$ref": "#/definitions/GatewayRegister"
               }
             }
           },
@@ -290,39 +355,88 @@ func init() {
         }
       },
       "post": {
-        "description": "\u003cb\u003eAdd a register\u003c/b\u003e",
+        "description": "\u003cb\u003eAdd a Gateway register\u003c/b\u003e",
         "tags": [
-          "Registers"
+          "Gateway"
         ],
-        "summary": "Add a register",
-        "operationId": "addRegister",
+        "summary": "Add a Gateway register",
+        "operationId": "addGatewayRegister",
         "parameters": [
           {
-            "enum": [
-              "gateway",
-              "provider"
-            ],
-            "type": "string",
-            "description": "Register type",
-            "name": "type",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Add a register",
+            "description": "Add a Gateway register",
             "name": "register",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Register"
+              "$ref": "#/definitions/GatewayRegister"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Register added",
+            "description": "Gateway register added",
             "schema": {
-              "$ref": "#/definitions/Register"
+              "$ref": "#/definitions/GatewayRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/registers/provider": {
+      "get": {
+        "description": "\u003cb\u003eGet Provider register list\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Get Provider register list",
+        "operationId": "getProviderRegisters",
+        "responses": {
+          "200": {
+            "description": "Provider register list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ProviderRegister"
+              }
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "\u003cb\u003eAdd a Provider register\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Add a Provider register",
+        "operationId": "addProviderRegister",
+        "parameters": [
+          {
+            "description": "Add a Provider register",
+            "name": "register",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider register added",
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
             }
           },
           "default": {
@@ -366,10 +480,52 @@ func init() {
         }
       }
     },
+    "GatewayRegister": {
+      "description": "Register entry",
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Filecoin Account to be used with payment channels.",
+          "type": "string"
+        },
+        "networkAdminInfo": {
+          "description": "Admin network addressing information.",
+          "type": "string"
+        },
+        "networkClientInfo": {
+          "description": "Client network addressing information.",
+          "type": "string"
+        },
+        "networkGatewayInfo": {
+          "description": "Gateway network addressing information.",
+          "type": "string"
+        },
+        "networkProviderInfo": {
+          "description": "Provider network addressing information.",
+          "type": "string"
+        },
+        "nodeId": {
+          "description": "Node ID.",
+          "type": "string"
+        },
+        "regionCode": {
+          "description": "Region Code.",
+          "type": "string"
+        },
+        "rootSigningKey": {
+          "description": "Retrieval provider Root Signing Public Key.",
+          "type": "string"
+        },
+        "sigingKey": {
+          "description": "Used for signing CID Group Offers and Single CID Offers.",
+          "type": "string"
+        }
+      }
+    },
     "Principal": {
       "type": "string"
     },
-    "Register": {
+    "ProviderRegister": {
       "description": "Register entry",
       "type": "object",
       "properties": {

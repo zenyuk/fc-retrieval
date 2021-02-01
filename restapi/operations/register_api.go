@@ -19,8 +19,9 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
 	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
+	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
 )
 
 // NewRegisterAPI creates a new Register instance
@@ -45,11 +46,17 @@ func NewRegisterAPI(spec *loads.Document) *RegisterAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		RegistersAddRegisterHandler: registers.AddRegisterHandlerFunc(func(params registers.AddRegisterParams) middleware.Responder {
-			return middleware.NotImplemented("operation registers.AddRegister has not yet been implemented")
+		GatewayAddGatewayRegisterHandler: gateway.AddGatewayRegisterHandlerFunc(func(params gateway.AddGatewayRegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation gateway.AddGatewayRegister has not yet been implemented")
 		}),
-		RegistersGetRegistersHandler: registers.GetRegistersHandlerFunc(func(params registers.GetRegistersParams) middleware.Responder {
-			return middleware.NotImplemented("operation registers.GetRegisters has not yet been implemented")
+		ProviderAddProviderRegisterHandler: provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation provider.AddProviderRegister has not yet been implemented")
+		}),
+		GatewayGetGatewayRegistersHandler: gateway.GetGatewayRegistersHandlerFunc(func(params gateway.GetGatewayRegistersParams) middleware.Responder {
+			return middleware.NotImplemented("operation gateway.GetGatewayRegisters has not yet been implemented")
+		}),
+		ProviderGetProviderRegistersHandler: provider.GetProviderRegistersHandlerFunc(func(params provider.GetProviderRegistersParams) middleware.Responder {
+			return middleware.NotImplemented("operation provider.GetProviderRegisters has not yet been implemented")
 		}),
 		HomepageHomepageHandler: homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
 			return middleware.NotImplemented("operation homepage.Homepage has not yet been implemented")
@@ -91,10 +98,14 @@ type RegisterAPI struct {
 	//   - application/json
 	JSONProducer runtime.Producer
 
-	// RegistersAddRegisterHandler sets the operation handler for the add register operation
-	RegistersAddRegisterHandler registers.AddRegisterHandler
-	// RegistersGetRegistersHandler sets the operation handler for the get registers operation
-	RegistersGetRegistersHandler registers.GetRegistersHandler
+	// GatewayAddGatewayRegisterHandler sets the operation handler for the add gateway register operation
+	GatewayAddGatewayRegisterHandler gateway.AddGatewayRegisterHandler
+	// ProviderAddProviderRegisterHandler sets the operation handler for the add provider register operation
+	ProviderAddProviderRegisterHandler provider.AddProviderRegisterHandler
+	// GatewayGetGatewayRegistersHandler sets the operation handler for the get gateway registers operation
+	GatewayGetGatewayRegistersHandler gateway.GetGatewayRegistersHandler
+	// ProviderGetProviderRegistersHandler sets the operation handler for the get provider registers operation
+	ProviderGetProviderRegistersHandler provider.GetProviderRegistersHandler
 	// HomepageHomepageHandler sets the operation handler for the homepage operation
 	HomepageHomepageHandler homepage.HomepageHandler
 
@@ -174,11 +185,17 @@ func (o *RegisterAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.RegistersAddRegisterHandler == nil {
-		unregistered = append(unregistered, "registers.AddRegisterHandler")
+	if o.GatewayAddGatewayRegisterHandler == nil {
+		unregistered = append(unregistered, "gateway.AddGatewayRegisterHandler")
 	}
-	if o.RegistersGetRegistersHandler == nil {
-		unregistered = append(unregistered, "registers.GetRegistersHandler")
+	if o.ProviderAddProviderRegisterHandler == nil {
+		unregistered = append(unregistered, "provider.AddProviderRegisterHandler")
+	}
+	if o.GatewayGetGatewayRegistersHandler == nil {
+		unregistered = append(unregistered, "gateway.GetGatewayRegistersHandler")
+	}
+	if o.ProviderGetProviderRegistersHandler == nil {
+		unregistered = append(unregistered, "provider.GetProviderRegistersHandler")
 	}
 	if o.HomepageHomepageHandler == nil {
 		unregistered = append(unregistered, "homepage.HomepageHandler")
@@ -274,11 +291,19 @@ func (o *RegisterAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/registers/{type}"] = registers.NewAddRegister(o.context, o.RegistersAddRegisterHandler)
+	o.handlers["POST"]["/registers/gateway"] = gateway.NewAddGatewayRegister(o.context, o.GatewayAddGatewayRegisterHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/registers/provider"] = provider.NewAddProviderRegister(o.context, o.ProviderAddProviderRegisterHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/registers/{type}"] = registers.NewGetRegisters(o.context, o.RegistersGetRegistersHandler)
+	o.handlers["GET"]["/registers/gateway"] = gateway.NewGetGatewayRegisters(o.context, o.GatewayGetGatewayRegistersHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/registers/provider"] = provider.NewGetProviderRegisters(o.context, o.ProviderGetProviderRegistersHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
