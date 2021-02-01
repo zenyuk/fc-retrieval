@@ -5,11 +5,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrtcpcomms"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-provider/pkg/communication"
 )
 
 // SendMessage to gateway
-func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *communication.CommunicationPool) error {
+func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *fcrtcpcomms.CommunicationPool) error {
 	gComm, err := gCommPool.GetConnForRequestingNode(nodeID)
 	if err != nil {
 		log.Error("Conection issue: %v", err)
