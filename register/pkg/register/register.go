@@ -6,8 +6,8 @@ type GatewayRegister struct {
 	Address             string
 	NetworkGatewayInfo  string
 	NetworkProviderInfo string
-	NetworkProviderInfo string
 	NetworkClientInfo   string
+	NetworkAdminInfo    string
 	RegionCode          string
 	RootSigningKey      string
 	SigingKey           string
