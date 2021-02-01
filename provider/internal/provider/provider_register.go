@@ -1,26 +1,17 @@
-package register
+package provider
 
 import (
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/spf13/viper"
 )
-
-// Register data model
-type Register struct {
-	NodeID				 string
-	Address        string
-	NetworkInfo    string
-	RegionCode     string
-	RootSigningKey string
-	SigingKey      string
-}
 
 // Register a provider
 func RegisterProvider(conf *viper.Viper) error {
 	log.Info("Register provider")
 	url := conf.GetString("REGISTER_API_URL") + "/registers/provider"
-	reg := Register{
+	reg := register.ProviderRegister{
 		Address:        conf.GetString("PROVIDER_ADDRESS"),
 		NetworkInfo:    conf.GetString("PROVIDER_NETWORK_INFO"),
 		RegionCode:     conf.GetString("PROVIDER_REGION_CODE"),
@@ -36,9 +27,9 @@ func RegisterProvider(conf *viper.Viper) error {
 }
 
 // Get registered gateways
-func GetRegisteredGateways(conf *viper.Viper) ([]Register, error) {
+func GetRegisteredGateways(conf *viper.Viper) ([]register.GatewayRegister, error) {
 	url := conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-	gateways := []Register{}
+	gateways := []register.GatewayRegister{}
 	err := request.GetJSON(url, &gateways)
 	if err != nil {
 		log.Error("%+v", err)
