@@ -10,6 +10,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 const (
@@ -75,6 +76,7 @@ type Gateway struct {
 	RegistrationBlockHash          string
 	RegistrationTransactionReceipt string
 	RegistrationMerkleProof        string
+	RegisteredGateways             []register.GatewayRegister
 }
 
 // Single instance of the gateway
