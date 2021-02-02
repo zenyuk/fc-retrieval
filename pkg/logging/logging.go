@@ -4,6 +4,7 @@ import (
 	"io"
 	"path"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -12,10 +13,10 @@ import (
 )
 
 func Init(conf *viper.Viper) {
-	setTimeFormat()
 	setLogLevel(conf)
+	setTimeFormat(conf)
 	writer := getLogTarget(conf)
-	log.Logger = zerolog.New(writer)
+	log.Logger = zerolog.New(writer).With().Timestamp().Logger()
 }
 
 // Init1 initialises the logger without a Viper object
@@ -24,10 +25,6 @@ func Init1(logLevel string, logTarget string) {
 	conf.Set("LOG_LEVEL", logLevel)
 	conf.Set("LOG_TARGET", logTarget)
 	Init(conf)
-}
-
-func setTimeFormat() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 }
 
 func setLogLevel(conf *viper.Viper) {
@@ -39,6 +36,15 @@ func setLogLevel(conf *viper.Viper) {
 		log.Warn().Msgf("using level '%v' as default", level)
 	}
 	zerolog.SetGlobalLevel(level)
+}
+
+func setTimeFormat(conf *viper.Viper) {
+	format := conf.GetString("LOG_TIME_FORMAT")
+	switch format {
+		case "RFC3339":   zerolog.TimeFieldFormat = time.RFC3339
+		case "Unix":   		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+		default:       		//Do nothing, use default
+	}
 }
 
 func getLogTarget(conf *viper.Viper) io.Writer {

@@ -60,19 +60,16 @@ func DecodeClientEstablishmentRequest(fcrMsg *FCRMessage) (
 type ClientEstablishmentResponse struct {
 	GatewayID nodeid.NodeID `json:"gateway_id"`
 	Challenge string        `json:"challenge"`
-	Signature string        `json:"signature"`
 }
 
 // EncodeClientEstablishmentResponse is used to get the FCRMessage of ClientEstablishmentResponse
 func EncodeClientEstablishmentResponse(
 	gatewayID *nodeid.NodeID,
 	challenge string,
-	signature string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(ClientEstablishmentResponse{
 		GatewayID: *gatewayID,
 		Challenge: challenge,
-		Signature: signature,
 	})
 	if err != nil {
 		return nil, err
@@ -89,18 +86,17 @@ func EncodeClientEstablishmentResponse(
 func DecodeClientEstablishmentResponse(fcrMsg *FCRMessage) (
 	*nodeid.NodeID, // gateway id
 	string, // challenge
-	string, // signature
 	error, // error
 ) {
 	if fcrMsg.MessageType != ClientEstablishmentResponseType {
-		return nil, "", "", fmt.Errorf("Message type mismatch")
+		return nil, "", fmt.Errorf("Message type mismatch")
 	}
 	msg := ClientEstablishmentResponse{}
 	err := json.Unmarshal(fcrMsg.MessageBody, &msg)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", err
 	}
-	return &msg.GatewayID, msg.Challenge, msg.Signature, nil
+	return &msg.GatewayID, msg.Challenge, nil
 }
 
 // ClientStandardDiscoverRequest is the requset from client to gateway to ask for cid offer
@@ -163,7 +159,7 @@ func EncodeClientStandardDiscoverResponse(
 	pieceCID *cid.ContentID,
 	nonce int64,
 	found bool,
-	offers []cidoffer.CidGroupOffer,
+	offers []*cidoffer.CidGroupOffer,
 ) (*FCRMessage, error) {
 	cidGroupInfo := make([]CIDGroupInformation, 0)
 	if found {
@@ -201,7 +197,7 @@ func DecodeClientStandardDiscoverResponse(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
 	bool, // found
-	[]cidoffer.CidGroupOffer, // offers
+	[]*cidoffer.CidGroupOffer, // offers
 	error, // error
 ) {
 	if fcrMsg.MessageType != ClientStandardDiscoverResponseType {
@@ -212,10 +208,10 @@ func DecodeClientStandardDiscoverResponse(fcrMsg *FCRMessage) (
 	if err != nil {
 		return nil, 0, false, nil, err
 	}
-	offers := make([]cidoffer.CidGroupOffer, 0)
+	offers := make([]*cidoffer.CidGroupOffer, 0)
 	if msg.Found {
 		for _, offerInfo := range msg.CIDGroupInfo {
-			offers = append(offers, cidoffer.CidGroupOffer{
+			offers = append(offers, &cidoffer.CidGroupOffer{
 				NodeID:               &offerInfo.ProviderID,
 				Cids:                 []cid.ContentID{msg.PieceCID},
 				Price:                offerInfo.Price,
