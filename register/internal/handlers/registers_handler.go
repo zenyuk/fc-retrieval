@@ -10,13 +10,13 @@ import (
 	redis "github.com/go-redis/redis/v8"
 
 	"github.com/ConsenSys/fc-retrieval-register/models"
-	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/registers"
+	opG "github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
+	opP "github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
 )
 
-// AddRegister to create a register
-func AddRegister(params op.AddRegisterParams) middleware.Responder {
-	redisHash := params.Type
-
+// AddGatewayRegister to create a gateway register
+func AddGatewayRegister(params opG.AddGatewayRegisterParams) middleware.Responder {
+	registerType := "gateway"
 	register := params.Register
 	ctx := context.Background()
 
@@ -26,22 +26,22 @@ func AddRegister(params op.AddRegisterParams) middleware.Responder {
 		DB:       0, // use default DB
 	})
 
-	err := rdb.HSet(ctx, redisHash, register, 0).Err()
+	err := rdb.HSet(ctx, registerType, register, 0).Err()
 	if err != nil {
 		log.Error("Unable to set Redis value")
 		panic(err)
 	}
 
-	log.Info("Register created %v", redisHash)
+	log.Info("Register created %v", registerType)
 
 	// Response
-	return op.NewAddRegisterOK().WithPayload(register)
+	return opG.NewAddGatewayRegisterOK().WithPayload(register)
 }
 
-// GetRegisters retrieve register list
-func GetRegisters(params op.GetRegistersParams) middleware.Responder {
-	redisHash := params.Type
-
+// AddProviderRegister to create a provider register
+func AddProviderRegister(params opP.AddProviderRegisterParams) middleware.Responder {
+	registerType := "provider"
+	register := params.Register
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
@@ -50,18 +50,68 @@ func GetRegisters(params op.GetRegistersParams) middleware.Responder {
 		DB:       0, // use default DB
 	})
 
-	registers, err := rdb.HGetAll(ctx, redisHash).Result()
+	err := rdb.HSet(ctx, registerType, register, 0).Err()
+	if err != nil {
+		log.Error("Unable to set Redis value")
+		panic(err)
+	}
+
+	log.Info("Register created %v", registerType)
+
+	// Response
+	return opP.NewAddProviderRegisterOK().WithPayload(register)
+}
+
+// GetGatewayRegisters retrieve Gateway register list
+func GetGatewayRegisters(params opG.GetGatewayRegistersParams) middleware.Responder {
+	registerType := "gateway"
+	ctx := context.Background()
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
+		Password: apiconfig.GetString("REDIS_PASSWORD"),
+		DB:       0, // use default DB
+	})
+
+	registers, err := rdb.HGetAll(ctx, registerType).Result()
 	if err != nil {
 		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
-	payload := []*models.Register{}
+	payload := []*models.GatewayRegister{}
 	for registerJson, _ := range registers {
-		registerData := models.Register{}
+		registerData := models.GatewayRegister{}
 		json.Unmarshal([]byte(registerJson), &registerData)
 		payload = append(payload, &registerData)
 	}
 
-	return op.NewGetRegistersOK().WithPayload(payload)
+	return opG.NewGetGatewayRegistersOK().WithPayload(payload)
+}
+
+// GetProviderRegisters retrieve Provider register list
+func GetProviderRegisters(params opP.GetProviderRegistersParams) middleware.Responder {
+	registerType := "provider"
+	ctx := context.Background()
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
+		Password: apiconfig.GetString("REDIS_PASSWORD"),
+		DB:       0, // use default DB
+	})
+
+	registers, err := rdb.HGetAll(ctx, registerType).Result()
+	if err != nil {
+		log.Error("Unable to get Redis value")
+		panic(err)
+	}
+
+	payload := []*models.ProviderRegister{}
+	for registerJson, _ := range registers {
+		registerData := models.ProviderRegister{}
+		json.Unmarshal([]byte(registerJson), &registerData)
+		payload = append(payload, &registerData)
+	}
+
+	return opP.NewGetProviderRegistersOK().WithPayload(payload)
 }

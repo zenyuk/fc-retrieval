@@ -6,20 +6,25 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
-// Register Register entry
+// ProviderRegister Register entry
 //
-// swagger:model Register
-type Register struct {
+// swagger:model ProviderRegister
+type ProviderRegister struct {
 
 	// Filecoin Account to be used with payment channels.
 	Address string `json:"address,omitempty"`
 
 	// Network addressing information.
 	NetworkInfo string `json:"networkInfo,omitempty"`
+
+	// Node ID.
+	NodeID string `json:"nodeId,omitempty"`
 
 	// Region Code.
 	RegionCode string `json:"regionCode,omitempty"`
@@ -31,13 +36,18 @@ type Register struct {
 	SigingKey string `json:"sigingKey,omitempty"`
 }
 
-// Validate validates this register
-func (m *Register) Validate(formats strfmt.Registry) error {
+// Validate validates this provider register
+func (m *ProviderRegister) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this provider register based on context it is used
+func (m *ProviderRegister) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Register) MarshalBinary() ([]byte, error) {
+func (m *ProviderRegister) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -45,8 +55,8 @@ func (m *Register) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Register) UnmarshalBinary(b []byte) error {
-	var res Register
+func (m *ProviderRegister) UnmarshalBinary(b []byte) error {
+	var res ProviderRegister
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
