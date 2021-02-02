@@ -31,66 +31,129 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   # Registers
-  /registers/{type}:
+  /registers/gateway:
     post:
       tags:
-        - Registers
-      summary: Add a register
-      operationId: addRegister
-      description: <b>Add a register</b>
+        - Gateway
+      summary: Add a Gateway register
+      operationId: addGatewayRegister
+      description: <b>Add a Gateway register</b>
       parameters:
-        - in: "path"
-          name: "type"
-          description: "Register type"
-          required: true
-          type: string
-          enum: [gateway, provider]
         - in: "body"
           name: "register"
-          description: "Add a register"
+          description: "Add a Gateway register"
           required: true
           schema:
-            $ref: "#/definitions/Register"
+            $ref: "#/definitions/GatewayRegister"
       responses:
         200:
-          description: Register added
+          description: Gateway register added
           schema:
-            $ref: "#/definitions/Register"
+            $ref: "#/definitions/GatewayRegister"
         default:
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
     get:
       tags:
-        - Registers
+        - Gateway
       summary: Get register list
-      operationId: getRegisters
-      description: <b>Get register list</b>
-      parameters:
-        - in: "path"
-          name: "type"
-          description: "Register type"
-          required: true
-          type: string
-          enum: [gateway, provider]
+      operationId: getGatewayRegisters
+      description: <b>Get Gateway register list</b>
       responses:
         200:
-          description: Register list
+          description: Gateway register list
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Register"
+              $ref: "#/definitions/GatewayRegister"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
+  /registers/provider:
+    post:
+      tags:
+        - Provider
+      summary: Add a Provider register
+      operationId: addProviderRegister
+      description: <b>Add a Provider register</b>
+      parameters:
+        - in: "body"
+          name: "register"
+          description: "Add a Provider register"
+          required: true
+          schema:
+            $ref: "#/definitions/ProviderRegister"
+      responses:
+        200:
+          description: Provider register added
+          schema:
+            $ref: "#/definitions/ProviderRegister"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - Provider
+      summary: Get Provider register list
+      operationId: getProviderRegisters
+      description: <b>Get Provider register list</b>
+      responses:
+        200:
+          description: Provider register list
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ProviderRegister"
         default:
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
 
 definitions:
-  # Register
-  Register:
+  # Registers
+  GatewayRegister:
     type: object
     description: Register entry
     properties:
+      nodeId:
+        type: string
+        description: Node ID.
+      address:
+        type: string
+        description: Filecoin Account to be used with payment channels.
+      rootSigningKey:
+        type: string
+        description: Retrieval provider Root Signing Public Key.
+      sigingKey:
+        type: string
+        description: Used for signing CID Group Offers and Single CID Offers.
+      networkGatewayInfo:
+        type: string
+        description: Gateway network addressing information.
+      networkProviderInfo:
+        type: string
+        description: Provider network addressing information.
+      networkClientInfo:
+        type: string
+        description: Client network addressing information.
+      networkAdminInfo:
+        type: string
+        description: Admin network addressing information.
+      regionCode:
+        type: string
+        description: Region Code.
+
+  ProviderRegister:
+    type: object
+    description: Register entry
+    properties:
+      nodeId:
+        type: string
+        description: Node ID.
       address:
         type: string
         description: Filecoin Account to be used with payment channels.
