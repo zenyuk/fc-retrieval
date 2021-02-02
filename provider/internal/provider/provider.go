@@ -1,64 +1,72 @@
 package provider
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrtcpcomms"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/gateway"
 	"github.com/spf13/viper"
 )
 
 // Provider configuration
 type Provider struct {
-	conf *viper.Viper
-}
-
-// Register data model
-type Register struct {
-	Address        string
-	NetworkInfo    string
-	RegionCode     string
-	RootSigningKey string
-	SigingKey      string
+	Conf 						*viper.Viper
+	GatewayCommPool *fcrtcpcomms.CommunicationPool
 }
 
 // NewProvider returns new provider
 func NewProvider(conf *viper.Viper) *Provider {
+	gatewayCommPool := fcrtcpcomms.NewCommunicationPool()
 	return &Provider{
-		conf: conf,
+		Conf: 						conf,
+		GatewayCommPool: 	&gatewayCommPool,
 	}
 }
 
-// Start a new provider
-func Start(p *Provider) {
-	scheme := p.conf.GetString("SERVICE_SCHEME")
-	host := p.conf.GetString("SERVICE_HOST")
-	port := p.conf.GetString("SERVICE_PORT")
+// Start a provider
+func (provider *Provider) Start() {
+	provider.greet()
+	provider.registration()
+	provider.loop()
+}
+
+// Greeting
+func (provider *Provider) greet() {
+	scheme := provider.Conf.GetString("SERVICE_SCHEME")
+	host := provider.Conf.GetString("SERVICE_HOST")
+	port := provider.Conf.GetString("SERVICE_PORT")
 	log.Info("Provider started at %s://%s:%s", scheme, host, port)
-	url := p.conf.GetString("REGISTER_API_URL") + "/registers/provider"
-	Registration(url, p)
-	p.loop()
+}
+
+// Register the provider
+func (provider *Provider) registration() {
+	err := RegisterProvider(provider.Conf)
+	if err != nil {
+		log.Error("Provider not registered: %v", err)
+		//TODO graceful exit
+	}
 }
 
 // Start infinite loop
-func (p *Provider) loop() {
-	url := p.conf.GetString("REGISTER_API_URL") + "/registers/gateway"
-
+func (provider *Provider) loop() {
 	for {
-		gateways := []Register{}
-		request.GetJSON(url, &gateways)
-
-		if len(gateways) == 0 {
-			log.Warn("No gateways found")
+		gateways, err := GetRegisteredGateways(provider.Conf)
+		if err != nil {
+			log.Error("Unable to get registered gateways: %v", err)
+			//TODO graceful exit
 		}
-
 		for _, gw := range gateways {
 			message := generateDummyMessage()
-			fmt.Println(message)
-			gwURL := gw.NetworkInfo
-			gateway.SendMessage(gwURL, message)
+			log.Info("Message: %v", message)
+			gatewayID, err := nodeid.NewNodeIDFromString(gw.NodeID)
+			if err != nil {
+				log.Error("Error with nodeID %v: %v", gw.NodeID, err)
+				continue
+			}
+			provider.GatewayCommPool.RegisterNodeAddress(gatewayID, gw.NetworkProviderInfo)
+			gateway.SendMessage(message, gatewayID, provider.GatewayCommPool)
 		}
 		time.Sleep(25 * time.Second)
 	}
