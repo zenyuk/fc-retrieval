@@ -32,7 +32,8 @@ func main() {
 	if err != nil {
 		logging.Error("Unable to get registered gateways: %v", err)
 	}
-	logging.Info("Message: %+v", gateways)
+	g.RegisteredGateways = gateways
+	logging.Info("All registered gateways: %+v", g.RegisteredGateways)
 
 	err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
