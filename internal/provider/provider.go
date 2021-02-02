@@ -65,7 +65,7 @@ func (provider *Provider) loop() {
 				log.Error("Error with nodeID %v: %v", gw.NodeID, err)
 				continue
 			}
-			provider.GatewayCommPool.RegisterNodeAddress(gatewayID, gw.NetworkGatewayInfo)
+			provider.GatewayCommPool.RegisterNodeAddress(gatewayID, gw.NetworkProviderInfo)
 			gateway.SendMessage(message, gatewayID, provider.GatewayCommPool)
 		}
 		time.Sleep(25 * time.Second)
