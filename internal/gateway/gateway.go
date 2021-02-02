@@ -1,25 +1,41 @@
 package gateway
 
 import (
-	"net"
-
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrtcpcomms"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
 
 // SendMessage to gateway
-func SendMessage(gwURL string, message *fcrmessages.FCRMessage) {
-	log.Info("Send message to: %v, message: %v", gwURL, message)
-	conn, err := net.Dial("tcp", gwURL)
+func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *fcrtcpcomms.CommunicationPool) error {
+	gComm, err := gCommPool.GetConnForRequestingNode(nodeID)
 	if err != nil {
-		log.Panic("Fail to dial: %v", gwURL)
+		log.Error("Conection issue: %v", err)
+		if gComm != nil {
+			log.Debug("Closing connection ...")
+			gComm.Conn.Close()
+		}
+		log.Debug("Removing connection from pool ...")
+		gCommPool.DeregisterNodeCommunication(nodeID)
+		return err
 	}
+	gComm.CommsLock.Lock()
+	defer gComm.CommsLock.Unlock()
+	log.Info("Send message to: %v, message: %v", nodeID.ToString(), message)
 	err = fcrtcpcomms.SendTCPMessage(
-		conn,
+		gComm.Conn,
 		message,
 		30000)
 	if err != nil {
-		log.Error("Message sent with error: %v", err)
+		log.Error("Message not sent: %v", err)
+		if gComm != nil {
+			log.Debug("Closing connection ...")
+			gComm.Conn.Close()
+		}
+		log.Debug("Removing connection from pool ...")
+		gCommPool.DeregisterNodeCommunication(nodeID)
+		return err
 	}
+	return nil
 }
