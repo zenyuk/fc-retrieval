@@ -21,7 +21,9 @@ jobs:
       - name: Echo Docker image
         run: echo "Building image $docker_image_name:$docker_image_version"
       - name: Build Docker image
-        run: make build REGISTRY=$docker_registry/${{ github.repository }}/ VERSION=$docker_image_version
+        run: |
+          registry=$(echo "$docker_registry/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          make build REGISTRY=$registry/ VERSION=$docker_image_version
       - name: Login to GitHub Packages
         uses: docker/login-action@v1
         with:
@@ -29,4 +31,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push Docker image
-        run: docker push $docker_registry/${{ github.repository }}/$docker_image_name:$docker_image_version
+        run: |
+          registry=$(echo "$docker_registry/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker push $registry/$docker_image_name:$docker_image_version
