@@ -7,8 +7,10 @@ dev:
 # stop:
 # 	docker-compose stop
 
-
 build:
+	docker build -f Dockerfile -t ${REGISTRY}fc-retrieval-register:${VERSION} .
+
+build-local:
 	docker build -f Dockerfile.dev -t ${REGISTRY}fc-retrieval-register:${VERSION} .
 
 build-dev:
