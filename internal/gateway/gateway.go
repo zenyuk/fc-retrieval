@@ -8,9 +8,9 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmerkletrie"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 const (
@@ -72,11 +72,12 @@ type Gateway struct {
 
 	// RegistrationBlockHash is the hash of the block that registers this gateway
 	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
+	// RegistrationMerkleRoot is the root of the merkle trie containing the transaction receipt
 	// RegistrationMerkleProof proves the transaction receipt is part of the block
 	RegistrationBlockHash          string
 	RegistrationTransactionReceipt string
-	RegistrationMerkleProof        string
-	RegisteredGateways             []register.GatewayRegister
+	RegistrationMerkleRoot         string
+	RegistrationMerkleProof        *fcrmerkletrie.FCRMerkleProof
 }
 
 // Single instance of the gateway
