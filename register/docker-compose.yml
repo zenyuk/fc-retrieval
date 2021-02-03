@@ -8,11 +8,8 @@ services:
       - shared
     ports:
       - "8080:8080"
-    volumes:
-      - ./:/app
     env_file:
       - .env
-    restart: unless-stopped
 
   fc-retrieval-redis:
     image: "redis:alpine"
@@ -23,7 +20,6 @@ services:
       - "6379:6379"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-    restart: always
 
 networks:
   shared:
