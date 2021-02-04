@@ -24,21 +24,24 @@ jobs:
       - run: make
 
   publishDocker:
+    environment:
+      REGISTRY: consensys/
+      IMAGE_NAME: consensys/fc-retrieval-gateway
+      IMAGE_VERSION: dev
     docker:
-      - image: circleci/golang:1.15
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+      - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/project
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - run:
-          name: Publish Docker
+          name: Build Docker image
           command: |
-            make
-            docker login --username "${DOCKER_USER_RW}" --password "${DOCKER_PASSWORD_RW}"
-            make push
+            make build REGISTRY=$REGISTRY VERSION=$IMAGE_VERSION
+      - run:
+          name: Publish Docker image
+          command: |
+            echo "$DOCKER_PASSWORD_RW" | docker login -u "$DOCKER_USER_RW" --password-stdin
+            docker push $IMAGE_NAME:$IMAGE_VERSION
 
   utest:
     docker:
@@ -66,10 +69,9 @@ workflows:
       - publishDocker:
           filters:
             branches:
-              only:
-                - /^release-.*/
+              only: main
+          context:
+            - dockerhub-quorumengineering-rw
           requires:
             - utest
             - release
-          context:
-            - dockerhub-quorumengineering-rw
