@@ -3,27 +3,23 @@ version: "3.8"
 services:
   fc-retrieval-register:
     image: consensys/fc-retrieval-register:dev
-    container_name: fc-retrieval-register
+    container_name: register
     networks:
       - shared
     ports:
       - "8080:8080"
-    volumes:
-      - ./:/app
     env_file:
       - .env
-    restart: unless-stopped
 
   fc-retrieval-redis:
     image: "redis:alpine"
-    container_name: fc-retrieval-redis
+    container_name: redis
     networks:
       - shared
     ports:
       - "6379:6379"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-    restart: always
 
 networks:
   shared:
