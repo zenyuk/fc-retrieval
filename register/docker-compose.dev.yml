@@ -2,12 +2,14 @@ version: "3.8"
 
 services:
   fc-retrieval-register:
-    image: consensys/fc-retrieval-register:dev
     container_name: fc-retrieval-register
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
     networks:
       - shared
     ports:
-      - "8080:8080"
+      - "8090:8090"
     volumes:
       - ./:/app
     env_file:
