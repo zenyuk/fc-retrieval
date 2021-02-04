@@ -7,12 +7,13 @@ import (
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/spf13/viper"
 )
 
 // Provider configuration
 type Provider struct {
-	Conf 						*viper.Viper
+	Conf            *viper.Viper
 	GatewayCommPool *fcrtcpcomms.CommunicationPool
 }
 
@@ -20,8 +21,8 @@ type Provider struct {
 func NewProvider(conf *viper.Viper) *Provider {
 	gatewayCommPool := fcrtcpcomms.NewCommunicationPool()
 	return &Provider{
-		Conf: 						conf,
-		GatewayCommPool: 	&gatewayCommPool,
+		Conf:            conf,
+		GatewayCommPool: &gatewayCommPool,
 	}
 }
 
@@ -42,20 +43,26 @@ func (provider *Provider) greet() {
 
 // Register the provider
 func (provider *Provider) registration() {
-	err := RegisterProvider(provider.Conf)
+	reg := register.ProviderRegister{
+		Address:        provider.Conf.GetString("PROVIDER_ADDRESS"),
+		NetworkInfo:    provider.Conf.GetString("PROVIDER_NETWORK_INFO"),
+		RegionCode:     provider.Conf.GetString("PROVIDER_REGION_CODE"),
+		RootSigningKey: provider.Conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
+		SigingKey:      provider.Conf.GetString("PROVIDER_SIGNING_KEY"),
+	}
+
+	err := register.RegisterProvider(provider.Conf.GetString("REGISTER_API_URL"), reg)
 	if err != nil {
 		log.Error("Provider not registered: %v", err)
-		//TODO graceful exit
 	}
 }
 
 // Start infinite loop
 func (provider *Provider) loop() {
 	for {
-		gateways, err := GetRegisteredGateways(provider.Conf)
+		gateways, err := register.GetRegisteredGateways(provider.Conf.GetString("REGISTER_API_URL"))
 		if err != nil {
 			log.Error("Unable to get registered gateways: %v", err)
-			//TODO graceful exit
 		}
 		for _, gw := range gateways {
 			message := generateDummyMessage()
