@@ -3,7 +3,7 @@ module github.com/ConsenSys/fc-retrieval-gateway
 go 1.14
 
 require (
-	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210201121311-0b8f3dc49cf5
+	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210204110814-ed78769e295a
 	github.com/ant0ine/go-json-rest v3.3.2+incompatible
 	github.com/cbergoon/merkletree v0.2.0
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c
