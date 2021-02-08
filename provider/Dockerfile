@@ -16,4 +16,4 @@ COPY --from=builder /go/bin/provider /provider
 # Run the binary when the container starts.
 WORKDIR /
 CMD ["/provider"]
-EXPOSE 8080
+EXPOSE 9030
