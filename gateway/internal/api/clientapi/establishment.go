@@ -34,17 +34,7 @@ func handleClientNetworkEstablishment(w rest.ResponseWriter, request *fcrmessage
 	}
 
 	// Construct message
-	sig, err := fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, challenge)
-	if err != nil {
-		// TODO for the moment just blow up!
-		panic(err)
-		// s := "Client Establishment: Internal error signing."
-		// logging.Error(s + err.Error())
-		// rest.Error(w, s, http.StatusInternalServerError)
-
-	}
-
-	response, err := fcrmessages.EncodeClientEstablishmentResponse(g.GatewayID, challenge, sig)
+	response, err := fcrmessages.EncodeClientEstablishmentResponse(g.GatewayID, challenge)
 	if err != nil {
 		s := "Client Establishment: Error encoding payload."
 		logging.Error(s + err.Error())
@@ -52,5 +42,14 @@ func handleClientNetworkEstablishment(w rest.ResponseWriter, request *fcrmessage
 		return
 	}
 
+	// Sign the message
+	if response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	}) != nil {
+		s := "Internal error."
+		logging.Error(s + err.Error())
+		rest.Error(w, s, http.StatusInternalServerError)
+		return
+	}
 	w.WriteJson(response)
 }

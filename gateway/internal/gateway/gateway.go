@@ -8,8 +8,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 const (
@@ -56,6 +58,14 @@ type Gateway struct {
 	ProviderAddressMap     map[string](string)
 	ProviderAddressMapLock sync.RWMutex
 
+	// GatewayKeyMap stores the mapping from gateway id to its public key
+	GatewayKeyMap     map[string](fcrcrypto.KeyPair)
+	GatewayKeyMapLock sync.RWMutex
+
+	// ProviderKeyMap stores the mapping from provider id to its public key
+	ProviderKeyMap     map[string](fcrcrypto.KeyPair)
+	ProviderKeyMapLock sync.RWMutex
+
 	// ActiveGateways store connected active gateways for outgoing request:
 	// A map from gateway id (big int in string repr) to a CommunicationChannel.
 	ActiveGateways     map[string](*CommunicationChannel)
@@ -71,10 +81,15 @@ type Gateway struct {
 
 	// RegistrationBlockHash is the hash of the block that registers this gateway
 	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
+	// RegistrationMerkleRoot is the root of the merkle trie containing the transaction receipt
 	// RegistrationMerkleProof proves the transaction receipt is part of the block
 	RegistrationBlockHash          string
 	RegistrationTransactionReceipt string
-	RegistrationMerkleProof        string
+	RegistrationMerkleRoot         string
+	RegistrationMerkleProof        *fcrmerkletree.FCRMerkleProof
+
+	// Registered Gateways
+	RegisteredGateways []register.GatewayRegister
 }
 
 // Single instance of the gateway
@@ -110,6 +125,10 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 			GatewayAddressMapLock:    sync.RWMutex{},
 			ProviderAddressMap:       make(map[string](string)),
 			ProviderAddressMapLock:   sync.RWMutex{},
+			GatewayKeyMap:            make(map[string]fcrcrypto.KeyPair),
+			GatewayKeyMapLock:        sync.RWMutex{},
+			ProviderKeyMap:           make(map[string]fcrcrypto.KeyPair),
+			ProviderKeyMapLock:       sync.RWMutex{},
 			ActiveGateways:           make(map[string](*CommunicationChannel)),
 			ActiveGatewaysLock:       sync.RWMutex{},
 			ActiveProviders:          make(map[string](*CommunicationChannel)),
