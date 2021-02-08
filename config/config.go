@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewConfig creates a new configuration
 func NewConfig() *viper.Viper {
 	conf := viper.New()
 	conf.AutomaticEnv()
@@ -22,6 +23,7 @@ func parseUint8(value string) uint8 {
 	return uint8(result)
 }
 
+// Map sets the config for the Gateway. NB: Gateways start without a private key. Private keys are provided by a gateway admin client.
 func Map(conf *viper.Viper) settings.AppSettings {
 	return settings.AppSettings{
 		BindRestAPI:       conf.GetString("BIND_REST_API"),
@@ -37,8 +39,8 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		LogMaxSize:        conf.GetInt("LOG_MAX_SIZE"),
 		LogCompress:       conf.GetBool("LOG_COMPRESS"),
 		GatewayID:         conf.GetString("GATEWAY_ID"),
-		GatewayPrivKey:    conf.GetString("GATEWAY_PRIVATE_KEY"),
-		GatewayKeyVersion: conf.GetUint32("GATEWAY_KEY_VERSION"),
+		GatewayPrivKey:    "",
+		GatewayKeyVersion: 0,
 		GatewaySigAlg:     parseUint8(conf.GetString("GATEWAY_SIG_ALG")),
 
 		RegisterAPIURL:        conf.GetString("REGISTER_API_URL"),

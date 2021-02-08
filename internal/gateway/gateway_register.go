@@ -15,7 +15,7 @@ type Register struct {
 	SigingKey      string
 }
 
-// Register a provider
+// Registration registers a provider
 func Registration(url string, settings settings.AppSettings) {
 
 	providerReg := Register{
