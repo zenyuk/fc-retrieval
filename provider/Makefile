@@ -17,8 +17,9 @@ clean:
 start:
 	docker-compose up -d
 
+# User `make dev arg=--build` to rebuild
 dev:
-	docker-compose -f docker-compose.dev.yml up
+	docker-compose -f docker-compose.dev.yml up $(arg)
 
 stop:
 	docker-compose stop

@@ -26,10 +26,18 @@ The server should be available at `http://localhost:9030`
 
 ### Start the service with Docker
 
-Start the project with Docker:
+Start the service:
 
 ```
 make dev
+```
+
+The server should be available at `http://localhost:9030`
+
+To rebuild containers, following option can be used:
+
+```
+make dev arg=--build
 ```
 
 ### Start the service manually
