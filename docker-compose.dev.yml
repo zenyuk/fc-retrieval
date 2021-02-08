@@ -1,6 +1,6 @@
 version: "3"
 services:
-  fc-retrieval-provider:
+  provider:
     build:
       dockerfile: Dockerfile.dev
       context: .
@@ -9,7 +9,7 @@ services:
     networks:
       - shared
     environment:
-      - REGISTER_API_URL=http://fc-retrieval-register:9020
+      - REGISTER_API_URL=http://register:9020
     restart: unless-stopped
 
 networks:
