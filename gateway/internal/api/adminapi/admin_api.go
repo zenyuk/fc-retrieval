@@ -81,7 +81,7 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 				continue
 			} else if message.MessageType == fcrmessages.AdminAcceptKeyChallengeType {
 				err = handleAdminAcceptKeysChallenge(conn, message)
-				if err != nil && !tcpcomms.IsTimeoutError(err) {
+				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
 					return
