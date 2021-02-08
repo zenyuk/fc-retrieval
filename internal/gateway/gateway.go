@@ -11,7 +11,7 @@ import (
 func SendMessage(message *fcrmessages.FCRMessage, nodeID *nodeid.NodeID, gCommPool *fcrtcpcomms.CommunicationPool) error {
 	gComm, err := gCommPool.GetConnForRequestingNode(nodeID)
 	if err != nil {
-		log.Error("Conection issue: %v", err)
+		log.Error("Connection issue: %v", err)
 		if gComm != nil {
 			log.Debug("Closing connection ...")
 			gComm.Conn.Close()

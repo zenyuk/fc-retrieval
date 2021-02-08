@@ -8,8 +8,8 @@ services:
       - ./:/app
     networks:
       - shared
-    environment: 
-      - REGISTER_API_URL=http://fc-retrieval-register:80
+    environment:
+      - REGISTER_API_URL=http://fc-retrieval-register:9020
     restart: unless-stopped
 
 networks:
