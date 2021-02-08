@@ -21,7 +21,7 @@ import (
  */
 
 // Message types
-// The enum should remains the same for client,provider and gateway.
+// The enum should remain the same for client, admin clients,provider and gateway.
 const (
 	ClientEstablishmentRequestType              = 0
 	ClientEstablishmentResponseType             = 1
@@ -47,6 +47,8 @@ const (
 	AdminGetReputationResponseType              = 201
 	AdminSetReputationChallengeType             = 202
 	AdminSetReputationResponseType              = 203
+	AdminAcceptKeyChallengeType                 = 204
+	AdminAcceptKeyResponseType                  = 205
 )
 
 // CIDGroupInformation represents a cid group information
