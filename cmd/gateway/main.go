@@ -13,6 +13,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 func main() {
@@ -25,10 +26,28 @@ func main() {
 	g := gateway.GetSingleInstance(&settings)
 
 	// Register Gateway
-	url := settings.RegisterAPIURL + "/registers/gateway"
-	gateway.Registration(url, settings)
+	gatewayReg := register.GatewayRegister{
+		NodeID:              settings.GatewayID,
+		Address:             settings.GatewayAddress,
+		NetworkGatewayInfo:  settings.GatewayNetworkInfo,
+		NetworkProviderInfo: settings.ProviderNetworkInfo,
+		NetworkClientInfo:   settings.ClientNetworkInfo,
+		NetworkAdminInfo:    settings.AdminNetworkInfo,
+		RegionCode:          settings.GatewayRegionCode,
+		RootSigningKey:      settings.GatewayRootSigningKey,
+		SigingKey:           settings.GatewaySigningKey,
+	}
+	register.RegisterGateway(settings.RegisterAPIURL, gatewayReg)
 
-	err := clientapi.StartClientRestAPI(settings)
+	// Get all registerd Gateways
+	gateways, err := register.GetRegisteredGateways(settings.RegisterAPIURL)
+	if err != nil {
+		logging.Error("Unable to get registered gateways: %v", err)
+	}
+	g.RegisteredGateways = gateways
+	logging.Info("All registered gateways: %+v", g.RegisteredGateways)
+
+	err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		logging.Error("Error starting server: Client REST API: %s", err.Error())
 		return
