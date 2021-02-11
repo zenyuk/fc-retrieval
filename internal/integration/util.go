@@ -1,7 +1,7 @@
-package main
+package integration
 
 /*
- * Copyright 2020 ConsenSys Software Inc.
+ * Copyright 2021 ConsenSys Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -16,30 +16,16 @@ package main
  */
 
 import (
-	"time"
-
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-provider/pkg/provider"
+
+	"github.com/ConsenSys/fc-retrieval-itest/config"
 )
 
-func main() {
-	// TODO switch this to logging.Test when available
-	logging.Error("Integration Test: Start")
-	integrationTests()
-	// TODO switch this to logging.Test when available
-	logging.Error("Integration Test: End")
-}
-
-func integrationTests() {
-	// TODO switch this to logging.Test when available
-	logging.Error(" Wait two seconds for the gateway to deploy and be ready for requests")
-	time.Sleep(2 * time.Second)
-
-	var pieceCIDToFind [32]byte
-
-
+// InitClient initialises a Filecoin Retrieval Client
+func InitClient() *fcrclient.FilecoinRetrievalClient {
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
 		panic(err)
@@ -50,9 +36,29 @@ func integrationTests() {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	conf := confBuilder.Build()
 
-	client := fcrclient.InitFilecoinRetrievalClient(*conf)
-	offers := client.FindBestOffers(pieceCIDToFind, 1000, 1000)
-	// TODO switch this to logging.Test when available
-	logging.Error("Offers: %+v\n", offers)
+	c, err := fcrclient.NewFilecoinRetrievalClient(*conf)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
+// CloseClient shuts down a Filecoin Retrieval Client
+func CloseClient(client *fcrclient.FilecoinRetrievalClient) {
 	client.Shutdown()
+}
+
+// InitProvider initialises a Filecoin Retrieval Provider
+func InitProvider() *provider.Provider {
+	conf := config.NewConfig()
+	logging.Init(conf)
+
+	p := provider.NewProvider(conf)
+	return p
+}
+
+// CloseProvider shuts down a Filecoin Retrieval Provider
+func CloseProvider(provider *provider.Provider) {
+	// provider.Shutdown()
 }
