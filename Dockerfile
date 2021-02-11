@@ -15,5 +15,5 @@ COPY --from=builder /go/bin/register-server /register-server
 
 # Run the binary when the container starts.
 WORKDIR /
-CMD ["/register-server", "--host", "0.0.0.0", "--port", "8080"]
-EXPOSE 8080
+CMD ["/register-server", "--host", "0.0.0.0", "--port", "9020"]
+EXPOSE 9020

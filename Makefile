@@ -1,20 +1,26 @@
-REGISTRY?=consensys/
 VERSION?=dev
+IMAGE?=consensys/fc-retrieval-register
 
+default: clean build push 
+
+# User `make dev arg=--build` to rebuild
 dev:
-	docker-compose -f docker-compose.dev.yml up
+	docker-compose -f docker-compose.dev.yml up $(arg)
 
 # stop:
 # 	docker-compose stop
 
 build:
-	docker build -f Dockerfile -t ${REGISTRY}fc-retrieval-register:${VERSION} .
+	docker build -f Dockerfile -t ${IMAGE}:${VERSION} .
 
 build-local:
-	docker build -f Dockerfile.dev -t ${REGISTRY}fc-retrieval-register:${VERSION} .
+	docker build -f Dockerfile.dev -t ${IMAGE}:${VERSION} .
 
 build-dev:
 	go build -v cmd/register-server/main.go
+
+push:
+	cd scripts; bash push.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
 	cd scripts; bash use-local-repos.sh
