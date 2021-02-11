@@ -8,11 +8,10 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/ConsenSys/fc-retrieval-client/internal/contracts"
 	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/messages"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/bitly/go-simplejson"
 )
 
@@ -35,15 +34,15 @@ var clientAPIProtocolSupported []int
 
 // Comms holds the communications specific data
 type Comms struct {
-	apiURL string
+	ApiURL string
 	gatewayPubKey *fcrcrypto.KeyPair
 	gatewayPubKeyVer *fcrcrypto.KeyVersion
 	settings *settings.ClientSettings
 }
 
 // NewGatewayAPIComms creates a connection with a gateway
-func NewGatewayAPIComms(gatewayInfo *contracts.GatewayInformation, settings *settings.ClientSettings) (*Comms, error){
-	host := gatewayInfo.Hostname
+func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *settings.ClientSettings) (*Comms, error){
+	hostAndPort := gatewayInfo.NetworkGatewayInfo
 
 	// Create the constant array.
 	if (clientAPIProtocolSupported == nil) {
@@ -52,16 +51,27 @@ func NewGatewayAPIComms(gatewayInfo *contracts.GatewayInformation, settings *set
 	}
 
 	// Check that the host name is valid
-	err := validateHostName(host)
-	if (err != nil) {
-		logging.Error("Host name invalid: %s", err. Error())
-		return nil, err
-	}
+	err := validateHostName(hostAndPort)
+	// if (err != nil) {
+	// 	logging.Error("Host name invalid: %s", err. Error())
+	// 	return nil, err
+	// }
 
 	netComms := Comms{}
-	netComms.apiURL = apiURLStart + host + apiURLEnd
-	netComms.gatewayPubKey = gatewayInfo.GatewayRetrievalPublicKey
-	netComms.gatewayPubKeyVer = gatewayInfo.GatewayRetrievalPublicKeyVersion
+	netComms.ApiURL = apiURLStart + hostAndPort + apiURLEnd
+
+	signingKeyStr := gatewayInfo.SigingKey
+	if len(signingKeyStr) > 2 && signingKeyStr[:2] == "0x" {
+		runes := []rune(signingKeyStr)
+		signingKeyStr = string(runes[2:])
+	}
+
+	netComms.gatewayPubKey, err = fcrcrypto.DecodePublicKey(signingKeyStr)
+	if err != nil {
+		logging.Error("Unable to decode public key: %v", err)
+		return nil, err
+	}
+	netComms.gatewayPubKeyVer = fcrcrypto.DecodeKeyVersion(1) // TODO gatewayInfo.GatewayRetrievalPublicKeyVersion
 	netComms.settings = settings
 	return &netComms, nil
 }
@@ -74,14 +84,14 @@ func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json) {
 	mJSON, _ := json.Marshal(msg)
 	logging.Info("JSON sent: %s", string(mJSON))
 	contentReader := bytes.NewReader(mJSON)
-	req, _ := http.NewRequest("POST", c.apiURL, contentReader)
+	req, _ := http.NewRequest("POST", c.ApiURL, contentReader)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send request and receive response.
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		logging.ErrorAndPanic("Client - Gateway communications (%s): %s", c.apiURL, err)
+		logging.ErrorAndPanic("Client - Gateway communications (%s): %s", c.ApiURL, err)
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
@@ -109,18 +119,6 @@ func validateHostName(host string) error {
 	return nil
 }
 
-func (c *Comms) addCommonFieldsAndSign(method int32, msg *messages.ClientCommonRequestFields, wholeMessage interface{}) {
-	msg.Set(method, int32(1), []int32{1}, c.settings.ClientID().ToString(), c.settings.EstablishmentTTL())
-
-	// Sign fields.
-	sig, err := fcrcrypto.SignMessage(c.settings.RetrievalPrivateKey(), 
-		c.settings.RetrievalPrivateKeyVer(), wholeMessage)
-	if err != nil {
-		logging.ErrorAndPanic("Issue signing message: %s", err)
-		panic(err)
-	}
-	msg.SetSignature(sig)
-}
 
 func (c *Comms) verifyMessage(signature string, wholeMessage interface{}) bool {
 	keyVersion, err := fcrcrypto.ExtractKeyVersionFromMessage(signature)

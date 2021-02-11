@@ -15,72 +15,60 @@ package fcrclient
  * SPDX-License-Identifier: Apache-2.0
  */
 
- import (
-	"encoding/hex"
-	
+import (
 	"github.com/ConsenSys/fc-retrieval-client/internal/control"
 	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-
 )
 
-
-// FilecoinRetrievalClient holds information about the interaction of 
+// FilecoinRetrievalClient holds information about the interaction of
 // the Filecoin Retrieval Client with Filecoin Retrieval Gateways.
 type FilecoinRetrievalClient struct {
 	gatewayManager *control.GatewayManager
 	// TODO have a list of gateway objects of all the current gateways being interacted with
 }
 
-var singleInstance *FilecoinRetrievalClient
-var initialised = false
-
-// InitFilecoinRetrievalClient initialise the Filecoin Retreival Client library
-func InitFilecoinRetrievalClient(settings Settings) *FilecoinRetrievalClient {
-	if initialised {
-		panic("Attempt to init Filecoin Retrieval Client a second time")
-	}
-	var c = FilecoinRetrievalClient{}
-	c.startUp(settings)
-	singleInstance = &c
-	initialised = true
-	return singleInstance
-
-}
-
-
-
-
-// GetFilecoinRetrievalClient creates a Filecoin Retrieval Client
-func GetFilecoinRetrievalClient() *FilecoinRetrievalClient {
-	if !initialised {
-		panic("Filecoin Retrieval Client not initialised")
-	}
-
-	return singleInstance
-}
-
-func (c *FilecoinRetrievalClient) startUp(conf Settings) {
+// NewFilecoinRetrievalClient initialise the Filecoin Retreival Client library
+func NewFilecoinRetrievalClient(conf Settings) (*FilecoinRetrievalClient, error) {
 	logging.Info("Filecoin Retrieval Client started")
+	var c = FilecoinRetrievalClient{}
 	clientSettings := conf.(*settings.ClientSettings)
-	c.gatewayManager = control.GetGatewayManager(*clientSettings)
+	c.gatewayManager = control.NewGatewayManager(*clientSettings)
+	return &c, nil
+
 }
-
-
 
 
 // FindBestOffers locates offsers for supplying the content associated with the pieceCID
-func (c *FilecoinRetrievalClient) FindBestOffers(pieceCID [32]byte, maxPrice int64, maxExpectedLatency int64) ([]PieceCIDOffer){
-	var hexDumpPieceCID string
-	if logging.InfoEnabled() {
-		hexDumpPieceCID = hex.Dump(pieceCID[:])
-		logging.Info("Filecoin Retrieval Client: FindBestOffers(pieceCID: %s, maxPrice: %d, maxExpectedLatency: %d", 
-			hexDumpPieceCID, maxPrice, maxExpectedLatency)
+func (c *FilecoinRetrievalClient) FindBestOffers(pieceCID [32]byte, maxPrice uint64, maxExpectedLatency int64) ([]cidoffer.CidGroupOffer, error){
+	cid := cid.NewContentIDFromBytes(pieceCID[:])
+	logging.Trace("FindBestOffers(pieceCID: %s, maxPrice: %d, maxExpectedLatency: %d", 
+		cid.ToString(), maxPrice, maxExpectedLatency)
+
+	rawOffers, err := c.gatewayManager.FindOffersStandardDiscovery(cid)
+	if err != nil {
+		return nil, err
 	}
-	// TODO
-	logging.Info("Filecoin Retrieval Client: FindBestOffers(pieceCID: %s) returning no offers", hexDumpPieceCID)
-	return nil
+	logging.Trace("FindBestOffers(pieceCID: %s) offers found before filtering: %d", cid.ToString(), len(rawOffers))
+	var offers []cidoffer.CidGroupOffer
+	for _, offer := range rawOffers {
+		if offer.Price < maxPrice {
+			offers = append(offers, offer)
+		}
+		// TODO: need to have latency filter.
+	}
+
+	logging.Info("FindBestOffers(pieceCID: %s) found %d offers", cid.ToString(), len(offers))
+	return offers, nil
 }
+
+// ConnectedGateways returns a slide of the URLs for the gateways this client is connected to.
+func (c *FilecoinRetrievalClient) ConnectedGateways() []string {
+	return c.gatewayManager.GetConnectedGateways()
+}
+
 
 // Shutdown releases all resources used by the library
 func (c *FilecoinRetrievalClient) Shutdown() {

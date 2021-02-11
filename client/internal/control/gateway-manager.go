@@ -16,98 +16,71 @@ package control
  */
 
 import (
+	"fmt"
 	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-client/internal/contracts"
-	"github.com/ConsenSys/fc-retrieval-client/internal/gatewayapi"
-	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+
+	"github.com/ConsenSys/fc-retrieval-client/internal/gatewayapi"
+	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
 )
 
 // GatewayManager managers the pool of gateways and the connections to them.
 type GatewayManager struct {
-	settings settings.ClientSettings
-	gatewayRegistrationContract *contracts.GatewayRegistrationContract 
-	gateways []ActiveGateway
-	gatewaysLock   sync.RWMutex
+	settings     settings.ClientSettings
+	gateways     []ActiveGateway
+	gatewaysLock sync.RWMutex
+
+	// Registered Gateways
+	RegisteredGateways []register.GatewayRegister
 }
 
 // ActiveGateway contains information for a single gateway
 type ActiveGateway struct {
-	info contracts.GatewayInformation
-	comms 		*gatewayapi.Comms
-
+	info  register.GatewayRegister
+	comms *gatewayapi.Comms
 }
 
-// // GatewayManagerSettings is used to communicate the settings to be used by the 
-// // Gateway Manager.
-// type GatewayManagerSettings struct {
-// 	MaxEstablishmentTTL int64
-// 	NodeID *nodeid.NodeID
-// }
-
-var doOnce sync.Once
-var singleInstance *GatewayManager
-
-// GetGatewayManager returns the single instance of the gateway manager.
-// The settings parameter must be used with the first call to this function.
-// After that, the settings parameter is ignored.
-func GetGatewayManager(settings ...settings.ClientSettings) *GatewayManager {
-    doOnce.Do(func() {
-		if len(settings) != 1 {
-			// TODO replace with ErrorAndPanic once available
-			logging.ErrorAndPanic("Unexpected number of parameter passed to first call of GetGatewayManager")
-		}
-		startGatewayManager(settings[0])
-	})
-	return singleInstance
-}
-
-func startGatewayManager(settings settings.ClientSettings) {
+// NewGatewayManager returns an initialised instance of the gateway manager.
+func NewGatewayManager(settings settings.ClientSettings) *GatewayManager {
 	g := GatewayManager{}
 	g.settings = settings
-	g.gatewayRegistrationContract = contracts.GetGatewayRegistrationContract() 
-
-	singleInstance = &g
-
-//	errChan := make(chan error, 1)
-//	go g.gatewayManagerRunner()
 	g.gatewayManagerRunner()
-
-	// TODO what should be done with error that is returned possibly in the future?
-	// TODO would it be better just to have gatewayManagerRunner panic after emitting a log?
+	return &g
 }
 
+// TODO this should be in a go routine and loop for ever.
 func (g *GatewayManager) gatewayManagerRunner() {
 	logging.Info("Gateway Manager: Management thread started")
 
-
 	// Call this once each hour or maybe day.
-	g.gatewayRegistrationContract.FetchUpdatedInformationFromContract()
+	gateways, err := register.GetRegisteredGateways(g.settings.RegisterURL())
+	if err != nil {
+		logging.Error("Unable to get registered gateways: %v", err)
+	}
+	g.RegisteredGateways = gateways
 
-	// TODO this loop is where the managing of gateways that the client is using
-	// happens.
-
-	// TODO given we are using dummy data, just grab the gateway information once.
-	gatewayInfo := g.gatewayRegistrationContract.GetGateways(10)
-	logging.Info("Gateway Manager: GetGateways returned %d gateways", len(gatewayInfo))
-	for _, info := range gatewayInfo {
-		comms, err := gatewayapi.NewGatewayAPIComms(&info, &g.settings)
+	// TODO this loop is where the managing of gateways that the client is using happens.
+	logging.Info("Gateway Manager: GetGateways returned %d gateways", len(gateways))
+	for _, gateway := range gateways {
+		logging.Info("Setting-up comms with: %+v", gateway)
+		comms, err := gatewayapi.NewGatewayAPIComms(&gateway, &g.settings)
 		if err != nil {
 			panic(err)
-		} 
+		}
 
 		// Try to do the establishment with the new gateway
 		var challenge [32]byte
 		fcrcrypto.GeneratePublicRandomBytes(challenge[:])
 		comms.GatewayClientEstablishment(challenge)
 
-		activeGateway := ActiveGateway{info, comms}
+		activeGateway := ActiveGateway{gateway, comms}
 		g.gateways = append(g.gateways, activeGateway)
 	}
-
-
 
 	logging.Info("Gateway Manager using %d gateways", len(g.gateways))
 }
@@ -117,14 +90,43 @@ func (g *GatewayManager) BlockGateway(hostName string) {
 	// TODO
 }
 
-
 // UnblockGateway add a host to allowed list of gateways
 func (g *GatewayManager) UnblockGateway(hostName string) {
 	// TODO
 
 }
 
-// Shutdown stops go routines and closes sockets. This should be called as part 
+// FindOffersStandardDiscovery finds offers using the standard discovery mechanism.
+func (g *GatewayManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.CidGroupOffer, error) {
+	if len(g.gateways) == 0 {
+		return nil, fmt.Errorf("No gateways available")
+	}
+
+	var aggregateOffers []cidoffer.CidGroupOffer
+	for _, gw := range g.gateways {
+		// TODO need to do nonce management
+		// TODO need to do requests to all gateways in parallel, rather than serially
+		offers, err := gw.comms.GatewayStdCIDDiscovery(contentID, 1)
+		if err != nil {
+			logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.info.NodeID, err)
+		}
+		// TODO: probably should remove duplicate offers at this point
+		aggregateOffers = append(aggregateOffers, offers...)
+	}
+	return aggregateOffers, nil
+}
+
+// GetConnectedGateways returns the list of domain names of gateways that the client
+// is currently connected to.
+func (g *GatewayManager) GetConnectedGateways() []string {
+	urls := make([]string, len(g.gateways))
+	for i, gateway := range g.gateways {
+		urls[i] = gateway.comms.ApiURL
+	}
+	return urls
+}
+
+// Shutdown stops go routines and closes sockets. This should be called as part
 // of the graceful library shutdown
 func (g *GatewayManager) Shutdown() {
 	// TODO

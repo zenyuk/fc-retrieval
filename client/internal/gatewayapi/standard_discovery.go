@@ -16,36 +16,36 @@ package gatewayapi
  */
 
 import (
-	"encoding/base64"
+	//	"encoding/base64"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
-// GatewayClientEstablishment sends a GatewayClientEstablishmentRequest and processes a response.
-// Return true if the establishment request was successful.
-func (c *Comms) GatewayClientEstablishment(challenge [32]byte) (bool, error) {
-	b := make([]byte, base64.StdEncoding.EncodedLen(len(challenge)))
-	base64.StdEncoding.Encode(b, challenge[:])
-
-	request, err := fcrmessages.EncodeClientEstablishmentRequest(c.settings.ClientID(), string(b), c.settings.EstablishmentTTL())
+// GatewayStdCIDDiscovery sends a  and processes a response.
+func (c *Comms) GatewayStdCIDDiscovery(contentID *cid.ContentID, nonce int64) ([]cidoffer.CidGroupOffer, error) {
+	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(
+		contentID, nonce, c.settings.EstablishmentTTL())
 	if err != nil {
-		logging.Error("Error encoding Client Establishment Request: %+v", err)
-		return false, err
+		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
+		return nil, err
 	}
 
 	if request.SignMessage(func(msg interface{}) (string, error) {
 		return fcrcrypto.SignMessage(c.settings.RetrievalPrivateKey(), c.settings.RetrievalPrivateKeyVer(), msg)
 	}) != nil {
-		logging.Error("Error signing message for Client Establishment Request: %+v", err)
-		return false, err
+		logging.Error("Error signing message for Client Standard Discovery Request: %+v", err)
+		return nil, err
 	}
-
+	
+	// TODO
 	res := c.gatewayCall(request).Get("result").MustString()
 	// TODO interpret the response.
 	logging.Info("Response from server: %s", res)
-
-	return true, nil
+	// TODO
+	return nil, nil
 }
 

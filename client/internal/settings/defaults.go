@@ -9,9 +9,12 @@ const (
 	defaultEstablishmentTTL = int64(100)
 
 	// DefaultLogLevel is the default amount of logging to show.
-	defaultLogLevel = "TRACE"
+	defaultLogLevel = "trace"
 
 	// DefaultLogTarget is the default output location of log output.
-    defaultLogTarget = "STDOUT"
-)
+	defaultLogTarget = "STDOUT"
 
+	// DefaultRegisterURL is the default location of the Register service. 
+	// register:9020 is the value that will work for the integration test system.
+	defaultRegisterURL = "http://register:9020"
+)
