@@ -7,7 +7,7 @@ services:
     networks:
       - shared
     ports:
-      - "8090:8090"
+      - "9020:9020"
     env_file:
       - .env
 
