@@ -1,16 +1,10 @@
 #!/bin/bash
 set -e
 echo "*******************************************************************************"
-echo "*** Update go.mod and go.sum to point to the latest packages on github.com  ***"
-echo "*** for client, gateway, gateway-admin, and provider-admin.                 ***"
+echo "*** Set-up the env file  ***"
 echo "*******************************************************************************"
 
 cd ..
-
-# Remove any local references
-sed '/replace .*/d' go.mod > go.mod.temp1
-rm go.mod
-mv go.mod.temp1 go.mod
 
 ITEST_DIR="../fc-retrieval-itest"
 ITEST_BRANCH=`git rev-parse --abbrev-ref HEAD`
@@ -40,22 +34,19 @@ check_repo() {
             echo "ERROR: Branch $ITEST_BRANCH exists on the $1 repo, but the $1 repo is currently using branch $OTHER_REPO_BRANCH"
             exit 1
         fi
-
-        echo "Calling go get to use main on $1"
-        cd $ITEST_DIR
-        go get -u -t github.com/ConsenSys/fc-retrieval-$1@main
-    else
-        echo itest and $1 branch match
-        GITHASH=`git rev-parse $ITEST_BRANCH`
-        echo "Calling go get to use $OTHER_REPO_BRANCH on fc-retrieval-$1 ($GITHASH)"
-        cd $ITEST_DIR
-        go get -u -t -v github.com/ConsenSys/fc-retrieval-$1@$GITHASH
     fi
+
+
+    cd $ITEST_DIR
+    pwd
+    echo ${3}_IMAGE=consensys/fc-retrieval-${1}:develop-${OTHER_REPO_BRANCH} >> .env
 }
 
+rm .env
 
-check_repo client ../fc-retrieval-client
-check_repo gateway ../fc-retrieval-gateway
-check_repo gateway-admin ../fc-retrieval-gateway-admin
-check_repo provider-admin ../fc-retrieval-provider-admin
-go mod tidy
+check_repo gateway ../fc-retrieval-gateway GATEWAY
+check_repo register ../fc-retrieval-register REGISTER
+check_repo provider ../fc-retrieval-provider PROVIDER
+check_repo itest ../fc-retrieval-itest ITEST
+
+cat .env

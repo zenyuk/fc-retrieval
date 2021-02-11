@@ -1,8 +1,10 @@
 version: "3.8"
 services:
   provider:
-    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval-provider:dev}
     container_name: provider
+    build:
+      context: ../fc-retrieval-provider
+      dockerfile: Dockerfile
     networks:
       - shared
     ports:
@@ -14,8 +16,10 @@ services:
       - gateway
 
   gateway:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
     container_name: gateway
+    build:
+      context: ../fc-retrieval-gateway
+      dockerfile: Dockerfile
     networks:
       - shared
     env_file:
@@ -29,8 +33,10 @@ services:
       - register
 
   register:
-    image: ${REGISTER_IMAGE:-consensys/fc-retrieval-register:dev}
     container_name: register
+    build:
+      context: ../fc-retrieval-register
+      dockerfile: Dockerfile
     ports:
       - "9020:9020"
     networks:
@@ -53,8 +59,10 @@ services:
     restart: always
 
   itest:
-    image: ${ITEST_IMAGE:-consensys/fc-retrieval-itest:dev}
     container_name: itest
+    build:
+      context: .
+      dockerfile: Dockerfile
     networks:
       - shared
     depends_on:

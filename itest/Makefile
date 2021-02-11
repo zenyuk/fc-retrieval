@@ -5,20 +5,22 @@
 # Usage:
 #   [VERSION=v3] [REGISTRY="gcr.io/google_containers"] make build
 VERSION?=dev
-REGISTRY?=
+IMAGE?=consensys/fc-retrieval-itest
+COMPOSE_FILE?=docker-compose.yml
+
 
 # This target (the first target in the build file) is the one that is executed if no 
 # command line args are specified.
-release: clean utest build
+release: clean utest build push
 
 # builds a docker image that builds the app and packages it into a minimal docker image
 build:
-	docker build -t ${REGISTRY}fc-retrieval-itest:${VERSION} .
+	docker build -t ${IMAGE}:${VERSION} .
 
 
 # push the image to an registry
 push:
-#	gcloud docker -- push ${REGISTRY}/fc-retrieval-client:${VERSION}
+	cd scripts; bash push.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
 	cd scripts; bash use-local-repos.sh
@@ -29,23 +31,102 @@ useremote:
 detectmisconfig:
 	cd scripts; bash detect-pkg-misconfig.sh
 
-utest:
-	go test ./...
-
-# Local build: make sure the test code compiles.
+# Local build: make sure the test code compiles. 
 lbuild:
-	go build ./...
+	go test -c github.com/ConsenSys/fc-retrieval-itest/internal/integration
 
+itestlocal: setup-env-localtesting itestdocker
 
-itest:
+setup-env-localtesting:
+	cd scripts; bash setup-env.sh
+
+# Version that can be run on a desktop computer or in Circle CI.
+# Itest run from a container.
+# Run the gateway(s), provider(s), and register services in Docker. Run the 
+# tests locally. Dump the go.mod file so that the precise versions of 
+# Client and Gateway Admin library are recorded. 
+itestdocker:
+	docker network create shared || true
 	docker-compose down
-	docker-compose up --abort-on-container-exit --exit-code-from itest
+	docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis 
+	echo *********************************************
+	cat go.mod
+	sleep 10
+	echo REDIS STARTUP *********************************************
+	docker container logs redis
+	echo REGISTER STARTUP *********************************************
+	docker container logs register
+	echo GATEWAY STARTUP *********************************************
+	docker container logs gateway
+	echo PROVIDER STARTUP *********************************************
+	docker container logs provider
+	echo NETWORK CONFIG *********************************************
+	docker network inspect shared
+	echo *********************************************
+	docker-compose up itest
+	echo *********************************************
+	echo REDIS LOGS *********************************************
+	docker container logs redis
+	echo REGISTER LOGS *********************************************
+	docker container logs register
+	echo GATEWAY LOGS *********************************************
+	docker container logs gateway
+	echo PROVIDER LOGS *********************************************
+	docker container logs provider
+	echo *********************************************
+	docker-compose down
+
+# Version that can be run on a desktop computer.
+# Itest run from the host.
+# Run the gateway(s), provider(s), and register services in Docker. Run the 
+# tests locally. Dump the go.mod file so that the precise versions of 
+# Client and Gateway Admin library are recorded. 
+itest:
+	docker network create shared || true
+	docker-compose down
+	docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis 
+	echo *********************************************
+	cat go.mod
+	sleep 10
+	echo REDIS STARTUP *********************************************
+	docker container logs redis
+	echo REGISTER STARTUP *********************************************
+	docker container logs register
+	echo GATEWAY STARTUP *********************************************
+	docker container logs gateway
+	echo PROVIDER STARTUP *********************************************
+	docker container logs provider
+	echo NETWORK CONFIG *********************************************
+	docker network inspect shared
+	echo *********************************************
+	go test ./...
+	# If the tests crash, then the logs are not printed out.
+	echo *********************************************
+	echo REDIS LOGS *********************************************
+	docker container logs redis
+	echo REGISTER LOGS *********************************************
+	docker container logs register
+	echo GATEWAY LOGS *********************************************
+	docker container logs gateway
+	echo PROVIDER LOGS *********************************************
+	docker container logs provider
+	echo *********************************************
+	docker-compose down
+
+itest-dev: COMPOSE_FILE=docker-compose.dev.yml
+itest-dev: itest
+	
+# This is the previous methodology, where the integration tests were in 
+# a Docker container.
+#
+#	docker-compose down
+#	docker-compose up --abort-on-container-exit --exit-code-from itest
 
 
-# remove previous images and containers
 clean:
-	docker rmi -f "${REGISTRY}fc-retrieval-itest:${VERSION}" || true
+	docker rm -f ${IMAGE}:${VERSION} 2> /dev/null || true
+	docker rmi -f ${IMAGE}:${VERSION} || true
 
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest build release push detectmisconfig
+.PHONY: clean itest itest-dev utest build release push detectmisconfig
 
