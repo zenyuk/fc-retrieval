@@ -1,7 +1,7 @@
 VERSION?=dev
 IMAGE?=consensys/fc-retrieval-register
 
-default: clean build push 
+default: clean build tag
 
 # User `make dev arg=--build` to rebuild
 dev:
@@ -21,6 +21,9 @@ build-dev:
 
 push:
 	cd scripts; bash push.sh ${VERSION} ${IMAGE}:${VERSION}
+
+tag:
+	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
 	cd scripts; bash use-local-repos.sh
