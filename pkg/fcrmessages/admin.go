@@ -181,23 +181,18 @@ func DecodeAdminSetReputationResponse(fcrMsg *FCRMessage) (
 	return &msg.ClientID, msg.Reputation, msg.Exists, nil
 }
 
-// TODO DHW: Fix data types
-
 // AdminAcceptKeyChallenge is the request from an admin client to a gateway to generate an initial key pair.
 type AdminAcceptKeyChallenge struct {
 	PrivateKey        string `json:"privatekey"`
 	PrivateKeyVersion uint32 `json:"privatekeyversion"`
 }
 
-// TODO DHW: Fix data types
-
 // EncodeAdminAcceptKeyChallenge is used to get the FCRMessage of AdminAcceptKeysChallenge
 func EncodeAdminAcceptKeyChallenge(
-	string, // privatekey encoded as a hex string
-	uint32, // privatekeyversion
-	error, // error
+	privateKey string, // privatekey encoded as a hex string
+	keyVersion uint32, 
 ) (*FCRMessage, error) {
-	body, err := json.Marshal(AdminAcceptKeyChallenge{})
+	body, err := json.Marshal(AdminAcceptKeyChallenge{privateKey, keyVersion})	
 	if err != nil {
 		return nil, err
 	}
@@ -209,11 +204,8 @@ func EncodeAdminAcceptKeyChallenge(
 	}, nil
 }
 
-// TODO DHW: Fix data types
-
 // DecodeAdminAcceptKeyChallenge is used to get the fields from FCRMessage of AdminAcceptKeysChallenge
 func DecodeAdminAcceptKeyChallenge(fcrMsg *FCRMessage) (string, uint32, error) {
-
 	if fcrMsg.MessageType != AdminAcceptKeyChallengeType {
 		return "", 0, fmt.Errorf("Message type mismatch")
 	}
@@ -222,6 +214,13 @@ func DecodeAdminAcceptKeyChallenge(fcrMsg *FCRMessage) (string, uint32, error) {
 	if err != nil {
 		return "", 0, err
 	}
+	if msg.PrivateKey == "" {
+		return "", 0, fmt.Errorf("New Gateway Private Key empty")
+	}
+	if msg.PrivateKeyVersion < 0 {
+		return "", 0, fmt.Errorf("New Gateway Private Key version negative")
+	}
+
 	return msg.PrivateKey, msg.PrivateKeyVersion, nil
 }
 

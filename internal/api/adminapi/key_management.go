@@ -27,8 +27,12 @@ import (
 )
 
 func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessage) error {
-
 	logging.Info("In handleAdminAcceptKeysChallenge")
+
+	logging.Info("Message received \n%s", request.DumpMessage())
+
+	// Get the core structure
+	g := gateway.GetSingleInstance()
 
 	encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
 	if err != nil {
@@ -43,10 +47,10 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	// TODO: Decode from int32 to *fcrCrypto.KeyVersion
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
-	// Install private key into the Gateway
-	g := gateway.GetSingleInstance()
+	// TODO need mutex around this! START
 	g.GatewayPrivateKey = privatekey
 	g.GatewayPrivateKeyVersion = privatekeyversion
+	// TODO need mutex around this! END
 
 	// Construct messaqe
 	exists := true

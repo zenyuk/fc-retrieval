@@ -74,28 +74,22 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		}
 		conf := confs[0]
 
-		gatewayPrivateKey, err := fcrcrypto.DecodePrivateKey(conf.GatewayPrivKey)
-		if err != nil {
-			logging.ErrorAndPanic("Error decoding Gateway Private Key: %s", err)
-		}
 		gatewayID, err := nodeid.NewNodeIDFromString(conf.GatewayID)
 		if err != nil {
 			logging.ErrorAndPanic("Error decoding node id: %s", err)
 		}
 
-		gatewayPrivateKeyVersion := fcrcrypto.DecodeKeyVersion(conf.GatewayKeyVersion)
-
 		instance = &Gateway{
-			ProtocolVersion:                protocolVersion,
-			ProtocolSupported:              []int32{protocolVersion, protocolSupported},
+			ProtocolVersion:          protocolVersion,
+			ProtocolSupported:        []int32{protocolVersion, protocolSupported},
 			RegisteredGatewaysMap:          make(map[string]register.RegisteredNode),
 			RegisteredGatewaysMapLock:      sync.RWMutex{},
 			RegisteredProvidersMap:         make(map[string]register.RegisteredNode),
 			RegisteredProvidersMapLock:     sync.RWMutex{},
-			GatewayPrivateKey:              gatewayPrivateKey,
-			GatewayPrivateKeyVersion:       gatewayPrivateKeyVersion,
-			GatewayID:                      gatewayID,
-			Offers:                         offers.GetSingleInstance(),
+			GatewayPrivateKey:        nil,
+			GatewayPrivateKeyVersion: nil,
+			GatewayID:                gatewayID,
+			Offers:                   offers.GetSingleInstance(),
 			RegistrationBlockHash:          "TODO",
 			RegistrationTransactionReceipt: "TODO",
 			RegistrationMerkleRoot:         "TODO",
