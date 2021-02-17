@@ -16,8 +16,11 @@ package fcrgatewayadmin
  */
 
 import (
+	"container/list"
+
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 )
@@ -29,43 +32,59 @@ type FilecoinRetrievalGatewayAdminClient struct {
 	// TODO have a list of gateway objects of all the current gateways being interacted with
 }
 
-var singleInstance *FilecoinRetrievalGatewayAdminClient
-var initialised = false
 
-// InitFilecoinRetrievalGatewayAdminClient initialise the Filecoin Retreival Client library
-func InitFilecoinRetrievalGatewayAdminClient(settings Settings) *FilecoinRetrievalGatewayAdminClient {
-	if initialised {
-		log.ErrorAndPanic("Attempt to init Filecoin Retrieval Gateway Admin Client a second time")
-	}
+// NewFilecoinRetrievalGatewayAdminClient initialise the Filecoin Retreival Client library
+func NewFilecoinRetrievalGatewayAdminClient(conf Settings) *FilecoinRetrievalGatewayAdminClient {
 	var c = FilecoinRetrievalGatewayAdminClient{}
-	c.startUp(settings)
-	singleInstance = &c
-	initialised = true
-	return singleInstance
-
-}
-
-// GetFilecoinRetrievalGatewayAdminClient creates a Filecoin Retrieval Gateway Admin Client
-func GetFilecoinRetrievalGatewayAdminClient() *FilecoinRetrievalGatewayAdminClient {
-	if !initialised {
-		log.ErrorAndPanic("Filecoin Retrieval Gateway Admin Client not initialised")
-	}
-
-	return singleInstance
-}
-
-func (c *FilecoinRetrievalGatewayAdminClient) startUp(conf Settings) {
 	log.Info("Filecoin Retrieval Gateway Admin Client started")
 	clientSettings := conf.(*settings.ClientGatewayAdminSettings)
-	c.gatewayManager = control.GetGatewayManager(*clientSettings)
+	c.gatewayManager = control.NewGatewayManager(*clientSettings)
+	return &c
+
+}
+
+// CreateKey creates a private key for a Gateway.
+func CreateKey() (*fcrcrypto.KeyPair, error) {
+	log.Info("Filecoin Retrieval Gateway Admin Client: RequestKeyCreation()")
+
+	gatewayPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
+	if err != nil {
+		log.Error("Error creating Gateway Private Key: %s", err)
+		return nil, err
+	}
+
+	return gatewayPrivateKey, nil
+}
+
+// InitializeGateway sends a private key to a Gateway along with a key version number.
+func (c *FilecoinRetrievalGatewayAdminClient) InitializeGateway(gatewayDomain string, gatewayPrivateKey *fcrcrypto.KeyPair) error {
+	log.Info("Filecoin Retrieval Gateway Admin Client: InitializeGateway()")
+	return c.gatewayManager.InitializeGateway(gatewayDomain, gatewayPrivateKey)
+}
+
+// InitialiseClientReputation requests a Gateway to initialise a client's reputation to the default value.
+func InitialiseClientReputation(clientID *nodeid.NodeID) bool {
+	log.Info("Filecoin Retrieval Gateway Admin Client: InitialiseClientReputation(clientID: %s", clientID)
+	// TODO DHW
+	log.Info("InitialiseClientReputation(clientID: %s) failed to initialise reputation.", clientID)
+	return false
 }
 
 // SetClientReputation requests a Gateway to set a client's reputation to a specified value.
-func (c *FilecoinRetrievalGatewayAdminClient) SetClientReputation(clientID *nodeid.NodeID, rep int64) bool {
+func SetClientReputation(clientID *nodeid.NodeID, rep int64) bool {
 	log.Info("Filecoin Retrieval Gateway Admin Client: SetClientReputation(clientID: %s, reputation: %d", clientID, rep)
-	// TODO
-	log.Info("Filecoin Retrieval Gateway Admin Client: SetClientReputation(clientID: %s, reputation: %d) failed to set reputation.", clientID, rep)
+	// TODO DHW
+	log.Info("SetClientReputation(clientID: %s, reputation: %d) failed to set reputation.", clientID, rep)
 	return false
+}
+
+// GetCIDOffersList requests a Gateway's current list of CID Offers.
+func GetCIDOffersList() *list.List {
+	log.Info("Filecoin Retrieval Gateway Admin Client: GetCIDOffersList()")
+	// TODO
+	log.Info("GetCIDOffersList() failed to find any CID Offers.")
+	emptyList := list.New()
+	return emptyList
 }
 
 // Shutdown releases all resources used by the library
