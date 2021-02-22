@@ -4,14 +4,15 @@ services:
   register:
     container_name: fc-retrieval-register
     build:
-      dockerfile: Dockerfile.dev
-      context: .
+      dockerfile: ./fc-retrieval-register/Dockerfile.dev
+      context: ../
     networks:
       - shared
     ports:
       - "9020:9020"
     volumes:
       - ./:/app
+      - ./${GO_MOD}:/go/src/fc-retrieval-register/go.mod
     env_file:
       - .env
     restart: unless-stopped

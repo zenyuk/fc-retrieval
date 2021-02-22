@@ -2,9 +2,11 @@ FROM golang:latest
 
 RUN apt-get update && apt-get install make bash
 
-WORKDIR /app
+WORKDIR /go/src/
 
-COPY ./ /app
+COPY . .
+
+WORKDIR /go/src/fc-retrieval-register/
 
 RUN go mod download -x
 

@@ -27,6 +27,17 @@ type ProviderRegister struct {
 	SigingKey      string
 }
 
+// GetRegisteredProviders returns registered providers
+func GetRegisteredProviders(registerURL string) ([]ProviderRegister, error) {
+	url := registerURL + "/registers/provider"
+	providers := []ProviderRegister{}
+	err := request.GetJSON(url, &providers)
+	if err != nil {
+		return providers, err
+	}
+	return providers, nil
+}
+
 // GetRegisteredGateways returns registered gateways
 func GetRegisteredGateways(registerURL string) ([]GatewayRegister, error) {
 	url := registerURL + "/registers/gateway"
