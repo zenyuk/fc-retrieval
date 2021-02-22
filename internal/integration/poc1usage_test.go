@@ -15,22 +15,22 @@ package integration
  * SPDX-License-Identifier: Apache-2.0
  */
 
- import (
-	"testing"
+//  import (
+// 	"testing"
 
-	"github.com/stretchr/testify/assert"
-)
+// 	"github.com/stretchr/testify/assert"
+// )
 
 
-func TestGetEmptyOffer(t *testing.T) {
-	var pieceCIDToFind [32]byte
+// func TestGetEmptyOffer(t *testing.T) {
+// 	var pieceCIDToFind [32]byte
 
-	client := InitClient()
-	offers, err := client.FindBestOffers(pieceCIDToFind, 1000, 1000)
-	if err != nil {
-		panic(err)
-	}
-    assert.Equal(t, 0, len(offers))
-	CloseClient(client)
-}
+// 	client := InitClient()
+// 	offers, err := client.FindBestOffers(pieceCIDToFind, 1000, 1000)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//     assert.Equal(t, 0, len(offers))
+// 	CloseClient(client)
+// }
 

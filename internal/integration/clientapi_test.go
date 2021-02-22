@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	// "github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,33 +38,33 @@ func TestGetClientVersion(t *testing.T) {
 	assert.LessOrEqual(t, 1, ver)
 }
 
-func TestInitClientNoRetrievalKey(t *testing.T) {
-	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	if err != nil {
-		panic(err)
-	}
+// func TestInitClientNoRetrievalKey(t *testing.T) {
+// 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	confBuilder := fcrclient.CreateSettings()
-	confBuilder.SetEstablishmentTTL(101)
-	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	conf := confBuilder.Build()
+// 	confBuilder := fcrclient.CreateSettings()
+// 	confBuilder.SetEstablishmentTTL(101)
+// 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+// 	conf := confBuilder.Build()
 
-	client, err := fcrclient.NewFilecoinRetrievalClient(*conf)
-	if err != nil {
-		panic(err)
-	}
+// 	client, err := fcrclient.NewFilecoinRetrievalClient(*conf)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	client.Shutdown()
-}
+// 	client.Shutdown()
+// }
 
-func TestOneConnectedGateway(t *testing.T) {
-	// The current configuration means that there should only be one connected gateway
-	client := InitClient()
-	gateways := client.ConnectedGateways()
-	assert.Equal(t, 1, len(gateways), "Unexpected number of gateways returned")
-	if len(gateways) > 0 {
-		assert.Equal(t, "http://gateway:9011/", gateways[0])
-	}
-	CloseClient(client)
+// func TestOneConnectedGateway(t *testing.T) {
+// 	// The current configuration means that there should only be one connected gateway
+// 	client := InitClient()
+// 	gateways := client.ConnectedGateways()
+// 	assert.Equal(t, 1, len(gateways), "Unexpected number of gateways returned")
+// 	if len(gateways) > 0 {
+// 		assert.Equal(t, "http://gateway:9011/", gateways[0])
+// 	}
+// 	CloseClient(client)
 
-}
+// }

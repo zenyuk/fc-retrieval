@@ -7,6 +7,9 @@ services:
       - shared
     ports:
       - "9030:9030"
+      - "9031:9031"
+      - "9032:9032"
+      - "9033:9033"
     env_file:
       - .env.provider
     depends_on:
@@ -58,8 +61,8 @@ services:
     networks:
       - shared
     depends_on:
-      - gateway
       - register
+      - gateway
       - provider
 
 networks:

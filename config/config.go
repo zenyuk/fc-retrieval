@@ -6,11 +6,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewConfig() *viper.Viper {
+func NewConfig(file string) *viper.Viper {
 	config := viper.New()
 	config.AddConfigPath("../../")
 
-	config.SetConfigName(".env.provider")
+	config.SetConfigName(file)
 	config.SetConfigType("env")
 	err := config.ReadInConfig() // Find and read the config file
 	if err != nil {              // Handle errors reading the config file

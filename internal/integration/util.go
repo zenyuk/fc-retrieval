@@ -51,10 +51,10 @@ func CloseClient(client *fcrclient.FilecoinRetrievalClient) {
 
 // InitProvider initialises a Filecoin Retrieval Provider
 func InitProvider() *provider.Provider {
-	conf := config.NewConfig()
+	conf := config.NewConfig(".env.provider")
 	logging.Init(conf)
 
-	p := provider.NewProvider(conf)
+	p := provider.GetSingleInstance(conf)
 	return p
 }
 
