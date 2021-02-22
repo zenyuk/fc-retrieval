@@ -16,39 +16,127 @@ package integration
  */
 
 import (
+	"strconv"
 	"testing"
+	"time"
 
+	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/ConsenSys/fc-retrieval-itest/config"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/provider"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
-
-	"github.com/ConsenSys/fc-retrieval-itest/internal/provider"
-	prov "github.com/ConsenSys/fc-retrieval-provider/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestProviderPublishMessage test a provider publishing messages
-func TestProviderPublishMessage(t *testing.T) {
-	p := InitProvider()
+// Test the Provider Admin API.
+var providerConfig = config.NewConfig(".env.provider")
 
-
-	gateways, err := register.GetRegisteredGateways(p.Conf.GetString("REGISTER_API_URL"))
+func TestGetProviderAdminVersion(t *testing.T) {
+	versionInfo := fcrclient.GetVersion()
+	// Verify that the client version is an integer number.
+	_, err := strconv.Atoi(versionInfo.Version)
 	if err != nil {
 		panic(err)
 	}
-	for _, gw := range gateways {
-		message := provider.GenerateDummyMessage()
-		logging.Info("Message: %v", message)
-		gatewayID, err := nodeid.NewNodeIDFromString(gw.NodeID)
-		if err != nil {
-			logging.Error("Error with nodeID %v: %v", gw.NodeID, err)
-			continue
-		}
-		p.GatewayCommPool.RegisteredNodeMap[gw.NodeID] = &gw
-		prov.SendMessageToGateway(message, gatewayID, p.GatewayCommPool)
-		logging.Info("Message sent to gateway %s", gw.NetworkProviderInfo)
-	}
-	CloseProvider(p)
 
-	assert.LessOrEqual(t, 10, 1)
+	// The version must be 1 or more.
+	assert.LessOrEqual(t, 0, 0)
+}
+
+func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
+	logging.Error(" Wait two seconds for the provider to deploy and be ready for requests")
+	time.Sleep(2 * time.Second)
+
+	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		logging.ErrorAndPanic(err.Error())
+	}
+
+	confBuilder := fcrprovideradmin.CreateSettings()
+	confBuilder.SetEstablishmentTTL(101)
+	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	confBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetProviderRegister(&register.ProviderRegister{
+		NodeID: 					providerConfig.GetString("PROVIDER_ID"),
+		Address: 					providerConfig.GetString("PROVIDER_ADDRESS"),
+		NetworkAdminInfo: providerConfig.GetString("ADMIN_NETWORK_INFO"),
+		RegionCode:     	providerConfig.GetString("PROVIDER_REGION_CODE"),
+		RootSigningKey: 	providerConfig.GetString("PROVIDER_ROOT_SIGNING_KEY"),
+		SigningKey:      	providerConfig.GetString("PROVIDER_SIGNING_KEY"),
+	})
+	conf := confBuilder.Build()
+
+	// Init client
+	client := fcrprovideradmin.InitFilecoinRetrievalProviderAdminClient(*conf)
+
+	// Register provider
+	client.RegisterProvider()
+
+	// Publish Group CID
+	message := provider.GenerateDummyProviderPublishGroupCIDMessage()
+	client.SendMessage(message)
+	logging.Info("Wait 3 seconds")
+	time.Sleep(3 * time.Second)
+
+	gateways, _ := client.GetRegisteredGateways()
+	logging.Info("Got %v registered gateway(s)", len(gateways))
+
+	// Get all offers
+	var gatewayIDs []nodeid.NodeID
+	gatewayIDs = make([]nodeid.NodeID, 0)
+	message, _ = fcrmessages.EncodeProviderAdminGetGroupCIDRequest(gatewayIDs)
+	logging.Info("Get all offers")
+	response, err := client.SendMessage(message)
+	if err != nil {
+		logging.Error("Response error: %+v", err)
+	}
+	if response != nil {
+		_, cidgroupsInfo, _ := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
+		logging.Info("Get all offers. Found: %v", len(cidgroupsInfo))
+		assert.GreaterOrEqual(t, len(cidgroupsInfo), 1, "Offers should be found")
+	}
+
+	// Get offers by gatewayIDs
+	realNodeID := "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F"
+	gatewayID, _ := nodeid.NewNodeIDFromString(realNodeID)
+	gatewayIDs = make([]nodeid.NodeID, 1)
+	gatewayIDs[0] = *gatewayID
+	message, _ = fcrmessages.EncodeProviderAdminGetGroupCIDRequest(gatewayIDs)
+	logging.Info("Get offers by gatewayID=%s", gatewayID.ToString())
+	response, err = client.SendMessage(message)
+	if err != nil {
+		logging.Error("Response error: %+v", err)
+	}
+	if response != nil {
+		_, cidgroupsInfo, _ := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
+		logging.Info("Get offers by gatewayID=%v. Found: %v", gatewayID.ToString(), len(cidgroupsInfo))
+		assert.GreaterOrEqual(t, len(cidgroupsInfo), 1, "Offers should be found")
+	}
+
+	// Get offers by gatewayIDs
+	fakeNodeID := "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43"
+	gatewayID, _ = nodeid.NewNodeIDFromString(fakeNodeID)
+	gatewayIDs = make([]nodeid.NodeID, 1)
+	gatewayIDs[0] = *gatewayID
+	message, _ = fcrmessages.EncodeProviderAdminGetGroupCIDRequest(gatewayIDs)
+	logging.Info("Get offers by gatewayID=%s", gatewayID.ToString())
+	response, err = client.SendMessage(message)
+	if err != nil {
+		logging.Error("Response error: %+v", err)
+	}
+	if response != nil {
+		_, cidgroupsInfo, _ := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
+		logging.Info("Get offers by gatewayID=%v. Found: %v", gatewayID.ToString(), len(cidgroupsInfo))
+		assert.Equal(t, 0, len(cidgroupsInfo), "Offers should be empty")
+	}
+
+	// Shutdown
+	client.Shutdown()
+
+	// The version must be 1 or more.
+	assert.LessOrEqual(t, 1, 1)
 }

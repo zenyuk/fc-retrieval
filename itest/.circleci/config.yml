@@ -149,7 +149,7 @@ jobs:
           command: echo $GITHUB_ACCESS_TOKEN | docker login https://docker.pkg.github.com -u $GITHUB_USER --password-stdin
       - run: 
           name: Run Itegration Tests
-          command: make itest
+          command: make itestdocker
           no_output_timeout: 30s
 
 
