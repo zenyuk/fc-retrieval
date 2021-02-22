@@ -5,7 +5,10 @@ default: clean build tag
 
 # User `make dev arg=--build` to rebuild
 dev:
-	docker-compose -f docker-compose.dev.yml up $(arg)
+	GO_MOD=go.mod docker-compose -f docker-compose.dev.yml up $(arg)
+
+dev-local:
+	GO_MOD=go.local.mod docker-compose -f docker-compose.dev.yml up $(arg)
 
 # stop:
 # 	docker-compose stop
