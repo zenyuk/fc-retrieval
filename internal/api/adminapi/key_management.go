@@ -17,6 +17,7 @@ package adminapi
 
 import (
 	"net"
+	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
@@ -26,7 +27,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 )
 
-func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessage) error {
+func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessage, wg *sync.WaitGroup) error {
 	logging.Info("In handleAdminAcceptKeysChallenge")
 
 	logging.Info("Message received \n%s", request.DumpMessage())
@@ -44,13 +45,12 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	if err != nil {
 		return err
 	}
-	// TODO: Decode from int32 to *fcrCrypto.KeyVersion
+	// Decode from int32 to *fcrCrypto.KeyVersion
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
-	// TODO need mutex around this! START
 	g.GatewayPrivateKey = privatekey
 	g.GatewayPrivateKeyVersion = privatekeyversion
-	// TODO need mutex around this! END
+	wg.Done() // need mutex to protect g
 
 	// Construct messaqe
 	exists := true
