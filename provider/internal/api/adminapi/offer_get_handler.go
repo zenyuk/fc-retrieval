@@ -16,7 +16,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 		panic(err1)
 	}
 	logging.Info("Find offers: gatewayIDs=%+v", gatewayIDs)
-	var offers []*cidoffer.CidGroupOffer
+	offers := make([]*cidoffer.CidGroupOffer, 0)
 	c.NodeOfferMapLock.Lock()
 	defer c.NodeOfferMapLock.Unlock()
 	if len(gatewayIDs) > 0 {
@@ -27,7 +27,6 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 			}
 		}
 	} else {
-		var offers []*cidoffer.CidGroupOffer
 		for _, values := range c.NodeOfferMap {
 			for _, value := range values {
 				offers = append(offers, &value)
