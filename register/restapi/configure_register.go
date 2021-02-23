@@ -37,26 +37,37 @@ func configureAPI(api *operations.RegisterAPI) http.Handler {
 
 	api.UseSwaggerUI()
 	// To continue using redoc as your UI, uncomment the following line
-	api.UseRedoc()
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	// Homepage
+	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
+		return handlers.HomepageHandler()
+	})
+
+	// Gateway
 	api.GatewayAddGatewayRegisterHandler = gateway.AddGatewayRegisterHandlerFunc(func(params gateway.AddGatewayRegisterParams) middleware.Responder {
 		return handlers.AddGatewayRegister(params)
-	})
-	api.ProviderAddProviderRegisterHandler = provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
-		return handlers.AddProviderRegister(params)
 	})
 	api.GatewayGetGatewayRegistersHandler = gateway.GetGatewayRegistersHandlerFunc(func(params gateway.GetGatewayRegistersParams) middleware.Responder {
 		return handlers.GetGatewayRegisters(params)
 	})
+	api.GatewayGetGatewayRegistersByIDHandler = gateway.GetGatewayRegistersByIDHandlerFunc(func(params gateway.GetGatewayRegistersByIDParams) middleware.Responder {
+		return handlers.GetGatewayRegisterByID(params)
+	})
+
+	// Register
+	api.ProviderAddProviderRegisterHandler = provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
+		return handlers.AddProviderRegister(params)
+	})
 	api.ProviderGetProviderRegistersHandler = provider.GetProviderRegistersHandlerFunc(func(params provider.GetProviderRegistersParams) middleware.Responder {
 		return handlers.GetProviderRegisters(params)
 	})
-	api.HomepageHomepageHandler = homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
-		return handlers.HomepageHandler()
+	api.ProviderGetProviderRegistersByIDHandler = provider.GetProviderRegistersByIDHandlerFunc(func(params provider.GetProviderRegistersByIDParams) middleware.Responder {
+		return handlers.GetProviderRegisterByID(params)
 	})
 
 	api.PreServerShutdown = func() {}
