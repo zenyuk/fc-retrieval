@@ -16,7 +16,8 @@ func Init(conf *viper.Viper) {
 	setLogLevel(conf)
 	setTimeFormat(conf)
 	writer := getLogTarget(conf)
-	log.Logger = zerolog.New(writer).With().Timestamp().Logger()
+	name := getLoggerName(conf)
+	log.Logger = zerolog.New(writer).With().Timestamp().Str("logger", name).Logger()
 }
 
 // Init1 initialises the logger without a Viper object
@@ -45,6 +46,11 @@ func setTimeFormat(conf *viper.Viper) {
 		case "Unix":   		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 		default:       		//Do nothing, use default
 	}
+}
+
+func getLoggerName(conf *viper.Viper) string {
+	logLogger := conf.GetString("LOG_LOGGER_NAME")
+	return logLogger
 }
 
 func getLogTarget(conf *viper.Viper) io.Writer {
