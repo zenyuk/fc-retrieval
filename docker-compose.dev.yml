@@ -11,8 +11,8 @@ services:
     ports:
       - "9020:9020"
     volumes:
-      - ./:/app
-      - ./${GO_MOD}:/go/src/fc-retrieval-register/go.mod
+      - ../fc-retrieval-register:/go/src/fc-retrieval-register
+      - ../fc-retrieval-register/${GO_MOD}:/go/src/fc-retrieval-register/go.mod
     env_file:
       - .env
     restart: unless-stopped

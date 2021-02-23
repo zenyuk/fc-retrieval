@@ -20,8 +20,14 @@ type ProviderRegister struct {
 	// Filecoin Account to be used with payment channels.
 	Address string `json:"address,omitempty"`
 
-	// Network addressing information.
-	NetworkInfo string `json:"networkInfo,omitempty"`
+	// Admin network addressing information.
+	NetworkInfoAdmin string `json:"networkInfoAdmin,omitempty"`
+
+	// Client network addressing information.
+	NetworkInfoClient string `json:"networkInfoClient,omitempty"`
+
+	// Gateway network addressing information.
+	NetworkInfoGateway string `json:"networkInfoGateway,omitempty"`
 
 	// Node ID.
 	NodeID string `json:"nodeId,omitempty"`

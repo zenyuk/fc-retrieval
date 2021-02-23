@@ -19,12 +19,14 @@ type GatewayRegister struct {
 
 // ProviderRegister data model
 type ProviderRegister struct {
-	NodeID         string
-	Address        string
-	NetworkInfo    string
-	RegionCode     string
-	RootSigningKey string
-	SigingKey      string
+	NodeID             string
+	Address            string
+	NetworkInfoGateway string
+	NetworkInfoClient  string
+	NetworkInfoAdmin   string
+	RegionCode         string
+	RootSigningKey     string
+	SigingKey          string
 }
 
 // GetRegisteredProviders returns registered providers

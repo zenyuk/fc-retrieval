@@ -5,11 +5,11 @@ default: clean build tag
 
 # User `make dev arg=--build` to rebuild
 dev:
-	make -s env-soft
+	make env-soft
 	GO_MOD=go.mod docker-compose -f docker-compose.dev.yml up $(arg)
 
 dev-local:
-	make -s env-soft
+	make env-soft
 	GO_MOD=go.local.mod docker-compose -f docker-compose.dev.yml up $(arg)
 
 # stop:
