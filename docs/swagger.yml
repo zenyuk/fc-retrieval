@@ -131,16 +131,16 @@ definitions:
       sigingKey:
         type: string
         description: Used for signing CID Group Offers and Single CID Offers.
-      networkGatewayInfo:
+      networkInfoGateway:
         type: string
         description: Gateway network addressing information.
-      networkProviderInfo:
+      networkInfoProvider:
         type: string
         description: Provider network addressing information.
-      networkClientInfo:
+      networkInfoClient:
         type: string
         description: Client network addressing information.
-      networkAdminInfo:
+      networkInfoAdmin:
         type: string
         description: Admin network addressing information.
       regionCode:

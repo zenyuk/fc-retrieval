@@ -8,10 +8,10 @@ import (
 type GatewayRegister struct {
 	NodeID              string
 	Address             string
-	NetworkGatewayInfo  string
-	NetworkProviderInfo string
-	NetworkClientInfo   string
-	NetworkAdminInfo    string
+	NetworkInfoGateway  string
+	NetworkInfoProvider string
+	NetworkInfoClient   string
+	NetworkInfoAdmin    string
 	RegionCode          string
 	RootSigningKey      string
 	SigingKey           string

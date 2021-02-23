@@ -218,19 +218,19 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkAdminInfo": {
+        "networkInfoAdmin": {
           "description": "Admin network addressing information.",
           "type": "string"
         },
-        "networkClientInfo": {
+        "networkInfoClient": {
           "description": "Client network addressing information.",
           "type": "string"
         },
-        "networkGatewayInfo": {
+        "networkInfoGateway": {
           "description": "Gateway network addressing information.",
           "type": "string"
         },
-        "networkProviderInfo": {
+        "networkInfoProvider": {
           "description": "Provider network addressing information.",
           "type": "string"
         },
@@ -488,19 +488,19 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkAdminInfo": {
+        "networkInfoAdmin": {
           "description": "Admin network addressing information.",
           "type": "string"
         },
-        "networkClientInfo": {
+        "networkInfoClient": {
           "description": "Client network addressing information.",
           "type": "string"
         },
-        "networkGatewayInfo": {
+        "networkInfoGateway": {
           "description": "Gateway network addressing information.",
           "type": "string"
         },
-        "networkProviderInfo": {
+        "networkInfoProvider": {
           "description": "Provider network addressing information.",
           "type": "string"
         },
