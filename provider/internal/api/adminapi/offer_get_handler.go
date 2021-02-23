@@ -1,14 +1,14 @@
 package adminapi
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-provider/pkg/provider"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
-func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage, p *provider.Provider) {
+func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *core.Core) {
 	logging.Info("handleProviderGetGroupCID: %+v", request)
 	gatewayIDs, err1 := fcrmessages.DecodeProviderAdminGetGroupCIDRequest(request)
 	if err1 != nil {
@@ -17,15 +17,22 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 	}
 	logging.Info("Find offers: gatewayIDs=%+v", gatewayIDs)
 	var offers []*cidoffer.CidGroupOffer
+	c.NodeOfferMapLock.Lock()
+	defer c.NodeOfferMapLock.Unlock()
 	if len(gatewayIDs) > 0 {
 		for _, gatewayID := range gatewayIDs {
-			offs := p.GetOffersByGatewayID(&gatewayID)
+			offs := c.NodeOfferMap[gatewayID.ToString()]
 			for _, off := range offs {
-				offers = append(offers, off)
+				offers = append(offers, &off)
 			}
 		}
 	} else {
-		offers = p.GetAllOffers()
+		var offers []*cidoffer.CidGroupOffer
+		for _, values := range c.NodeOfferMap {
+			for _, value := range values {
+				offers = append(offers, &value)
+			}
+		}
 	}
 	logging.Info("Found offers: %+v", len(offers))
 
