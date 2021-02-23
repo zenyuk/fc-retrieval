@@ -37,6 +37,8 @@ github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210223132622-5698128e1bc1 h1
 github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210223132622-5698128e1bc1/go.mod h1:xgAU/Zlc4lBtG6M8reDwGR6uOKktNx4vtexNEBKOjkM=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210222110756-97c505670a2b h1:sFv0uBLG3fDmRYycUBtWe/w9rtgGevdL9FbFccjykAw=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210222110756-97c505670a2b/go.mod h1:iG3kK0OnqBZYoKjvdCC3V75EYuDIHHIp2BEVh7n1zW8=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210223133205-41da38585819 h1:LCaHQYeWzAcogfXby6cuxRtTwIZmsdkVm/MKXDo107o=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210223133205-41da38585819/go.mod h1:Izy5K3VKwEa/VcL2S4iPmZ1TnTOowkb4hTiDto3x/U8=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210204110814-ed78769e295a/go.mod h1:Xs9qRhBLb+QPEWwMwYHBDcD1Ndun5kDYWfXNKzuIon4=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210217070341-af47745cf1a3/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210222092716-5e5e813bd6e4 h1:BrNfmzwV5q/3KtSOZFSkkaZMjb21qy1PU/lPdcm8V90=
