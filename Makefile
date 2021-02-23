@@ -27,6 +27,7 @@ start:
 
 # User `make dev arg=--build` to rebuild
 dev:
+	make -s env-soft
 	docker-compose -f docker-compose.dev.yml up $(arg)
 
 stop:
@@ -40,3 +41,21 @@ uselocal:
 
 useremote:
 	cd scripts; bash use-remote-repos.sh
+
+env-soft:
+	make env-compare
+	if [ -s .env ]; then \
+		echo ".env already exists"; \
+	else \
+		echo ".env does not exists, create a .env file"; \
+		cp .env.example .env; \
+	fi
+
+env-compare:
+	@cmp -s .env .env.example; \
+	RETVAL=$$?; \
+	if [ $$RETVAL -eq 0 ]; then \
+		echo ".env and .env.example are the same"; \
+	else \
+		echo ".env and .env.example are NOT the same"; \
+	fi
