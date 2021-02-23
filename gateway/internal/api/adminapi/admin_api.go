@@ -17,6 +17,7 @@ package adminapi
 
 import (
 	"net"
+	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
@@ -78,7 +79,9 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 				}
 				continue
 			} else if message.MessageType == fcrmessages.AdminAcceptKeyChallengeType {
-				err = handleAdminAcceptKeysChallenge(conn, message)
+				var wg sync.WaitGroup
+				wg.Add(1)
+				err = handleAdminAcceptKeysChallenge(conn, message, &wg)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
@@ -99,12 +102,10 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 			   - Remove Piece CID offers from the standard cache.
 			   - Remove Piece CID offers from the DHT cache.
 			   - Remove all Piece CID offers from a certain provider from the standard or DHT cache.
-			   - generate a key pair for the gateway. The API should have an optional parameter which
-				is protocol version. The API should return a hex encoded private key that the user
-				could put into the gateway settings file (for the moment this is where the private
-				key will live, though before this goes into production we will need to use something
-				like EthSigner so the private key can be in a HSM). There will probably also need to
-				be an API to register the public key on the blockchain.
+			   ✔︎ generate a key pair for the gateway.
+				 - The API should have an optional parameter which
+				is protocol version.
+				- Store the private key in a runtime var (TODONEXT)
 		*/
 
 		// Message is invalid.
