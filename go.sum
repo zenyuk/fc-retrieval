@@ -31,12 +31,15 @@ github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210217065551-94e62f707f
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210217065551-94e62f707ffb/go.mod h1:i4KpBmJbvJcAJW/xXSqfRyvwiYtXjpxlfIMRsfeuw4M=
 github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210222110645-e4e34ae77c20 h1:NKaTeiXqI7+oh/MnlQlb7HBDbHOqIYnQ4alXlwD4cLA=
 github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210222110645-e4e34ae77c20/go.mod h1:bXgquu2CxG6u8gQyFxRvOfsnHvIGNeddkyyoOIIjQOc=
+github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210223132622-5698128e1bc1 h1:9m1Jbe9LKWbNxEaOYYRMQXST6jUmkW9iZC8AoSTqRq4=
+github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210223132622-5698128e1bc1/go.mod h1:xgAU/Zlc4lBtG6M8reDwGR6uOKktNx4vtexNEBKOjkM=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210222110756-97c505670a2b h1:sFv0uBLG3fDmRYycUBtWe/w9rtgGevdL9FbFccjykAw=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210222110756-97c505670a2b/go.mod h1:iG3kK0OnqBZYoKjvdCC3V75EYuDIHHIp2BEVh7n1zW8=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210204110814-ed78769e295a/go.mod h1:Xs9qRhBLb+QPEWwMwYHBDcD1Ndun5kDYWfXNKzuIon4=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210217070341-af47745cf1a3/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210222092716-5e5e813bd6e4 h1:BrNfmzwV5q/3KtSOZFSkkaZMjb21qy1PU/lPdcm8V90=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210222092716-5e5e813bd6e4/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
+github.com/ConsenSys/fc-retrieval-register v0.0.0-20210223131056-b0820710001a/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
