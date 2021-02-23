@@ -16,6 +16,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210211040130-396ff2926505/go.mod h1:M7Va9hB0HG4NaIR3ZpRZBVMERcQF3V5ykdgVICQ7IMk=
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210216065412-2ca6c47c2c96 h1:tZdWrlg9soxncUpSpHcBvfDcj+GvFSvwY4T7rn49XMs=
 github.com/ConsenSys/fc-retrieval-client v0.0.0-20210216065412-2ca6c47c2c96/go.mod h1:BUYkeXu746SOgfSoB2DndA4KGkTklnNWWZF9Ae+E+ns=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210223132841-682a918c810c h1:HAhBifr3C/QKBB7E6R6tEscNn2zhBuJi3YnFLbiES5Q=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210223132841-682a918c810c/go.mod h1:D3xe2LdNAESPSwpCTvy35tbfWjMk8oESKyaefUcuSfw=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210122073456-89eb6459e1f9/go.mod h1:jStgGs5uwGIenRmFMK9sGiM+VyBAeRm9e4RC3zK830A=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210210012054-1bfdbf5cc947/go.mod h1:nbNZeRyMUAvL6y5mTe2LNEsXcmUj/HwtKXCpiium16I=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210210140720-be1622bb6c2b/go.mod h1:Rr/VSrMXCZDiR4OzKokE1q57Q79fEng37ZguEuFWLRU=

@@ -3,7 +3,7 @@ module github.com/ConsenSys/fc-retrieval-itest
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210216065412-2ca6c47c2c96
+	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210223132841-682a918c810c
 	github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210223131345-7ae6b977941e
 	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210217065551-94e62f707ffb
 	github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210223132622-5698128e1bc1
