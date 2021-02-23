@@ -5,9 +5,11 @@ default: clean build tag
 
 # User `make dev arg=--build` to rebuild
 dev:
+	make -s env-soft
 	GO_MOD=go.mod docker-compose -f docker-compose.dev.yml up $(arg)
 
 dev-local:
+	make -s env-soft
 	GO_MOD=go.local.mod docker-compose -f docker-compose.dev.yml up $(arg)
 
 # stop:
@@ -38,3 +40,21 @@ useremote:
 # system when building the register
 clean:
 	echo Does nothing
+
+env-soft:
+	make env-compare
+	if [ -s .env ]; then \
+		echo ".env already exists"; \
+	else \
+		echo ".env does not exists, create a .env file"; \
+		cp .env.example .env; \
+	fi
+
+env-compare:
+	@cmp -s .env .env.example; \
+	RETVAL=$$?; \
+	if [ $$RETVAL -eq 0 ]; then \
+		echo ".env and .env.example are the same"; \
+	else \
+		echo ".env and .env.example are NOT the same"; \
+	fi

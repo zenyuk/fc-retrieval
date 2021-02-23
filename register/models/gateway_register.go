@@ -21,16 +21,16 @@ type GatewayRegister struct {
 	Address string `json:"address,omitempty"`
 
 	// Admin network addressing information.
-	NetworkAdminInfo string `json:"networkAdminInfo,omitempty"`
+	NetworkInfoAdmin string `json:"networkInfoAdmin,omitempty"`
 
 	// Client network addressing information.
-	NetworkClientInfo string `json:"networkClientInfo,omitempty"`
+	NetworkInfoClient string `json:"networkInfoClient,omitempty"`
 
 	// Gateway network addressing information.
-	NetworkGatewayInfo string `json:"networkGatewayInfo,omitempty"`
+	NetworkInfoGateway string `json:"networkInfoGateway,omitempty"`
 
 	// Provider network addressing information.
-	NetworkProviderInfo string `json:"networkProviderInfo,omitempty"`
+	NetworkInfoProvider string `json:"networkInfoProvider,omitempty"`
 
 	// Node ID.
 	NodeID string `json:"nodeId,omitempty"`
