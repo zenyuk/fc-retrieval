@@ -17,33 +17,34 @@ package control
 
 import (
 	"bytes"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
+
 	// "time"
 
 	// "github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
 
-	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/providerapi"
+	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 )
 
 // ProviderManager managers the pool of providers and the connections to them.
 type ProviderManager struct {
-	settings     				settings.ClientSettings
-	providers     			[]ActiveProvider
+	settings  settings.ClientSettings
+	providers []ActiveProvider
 	// RegisteredProvidersMap stores mapping from provider id (big int in string repr) to its registration info
 	RegisteredProvidersMap     map[string]register.RegisteredNode
 	RegisteredProvidersMapLock sync.RWMutex
 
 	// ProviderCommPool manages connection for outgoing request to providers
-	ProviderCommPool 		*fcrtcpcomms.CommunicationPool
+	ProviderCommPool *fcrtcpcomms.CommunicationPool
 }
 
 // ActiveProvider contains information for a single provider
@@ -55,8 +56,8 @@ type ActiveProvider struct {
 // NewProviderManager returns an initialised instance of the provider manager.
 func NewProviderManager(settings settings.ClientSettings) *ProviderManager {
 	p := ProviderManager{
-		RegisteredProvidersMap:         make(map[string]register.RegisteredNode),
-		RegisteredProvidersMapLock:     sync.RWMutex{},
+		RegisteredProvidersMap:     make(map[string]register.RegisteredNode),
+		RegisteredProvidersMapLock: sync.RWMutex{},
 	}
 	p.settings = settings
 	p.ProviderCommPool = fcrtcpcomms.NewCommunicationPool(p.RegisteredProvidersMap, &p.RegisteredProvidersMapLock)
@@ -155,7 +156,7 @@ func (p *ProviderManager) SendMessage(message *fcrmessages.FCRMessage) (
 	contentReader := bytes.NewReader(mJSON)
 	providerRegister := p.settings.ProviderRegister()
 	fmt.Printf("Provider registered: %+v\n", providerRegister)
-	req, _ := http.NewRequest("POST", "http://" + providerRegister.NetworkAdminInfo + "/v1", contentReader)
+	req, _ := http.NewRequest("POST", "http://"+providerRegister.NetworkInfoAdmin+"/v1", contentReader)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	res, err := client.Do(req)
