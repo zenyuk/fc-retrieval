@@ -48,7 +48,7 @@ type AppSettings struct {
 	ProviderRootSigningKey string `mapstructure:"PROVIDER_ROOT_SIGNING_KEY"` // Provider root signing key
 	ProviderSigningKey     string `mapstructure:"PROVIDER_SIGNING_KEY"`      // Provider signing key
 	ProviderRegionCode     string `mapstructure:"PROVIDER_REGION_CODE"`      // Provider region code
-	NetworkClientInfo      string `mapstructure:"NETWORK_CLIENT_INFO"`       // Provider client network info
-	NetworkGatewayInfo     string `mapstructure:"NETWORK_GATEWAY_INFO"`      // Provider provider network info
-	NetworkAdminInfo       string `mapstructure:"NETWORK_ADMIN_INFO"`        // Provider admin network info
+	NetworkInfoClient      string `mapstructure:"NETWORK_CLIENT_INFO"`       // Provider client network info
+	NetworkInfoGateway     string `mapstructure:"NETWORK_GATEWAY_INFO"`      // Provider provider network info
+	NetworkInfoAdmin       string `mapstructure:"NETWORK_ADMIN_INFO"`        // Provider admin network info
 }
