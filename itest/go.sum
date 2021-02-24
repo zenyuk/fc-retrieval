@@ -33,6 +33,8 @@ github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224132314-38a6db1a1eb3 h1:
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224132314-38a6db1a1eb3/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224141759-604bf421a87f h1:0uFppfooOm9+yXcispjq6DQqWGid+i1oZwwTb8bbbRQ=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224141759-604bf421a87f/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224144826-7bf6119d7d55 h1:KfoNEbmolgs14AhdbWOubJhflqx77hcIZyuo/M7Ta7E=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224144826-7bf6119d7d55/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210211040148-f5fc7cc0c831/go.mod h1:x8vHv0nzGW2GMka+NqFLSZfOMIXtwxthmKkLwGLn72Q=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210223034909-ea66af29458c/go.mod h1:4cH3ZG/xAI74QuYP5SKRWI19yPlG9SgqI/P5Y5Gn+5M=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210224132409-161044acedfb h1:uVDxZkvShS2sAqOWNK/nVS+rbQ7mB7mSSbRbXA7s+3c=
@@ -44,9 +46,12 @@ github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210224134813-d63a89c74898/go
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210222234334-5235d26e6096/go.mod h1:iG3kK0OnqBZYoKjvdCC3V75EYuDIHHIp2BEVh7n1zW8=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210224134002-719779784ee3 h1:wMfCzboNEBe4VDq1V+TANwumsxrh03fTZNs1RuLpFvU=
 github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210224134002-719779784ee3/go.mod h1:VEkXKW5OsE/Ti+JQdFuSEJTyaBI1aEI677/BmNblVfE=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210224152454-4fe7247852ec h1:YKnnQTCXjKEjqJLrX4XzWYToybN0Ss6FcCQEzyphEIA=
+github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210224152454-4fe7247852ec/go.mod h1:vcxf9eFMMNBT9Cf59lGXiuUKd+e0x3jjaXiD2enbHdU=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210204110814-ed78769e295a/go.mod h1:Xs9qRhBLb+QPEWwMwYHBDcD1Ndun5kDYWfXNKzuIon4=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210222092716-5e5e813bd6e4 h1:BrNfmzwV5q/3KtSOZFSkkaZMjb21qy1PU/lPdcm8V90=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210222092716-5e5e813bd6e4/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
+github.com/ConsenSys/fc-retrieval-register v0.0.0-20210223131056-b0820710001a h1:I9DWHYuR0wxdfvYP/lX/gOG/jz6EewU6znRYNamphDs=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210223131056-b0820710001a/go.mod h1:csHmRc04HTAzZ/QSiOJFu1yAcnTRbcH6Knf8Z5dNpFY=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
@@ -85,6 +90,7 @@ github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c h1:pFUpOrbxDR6AkioZ1ySsx5yxlDQZ8stG2b88gTPxgJU=
 github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c/go.mod h1:6UhI8N9EjYm1c2odKpFpAYeR8dsBeM7PtzQhRgxRr9U=
@@ -340,6 +346,7 @@ github.com/pelletier/go-toml v1.7.0/go.mod h1:vwGMzjaWMwyfHwgIBhI2YUM4fB6nL6lVAv
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
@@ -387,6 +394,7 @@ github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoH
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
@@ -596,6 +604,7 @@ gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 h1:tQIYjPdBoyREyB9XMu+nnTclpTYkz2zFM+lzLJFO4gQ=
 gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
