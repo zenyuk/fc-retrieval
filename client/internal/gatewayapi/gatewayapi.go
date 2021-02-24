@@ -16,36 +16,35 @@ import (
 )
 
 const (
-	apiURLStart string = "http://" 
-	apiURLEnd string = "/v1" 
-//	apiURLEnd string = "/client/establishment" 
-)
+	apiURLStart string = "http://"
+	apiURLEnd   string = "/v1"
 
+//	apiURLEnd string = "/client/establishment"
+)
 
 const (
-	clientAPIProtocolVersion = 1
+	clientAPIProtocolVersion     = 1
 	clientAPIProtocolSupportedHi = 1
 )
+
 // Can't have constant slices so create this at runtime.
 // Order the API versions from most desirable to least desirable.
 var clientAPIProtocolSupported []int
 
-
-
 // Comms holds the communications specific data
 type Comms struct {
-	ApiURL string
-	gatewayPubKey *fcrcrypto.KeyPair
+	ApiURL           string
+	gatewayPubKey    *fcrcrypto.KeyPair
 	gatewayPubKeyVer *fcrcrypto.KeyVersion
-	settings *settings.ClientSettings
+	settings         *settings.ClientSettings
 }
 
-// NewGatewayAPIComms gathers information to allow a connection with a gateway to be created
-func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *settings.ClientSettings) (*Comms, error){
-	hostAndPort := gatewayInfo.NetworkGatewayInfo
+// NewGatewayAPIComms creates a connection with a gateway
+func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *settings.ClientSettings) (*Comms, error) {
+	hostAndPort := gatewayInfo.NetworkInfoGateway
 
 	// Create the constant array.
-	if (clientAPIProtocolSupported == nil) {
+	if clientAPIProtocolSupported == nil {
 		clientAPIProtocolSupported = make([]int, 1)
 		clientAPIProtocolSupported[0] = clientAPIProtocolSupportedHi
 	}
@@ -78,9 +77,8 @@ func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *setting
 	return &netComms, nil
 }
 
-
 // GatewayCall calls the Gateway's REST API
-func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json) {
+func (c *Comms) gatewayCall(msg interface{}) *simplejson.Json {
 
 	// Create HTTP request.
 	mJSON, _ := json.Marshal(msg)
@@ -107,11 +105,10 @@ func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json) {
 	return js
 }
 
-
 func validateHostName(host string) error {
 	if len(host) == 0 {
 		return errors.New("Error: Host name empty")
-	} 
+	}
 
 	ra, err := net.ResolveIPAddr("ip4", host)
 	if err != nil {
@@ -120,7 +117,6 @@ func validateHostName(host string) error {
 	logging.Info("Resolved %s as %s\n", host, ra.String())
 	return nil
 }
-
 
 func (c *Comms) verifyMessage(signature string, wholeMessage interface{}) bool {
 	keyVersion, err := fcrcrypto.ExtractKeyVersionFromMessage(signature)
