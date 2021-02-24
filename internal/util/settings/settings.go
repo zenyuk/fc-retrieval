@@ -79,11 +79,7 @@ type AppSettings struct {
 	GatewaySigningKey     string `mapstructure:"GATEWAY_SIGNING_KEY"`      // Gateway signing key
 
 	NetworkInfoClient   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
-<<<<<<< HEAD
 	NetworkInfoProvider string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
-=======
-	ProviderNetworkInfo string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
->>>>>>> main
 	NetworkInfoAdmin    string `mapstructure:"ADMIN_NETWORK_INFO"`    // Gateway admin network info
 }
 
@@ -110,10 +106,6 @@ var defaults = AppSettings{
 	settingsDefaultGatewaySigningKey,
 
 	settingsDefaultNetworkInfoClient,
-<<<<<<< HEAD
 	settingsDefaultNetworkInfoProvider,
-=======
-	settingsDefaultProviderNetworkInfo,
->>>>>>> main
 	settingsDefaultNetworkInfoAdmin,
 }
