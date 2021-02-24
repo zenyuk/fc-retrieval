@@ -35,9 +35,9 @@ func main() {
 		Address:            settings.ProviderAddress,
 		RootSigningKey:     settings.ProviderRootSigningKey,
 		SigningKey:         settings.ProviderSigningKey,
-		NetworkGatewayInfo: settings.NetworkGatewayInfo,
-		NetworkClientInfo:  settings.NetworkClientInfo,
-		NetworkAdminInfo:   settings.NetworkAdminInfo,
+		NetworkInfoGateway: settings.NetworkInfoGateway,
+		NetworkInfoClient:  settings.NetworkInfoClient,
+		NetworkInfoAdmin:   settings.NetworkInfoAdmin,
 		RegionCode:         settings.ProviderRegionCode,
 	}
 	providerReg.RegisterProvider(settings.RegisterAPIURL)
