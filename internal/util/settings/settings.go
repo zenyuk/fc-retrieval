@@ -41,10 +41,10 @@ const settingsDefaultGatewayID = "01"
 
 const settingsDefaultRegisterAPIURL = "http://localhost:9020"
 const settingsDefaultGatewayAddress = "f0121345"
-const settingsDefaultClientNetworkInfo = "127.0.0.1:9010"
+const settingsDefaultNetworkInfoClient = "127.0.0.1:9010"
 const settingsDefaultProviderNetworkInfo = "127.0.0.1:9011"
 const settingsDefaultGatewayNetworkInfo = "127.0.0.1:9012"
-const settingsDefaultAdminNetworkInfo = "127.0.0.1:9013"
+const settingsDefaultNetworkInfoAdmin = "127.0.0.1:9013"
 const settingsDefaultGatewayRegionCode = "US"
 const settingsDefaultGatewayRootSigningKey = "0xABCDE123456789"
 const settingsDefaultGatewaySigningKey = "0x987654321EDCBA"
@@ -78,9 +78,9 @@ type AppSettings struct {
 	GatewayRootSigningKey string `mapstructure:"GATEWAY_ROOT_SIGNING_KEY"` // Gateway root signing key
 	GatewaySigningKey     string `mapstructure:"GATEWAY_SIGNING_KEY"`      // Gateway signing key
 
-	ClientNetworkInfo   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
+	NetworkInfoClient   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
 	ProviderNetworkInfo string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
-	AdminNetworkInfo    string `mapstructure:"ADMIN_NETWORK_INFO"`    // Gateway admin network info
+	NetworkInfoAdmin    string `mapstructure:"ADMIN_NETWORK_INFO"`    // Gateway admin network info
 }
 
 var defaults = AppSettings{
@@ -105,7 +105,7 @@ var defaults = AppSettings{
 	settingsDefaultGatewayRootSigningKey,
 	settingsDefaultGatewaySigningKey,
 
-	settingsDefaultClientNetworkInfo,
+	settingsDefaultNetworkInfoClient,
 	settingsDefaultProviderNetworkInfo,
-	settingsDefaultAdminNetworkInfo,
+	settingsDefaultNetworkInfoAdmin,
 }

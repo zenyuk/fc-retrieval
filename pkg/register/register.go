@@ -12,10 +12,10 @@ type RegisteredNode interface {
 	GetRegionCode() string
 	GetRootSigningKey() (*fcrcrypto.KeyPair, error)
 	GetSigningKey() (*fcrcrypto.KeyPair, error)
-	GetNetworkGatewayInfo() string
-	GetNetworkProviderInfo() string
-	GetNetworkClientInfo() string
-	GetNetworkAdminInfo() string
+	GetNetworkInfoGateway() string
+	GetNetworkInfoProvider() string
+	GetNetworkInfoClient() string
+	GetNetworkInfoAdmin() string
 }
 
 // GatewayRegister stores information of a registered gateway
@@ -25,10 +25,10 @@ type GatewayRegister struct {
 	RootSigningKey      string `json:"rootSigningKey"`
 	SigningKey          string `json:"sigingKey"`
 	RegionCode          string `json:"regionCode"`
-	NetworkGatewayInfo  string `json:"networkGatewayInfo"`
-	NetworkProviderInfo string `json:"networkProviderInfo"`
-	NetworkClientInfo   string `json:"networkClientInfo"`
-	NetworkAdminInfo    string `json:"networkAdminInfo"`
+	NetworkInfoGateway  string `json:"networkInfoGateway"`
+	NetworkInfoProvider string `json:"networkInfoProvider"`
+	NetworkInfoClient   string `json:"networkInfoClient"`
+	NetworkInfoAdmin    string `json:"networkInfoAdmin"`
 }
 
 // ProviderRegister stores information of a registered provider
@@ -38,9 +38,9 @@ type ProviderRegister struct {
 	RootSigningKey     string `json:"rootSigningKey"`
 	SigningKey         string `json:"sigingKey"`
 	RegionCode         string `json:"regionCode"`
-	NetworkGatewayInfo string `json:"networkGatewayInfo"`
-	NetworkClientInfo  string `json:"networkClientInfo"`
-	NetworkAdminInfo   string `json:"networkAdminInfo"`
+	NetworkInfoGateway string `json:"networkInfoGateway"`
+	NetworkInfoClient  string `json:"networkInfoClient"`
+	NetworkInfoAdmin   string `json:"networkInfoAdmin"`
 }
 
 // GetRegisteredGateways returns registered gateways
@@ -95,44 +95,44 @@ func (r *ProviderRegister) GetRegionCode() string {
 	return r.RegionCode
 }
 
-// GetNetworkGatewayInfo gets the network gateway ap
-func (r *GatewayRegister) GetNetworkGatewayInfo() string {
-	return r.NetworkGatewayInfo
+// GetNetworkInfoGateway gets the network gateway ap
+func (r *GatewayRegister) GetNetworkInfoGateway() string {
+	return r.NetworkInfoGateway
 }
 
-// GetNetworkGatewayInfo gets the network gateway ap
-func (r *ProviderRegister) GetNetworkGatewayInfo() string {
-	return r.NetworkGatewayInfo
+// GetNetworkInfoGateway gets the network gateway ap
+func (r *ProviderRegister) GetNetworkInfoGateway() string {
+	return r.NetworkInfoGateway
 }
 
-// GetNetworkProviderInfo gets the network provider ap
-func (r *GatewayRegister) GetNetworkProviderInfo() string {
-	return r.NetworkProviderInfo
+// GetNetworkInfoProvider gets the network provider ap
+func (r *GatewayRegister) GetNetworkInfoProvider() string {
+	return r.NetworkInfoProvider
 }
 
-// GetNetworkProviderInfo gets the network provider ap
-func (r *ProviderRegister) GetNetworkProviderInfo() string {
+// GetNetworkInfoProvider gets the network provider ap
+func (r *ProviderRegister) GetNetworkInfoProvider() string {
 	return ""
 }
 
-// GetNetworkClientInfo gets the network client ap
-func (r *GatewayRegister) GetNetworkClientInfo() string {
-	return r.NetworkClientInfo
+// GetNetworkInfoClient gets the network client ap
+func (r *GatewayRegister) GetNetworkInfoClient() string {
+	return r.NetworkInfoClient
 }
 
-// GetNetworkClientInfo gets the network client ap
-func (r *ProviderRegister) GetNetworkClientInfo() string {
-	return r.NetworkClientInfo
+// GetNetworkInfoClient gets the network client ap
+func (r *ProviderRegister) GetNetworkInfoClient() string {
+	return r.NetworkInfoClient
 }
 
-// GetNetworkAdminInfo gets the network admin ap
-func (r *GatewayRegister) GetNetworkAdminInfo() string {
-	return r.NetworkAdminInfo
+// GetNetworkInfoAdmin gets the network admin ap
+func (r *GatewayRegister) GetNetworkInfoAdmin() string {
+	return r.NetworkInfoAdmin
 }
 
-// GetNetworkAdminInfo gets the network admin ap
-func (r *ProviderRegister) GetNetworkAdminInfo() string {
-	return r.NetworkAdminInfo
+// GetNetworkInfoAdmin gets the network admin ap
+func (r *ProviderRegister) GetNetworkInfoAdmin() string {
+	return r.NetworkInfoAdmin
 }
 
 // GetRootSigningKey gets the root signing key

@@ -60,9 +60,9 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 		if node, ok := commPool.RegisteredNodeMap[nodeID.ToString()]; ok {
 			switch accessFrom {
 			case AccessFromGateway:
-				address = node.GetNetworkGatewayInfo()
+				address = node.GetNetworkInfoGateway()
 			case AccessFromProvider:
-				address = node.GetNetworkProviderInfo()
+				address = node.GetNetworkInfoProvider()
 			}
 		}
 		commPool.RegisteredNodeMapLock.RUnlock()
