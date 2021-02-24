@@ -55,8 +55,14 @@ func NewRegisterAPI(spec *loads.Document) *RegisterAPI {
 		GatewayGetGatewayRegistersHandler: gateway.GetGatewayRegistersHandlerFunc(func(params gateway.GetGatewayRegistersParams) middleware.Responder {
 			return middleware.NotImplemented("operation gateway.GetGatewayRegisters has not yet been implemented")
 		}),
+		GatewayGetGatewayRegistersByIDHandler: gateway.GetGatewayRegistersByIDHandlerFunc(func(params gateway.GetGatewayRegistersByIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation gateway.GetGatewayRegistersByID has not yet been implemented")
+		}),
 		ProviderGetProviderRegistersHandler: provider.GetProviderRegistersHandlerFunc(func(params provider.GetProviderRegistersParams) middleware.Responder {
 			return middleware.NotImplemented("operation provider.GetProviderRegisters has not yet been implemented")
+		}),
+		ProviderGetProviderRegistersByIDHandler: provider.GetProviderRegistersByIDHandlerFunc(func(params provider.GetProviderRegistersByIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation provider.GetProviderRegistersByID has not yet been implemented")
 		}),
 		HomepageHomepageHandler: homepage.HomepageHandlerFunc(func(params homepage.HomepageParams) middleware.Responder {
 			return middleware.NotImplemented("operation homepage.Homepage has not yet been implemented")
@@ -104,8 +110,12 @@ type RegisterAPI struct {
 	ProviderAddProviderRegisterHandler provider.AddProviderRegisterHandler
 	// GatewayGetGatewayRegistersHandler sets the operation handler for the get gateway registers operation
 	GatewayGetGatewayRegistersHandler gateway.GetGatewayRegistersHandler
+	// GatewayGetGatewayRegistersByIDHandler sets the operation handler for the get gateway registers by Id operation
+	GatewayGetGatewayRegistersByIDHandler gateway.GetGatewayRegistersByIDHandler
 	// ProviderGetProviderRegistersHandler sets the operation handler for the get provider registers operation
 	ProviderGetProviderRegistersHandler provider.GetProviderRegistersHandler
+	// ProviderGetProviderRegistersByIDHandler sets the operation handler for the get provider registers by Id operation
+	ProviderGetProviderRegistersByIDHandler provider.GetProviderRegistersByIDHandler
 	// HomepageHomepageHandler sets the operation handler for the homepage operation
 	HomepageHomepageHandler homepage.HomepageHandler
 
@@ -194,8 +204,14 @@ func (o *RegisterAPI) Validate() error {
 	if o.GatewayGetGatewayRegistersHandler == nil {
 		unregistered = append(unregistered, "gateway.GetGatewayRegistersHandler")
 	}
+	if o.GatewayGetGatewayRegistersByIDHandler == nil {
+		unregistered = append(unregistered, "gateway.GetGatewayRegistersByIDHandler")
+	}
 	if o.ProviderGetProviderRegistersHandler == nil {
 		unregistered = append(unregistered, "provider.GetProviderRegistersHandler")
+	}
+	if o.ProviderGetProviderRegistersByIDHandler == nil {
+		unregistered = append(unregistered, "provider.GetProviderRegistersByIDHandler")
 	}
 	if o.HomepageHomepageHandler == nil {
 		unregistered = append(unregistered, "homepage.HomepageHandler")
@@ -303,7 +319,15 @@ func (o *RegisterAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/registers/gateway/{id}"] = gateway.NewGetGatewayRegistersByID(o.context, o.GatewayGetGatewayRegistersByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/registers/provider"] = provider.NewGetProviderRegisters(o.context, o.ProviderGetProviderRegistersHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/registers/provider/{id}"] = provider.NewGetProviderRegistersByID(o.context, o.ProviderGetProviderRegistersByIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
