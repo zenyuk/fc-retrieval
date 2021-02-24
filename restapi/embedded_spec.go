@@ -118,6 +118,39 @@ func init() {
         }
       }
     },
+    "/registers/gateway/{id}": {
+      "get": {
+        "description": "\u003cb\u003eGet a provider gateway by Id\u003c/b\u003e",
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Get registered Gateway by Id",
+        "operationId": "getGatewayRegistersById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Gateway ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a registered gateway by Id",
+            "schema": {
+              "$ref": "#/definitions/GatewayRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/registers/provider": {
       "get": {
         "description": "\u003cb\u003eGet Provider register list\u003c/b\u003e",
@@ -177,6 +210,39 @@ func init() {
           }
         }
       }
+    },
+    "/registers/provider/{id}": {
+      "get": {
+        "description": "\u003cb\u003eGet a provider register by Id\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Get registered Provider by Id",
+        "operationId": "getProviderRegistersById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Register ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a registered provider by Id",
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -218,19 +284,19 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkAdminInfo": {
+        "networkInfoAdmin": {
           "description": "Admin network addressing information.",
           "type": "string"
         },
-        "networkClientInfo": {
+        "networkInfoClient": {
           "description": "Client network addressing information.",
           "type": "string"
         },
-        "networkGatewayInfo": {
+        "networkInfoGateway": {
           "description": "Gateway network addressing information.",
           "type": "string"
         },
-        "networkProviderInfo": {
+        "networkInfoProvider": {
           "description": "Provider network addressing information.",
           "type": "string"
         },
@@ -263,8 +329,16 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkInfo": {
-          "description": "Network addressing information.",
+        "networkInfoAdmin": {
+          "description": "Admin network addressing information.",
+          "type": "string"
+        },
+        "networkInfoClient": {
+          "description": "Client network addressing information.",
+          "type": "string"
+        },
+        "networkInfoGateway": {
+          "description": "Gateway network addressing information.",
           "type": "string"
         },
         "nodeId": {
@@ -388,6 +462,39 @@ func init() {
         }
       }
     },
+    "/registers/gateway/{id}": {
+      "get": {
+        "description": "\u003cb\u003eGet a provider gateway by Id\u003c/b\u003e",
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Get registered Gateway by Id",
+        "operationId": "getGatewayRegistersById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Gateway ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a registered gateway by Id",
+            "schema": {
+              "$ref": "#/definitions/GatewayRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/registers/provider": {
       "get": {
         "description": "\u003cb\u003eGet Provider register list\u003c/b\u003e",
@@ -447,6 +554,39 @@ func init() {
           }
         }
       }
+    },
+    "/registers/provider/{id}": {
+      "get": {
+        "description": "\u003cb\u003eGet a provider register by Id\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Get registered Provider by Id",
+        "operationId": "getProviderRegistersById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Register ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a registered provider by Id",
+            "schema": {
+              "$ref": "#/definitions/ProviderRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -488,19 +628,19 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkAdminInfo": {
+        "networkInfoAdmin": {
           "description": "Admin network addressing information.",
           "type": "string"
         },
-        "networkClientInfo": {
+        "networkInfoClient": {
           "description": "Client network addressing information.",
           "type": "string"
         },
-        "networkGatewayInfo": {
+        "networkInfoGateway": {
           "description": "Gateway network addressing information.",
           "type": "string"
         },
-        "networkProviderInfo": {
+        "networkInfoProvider": {
           "description": "Provider network addressing information.",
           "type": "string"
         },
@@ -533,8 +673,16 @@ func init() {
           "description": "Filecoin Account to be used with payment channels.",
           "type": "string"
         },
-        "networkInfo": {
-          "description": "Network addressing information.",
+        "networkInfoAdmin": {
+          "description": "Admin network addressing information.",
+          "type": "string"
+        },
+        "networkInfoClient": {
+          "description": "Client network addressing information.",
+          "type": "string"
+        },
+        "networkInfoGateway": {
+          "description": "Gateway network addressing information.",
           "type": "string"
         },
         "nodeId": {

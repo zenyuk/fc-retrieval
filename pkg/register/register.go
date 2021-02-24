@@ -8,10 +8,10 @@ import (
 type GatewayRegister struct {
 	NodeID              string
 	Address             string
-	NetworkGatewayInfo  string
-	NetworkProviderInfo string
-	NetworkClientInfo   string
-	NetworkAdminInfo    string
+	NetworkInfoGateway  string
+	NetworkInfoProvider string
+	NetworkInfoClient   string
+	NetworkInfoAdmin    string
 	RegionCode          string
 	RootSigningKey      string
 	SigingKey           string
@@ -19,12 +19,14 @@ type GatewayRegister struct {
 
 // ProviderRegister data model
 type ProviderRegister struct {
-	NodeID         string
-	Address        string
-	NetworkInfo    string
-	RegionCode     string
-	RootSigningKey string
-	SigingKey      string
+	NodeID             string
+	Address            string
+	NetworkInfoGateway string
+	NetworkInfoClient  string
+	NetworkInfoAdmin   string
+	RegionCode         string
+	RootSigningKey     string
+	SigingKey          string
 }
 
 // GetRegisteredProviders returns registered providers

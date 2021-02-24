@@ -72,6 +72,29 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+  /registers/gateway/{id}:
+    get:
+      tags:
+        - Gateway
+      summary: Get registered Gateway by Id
+      operationId: getGatewayRegistersById
+      description: <b>Get a provider gateway by Id</b>
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Gateway ID"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: Get a registered gateway by Id
+          schema:
+            $ref: "#/definitions/GatewayRegister"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
   /registers/provider:
     post:
       tags:
@@ -113,6 +136,29 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+  /registers/provider/{id}:
+    get:
+      tags:
+        - Provider
+      summary: Get registered Provider by Id
+      operationId: getProviderRegistersById
+      description: <b>Get a provider register by Id</b>
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Register ID"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: Get a registered provider by Id
+          schema:
+            $ref: "#/definitions/ProviderRegister"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
 definitions:
   # Registers
   GatewayRegister:
@@ -131,16 +177,16 @@ definitions:
       sigingKey:
         type: string
         description: Used for signing CID Group Offers and Single CID Offers.
-      networkGatewayInfo:
+      networkInfoGateway:
         type: string
         description: Gateway network addressing information.
-      networkProviderInfo:
+      networkInfoProvider:
         type: string
         description: Provider network addressing information.
-      networkClientInfo:
+      networkInfoClient:
         type: string
         description: Client network addressing information.
-      networkAdminInfo:
+      networkInfoAdmin:
         type: string
         description: Admin network addressing information.
       regionCode:
@@ -163,9 +209,15 @@ definitions:
       sigingKey:
         type: string
         description: Used for signing CID Group Offers and Single CID Offers.
-      networkInfo:
+      networkInfoGateway:
         type: string
-        description: Network addressing information.
+        description: Gateway network addressing information.
+      networkInfoClient:
+        type: string
+        description: Client network addressing information.
+      networkInfoAdmin:
+        type: string
+        description: Admin network addressing information.
       regionCode:
         type: string
         description: Region Code.

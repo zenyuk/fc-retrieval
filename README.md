@@ -78,10 +78,10 @@ curl --location --request POST 'http://localhost:9020/registers/gateway' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "address": "f01234",
-    "networkClientInfo": "127.0.0.1:9010",
-    "networkProviderInfo": "127.0.0.1:9011",
-    "networkGatewayInfo": "127.0.0.1:9012",
-    "networkAdminInfo": "127.0.0.1:9013",
+    "networkInfoClient": "127.0.0.1:9010",
+    "networkInfoProvider": "127.0.0.1:9011",
+    "networkInfoGateway": "127.0.0.1:9012",
+    "networkInfoAdmin": "127.0.0.1:9013",
     "regionCode": "FR",
     "rootSigningKey": "0xABCDE123456789",
     "sigingKey": "0x987654321EDCBA"
