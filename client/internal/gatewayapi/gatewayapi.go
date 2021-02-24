@@ -39,9 +39,15 @@ type Comms struct {
 	settings         *settings.ClientSettings
 }
 
+<<<<<<< HEAD
 // NewGatewayAPIComms creates a connection with a gateway
 func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *settings.ClientSettings) (*Comms, error) {
 	hostAndPort := gatewayInfo.NetworkInfoGateway
+=======
+// NewGatewayAPIComms gathers information to allow a connection with a gateway to be created
+func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *settings.ClientSettings) (*Comms, error){
+	hostAndPort := gatewayInfo.NetworkGatewayInfo
+>>>>>>> main
 
 	// Create the constant array.
 	if clientAPIProtocolSupported == nil {
@@ -60,10 +66,12 @@ func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *setting
 	netComms.ApiURL = apiURLStart + hostAndPort + apiURLEnd
 
 	signingKeyStr := gatewayInfo.SigingKey
+	logging.Info("Signing Key1: %s", signingKeyStr)
 	if len(signingKeyStr) > 2 && signingKeyStr[:2] == "0x" {
 		runes := []rune(signingKeyStr)
 		signingKeyStr = string(runes[2:])
 	}
+	logging.Info("Signing Key2: %s", signingKeyStr)
 
 	netComms.gatewayPubKey, err = fcrcrypto.DecodePublicKey(signingKeyStr)
 	if err != nil {
