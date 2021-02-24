@@ -33,19 +33,19 @@ func (g *GatewayManager) validateGatewayInfo(gateway *register.GatewayRegister) 
 		logging.Warn("Gateway registration issue: Gateway IP address or domain name not set")
 		return false;
 	}
-	if gateway.NetworkGatewayInfo == "" {
+	if gateway.NetworkInfoGateway == "" {
 		logging.Warn("Gateway registration issue: Port for Gateway to Gateway communications not set")
 		return false;
 	}
-	if gateway.NetworkProviderInfo == "" {
+	if gateway.NetworkInfoProvider == "" {
 		logging.Warn("Gateway registration issue: Port for Provider to Gateway communications not set")
 		return false;
 	}
-	if gateway.NetworkClientInfo == "" {
+	if gateway.NetworkInfoClient == "" {
 		logging.Warn("Gateway registration issue: Port for Client to Gateway communications not set")
 		return false;
 	}
-	if gateway.NetworkAdminInfo == "" {
+	if gateway.NetworkInfoAdmin == "" {
 		logging.Warn("Gateway registration issue: Port for Admin to Gateway communications not set")
 		return false;
 	}
