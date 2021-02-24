@@ -52,9 +52,9 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		GatewayRootSigningKey: conf.GetString("GATEWAY_ROOT_SIGNING_KEY"),
 		GatewaySigningKey:     conf.GetString("GATEWAY_SIGNING_KEY"),
 
-		ClientNetworkInfo:   conf.GetString("IP") + ":" + conf.GetString("BIND_REST_API"),
+		NetworkInfoClient:   conf.GetString("IP") + ":" + conf.GetString("BIND_REST_API"),
 		ProviderNetworkInfo: conf.GetString("IP") + ":" + conf.GetString("BIND_PROVIDER_API"),
-		AdminNetworkInfo:    conf.GetString("IP") + ":" + conf.GetString("BIND_ADMIN_API"),
+		NetworkInfoAdmin:    conf.GetString("IP") + ":" + conf.GetString("BIND_ADMIN_API"),
 	}
 }
 

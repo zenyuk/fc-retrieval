@@ -33,10 +33,10 @@ func main() {
 		Address:             settings.GatewayAddress,
 		RootSigningKey:      settings.GatewayRootSigningKey,
 		SigningKey:          settings.GatewaySigningKey,
-		NetworkGatewayInfo:  settings.GatewayNetworkInfo,
-		NetworkProviderInfo: settings.ProviderNetworkInfo,
-		NetworkClientInfo:   settings.ClientNetworkInfo,
-		NetworkAdminInfo:    settings.AdminNetworkInfo,
+		NetworkInfoGateway:  settings.GatewayNetworkInfo,
+		NetworkInfoProvider: settings.ProviderNetworkInfo,
+		NetworkInfoClient:   settings.NetworkInfoClient,
+		NetworkInfoAdmin:    settings.NetworkInfoAdmin,
 		RegionCode:          settings.GatewayRegionCode,
 	}
 	gatewayReg.RegisterGateway(settings.RegisterAPIURL)
