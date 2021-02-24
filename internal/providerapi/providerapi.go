@@ -8,44 +8,43 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 	"github.com/bitly/go-simplejson"
 )
 
 const (
-	apiURLStart string = "http://" 
-	apiURLEnd string = "/v1" 
-//	apiURLEnd string = "/client/establishment" 
-)
+	apiURLStart string = "http://"
+	apiURLEnd   string = "/v1"
 
+//	apiURLEnd string = "/client/establishment"
+)
 
 const (
-	clientAPIProtocolVersion = 1
+	clientAPIProtocolVersion     = 1
 	clientAPIProtocolSupportedHi = 1
 )
+
 // Can't have constant slices so create this at runtime.
 // Order the API versions from most desirable to least desirable.
 var clientAPIProtocolSupported []int
 
-
-
 // Comms holds the communications specific data
 type Comms struct {
-	ApiURL string
-	providerPubKey *fcrcrypto.KeyPair
+	ApiURL            string
+	providerPubKey    *fcrcrypto.KeyPair
 	providerPubKeyVer *fcrcrypto.KeyVersion
-	settings *settings.ClientSettings
+	settings          *settings.ClientSettings
 }
 
 // NewProviderAPIComms creates a connection with a provider
-func NewProviderAPIComms(providerRegister *register.ProviderRegister, settings *settings.ClientSettings) (*Comms, error){
-	hostAndPort := providerRegister.NetworkAdminInfo
+func NewProviderAPIComms(providerRegister *register.ProviderRegister, settings *settings.ClientSettings) (*Comms, error) {
+	hostAndPort := providerRegister.NetworkInfoAdmin
 
 	// Create the constant array.
-	if (clientAPIProtocolSupported == nil) {
+	if clientAPIProtocolSupported == nil {
 		clientAPIProtocolSupported = make([]int, 1)
 		clientAPIProtocolSupported[0] = clientAPIProtocolSupportedHi
 	}
@@ -76,9 +75,8 @@ func NewProviderAPIComms(providerRegister *register.ProviderRegister, settings *
 	return &netComms, nil
 }
 
-
 // ProviderCall calls the Provider's REST API
-func (c *Comms) providerCall(msg interface{}) (*simplejson.Json) {
+func (c *Comms) providerCall(msg interface{}) *simplejson.Json {
 
 	// Create HTTP request.
 	mJSON, _ := json.Marshal(msg)
@@ -105,11 +103,10 @@ func (c *Comms) providerCall(msg interface{}) (*simplejson.Json) {
 	return js
 }
 
-
 func validateHostName(host string) error {
 	if len(host) == 0 {
 		return errors.New("Error: Host name empty")
-	} 
+	}
 
 	ra, err := net.ResolveIPAddr("ip4", host)
 	if err != nil {
@@ -118,7 +115,6 @@ func validateHostName(host string) error {
 	logging.Info("Resolved %s as %s\n", host, ra.String())
 	return nil
 }
-
 
 func (c *Comms) verifyMessage(signature string, wholeMessage interface{}) bool {
 	keyVersion, err := fcrcrypto.ExtractKeyVersionFromMessage(signature)
