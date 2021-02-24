@@ -31,6 +31,8 @@ github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210223073855-4d701b80074e/go.
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210223131345-7ae6b977941e/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224132314-38a6db1a1eb3 h1:Jxzd2runXO+0V8U1w/TLyzRsqKMJh2sJnhcbwYGd+Ac=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224132314-38a6db1a1eb3/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224141759-604bf421a87f h1:0uFppfooOm9+yXcispjq6DQqWGid+i1oZwwTb8bbbRQ=
+github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224141759-604bf421a87f/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210211040148-f5fc7cc0c831/go.mod h1:x8vHv0nzGW2GMka+NqFLSZfOMIXtwxthmKkLwGLn72Q=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210223034909-ea66af29458c/go.mod h1:4cH3ZG/xAI74QuYP5SKRWI19yPlG9SgqI/P5Y5Gn+5M=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210224132409-161044acedfb h1:uVDxZkvShS2sAqOWNK/nVS+rbQ7mB7mSSbRbXA7s+3c=

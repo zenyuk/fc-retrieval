@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210224134833-faeb86b6b457
-	github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224132314-38a6db1a1eb3
+	github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224141759-604bf421a87f
 	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210224132409-161044acedfb
 	github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210224134813-d63a89c74898
 	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210224134002-719779784ee3
