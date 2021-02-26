@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210226020157-4e513895e566
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210226022213-e26a912a72c5
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210226101732-aa9fc41abe2d
 	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210226020605-cf8fd2cdaf96
 	github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210226022529-6aea50025f3d
 	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210226023710-8c545659b3d9
@@ -12,3 +12,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 )
+
+replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin
+
+replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin

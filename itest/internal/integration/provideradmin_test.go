@@ -48,7 +48,10 @@ func TestGetProviderAdminVersion(t *testing.T) {
 }
 
 func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
-	logging.Error(" Wait two seconds for the provider to deploy and be ready for requests")
+	logging.Info("/*******************************************************/")
+	logging.Info("/*      Start TestInitProviderAdminNoRetrievalKey	     */")
+	logging.Info("/*******************************************************/")
+	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
 	time.Sleep(2 * time.Second)
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
@@ -139,4 +142,8 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 
 	// The version must be 1 or more.
 	assert.LessOrEqual(t, 1, 1)
+
+	logging.Info("/*******************************************************/")
+	logging.Info("/*      End TestInitProviderAdminNoRetrievalKey	       */")
+	logging.Info("/*******************************************************/")
 }
