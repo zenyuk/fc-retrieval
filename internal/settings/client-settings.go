@@ -5,21 +5,21 @@ package settings
 // Filecoin Retrieval Client Settings
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // ClientSettings holds the library configuration
 type ClientSettings struct {
-	establishmentTTL 				int64
-	tcpInactivityTimeout 		int64
-	registerURL      				string
-	providerRegister		 		*register.ProviderRegister
-	clientID         				*nodeid.NodeID
-	blockchainPrivateKey 		*fcrcrypto.KeyPair
-	retrievalPrivateKey    	*fcrcrypto.KeyPair
-	retrievalPrivateKeyVer 	*fcrcrypto.KeyVersion
+	establishmentTTL       int64
+	tcpInactivityTimeout   int64
+	registerURL            string
+	providerRegister       *register.ProviderRegister
+	clientID               *nodeid.NodeID
+	blockchainPrivateKey   *fcrcrypto.KeyPair
+	retrievalPrivateKey    *fcrcrypto.KeyPair
+	retrievalPrivateKeyVer *fcrcrypto.KeyVersion
 }
 
 // EstablishmentTTL returns the establishmentTTL

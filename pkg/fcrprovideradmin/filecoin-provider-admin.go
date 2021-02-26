@@ -16,17 +16,17 @@ package fcrprovideradmin
  */
 
 import (
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
 )
 
 // FilecoinRetrievalProviderAdminClient holds information about the interaction of
 // the Filecoin Retrieval Provider Admin Client with Filecoin Retrieval Providers.
 type FilecoinRetrievalProviderAdminClient struct {
-	Settings     		settings.ClientSettings
+	Settings        settings.ClientSettings
 	providerManager *control.ProviderManager
 	// TODO have a list of provider objects of all the current providers being interacted with
 }

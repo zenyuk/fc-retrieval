@@ -5,9 +5,9 @@ package fcrprovideradmin
 // Filecoin Retrieval Client Settings
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 )
 
@@ -40,14 +40,14 @@ type SettingsBuilder interface {
 
 // Settings holds the library configuration
 type Settings interface {
-	EstablishmentTTL() 				int64
-	TcpInactivityTimeout() 		int64
-	ClientID() 								*nodeid.NodeID
-	BlockchainPrivateKey() 		*fcrcrypto.KeyPair
-	RetrievalPrivateKey() 		*fcrcrypto.KeyPair
-	RetrievalPrivateKeyVer() 	*fcrcrypto.KeyVersion
-	RegisterURL() 						string
-	ProviderRegister() 				*register.ProviderRegister
+	EstablishmentTTL() int64
+	TcpInactivityTimeout() int64
+	ClientID() *nodeid.NodeID
+	BlockchainPrivateKey() *fcrcrypto.KeyPair
+	RetrievalPrivateKey() *fcrcrypto.KeyPair
+	RetrievalPrivateKeyVer() *fcrcrypto.KeyVersion
+	RegisterURL() string
+	ProviderRegister() *register.ProviderRegister
 }
 
 // CreateSettings loads up default settings
