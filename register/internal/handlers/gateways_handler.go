@@ -5,7 +5,7 @@ import (
 
 	"encoding/json"
 
-	log "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	middleware "github.com/go-openapi/runtime/middleware"
 	redis "github.com/go-redis/redis/v8"
 
@@ -86,7 +86,7 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 	for registerJSON, _ := range registers {
 		registerData := models.GatewayRegister{}
 		json.Unmarshal([]byte(registerJSON), &registerData)
-		if (registerData.NodeID == registerID) {
+		if registerData.NodeID == registerID {
 			log.Info("Register found")
 			payload = registerData
 		} else {
@@ -96,4 +96,3 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 
 	return op.NewGetGatewayRegistersByIDOK().WithPayload(&payload)
 }
-
