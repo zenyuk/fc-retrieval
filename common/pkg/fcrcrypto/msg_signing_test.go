@@ -18,10 +18,9 @@ package fcrcrypto
 import (
 	"testing"
 
-    "github.com/stretchr/testify/assert"
-    "github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/stretchr/testify/assert"
 )
-
 
 // CopiedClientEstablishmentResponse is a copy of a message used in the messages module. The
 // struct has been copied here to remove the circular dependancy.

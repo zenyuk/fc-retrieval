@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // AdminGetReputationChallenge is the request from an admin client to a gateway to discover a client's reputation
@@ -190,9 +190,9 @@ type AdminAcceptKeyChallenge struct {
 // EncodeAdminAcceptKeyChallenge is used to get the FCRMessage of AdminAcceptKeysChallenge
 func EncodeAdminAcceptKeyChallenge(
 	privateKey string, // privatekey encoded as a hex string
-	keyVersion uint32, 
+	keyVersion uint32,
 ) (*FCRMessage, error) {
-	body, err := json.Marshal(AdminAcceptKeyChallenge{privateKey, keyVersion})	
+	body, err := json.Marshal(AdminAcceptKeyChallenge{privateKey, keyVersion})
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 )
 
 const wordSize = 32 // 32 bytes
@@ -89,7 +89,6 @@ func NewNodeIDFromPublicKey(pubKey *fcrcrypto.KeyPair) (*NodeID, error) {
 	}
 	return NewNodeIDFromBytes(hashedPubKey)
 }
-
 
 // ToString returns a string for the node id.
 func (n *NodeID) ToString() string {

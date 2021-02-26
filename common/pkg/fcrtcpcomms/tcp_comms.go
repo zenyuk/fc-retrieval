@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 )
 
 // IsTimeoutError checks if the given error is a timeout error

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // ProviderPublishGroupCIDRequest is the request from provider to gateway to publish group cid offer
@@ -75,18 +75,18 @@ func DecodeProviderPublishGroupCIDRequest(fcrMsg *FCRMessage) (
 
 // ProviderPublishGroupCIDResponse is the response from gateway to provider after publishing group cid offer
 type ProviderPublishGroupCIDResponse struct {
-	GateaydID 	nodeid.NodeID   								`json:"provider_id"`
-	Digest  		[CidGroupOfferDigestSize]byte   `json:"digest"`
+	GateaydID nodeid.NodeID                 `json:"provider_id"`
+	Digest    [CidGroupOfferDigestSize]byte `json:"digest"`
 }
 
 // EncodeProviderPublishGroupCIDResponse is used to get the FCRMessage of ProviderPublishGroupCIDResponse
 func EncodeProviderPublishGroupCIDResponse(
-	gateaydID	nodeid.NodeID,
-	digest 		[CidGroupOfferDigestSize]byte,
+	gateaydID nodeid.NodeID,
+	digest [CidGroupOfferDigestSize]byte,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(ProviderPublishGroupCIDResponse{
-		GateaydID:  gateaydID,
-		Digest: 		digest,
+		GateaydID: gateaydID,
+		Digest:    digest,
 	})
 	if err != nil {
 		return nil, err
