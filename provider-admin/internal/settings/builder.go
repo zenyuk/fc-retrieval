@@ -5,22 +5,22 @@ package settings
 // Filecoin Retrieval Client Settings
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // BuilderImpl holds the library configuration
 type BuilderImpl struct {
-	logLevel         			string
-	logTarget        			string
-	establishmentTTL 			int64
-	tcpInactivityTimeout 	int64
-	clientID         			*nodeid.NodeID
-	registerURL      			string
-	providerRegister     	*register.ProviderRegister
-	blockchainPrivateKey 	*fcrcrypto.KeyPair
+	logLevel               string
+	logTarget              string
+	establishmentTTL       int64
+	tcpInactivityTimeout   int64
+	clientID               *nodeid.NodeID
+	registerURL            string
+	providerRegister       *register.ProviderRegister
+	blockchainPrivateKey   *fcrcrypto.KeyPair
 	retrievalPrivateKey    *fcrcrypto.KeyPair
 	retrievalPrivateKeyVer *fcrcrypto.KeyVersion
 }
