@@ -1,7 +1,7 @@
 package register
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/request"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // GatewayRegister data model
