@@ -5,12 +5,12 @@ services:
       dockerfile: Dockerfile.dev
       context: .
     volumes:
+      - ./logs:${LOG_DIR}
       - ./:/app
     networks:
       - shared
     ports:
-      - "${BIND_CLIENT_API}:${BIND_CLIENT_API}"
-      - "${BIND_PROVIDER_API}:${BIND_PROVIDER_API}"
+      - "${BIND_REST_API}:${BIND_REST_API}"
       - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
       - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
     environment:
