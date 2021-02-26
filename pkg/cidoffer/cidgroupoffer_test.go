@@ -19,8 +19,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 func TestGetPrice(t *testing.T) {

@@ -1,7 +1,7 @@
 package fcrmessages
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 /*
@@ -31,7 +31,7 @@ const (
 	ClientCIDGroupPublishDHTAckRequestType      = 6
 	ClientCIDGroupPublishDHTAckResponseType     = 7
 	ProviderPublishGroupCIDRequestType          = 8
-	ProviderPublishGroupCIDResponseType					= 302
+	ProviderPublishGroupCIDResponseType         = 302
 	ProviderDHTPublishGroupCIDRequestType       = 9
 	ProviderDHTPublishGroupCIDAckType           = 10
 	GatewaySingleCIDOfferPublishRequestType     = 11
@@ -49,17 +49,17 @@ const (
 	AdminSetReputationResponseType              = 203
 	AdminAcceptKeyChallengeType                 = 204
 	AdminAcceptKeyResponseType                  = 205
-	ProviderAdminGetGroupCIDRequestType					= 300
-	ProviderAdminGetGroupCIDResponseType				= 301
+	ProviderAdminGetGroupCIDRequestType         = 300
+	ProviderAdminGetGroupCIDResponseType        = 301
 )
 
 // CIDGroupInformation represents a cid group information
 type CIDGroupInformation struct {
-	ProviderID           nodeid.NodeID                `json:"provider_id"`
-	Price                uint64                       `json:"price_per_byte"`
-	Expiry               int64                        `json:"expiry_date"`
-	QoS                  uint64                       `json:"qos"`
-	Signature            string                       `json:"signature"`
-	MerkleRoot           string                       `json:"merkle_root"`
-	FundedPaymentChannel bool                         `json:"funded_payment_channel"` // TODO: Is this boolean?
+	ProviderID           nodeid.NodeID `json:"provider_id"`
+	Price                uint64        `json:"price_per_byte"`
+	Expiry               int64         `json:"expiry_date"`
+	QoS                  uint64        `json:"qos"`
+	Signature            string        `json:"signature"`
+	MerkleRoot           string        `json:"merkle_root"`
+	FundedPaymentChannel bool          `json:"funded_payment_channel"` // TODO: Is this boolean?
 }

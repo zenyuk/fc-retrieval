@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-gateway/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // ProviderAdminGetGroupCIDRequest is the requset from client to gateway to ask for cid offer
 type ProviderAdminGetGroupCIDRequest struct {
-	GatewayIDs	[]nodeid.NodeID `json:"gateway_id"`
+	GatewayIDs []nodeid.NodeID `json:"gateway_id"`
 }
 
 // EncodeProviderAdminGetGroupCIDRequest is used to get the FCRMessage of ProviderAdminGetGroupCIDRequest
@@ -52,8 +52,8 @@ func DecodeProviderAdminGetGroupCIDRequest(fcrMsg *FCRMessage) (
 
 // ProviderAdminGetGroupCIDResponse is the response to ProviderAdminGetGroupCIDResponse
 type ProviderAdminGetGroupCIDResponse struct {
-	Found        	bool                  `json:"found"`
-	CIDGroupInfo 	[]CIDGroupInformation `json:"cid_group_information"`
+	Found        bool                  `json:"found"`
+	CIDGroupInfo []CIDGroupInformation `json:"cid_group_information"`
 }
 
 // EncodeProviderAdminGetGroupCIDResponse is used to get the FCRMessage of ProviderAdminGetGroupCIDResponse
