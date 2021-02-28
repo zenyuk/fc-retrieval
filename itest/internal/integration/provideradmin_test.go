@@ -48,7 +48,10 @@ func TestGetProviderAdminVersion(t *testing.T) {
 }
 
 func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
-	logging.Error(" Wait two seconds for the provider to deploy and be ready for requests")
+	logging.Info("/*******************************************************/")
+	logging.Info("/*      Start TestInitProviderAdminNoRetrievalKey	     */")
+	logging.Info("/*******************************************************/")
+	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
 	time.Sleep(2 * time.Second)
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
@@ -84,6 +87,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 
 	gateways, _ := client.GetRegisteredGateways()
 	logging.Info("Got %v registered gateway(s)", len(gateways))
+	logging.Info("Got registered gateway(s): %+v", gateways)
 
 	// Get all offers
 	var gatewayIDs []nodeid.NodeID
@@ -101,7 +105,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 
 	// Get offers by gatewayIDs
-	realNodeID := "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F"
+	realNodeID := gateways[0].NodeID
 	gatewayID, _ := nodeid.NewNodeIDFromString(realNodeID)
 	gatewayIDs = make([]nodeid.NodeID, 1)
 	gatewayIDs[0] = *gatewayID
@@ -139,4 +143,8 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 
 	// The version must be 1 or more.
 	assert.LessOrEqual(t, 1, 1)
+
+	logging.Info("/*******************************************************/")
+	logging.Info("/*      End TestInitProviderAdminNoRetrievalKey	       */")
+	logging.Info("/*******************************************************/")
 }
