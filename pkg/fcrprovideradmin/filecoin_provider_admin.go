@@ -16,8 +16,11 @@ package fcrprovideradmin
  */
 
 import (
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
@@ -26,7 +29,7 @@ import (
 // FilecoinRetrievalProviderAdminClient holds information about the interaction of
 // the Filecoin Retrieval Provider Admin Client with Filecoin Retrieval Providers.
 type FilecoinRetrievalProviderAdminClient struct {
-	Settings        settings.ClientSettings
+	Settings        settings.ClientProviderAdminSettings
 	providerManager *control.ProviderManager
 	// TODO have a list of provider objects of all the current providers being interacted with
 }
@@ -40,7 +43,6 @@ func InitFilecoinRetrievalProviderAdminClient(settings Settings) *FilecoinRetrie
 		logging.ErrorAndPanic("Attempt to init Filecoin Retrieval Provider Admin Client a second time")
 	}
 	var c = FilecoinRetrievalProviderAdminClient{}
-	c.startUp(settings)
 	singleInstance = &c
 	initialised = true
 	return singleInstance
@@ -56,48 +58,22 @@ func GetFilecoinRetrievalProviderAdminClient() *FilecoinRetrievalProviderAdminCl
 	return singleInstance
 }
 
-func (c *FilecoinRetrievalProviderAdminClient) startUp(conf Settings) {
-	logging.Info("Filecoin Retrieval Provider Admin Client started")
-	clientSettings := conf.(*settings.ClientSettings)
-	c.Settings = *clientSettings
-	c.providerManager = control.NewProviderManager(*clientSettings)
+// InitialiseProvider initialise a given provider
+func (c *FilecoinRetrievalProviderAdminClient) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
+	return c.providerManager.InitialiseProvider(providerInfo, providerPrivKey, providerPrivKeyVer)
 }
 
-// Shutdown releases all resources used by the library
-func (c *FilecoinRetrievalProviderAdminClient) Shutdown() {
-	logging.Info("Filecoin Retrieval Provider Admin Client shutting down")
-	c.providerManager.Shutdown()
+// PublishGroupCID publish a group cid offer to a given provider
+func (c *FilecoinRetrievalProviderAdminClient) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
+	return c.providerManager.PublishGroupCID(providerID, cids, price, expiry, qos)
 }
 
-// RegisterProvider to register a provider
-func (c *FilecoinRetrievalProviderAdminClient) RegisterProvider() error {
-	logging.Info("Filecoin Retrieval Provider Admin Client sending message")
-	url := c.Settings.RegisterURL()
-	reg := c.Settings.ProviderRegister()
-	err := reg.RegisterProvider(url)
-	if err != nil {
-		logging.Error("Unable to register provider")
-		return err
-	}
-	return nil
+// PublishDHTCID publish a dht cid offer to a given provider
+func (c *FilecoinRetrievalProviderAdminClient) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
+	return c.providerManager.PublishDHTCID(providerID, cids, price, expiry, qos)
 }
 
-// SendMessage send message to providers
-func (c *FilecoinRetrievalProviderAdminClient) SendMessage(message *fcrmessages.FCRMessage) (
-	*fcrmessages.FCRMessage,
-	error,
-) {
-	logging.Info("Filecoin Retrieval Provider Admin Client sending message")
-	return c.providerManager.SendMessage(message)
-}
-
-// GetRegisteredGateways send message to providers
-func (c *FilecoinRetrievalProviderAdminClient) GetRegisteredGateways() ([]register.GatewayRegister, error) {
-	logging.Info("Filecoin Retrieval Provider Admin Client getting registered gateways")
-	gateways, err := register.GetRegisteredGateways(c.Settings.RegisterURL())
-	if err != nil {
-		logging.Error("Unable to get registered gateways: %v", err)
-		return []register.GatewayRegister{}, err
-	}
-	return gateways, nil
+// GetGroupCIDOffer checks the group offer stored in the provider
+func (c *FilecoinRetrievalProviderAdminClient) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []fcrmessages.CIDGroupInformation, error) {
+	return c.providerManager.GetGroupCIDOffer(providerID, gatewayIDs)
 }
