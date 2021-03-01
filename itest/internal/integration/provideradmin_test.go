@@ -97,7 +97,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		logging.ErrorAndPanic(err.Error())
 	}
 
-	logging.Error("Wait five seconds for the provider to initialise")
+	logging.Info("Wait five seconds for the provider to initialise")
 	time.Sleep(5 * time.Second)
 
 	// Generate random cid offer
