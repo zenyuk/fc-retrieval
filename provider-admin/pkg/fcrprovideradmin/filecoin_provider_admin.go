@@ -29,7 +29,6 @@ import (
 // FilecoinRetrievalProviderAdminClient holds information about the interaction of
 // the Filecoin Retrieval Provider Admin Client with Filecoin Retrieval Providers.
 type FilecoinRetrievalProviderAdminClient struct {
-	Settings        settings.ClientProviderAdminSettings
 	providerManager *control.ProviderManager
 	// TODO have a list of provider objects of all the current providers being interacted with
 }
@@ -38,13 +37,16 @@ var singleInstance *FilecoinRetrievalProviderAdminClient
 var initialised = false
 
 // InitFilecoinRetrievalProviderAdminClient initialise the Filecoin Retreival Client library
-func InitFilecoinRetrievalProviderAdminClient(settings Settings) *FilecoinRetrievalProviderAdminClient {
+func InitFilecoinRetrievalProviderAdminClient(conf Settings) *FilecoinRetrievalProviderAdminClient {
 	if initialised {
 		logging.ErrorAndPanic("Attempt to init Filecoin Retrieval Provider Admin Client a second time")
 	}
 	var c = FilecoinRetrievalProviderAdminClient{}
 	singleInstance = &c
 	initialised = true
+
+	clientSettings := conf.(*settings.ClientProviderAdminSettings)
+	c.providerManager = control.NewProviderManager(clientSettings)
 	return singleInstance
 
 }
