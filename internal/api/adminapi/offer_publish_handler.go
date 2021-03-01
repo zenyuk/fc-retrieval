@@ -2,7 +2,6 @@ package adminapi
 
 import (
 	"bytes"
-	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -103,5 +102,12 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 			logging.Info("Digest is not OK")
 		}
 	}
-	w.WriteHeader(http.StatusOK)
+
+	response, err := fcrmessages.EncodeProviderAdminPublishOfferAck(true)
+	if err != nil {
+		logging.Error("Error in encoding response.")
+		return
+	}
+
+	w.WriteJson(response)
 }
