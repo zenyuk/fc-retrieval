@@ -54,8 +54,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Check main modules in go.mod
-        command: make check-main-modules
+          name: Check main modules in go.mod
+          command: make check-main-modules
 
   localbuild:
     docker:
