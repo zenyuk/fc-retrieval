@@ -145,7 +145,7 @@ func getCommits(repo string, sha string) []Commit {
 func findInBranches(branches []BranchData, version string, repo string) (BranchData, Commit) {
 	for _, branch := range branches {
 		commits := getCommits(repo, branch.BranchCommit.Sha)
-		branchFound, commit := findInBranch(commits, version, branch)
+		branchFound, commit := findInBranch(branch, commits, version)
 		if branchFound {
 			return branch, commit
 		}
@@ -154,7 +154,7 @@ func findInBranches(branches []BranchData, version string, repo string) (BranchD
 }
 
 // findInBranch finds a commit in a branch
-func findInBranch(commits []Commit, version string, branch BranchData) (bool, Commit) {
+func findInBranch( branch BranchData, commits []Commit, version string) (bool, Commit) {
 	for _, commit := range commits {
 		re := regexp.MustCompile(version)
 		match := re.FindStringSubmatch(commit.Sha)
