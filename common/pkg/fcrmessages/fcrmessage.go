@@ -8,7 +8,7 @@ import (
 const (
 	defaultProtocolVersion            = 1
 	defaultAlternativeProtocolVersion = 1
-	CidGroupOfferDigestSize						= sha512.Size256
+	CidGroupOfferDigestSize           = sha512.Size256
 )
 
 var protocolVersion int32 = defaultProtocolVersion
@@ -97,11 +97,10 @@ func SetProtocolVersion(newProtocolVersion int32, newProtocolSupported []int32) 
 // DecodeXX is used to get the fields from FCRMessage of XX
 
 // DumpMessage display a message with ASCII and hex
-func (fcrMsg *FCRMessage) DumpMessage() string { 
+func (fcrMsg *FCRMessage) DumpMessage() string {
 	msgBytes, err := FCRMsgToBytes(fcrMsg)
 	if err != nil {
 		return "Error processing message"
 	}
 	return dumpMessage(msgBytes)
 }
-
