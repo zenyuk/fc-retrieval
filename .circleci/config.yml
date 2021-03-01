@@ -56,6 +56,10 @@ jobs:
       - run:
           name: Check main modules in go.mod
           command: make check-main-modules
+    filters:
+      branches:
+        only:
+          - main
 
   localbuild:
     docker:
