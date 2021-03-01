@@ -188,8 +188,6 @@ func main() {
 				}
 			}
 		}
-		
-		break
 	}
 
 	if (len(isErrors) > 0) {
