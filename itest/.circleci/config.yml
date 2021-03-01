@@ -53,7 +53,9 @@ jobs:
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
-      - run: make check-main-modules
+      - run:
+        name: Check main modules in go.mod
+        command: make check-main-modules
 
   localbuild:
     docker:
