@@ -7,5 +7,5 @@ import (
 
 func main() {
 	fmt.Printf("Start enforce main packages:\n\n")
-	os.Exit(1)
+	// os.Exit(1)
 }
