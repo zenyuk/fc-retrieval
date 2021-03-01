@@ -14,10 +14,9 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/ConsenSys/fc-retrieval-common v0.0.0-20210226015528-5bb0a14fb535 h1:dXDGlsH3bFZIejIkdW3CQuOee0dJfxvDt9q1NqwwxLM=
-github.com/ConsenSys/fc-retrieval-common v0.0.0-20210226015528-5bb0a14fb535/go.mod h1:h4WZ2CJ2k/x8XWMotfl2EIOgJX28mANy+Sd+jq6zn3k=
+github.com/ConsenSys/fc-retrieval-common v0.0.0-20210301055355-6e21008d0d08 h1:NyC4hUPgxpDz0XBSU79DT4qysFXjoSqDkuZmX82PjVU=
+github.com/ConsenSys/fc-retrieval-common v0.0.0-20210301055355-6e21008d0d08/go.mod h1:6/i0Qz8S9TtzKe7FwBKwW8tTXYaGLE00ZsF+yQQ6y4s=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210217043212-e959886bb388/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
-github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224053954-ba1408285a2c/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224144826-7bf6119d7d55 h1:KfoNEbmolgs14AhdbWOubJhflqx77hcIZyuo/M7Ta7E=
 github.com/ConsenSys/fc-retrieval-gateway v0.0.0-20210224144826-7bf6119d7d55/go.mod h1:wcMswm8esnwsoIpQHz9SZrlbU0+75WkS/SRx8d7waxk=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210223131056-b0820710001a h1:I9DWHYuR0wxdfvYP/lX/gOG/jz6EewU6znRYNamphDs=
