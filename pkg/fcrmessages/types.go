@@ -51,6 +51,9 @@ const (
 	AdminAcceptKeyResponseType                  = 205
 	ProviderAdminGetGroupCIDRequestType         = 300
 	ProviderAdminGetGroupCIDResponseType        = 301
+	ProviderAdminPublishGroupCIDRequestType     = 302
+	ProviderAdminDHTPublishGroupCIDRequestType  = 303
+	ProviderAdminPublishOfferAckType            = 304
 )
 
 // CIDGroupInformation represents a cid group information
