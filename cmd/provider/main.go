@@ -47,17 +47,7 @@ func main() {
 	log.Info("Provider private key set.")
 
 	// Get all registerd Gateways
-	gateways, err := register.GetRegisteredGateways(settings.RegisterAPIURL)
-	if err != nil {
-		log.Error("Unable to get registered gateways: %v", err)
-	}
-	c.RegisteredGatewaysMapLock.Lock()
-	log.Info("All registered gateways: %+v", gateways)
-	for _, gateway := range gateways {
-		log.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
-		c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
-	}
-	c.RegisteredGatewaysMapLock.Unlock()
+	go updateRegisteredGateways(settings.RegisterAPIURL, c)
 
 	err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
@@ -74,6 +64,63 @@ func main() {
 
 	// Wait forever.
 	select {}
+}
+
+func updateRegisteredGateways(url string, c *core.Core) {
+	for {
+		gateways, err := register.GetRegisteredGateways(url)
+		if err != nil {
+			log.Error("Error in getting registered gateways: ", err.Error())
+		} else {
+			// Check if nothing is changed.
+			update := false
+			c.RegisteredGatewaysMapLock.RLock()
+			if len(gateways) != len(c.RegisteredGatewaysMap) {
+				update = true
+			} else {
+				for _, gateway := range gateways {
+					storedInfo, exist := c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)]
+					if !exist {
+						update = true
+						break
+					} else {
+						key, err := storedInfo.GetRootSigningKey()
+						rootSigningKey, err2 := key.EncodePublicKey()
+						key, err3 := storedInfo.GetSigningKey()
+						signingKey, err4 := key.EncodePublicKey()
+						if err != nil || err2 != nil || err3 != nil || err4 != nil {
+							log.Error("Error in generating key string")
+							break
+						}
+						if gateway.Address != storedInfo.GetAddress() ||
+							gateway.NetworkInfoAdmin != storedInfo.GetNetworkInfoAdmin() ||
+							gateway.NetworkInfoClient != storedInfo.GetNetworkInfoClient() ||
+							gateway.NetworkInfoProvider != storedInfo.GetNetworkInfoProvider() ||
+							gateway.NetworkInfoGateway != storedInfo.GetNetworkInfoGateway() ||
+							gateway.RegionCode != storedInfo.GetRegionCode() ||
+							gateway.RootSigningKey != rootSigningKey ||
+							gateway.SigningKey != signingKey {
+							update = true
+							break
+						}
+					}
+				}
+			}
+			c.RegisteredGatewaysMapLock.RUnlock()
+			if update {
+				c.RegisteredGatewaysMapLock.Lock()
+				c.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
+				log.Info("Update registered gateways: %+v", gateways)
+				for _, gateway := range gateways {
+					log.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
+					c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
+				}
+				c.RegisteredGatewaysMapLock.Unlock()
+			}
+		}
+		// Sleep for 5 seconds, refresh every 5 seconds
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func gracefulExit() {

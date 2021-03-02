@@ -8,7 +8,9 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *core.Core) {
+func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
+	// Get core structure
+	c := core.GetSingleInstance()
 	logging.Info("handle key management.")
 
 	encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
@@ -36,5 +38,10 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage,
 		logging.Error("Error in encoding message")
 		return
 	}
+
+	// Sign the response
+	response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
+	})
 	w.WriteJson(response)
 }
