@@ -39,14 +39,15 @@ func main() {
 	// Configure what should be called if Control-C is hit.
 	util.SetUpCtrlCExit(gracefulExit)
 
-	// Wait until private key is set, check every 1 second
-	for {
-		if g.GatewayPrivateKey != nil {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	logging.Info("Gateway private key set.")
+	// TODO: These lines will need to be added.
+	// // Wait until private key is set, check every 1 second
+	// for {
+	// 	if g.GatewayPrivateKey != nil {
+	// 		break
+	// 	}
+	// 	time.Sleep(time.Second)
+	// }
+	// logging.Info("Gateway private key set.")
 
 	// Get all registerd Gateways
 	go updateRegisteredGateways(settings.RegisterAPIURL, g)
