@@ -3,11 +3,8 @@ module github.com/ConsenSys/fc-retrieval-provider-admin
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210226022213-e26a912a72c5
-	github.com/bitly/go-simplejson v0.5.0
-	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210301055355-6e21008d0d08
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
