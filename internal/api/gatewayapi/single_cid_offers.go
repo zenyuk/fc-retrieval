@@ -137,7 +137,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return errors.New("Invalid response")
 	}
 	for i, acknowledgement := range acknowledgements {
-		// TODO: Check nonce
+		// TODO: Check nonce.
 		_, signature, err := fcrmessages.DecodeProviderDHTPublishGroupCIDAck(&acknowledgement)
 		if err != nil {
 			return err
