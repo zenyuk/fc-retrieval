@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"strconv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -185,17 +184,18 @@ func main() {
 				if (!found) {
 					newError :=  repo
 					isErrors = append(isErrors, newError)
+					fmt.Printf("Branch main not found for repository: %v\n", repo)
+				} else {
+					fmt.Printf("Branch main found for repository: %v\n", repo)
 				}
 			}
 		}
 	}
 
 	if (len(isErrors) > 0) {
-		fmt.Println("Error, branch `main` not found for " + strconv.Itoa(len(isErrors)) + " package(s): ")
-		for _, error := range isErrors {
-			fmt.Println("-", error)
-		}
-		fmt.Println("")
+		fmt.Println("Error, branch `main` not found for %d package(s): ", len(isErrors))
 		os.Exit(1)
+	} else {
+		fmt.Println("Success, branch `main` found for all packages")
 	}
 }
