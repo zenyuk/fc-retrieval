@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -76,5 +77,14 @@ func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRM
 		return
 	}
 
+	// Sign the message
+	if response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	}) != nil {
+		s := "Internal error."
+		logging.Error(s + err.Error())
+		rest.Error(w, s, http.StatusInternalServerError)
+		return
+	}
 	w.WriteJson(response)
 }

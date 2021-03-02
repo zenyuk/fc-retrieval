@@ -1,17 +1,17 @@
 package gatewayapi
 
 import (
+	"errors"
 	"net"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
 func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
@@ -20,6 +20,7 @@ func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMess
 		// Reply with invalid message
 		return fcrtcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
 	}
+	// TODO, Unable to verify the request because gateway ID isn't part of the request
 
 	// First check if the message can be discarded.
 	if time.Now().Unix() > ttl {
@@ -49,15 +50,10 @@ func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMess
 		return err
 	}
 
-	// Sign the message
-	if response.SignMessage(func(msg interface{}) (string, error) {
+	// Sign the response
+	response.SignMessage(func(msg interface{}) (string, error) {
 		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
-	}) != nil {
-		// Ignored.
-		logging.Error("Error in signing message.")
-	}
-
-	// Send message
+	})
 	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
 }
 
@@ -78,6 +74,10 @@ func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID) (*f
 	if err != nil {
 		return nil, err
 	}
+	// Sign the request
+	request.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
 		g.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
@@ -91,6 +91,23 @@ func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID) (*f
 	} else if err != nil {
 		g.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return nil, err
+	}
+	// Verify the response
+	// Get the gateway's signing key
+	g.RegisteredGatewaysMapLock.RLock()
+	defer g.RegisteredGatewaysMapLock.RUnlock()
+	pubKey, err := g.RegisteredProvidersMap[gatewayID.ToString()].GetSigningKey()
+	if err != nil {
+		return nil, err
+	}
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("Fail to verify the response")
 	}
 	return response, nil
 }
