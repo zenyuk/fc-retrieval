@@ -6,6 +6,7 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
@@ -214,6 +215,7 @@ func EncodeProviderAdminGetGroupCIDResponse(
 				QoS:                  offer.QoS,
 				Signature:            offer.Signature,
 				MerkleRoot:           roots[i],
+				MerkleProof:					fcrmerkletree.FCRMerkleProof{},
 				FundedPaymentChannel: fundedPaymentChannel[i],
 			}
 		}
