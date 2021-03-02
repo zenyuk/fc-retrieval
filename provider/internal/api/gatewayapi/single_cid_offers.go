@@ -29,19 +29,23 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	// Get the gateways's signing key
 	c.RegisteredGatewaysMapLock.RLock()
 	defer c.RegisteredGatewaysMapLock.RUnlock()
+	_, ok := c.RegisteredGatewaysMap[gatewayID.ToString()]
+	if !ok {
+		return errors.New("Gateway register not found")
+	}
 	pubKey, err := c.RegisteredGatewaysMap[gatewayID.ToString()].GetSigningKey()
 	if err != nil {
 		return err
 	}
 	// Verify the incoming request
-	ok, err := request.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+	ok, err = request.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
 		return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the response")
+		return errors.New("Fail to verify the request")
 	}
 
 	// Search offers
@@ -125,7 +129,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the response")
+		return errors.New("Fail to verify the acks")
 	}
 
 	acknowledgements, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishResponseAck(acks)
