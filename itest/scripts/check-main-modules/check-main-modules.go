@@ -193,7 +193,7 @@ func main() {
 	}
 
 	if (len(isErrors) > 0) {
-		fmt.Println("Error, branch `main` not found for %d package(s): ", len(isErrors))
+		fmt.Printf("Error, branch `main` not found for %d package(s): ", len(isErrors))
 		os.Exit(1)
 	} else {
 		fmt.Println("Success, branch `main` found for all packages")
