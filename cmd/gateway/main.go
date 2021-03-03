@@ -83,7 +83,7 @@ func updateRegisteredGateways(url string, g *gateway.Gateway) {
 	for {
 		gateways, err := register.GetRegisteredGateways(url)
 		if err != nil {
-			logging.Error("Error in getting registered gateways: ", err.Error())
+			logging.Error("Error in getting registered gateways: %s", err.Error())
 		} else {
 			// Check if nothing is changed.
 			update := false
@@ -140,7 +140,7 @@ func updateRegisteredProviders(url string, g *gateway.Gateway) {
 	for {
 		providers, err := register.GetRegisteredProviders(url)
 		if err != nil {
-			logging.Error("Error in getting registered providers: ", err.Error())
+			logging.Error("Error in getting registered providers: %s", err.Error())
 		} else {
 			// Check if nothing is changed.
 			update := false
