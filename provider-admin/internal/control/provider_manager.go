@@ -50,13 +50,7 @@ func NewProviderManager(settings *settings.ClientProviderAdminSettings) *Provide
 
 // InitialiseProvider initialise a given provider
 func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	// TODO: Check given providerInfo is correct, also maybe it is better to let the admin to config the provider
-	// First, register this provider.
-	err := providerInfo.RegisterProvider(p.settings.RegisterURL())
-	if err != nil {
-		log.Error("Error in register the provider.")
-		return err
-	}
+	// TODO: Check given providerInfo is correct, particularly check the node id is generated from the private key
 	// Get pubkey
 	pubKey, err := providerInfo.GetSigningKey()
 	if err != nil {
@@ -100,6 +94,13 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 	if !ok {
 		log.Error("Initialise provider failed.")
 		return errors.New("Fail to initialise provider")
+	}
+
+	// Finally register the provider
+	err = providerInfo.RegisterProvider(p.settings.RegisterURL())
+	if err != nil {
+		log.Error("Error in register the provider.")
+		return err
 	}
 
 	// Finally add the provider to the active providers list
