@@ -27,20 +27,6 @@ func main() {
 	// Initialise a dummy gateway instance.
 	g := gateway.GetSingleInstance(&settings)
 
-	// Register Gateway
-	gatewayReg := register.GatewayRegister{
-		NodeID:              settings.GatewayID,
-		Address:             settings.GatewayAddress,
-		RootSigningKey:      settings.GatewayRootSigningKey,
-		SigningKey:          settings.GatewaySigningKey,
-		NetworkInfoGateway:  settings.NetworkInfoGateway,
-		NetworkInfoProvider: settings.NetworkInfoProvider,
-		NetworkInfoClient:   settings.NetworkInfoClient,
-		NetworkInfoAdmin:    settings.NetworkInfoAdmin,
-		RegionCode:          settings.GatewayRegionCode,
-	}
-	gatewayReg.RegisterGateway(settings.RegisterAPIURL)
-
 	// Get all registerd Gateways
 	gateways, err := register.GetRegisteredGateways(settings.RegisterAPIURL)
 	if err != nil {
