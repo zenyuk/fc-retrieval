@@ -4,11 +4,10 @@ import "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 
 // ClientProviderAdminSettings holds the library configuration
 type ClientProviderAdminSettings struct {
-	registerURL string
-
-	blockchainPrivateKey       *fcrcrypto.KeyPair
-	providerAdminPrivateKey    *fcrcrypto.KeyPair
-	providerAdminPrivateKeyVer *fcrcrypto.KeyVersion
+	registerURL 								string
+	blockchainPrivateKey       	*fcrcrypto.KeyPair
+	providerAdminPrivateKey    	*fcrcrypto.KeyPair
+	providerAdminPrivateKeyVer 	*fcrcrypto.KeyVersion
 }
 
 // RegisterURL returns the register url
