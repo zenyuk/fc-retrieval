@@ -13,6 +13,7 @@ import (
 type BuilderImpl struct {
 	logLevel         string
 	logTarget        string
+	logServiceName   string
 	establishmentTTL int64
 
 	blockchainPrivateKey *fcrcrypto.KeyPair
@@ -27,14 +28,16 @@ func CreateSettings() *BuilderImpl {
 	f := BuilderImpl{}
 	f.logLevel = defaultLogLevel
 	f.logTarget = defaultLogTarget
+	f.logServiceName = defaultLogServiceName
 	f.establishmentTTL = defaultEstablishmentTTL
 	return &f
 }
 
 // SetLogging sets the log level and target.
-func (f *BuilderImpl) SetLogging(logLevel string, logTarget string) {
-	f.logLevel = defaultLogLevel
-	f.logTarget = defaultLogTarget
+func (f *BuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
+	f.logLevel = logLevel
+	f.logTarget = logTarget
+	f.logServiceName = logServiceName
 }
 
 // SetEstablishmentTTL sets the time to live for the establishment message between client and gateway.
@@ -60,7 +63,7 @@ func (f *BuilderImpl) SetRegisterURL(regURL string) {
 
 // Build creates a settings object and initialises the logging system.
 func (f *BuilderImpl) Build() *ClientGatewayAdminSettings {
-	log.Init1(f.logLevel, f.logTarget)
+	log.Init1(f.logLevel, f.logTarget, f.logServiceName)
 
 	g := ClientGatewayAdminSettings{}
 	g.establishmentTTL = f.establishmentTTL
