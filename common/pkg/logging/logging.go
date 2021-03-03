@@ -16,8 +16,8 @@ func Init(conf *viper.Viper) {
 	setLogLevel(conf)
 	setTimeFormat(conf)
 	writer := getLogTarget(conf)
-	name := getLoggerName(conf)
-	log.Logger = zerolog.New(writer).With().Timestamp().Str("logger", name).Logger()
+	service := getLogServiceName(conf)
+	log.Logger = zerolog.New(writer).With().Timestamp().Str("service", service).Logger()
 }
 
 // Init1 initialises the logger without a Viper object
@@ -48,8 +48,8 @@ func setTimeFormat(conf *viper.Viper) {
 	}
 }
 
-func getLoggerName(conf *viper.Viper) string {
-	logLogger := conf.GetString("LOG_LOGGER_NAME")
+func getLogServiceName(conf *viper.Viper) string {
+	logLogger := conf.GetString("LOG_SERVICE_NAME")
 	return logLogger
 }
 
