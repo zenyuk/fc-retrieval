@@ -21,11 +21,11 @@ func Init(conf *viper.Viper) {
 }
 
 // Init1 initialises the logger without a Viper object
-func Init1(logLevel string, logServiceName string, logTarget string) {
+func Init1(logLevel string, logTarget string, logServiceName string) {
 	conf := viper.New()
 	conf.Set("LOG_LEVEL", logLevel)
-	conf.Set("LOG_SERVICE_NAME", logServiceName)
 	conf.Set("LOG_TARGET", logTarget)
+	conf.Set("LOG_SERVICE_NAME", logServiceName)
 	Init(conf)
 }
 
