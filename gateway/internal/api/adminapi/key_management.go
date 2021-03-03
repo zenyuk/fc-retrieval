@@ -23,6 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
@@ -45,9 +46,17 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	if err != nil {
 		return err
 	}
+
+	// Generate the node id
+	nodeID, err := nodeid.NewNodeIDFromPublicKey(privatekey)
+	if err != nil {
+		logging.Error("Error in generating node id")
+	}
+
 	// Decode from int32 to *fcrCrypto.KeyVersion
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
+	g.GatewayID = nodeID
 	g.GatewayPrivateKey = privatekey
 	g.GatewayPrivateKeyVersion = privatekeyversion
 	wg.Done() // need mutex to protect g
