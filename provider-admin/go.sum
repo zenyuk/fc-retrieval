@@ -23,6 +23,8 @@ github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303091553-a9285067cde0 h1:l
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303091553-a9285067cde0/go.mod h1:6/i0Qz8S9TtzKe7FwBKwW8tTXYaGLE00ZsF+yQQ6y4s=
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303093535-ef0055e020a3 h1:3xZqyxoIFBm5ujaAB0bQH6SVBfOge3AqUihv/4bhhq4=
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303093535-ef0055e020a3/go.mod h1:6/i0Qz8S9TtzKe7FwBKwW8tTXYaGLE00ZsF+yQQ6y4s=
+github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303192843-14d7cc97f440 h1:NRY8/4DQoqMdOAxVSQmXvfOsCCNtNp5ig7xwPqUlHHc=
+github.com/ConsenSys/fc-retrieval-common v0.0.0-20210303192843-14d7cc97f440/go.mod h1:6/i0Qz8S9TtzKe7FwBKwW8tTXYaGLE00ZsF+yQQ6y4s=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
