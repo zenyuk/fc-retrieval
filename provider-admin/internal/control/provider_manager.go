@@ -1,10 +1,7 @@
 package control
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"net/http"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -13,6 +10,7 @@ import (
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 )
 
@@ -70,7 +68,8 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return err
 	}
 
-	response, err := SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	// response, err := SendMessage(providerInfo.NetworkInfoAdmin, request)
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return err
@@ -193,25 +192,9 @@ func (p *ProviderManager) SendMessage(providerID *nodeid.NodeID, message *fcrmes
 		log.Error("Provider not found in the provider manager, please initialise it first.")
 		return nil, errors.New("Provider not found")
 	}
-	return SendMessage(providerRegister.NetworkInfoAdmin, message)
-}
-
-// SendMessage sends a message to a given url and obtain a response
-func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
-	mJSON, _ := json.Marshal(message)
-	log.Info("Provider Manageer sending JSON: %v to url: %v", string(mJSON), url)
-	contentReader := bytes.NewReader(mJSON)
-	req, _ := http.NewRequest("POST", "http://"+url+"/v1", contentReader)
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	res, err := client.Do(req)
+	data, err := req.SendMessage("http://"+providerRegister.NetworkInfoAdmin+"/v1", message)
 	if err != nil {
-		log.Fatal("Error: %+v", err)
+		return nil, err
 	}
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-	var data fcrmessages.FCRMessage
-	json.NewDecoder(res.Body).Decode(&data)
-	return &data, nil
+	return data, nil
 }
