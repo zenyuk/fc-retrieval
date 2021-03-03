@@ -30,32 +30,7 @@ func main() {
 	// Initialise a dummy gateway instance.
 	g := gateway.GetSingleInstance(&settings)
 
-	// Start admin API first
-	err := adminapi.StartAdminAPI(settings, g)
-	if err != nil {
-		logging.Error("Error starting admin tcp server: %s", err.Error())
-		return
-	}
-	// Configure what should be called if Control-C is hit.
-	util.SetUpCtrlCExit(gracefulExit)
-
-	// TODO: These lines will need to be added.
-	// // Wait until private key is set, check every 1 second
-	// for {
-	// 	if g.GatewayPrivateKey != nil {
-	// 		break
-	// 	}
-	// 	time.Sleep(time.Second)
-	// }
-	// logging.Info("Gateway private key set.")
-
-	// Get all registerd Gateways
-	go updateRegisteredGateways(settings.RegisterAPIURL, g)
-
-	// Get all registered Providers
-	go updateRegisteredProviders(settings.RegisterAPIURL, g)
-
-	err = clientapi.StartClientRestAPI(settings)
+	err := clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		logging.Error("Error starting server: Client REST API: %s", err.Error())
 		return
@@ -72,6 +47,21 @@ func main() {
 		logging.Error("Error starting provider tcp server: %s", err.Error())
 		return
 	}
+
+	err = adminapi.StartAdminAPI(settings, g)
+	if err != nil {
+		logging.Error("Error starting admin tcp server: %s", err.Error())
+		return
+	}
+
+	// Get all registerd Gateways
+	go updateRegisteredGateways(settings.RegisterAPIURL, g)
+
+	// Get all registered Providers
+	go updateRegisteredProviders(settings.RegisterAPIURL, g)
+
+	// Configure what should be called if Control-C is hit.
+	util.SetUpCtrlCExit(gracefulExit)
 
 	logging.Info("Filecoin Gateway Start-up Complete")
 
@@ -92,6 +82,10 @@ func updateRegisteredGateways(url string, g *gateway.Gateway) {
 				update = true
 			} else {
 				for _, gateway := range gateways {
+					// Skip itself
+					if gateway.NodeID == g.GatewayID.ToString() {
+						continue
+					}
 					storedInfo, exist := g.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)]
 					if !exist {
 						update = true
@@ -125,6 +119,10 @@ func updateRegisteredGateways(url string, g *gateway.Gateway) {
 				g.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
 				logging.Info("Update registered gateways: %+v", gateways)
 				for _, gateway := range gateways {
+					// Skip itself
+					if gateway.NodeID == g.GatewayID.ToString() {
+						continue
+					}
 					logging.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
 					g.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
 				}
