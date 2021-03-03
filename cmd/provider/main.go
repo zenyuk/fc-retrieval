@@ -28,28 +28,7 @@ func main() {
 	// Initialise the provider's core structure
 	c := core.GetSingleInstance(&settings)
 
-	// Start admin API first
-	err := adminapi.StartAdminRestAPI(settings)
-	if err != nil {
-		log.Error("Error starting admin tcp server: %s", err.Error())
-		return
-	}
-	// Configure what should be called if Control-C is hit.
-	util.SetUpCtrlCExit(gracefulExit)
-
-	// Wait until private key is set, check every 1 second
-	for {
-		if c.ProviderPrivateKey != nil {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	log.Info("Provider private key set.")
-
-	// Get all registerd Gateways
-	go updateRegisteredGateways(settings.RegisterAPIURL, c)
-
-	err = clientapi.StartClientRestAPI(settings)
+	err := clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		log.Error("Error starting client rest server: %s", err.Error())
 		return
@@ -59,6 +38,18 @@ func main() {
 	if err != nil {
 		log.Error("Error starting gateway tcp server: %s", err.Error())
 	}
+
+	err = adminapi.StartAdminRestAPI(settings)
+	if err != nil {
+		log.Error("Error starting admin tcp server: %s", err.Error())
+		return
+	}
+
+	// Get all registerd Gateways
+	go updateRegisteredGateways(settings.RegisterAPIURL, c)
+
+	// Configure what should be called if Control-C is hit.
+	util.SetUpCtrlCExit(gracefulExit)
 
 	log.Info("Filecoin Provider Start-up Complete")
 
