@@ -36,6 +36,8 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
 	// Set the node id
+	logging.Info("Check if c is nil :%v", c == nil)
+	logging.Info("Setting node id")
 	c.ProviderID = nodeID
 	c.ProviderPrivateKey = privatekey
 	c.ProviderPrivateKeyVersion = privatekeyversion
@@ -48,6 +50,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 		return
 	}
 
+	logging.Info("Signing response.")
 	// Sign the response
 	response.SignMessage(func(msg interface{}) (string, error) {
 		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
