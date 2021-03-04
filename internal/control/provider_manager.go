@@ -58,8 +58,18 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return err
 	}
 
+	nodeID, err := nodeid.NewNodeIDFromString(providerInfo.NodeID)
+	if err != nil {
+		log.Error("Error in generating nodeID.")
+		return err
+	}
+
 	// Second, send key exchange to activate the given provider
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(providerPrivKey.EncodePrivateKey(), providerPrivKeyVer.EncodeKeyVersion())
+	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, providerPrivKey.EncodePrivateKey(), providerPrivKeyVer.EncodeKeyVersion())
+	if err != nil {
+		log.Error("Error in encoding message.")
+		return err
+	}
 
 	// Sign the request
 	err = request.SignMessage(func(msg interface{}) (string, error) {
