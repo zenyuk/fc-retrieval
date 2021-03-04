@@ -183,16 +183,18 @@ func DecodeAdminSetReputationResponse(fcrMsg *FCRMessage) (
 
 // AdminAcceptKeyChallenge is the request from an admin client to a gateway to generate an initial key pair.
 type AdminAcceptKeyChallenge struct {
-	PrivateKey        string `json:"privatekey"`
-	PrivateKeyVersion uint32 `json:"privatekeyversion"`
+	NodeID            nodeid.NodeID `json:"node_id"`
+	PrivateKey        string        `json:"privatekey"`
+	PrivateKeyVersion uint32        `json:"privatekeyversion"`
 }
 
 // EncodeAdminAcceptKeyChallenge is used to get the FCRMessage of AdminAcceptKeysChallenge
 func EncodeAdminAcceptKeyChallenge(
+	nodeID *nodeid.NodeID,
 	privateKey string, // privatekey encoded as a hex string
 	keyVersion uint32,
 ) (*FCRMessage, error) {
-	body, err := json.Marshal(AdminAcceptKeyChallenge{privateKey, keyVersion})
+	body, err := json.Marshal(AdminAcceptKeyChallenge{*nodeID, privateKey, keyVersion})
 	if err != nil {
 		return nil, err
 	}
@@ -205,23 +207,23 @@ func EncodeAdminAcceptKeyChallenge(
 }
 
 // DecodeAdminAcceptKeyChallenge is used to get the fields from FCRMessage of AdminAcceptKeysChallenge
-func DecodeAdminAcceptKeyChallenge(fcrMsg *FCRMessage) (string, uint32, error) {
+func DecodeAdminAcceptKeyChallenge(fcrMsg *FCRMessage) (*nodeid.NodeID, string, uint32, error) {
 	if fcrMsg.MessageType != AdminAcceptKeyChallengeType {
-		return "", 0, fmt.Errorf("Message type mismatch")
+		return nil, "", 0, fmt.Errorf("Message type mismatch")
 	}
 	msg := AdminAcceptKeyChallenge{}
 	err := json.Unmarshal(fcrMsg.MessageBody, &msg)
 	if err != nil {
-		return "", 0, err
+		return nil, "", 0, err
 	}
 	if msg.PrivateKey == "" {
-		return "", 0, fmt.Errorf("New Gateway Private Key empty")
+		return nil, "", 0, fmt.Errorf("New Gateway Private Key empty")
 	}
 	if msg.PrivateKeyVersion < 0 {
-		return "", 0, fmt.Errorf("New Gateway Private Key version negative")
+		return nil, "", 0, fmt.Errorf("New Gateway Private Key version negative")
 	}
 
-	return msg.PrivateKey, msg.PrivateKeyVersion, nil
+	return &msg.NodeID, msg.PrivateKey, msg.PrivateKeyVersion, nil
 }
 
 // AdminAcceptKeyResponse is the response to AdminAcceptKeysResponse
