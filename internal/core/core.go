@@ -100,7 +100,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 			AcknowledgementMap:     make(map[string](map[string]DHTAcknowledgement)),
 			AcknowledgementMapLock: sync.RWMutex{},
 		}
-		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
+		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
 	})
 	return instance
 }
