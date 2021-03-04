@@ -54,30 +54,22 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 	comm := commPool.ActiveNodes[nodeID.ToString()]
 	commPool.ActiveNodesLock.RUnlock()
 	if comm == nil {
-		log.Info("Test: No active connection, connect to peer")
+		log.Info("No active connection, connect to peer")
 		var address string
 		commPool.RegisteredNodeMapLock.RLock()
 		node, ok := (*commPool.RegisteredNodeMap)[nodeID.ToString()]
 		if ok {
-			log.Info(node.GetNodeID())
-			log.Info(node.GetAddress())
-			log.Info(node.GetNetworkInfoGateway())
-			log.Info(node.GetNetworkInfoProvider())
-			log.Info(node.GetNetworkInfoClient())
-			log.Info(node.GetNetworkInfoAdmin())
 			switch accessFrom {
 			case AccessFromGateway:
 				address = node.GetNetworkInfoGateway()
 			case AccessFromProvider:
 				address = node.GetNetworkInfoProvider()
 			}
-		} else {
-			log.Info("Error in getting %v", nodeID.ToString())
-			log.Info("%v", commPool.RegisteredNodeMap)
 		}
-
 		commPool.RegisteredNodeMapLock.RUnlock()
-
+		if !ok {
+			return nil, errors.New("Node not found in register")
+		}
 		log.Debug("Got address: %v", address)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
