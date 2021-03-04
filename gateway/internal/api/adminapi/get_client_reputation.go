@@ -16,19 +16,26 @@ package adminapi
  */
 
 import (
+	"errors"
 	"net"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/reputation"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
 func handleAdminGetReputationChallenge(conn net.Conn, request *fcrmessages.FCRMessage) error {
+	// Get core structure
+	g := gateway.GetSingleInstance()
+	if g.GatewayPrivateKey == nil {
+		return errors.New("This gateway hasn't been initialised by the admin")
+	}
 
 	logging.Info("In handleAdminGetReputationChallenge")
-
 	clientID, err := fcrmessages.DecodeAdminGetReputationChallenge(request)
 	if err != nil {
 		return err
@@ -43,6 +50,10 @@ func handleAdminGetReputationChallenge(conn net.Conn, request *fcrmessages.FCRMe
 	if err != nil {
 		return err
 	}
+	// Sign the response
+	response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	// Send message
 	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
 }

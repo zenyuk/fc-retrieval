@@ -1,14 +1,15 @@
 package providerapi
 
 import (
+	"errors"
 	"net"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
 func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
@@ -21,18 +22,26 @@ func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages
 		return nil
 	}
 
-	// Get the public key
+	// Get the provider's signing key
 	g.RegisteredProvidersMapLock.RLock()
 	defer g.RegisteredProvidersMapLock.RUnlock()
-	provider, ok := g.RegisteredProvidersMap[providerID.ToString()]
+	_, ok := g.RegisteredProvidersMap[providerID.ToString()]
 	if !ok {
-		logging.Info("Provider public key not found.")
-		return nil
+		return errors.New("Provider public key not found")
 	}
-	pubKey, err := provider.GetSigningKey()
+	pubKey, err := g.RegisteredProvidersMap[providerID.ToString()].GetSigningKey()
 	if err != nil {
-		logging.Info("Fail to get signing key from provider registration info")
-		return nil
+		return err
+	}
+	// First verify the message
+	ok, err = request.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Fail to verify the request")
 	}
 
 	for _, offer := range offers {
@@ -70,6 +79,9 @@ func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages
 		logging.Error("Internal error in encoding message.")
 		return nil
 	}
-
+	// Sign the response
+	response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
 }

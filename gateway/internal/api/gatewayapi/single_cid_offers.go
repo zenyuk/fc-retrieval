@@ -1,6 +1,8 @@
 package gatewayapi
 
 import (
+	"errors"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
@@ -36,6 +38,10 @@ func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.No
 	if err != nil {
 		return nil, err
 	}
+	// Sign the request
+	request.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
 		g.ProviderCommPool.DeregisterNodeCommunication(providerID)
@@ -46,6 +52,27 @@ func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.No
 	if err != nil {
 		g.ProviderCommPool.DeregisterNodeCommunication(providerID)
 		return nil, err
+	}
+	// Verify the response
+	// Get the provider's signing key
+	g.RegisteredProvidersMapLock.RLock()
+	defer g.RegisteredProvidersMapLock.RUnlock()
+	_, ok := g.RegisteredProvidersMap[providerID.ToString()]
+	if !ok {
+		return nil, errors.New("Provider public key not found")
+	}
+	pubKey, err := g.RegisteredProvidersMap[providerID.ToString()].GetSigningKey()
+	if err != nil {
+		return nil, err
+	}
+	ok, err = response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("Fail to verify the request")
 	}
 	return response, nil
 }
@@ -63,6 +90,29 @@ func AcknowledgeSingleCIDOffers(response *fcrmessages.FCRMessage, providerID *no
 	}
 	pComm.CommsLock.Lock()
 	defer pComm.CommsLock.Unlock()
+
+	// Verify the response
+	// Get the provider's signing key
+	g.RegisteredProvidersMapLock.RLock()
+	defer g.RegisteredProvidersMapLock.RUnlock()
+	_, ok := g.RegisteredProvidersMap[providerID.ToString()]
+	if !ok {
+		return nil, errors.New("Provider public key not found")
+	}
+	pubKey, err := g.RegisteredProvidersMap[providerID.ToString()].GetSigningKey()
+	if err != nil {
+		return nil, err
+	}
+	ok, err = response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("Fail to verify the request")
+	}
+
 	// Decode the response
 	cidOffers, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishResponse(response)
 	if err != nil {
@@ -90,6 +140,10 @@ func AcknowledgeSingleCIDOffers(response *fcrmessages.FCRMessage, providerID *no
 	if err != nil {
 		return nil, err
 	}
+	// Sign the ack
+	ack.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	// Send ack
 	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, ack, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
