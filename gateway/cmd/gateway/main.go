@@ -117,7 +117,6 @@ func updateRegisteredGateways(url string, g *gateway.Gateway) {
 			if update {
 				g.RegisteredGatewaysMapLock.Lock()
 				g.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
-				logging.Info("Update registered gateways: %+v", gateways)
 				for _, gateway := range gateways {
 					// Skip itself
 					if gateway.NodeID == g.GatewayID.ToString() {
@@ -177,7 +176,6 @@ func updateRegisteredProviders(url string, g *gateway.Gateway) {
 			if update {
 				g.RegisteredProvidersMapLock.Lock()
 				g.RegisteredProvidersMap = make(map[string]register.RegisteredNode)
-				logging.Info("Update registered providers: %+v", providers)
 				for _, provider := range providers {
 					logging.Info("Add to registered providers map: nodeID=%+v", provider.NodeID)
 					g.RegisteredProvidersMap[strings.ToLower(provider.NodeID)] = &provider
