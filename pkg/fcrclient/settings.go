@@ -14,7 +14,7 @@ import (
 // SettingsBuilder holds the library configuration
 type SettingsBuilder interface {
 	// SetLogging sets the log level and target.
-	SetLogging(logLevel string, logTarget string)
+	SetLogging(logLevel string, logTarget string, logServiceName string)
 
 	// SetEstablishmentTTL sets the time to live for the establishment message between client and gateway.
 	SetEstablishmentTTL(ttl int64)
@@ -62,8 +62,8 @@ func newBuilderImpl() settingsBuilderImpl {
 
 
 // SetLogging sets the log level and target.
-func (f settingsBuilderImpl) SetLogging(logLevel string, logTarget string) {
-	f.impl.SetLogging(logLevel, logTarget)
+func (f settingsBuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
+	f.impl.SetLogging(logLevel, logTarget, logServiceName)
 }
 
 // SetEstablishmentTTL sets the time to live for the establishment message between client and gateway.
