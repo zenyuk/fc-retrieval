@@ -91,7 +91,7 @@ func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		logging.Error("Client - Gateway communications (%s): %s", c.ApiURL, err)
+		logging.Info("Client - Gateway communications (%s): %s", c.ApiURL, err)
 		return nil, err
 	}
 
