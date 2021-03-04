@@ -10,6 +10,7 @@ import (
 type BuilderImpl struct {
 	logLevel                   string
 	logTarget                  string
+	logServiceName             string
 	registerURL                string
 	blockchainPrivateKey       *fcrcrypto.KeyPair
 	providerAdminPrivateKey    *fcrcrypto.KeyPair
@@ -21,14 +22,16 @@ func CreateSettings() *BuilderImpl {
 	f := BuilderImpl{}
 	f.logLevel = defaultLogLevel
 	f.logTarget = defaultLogTarget
+	f.logServiceName = defaultLogServiceName
 	f.registerURL = defaultRegisterURL
 	return &f
 }
 
 // SetLogging sets the log level and target.
-func (f *BuilderImpl) SetLogging(logLevel string, logTarget string) {
+func (f *BuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
 	f.logLevel = logLevel
 	f.logTarget = logTarget
+	f.logServiceName = logServiceName
 }
 
 // SetRegisterURL sets the register URL.
@@ -50,7 +53,7 @@ func (f *BuilderImpl) SetProviderAdminPrivateKey(key *fcrcrypto.KeyPair, ver *fc
 // Build creates a settings object and initialise the logging system
 func (f *BuilderImpl) Build() *ClientProviderAdminSettings {
 
-	log.Init1(f.logLevel, f.logTarget)
+	log.Init1(f.logLevel, f.logTarget, f.logServiceName)
 
 	c := &ClientProviderAdminSettings{}
 	c.registerURL = f.registerURL
