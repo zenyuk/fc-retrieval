@@ -52,7 +52,7 @@ func NewGatewayManager(conf settings.ClientGatewayAdminSettings) *GatewayManager
 	g := GatewayManager{}
 	g.settings = conf
 	g.registeredMap = make(map[string]register.RegisteredNode)
-	g.conxPool = fcrtcpcomms.NewCommunicationPool(g.registeredMap, &sync.RWMutex{})
+	g.conxPool = fcrtcpcomms.NewCommunicationPool(&g.registeredMap, &sync.RWMutex{})
 	return &g
 }
 
