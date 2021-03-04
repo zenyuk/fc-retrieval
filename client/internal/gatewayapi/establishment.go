@@ -42,10 +42,13 @@ func (c *Comms) GatewayClientEstablishment(challenge [32]byte) (bool, error) {
 		return false, err
 	}
 
-	res := c.gatewayCall(request).Get("result").MustString()
+	res, err := c.gatewayCall(request)
+	if err != nil {
+		return false, err
+	}
+	result := res.Get("result").MustString()
 	// TODO interpret the response.
-	logging.Info("Response from server: %s", res)
+	logging.Info("Response from server: %s", result)
 
 	return true, nil
 }
-

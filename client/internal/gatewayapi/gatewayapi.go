@@ -78,7 +78,7 @@ func NewGatewayAPIComms(gatewayInfo *register.GatewayRegister, settings *setting
 }
 
 // GatewayCall calls the Gateway's REST API
-func (c *Comms) gatewayCall(msg interface{}) *simplejson.Json {
+func (c *Comms) gatewayCall(msg interface{}) (*simplejson.Json, error) {
 
 	// Create HTTP request.
 	mJSON, _ := json.Marshal(msg)
@@ -91,7 +91,8 @@ func (c *Comms) gatewayCall(msg interface{}) *simplejson.Json {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		logging.ErrorAndPanic("Client - Gateway communications (%s): %s", c.ApiURL, err)
+		logging.Error("Client - Gateway communications (%s): %s", c.ApiURL, err)
+		return nil, err
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
@@ -99,10 +100,11 @@ func (c *Comms) gatewayCall(msg interface{}) *simplejson.Json {
 
 	js, err := simplejson.NewJson(data)
 	if err != nil {
-		logging.ErrorAndPanic("Error decoding JSON: %s", err.Error())
+		logging.Error("Error decoding JSON: %s", err.Error())
+		return nil, err
 	}
 
-	return js
+	return js, nil
 }
 
 func validateHostName(host string) error {
