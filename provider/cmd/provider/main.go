@@ -104,9 +104,6 @@ func updateRegisteredGateways(url string, c *core.Core) {
 				for _, gateway := range gateways {
 					log.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
 					c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
-					log.Info("%v, %v, %v, %v, %v, %v, %v, %v", gateway.Address, gateway.NetworkInfoAdmin, gateway.NetworkInfoClient, gateway.NetworkInfoProvider, gateway.NetworkInfoGateway, gateway.RegionCode, gateway.RootSigningKey, gateway.SigningKey)
-					log.Info("%v, %v, %v, %v, %v, %v, %v, %v", c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetAddress(), c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetNetworkInfoAdmin(), c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetNetworkInfoClient(),
-						c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetNetworkInfoProvider(), c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetNetworkInfoGateway(), c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)].GetRegionCode())
 				}
 				c.RegisteredGatewaysMapLock.Unlock()
 			}
