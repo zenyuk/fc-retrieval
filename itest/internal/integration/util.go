@@ -21,6 +21,13 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 )
 
+var itestConfig = config.NewConfig(".env")
+var logger = logging.Init1(
+	itestConfig.GetString("LOG_LEVEL"),
+	itestConfig.GetString("LOG_TARGET"),
+	itestConfig.GetString("LOG_SERVICE_NAME"),
+)
+
 // InitClient initialises a Filecoin Retrieval Client
 func InitClient() *fcrclient.FilecoinRetrievalClient {
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
