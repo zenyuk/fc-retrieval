@@ -16,6 +16,7 @@ package control
  */
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -34,11 +35,11 @@ import (
 
 // GatewayManager managers the pool of gateways and the connections to them.
 type GatewayManager struct {
-	settings                    settings.ClientGatewayAdminSettings
-	gateway                     ActiveGateway
-	gatewaysLock                sync.RWMutex
-	registeredMap								map[string]register.RegisteredNode
-	conxPool 									  *fcrtcpcomms.CommunicationPool
+	settings      settings.ClientGatewayAdminSettings
+	gateway       ActiveGateway
+	gatewaysLock  sync.RWMutex
+	registeredMap map[string]register.RegisteredNode
+	conxPool      *fcrtcpcomms.CommunicationPool
 }
 
 // ActiveGateway contains information for a single gateway
@@ -51,50 +52,46 @@ func NewGatewayManager(conf settings.ClientGatewayAdminSettings) *GatewayManager
 	g := GatewayManager{}
 	g.settings = conf
 	g.registeredMap = make(map[string]register.RegisteredNode)
-	g.conxPool = fcrtcpcomms.NewCommunicationPool(g.registeredMap, &sync.RWMutex{})
+	g.conxPool = fcrtcpcomms.NewCommunicationPool(&g.registeredMap, &sync.RWMutex{})
 	return &g
 }
 
 // InitializeGateway initialise a new gateway
-func (g *GatewayManager) InitializeGateway(
-	gatewayDomain, gatewayGatewayPort, gatewayProviderPort, gatewayClientPort, gatewayAdminPort string, 
-	region string,
-	gatewayRootKeyPair *fcrcrypto.KeyPair, gatewayRetrievalKeyPair *fcrcrypto.KeyPair) error {
+func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// TODO check whether gateway not initialized.
 	// TODO check whether contract indicates initialised
-
-	// Get gateway key version
-	gatewayRetrievalKeyVersion := fcrcrypto.InitialKeyVersion()
-	gatewayRetrievalKeyVersionUint := gatewayRetrievalKeyVersion.EncodeKeyVersion()
-	// Get encoded version of the gateway's private key
-	gatewayRetrievalPrivateKeyStr := gatewayRetrievalKeyPair.EncodePrivateKey()
-
-	// Make a request message
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(gatewayRetrievalPrivateKeyStr, gatewayRetrievalKeyVersionUint)
+	// TODO: Check given gatewayInfo is correct
+	// First, Get pubkey
+	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
-		log.Error("Internal error in encoding AdminAcceptKeyChallenge message.")
-		return nil
+		log.Error("Error in obtaining signing key from register info.")
+		return err
+	}
+
+	nodeID, err := nodeid.NewNodeIDFromString(gatewayInfo.NodeID)
+	if err != nil {
+		log.Error("Error in generating nodeID.")
+		return err
+	}
+
+	// Second, send key exchange to activate the given gateway
+	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, gatewayPrivKey.EncodePrivateKey(), gatewayPrivKeyVer.EncodeKeyVersion())
+	if err != nil {
+		log.Error("Error in encoding message.")
+		return err
 	}
 
 	// Sign the request
 	if request.SignMessage(func(msg interface{}) (string, error) {
 		return fcrcrypto.SignMessage(g.settings.GatewayAdminPrivateKey(), g.settings.GatewayAdminPrivateKeyVer(), msg)
-
 	}) != nil {
 		log.Error("Error signing message for sending private key to gateway: %+v", err)
 		return err
 	}
 
-	// Get the gateway's NodeID
-	gatewayNodeID, err := nodeid.NewNodeIDFromPublicKey(gatewayRootKeyPair)
-	if err != nil {
-		log.Error("Error getting gateway's NodeID: %s", err)
-		return err
-	}
+	log.Info("Sending message to gateway: %v, message: %s", nodeID.ToString(), request.DumpMessage())
 
-	log.Info("Sending message to gateway: %v, message: %s", gatewayNodeID.ToString(), request.DumpMessage())
-
-	conn, err := g.getConnection(gatewayNodeID, gatewayDomain, gatewayAdminPort) //"gateway:9013"
+	conn, err := g.getConnection(nodeID, gatewayInfo.NetworkInfoAdmin) //"gateway:9013"
 	if err != nil {
 		return err
 	}
@@ -111,6 +108,18 @@ func (g *GatewayManager) InitializeGateway(
 		// TODO other types of messages such as protocol version negotiation need to be handled.
 		return fmt.Errorf("Unexpected message in response to set-up Gateway message: %d", response.MessageType)
 	}
+
+	// Verify the response
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Fail to verify the response")
+	}
+
 	keyAccepted, err := fcrmessages.DecodeAdminAcceptKeyResponse(response)
 	if err != nil {
 		return err
@@ -119,32 +128,7 @@ func (g *GatewayManager) InitializeGateway(
 		return fmt.Errorf("Key not accepted for unspecified reason")
 	}
 
-
-
-	gatewayRootPubKey, err := gatewayRootKeyPair.EncodePublicKey()
-	if err != nil {
-		return err
-	}
-	gatewayRetrievalPubKey, err := gatewayRetrievalKeyPair.EncodePublicKey()
-	if err != nil {
-		return err
-	}
-
-	// Register Gateway
-	gatewayReg := register.GatewayRegister{
-			NodeID:              gatewayNodeID.ToString(),
-			Address:             gatewayDomain,
-			RootSigningKey:      gatewayRootPubKey,
-			SigningKey:          gatewayRetrievalPubKey,
-			NetworkInfoGateway:  gatewayGatewayPort,
-			NetworkInfoProvider: gatewayProviderPort,
-			NetworkInfoClient:   gatewayClientPort,
-			NetworkInfoAdmin:    gatewayAdminPort,
-			RegionCode:          region,
-		}
-		gatewayReg.RegisterGateway(g.settings.RegisterURL())
-
-	return nil
+	return gatewayInfo.RegisterGateway(g.settings.RegisterURL())
 }
 
 // BlockGateway adds a host to disallowed list of gateways
@@ -164,14 +148,11 @@ func (g *GatewayManager) Shutdown() {
 	// TODO
 }
 
-
-func (g *GatewayManager) getConnection(gatewayNodeID *nodeid.NodeID, domain string, port string) (net.Conn, error) {
-	domainAndPort := domain + ":" + port
-
+func (g *GatewayManager) getConnection(gatewayNodeID *nodeid.NodeID, addr string) (net.Conn, error) {
 	// Add new gateway to the connection pool.
 	g.registeredMap[gatewayNodeID.ToString()] = &register.GatewayRegister{
 		NodeID:             gatewayNodeID.ToString(),
-		NetworkInfoGateway: domainAndPort,
+		NetworkInfoGateway: addr,
 	}
 
 	// Get conn for the right gateway
