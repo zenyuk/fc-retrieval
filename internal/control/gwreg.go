@@ -52,12 +52,14 @@ func (g *GatewayManager) validateGatewayInfo(gateway *register.GatewayRegister) 
 		logging.Warn("Gateway registration issue: Region Code not set")
 		return false;
 	}
-	if gateway.RootSigningKey == "" {
-		logging.Warn("Gateway registration issue: Root Signing Public Key not set")
+	_, err := gateway.GetRootSigningKey()
+	if err != nil {
+		logging.Warn("Gateway registration issue: Root Signing Public Key error: %+v", err)
 		return false;
 	}
-	if gateway.SigingKey == ""	{
-		logging.Warn("Gateway registration issue: Retrieval Signing Key not set")
+	_, err = gateway.GetSigningKey()
+	if err != nil	{
+		logging.Warn("Gateway registration issue: Retrieval Signing Key error: %+v", err)
 		return false;
 	}
 	return true;
