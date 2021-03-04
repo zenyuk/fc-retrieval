@@ -5,12 +5,14 @@ services:
       dockerfile: Dockerfile.dev
       context: .
     volumes:
-      - ./:/app
+      - ./logs:${LOG_DIR}
+      - ./:/go/src/app
+      - ./go.local.mod:/go/src/app/go.mod
+      - ../fc-retrieval-common:/go/src/fc-retrieval-common
     networks:
       - shared
     ports:
-      - "${BIND_CLIENT_API}:${BIND_CLIENT_API}"
-      - "${BIND_PROVIDER_API}:${BIND_PROVIDER_API}"
+      - "${BIND_REST_API}:${BIND_REST_API}"
       - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
       - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
     environment:
