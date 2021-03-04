@@ -4,7 +4,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ant0ine/go-json-rest/rest"
 )
@@ -14,7 +13,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	c := core.GetSingleInstance()
 	logging.Info("handle key management.")
 
-	encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
+	nodeID, encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
 	if err != nil {
 		logging.Error("Error in decoding message.")
 		return
@@ -25,12 +24,6 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	if err != nil {
 		logging.Error("Error in decoding private key")
 		return
-	}
-
-	// Generate the node id
-	nodeID, err := nodeid.NewNodeIDFromPublicKey(privatekey)
-	if err != nil {
-		logging.Error("Error in generating node id")
 	}
 
 	// Decode from int32 to *fcrCrypto.KeyVersion
