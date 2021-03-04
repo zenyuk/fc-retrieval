@@ -42,9 +42,13 @@ func (c *Comms) GatewayStdCIDDiscovery(contentID *cid.ContentID, nonce int64) ([
 	}
 
 	// TODO
-	res := c.gatewayCall(request).Get("result").MustString()
+	res, err := c.gatewayCall(request)
+	if err != nil {
+		return nil, err
+	}
+	result := res.Get("result").MustString()
 	// TODO interpret the response.
-	logging.Info("Response from server: %s", res)
+	logging.Info("Response from server: %s", result)
 	// TODO
 	return nil, nil
 }
