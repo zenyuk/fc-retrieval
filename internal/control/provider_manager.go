@@ -50,16 +50,26 @@ func NewProviderManager(settings *settings.ClientProviderAdminSettings) *Provide
 
 // InitialiseProvider initialise a given provider
 func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	// TODO: Check given providerInfo is correct, also maybe it is better to let the admin to config the provider
-	// First, register this provider.
-	err := providerInfo.RegisterProvider(p.settings.RegisterURL())
+	// TODO: Check given providerInfo is correct
+	// First, Get pubkey
+	pubKey, err := providerInfo.GetSigningKey()
 	if err != nil {
-		log.Error("Error in register the provider.")
+		log.Error("Error in obtaining signing key from register info.")
+		return err
+	}
+
+	nodeID, err := nodeid.NewNodeIDFromString(providerInfo.NodeID)
+	if err != nil {
+		log.Error("Error in generating nodeID.")
 		return err
 	}
 
 	// Second, send key exchange to activate the given provider
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(providerPrivKey.EncodePrivateKey(), providerPrivKeyVer.EncodeKeyVersion())
+	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, providerPrivKey.EncodePrivateKey(), providerPrivKeyVer.EncodeKeyVersion())
+	if err != nil {
+		log.Error("Error in encoding message.")
+		return err
+	}
 
 	// Sign the request
 	err = request.SignMessage(func(msg interface{}) (string, error) {
@@ -75,8 +85,18 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		log.Error("Error in sending the message.")
 		return err
 	}
+	// Verify the response
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Fail to verify the response")
+	}
 
-	ok, err := fcrmessages.DecodeAdminAcceptKeyResponse(response)
+	ok, err = fcrmessages.DecodeAdminAcceptKeyResponse(response)
 	if err != nil {
 		log.Error("Error in decoding the message.")
 		return err
@@ -84,6 +104,13 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 	if !ok {
 		log.Error("Initialise provider failed.")
 		return errors.New("Fail to initialise provider")
+	}
+
+	// Finally register the provider
+	err = providerInfo.RegisterProvider(p.settings.RegisterURL())
+	if err != nil {
+		log.Error("Error in register the provider.")
+		return err
 	}
 
 	// Finally add the provider to the active providers list
@@ -109,6 +136,23 @@ func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return err
+	}
+	// Verify the response
+	// Get pubKey
+	p.ActiveProvidersLock.RLock()
+	pubKey, err := fcrcrypto.DecodePublicKey(p.ActiveProviders[providerID.ToString()].SigningKey)
+	if err != nil {
+		return err
+	}
+	p.ActiveProvidersLock.RUnlock()
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -139,6 +183,23 @@ func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.Co
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return err
+	}
+	// Verify the response
+	// Get pubKey
+	p.ActiveProvidersLock.RLock()
+	pubKey, err := fcrcrypto.DecodePublicKey(p.ActiveProviders[providerID.ToString()].SigningKey)
+	if err != nil {
+		return err
+	}
+	p.ActiveProvidersLock.RUnlock()
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -173,6 +234,23 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return false, nil, err
+	}
+	// Verify the response
+	// Get pubKey
+	p.ActiveProvidersLock.RLock()
+	pubKey, err := fcrcrypto.DecodePublicKey(p.ActiveProviders[providerID.ToString()].SigningKey)
+	if err != nil {
+		return false, nil, err
+	}
+	p.ActiveProvidersLock.RUnlock()
+	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
+	if err != nil {
+		return false, nil, err
+	}
+	if !ok {
+		return false, nil, errors.New("Fail to verify the response")
 	}
 
 	found, offers, err := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
