@@ -25,7 +25,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 
@@ -58,25 +57,30 @@ func NewGatewayManager(conf settings.ClientGatewayAdminSettings) *GatewayManager
 }
 
 // InitializeGateway initialise a new gateway
-func (g *GatewayManager) InitializeGateway(
-	gatewayDomain, gatewayGatewayPort, gatewayProviderPort, gatewayClientPort, gatewayAdminPort string,
-	region string,
-	gatewayRootKeyPair *fcrcrypto.KeyPair, gatewayRetrievalKeyPair *fcrcrypto.KeyPair) error {
+func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// TODO check whether gateway not initialized.
 	// TODO check whether contract indicates initialised
-
-	// Get gateway key version
-	gatewayRetrievalKeyVersion := fcrcrypto.InitialKeyVersion()
-	gatewayRetrievalKeyVersionUint := gatewayRetrievalKeyVersion.EncodeKeyVersion()
-	// Get encoded version of the gateway's private key
-	gatewayRetrievalPrivateKeyStr := gatewayRetrievalKeyPair.EncodePrivateKey()
-
-	// Make a request message
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(gatewayRetrievalPrivateKeyStr, gatewayRetrievalKeyVersionUint)
+	// TODO: Check given gatewayInfo is correct
+	// First, Get pubkey
+	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
-		log.Error("Internal error in encoding AdminAcceptKeyChallenge message.")
-		return nil
+		log.Error("Error in obtaining signing key from register info.")
+		return err
 	}
+
+	nodeID, err := nodeid.NewNodeIDFromString(gatewayInfo.NodeID)
+	if err != nil {
+		log.Error("Error in generating nodeID.")
+		return err
+	}
+
+	// Second, send key exchange to activate the given gateway
+	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, gatewayPrivKey.EncodePrivateKey(), gatewayPrivKeyVer.EncodeKeyVersion())
+	if err != nil {
+		log.Error("Error in encoding message.")
+		return err
+	}
+
 	// Sign the request
 	if request.SignMessage(func(msg interface{}) (string, error) {
 		return fcrcrypto.SignMessage(g.settings.GatewayAdminPrivateKey(), g.settings.GatewayAdminPrivateKeyVer(), msg)
@@ -85,16 +89,9 @@ func (g *GatewayManager) InitializeGateway(
 		return err
 	}
 
-	// Get the gateway's NodeID
-	gatewayNodeID, err := nodeid.NewNodeIDFromPublicKey(gatewayRetrievalKeyPair)
-	if err != nil {
-		log.Error("Error getting gateway's NodeID: %s", err)
-		return err
-	}
+	log.Info("Sending message to gateway: %v, message: %s", nodeID.ToString(), request.DumpMessage())
 
-	log.Info("Sending message to gateway: %v, message: %s", gatewayNodeID.ToString(), request.DumpMessage())
-
-	conn, err := g.getConnection(gatewayNodeID, gatewayDomain, gatewayAdminPort) //"gateway:9013"
+	conn, err := g.getConnection(nodeID, gatewayInfo.NetworkInfoAdmin) //"gateway:9013"
 	if err != nil {
 		return err
 	}
@@ -112,17 +109,6 @@ func (g *GatewayManager) InitializeGateway(
 		return fmt.Errorf("Unexpected message in response to set-up Gateway message: %d", response.MessageType)
 	}
 
-	// Get pubkey
-	pubKeyStr, err := gatewayRetrievalKeyPair.EncodePublicKey()
-	if err != nil {
-		log.Error("Error in obtaining signing key string.")
-		return err
-	}
-	pubKey, err := fcrcrypto.DecodePublicKey(pubKeyStr)
-	if err != nil {
-		log.Error("Error in obtaining signing key.")
-		return err
-	}
 	// Verify the response
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
@@ -142,28 +128,7 @@ func (g *GatewayManager) InitializeGateway(
 		return fmt.Errorf("Key not accepted for unspecified reason")
 	}
 
-	// Register gateway
-	gatewayRootSigningKey, err := gatewayRootKeyPair.EncodePublicKey()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	gatewaySigningKey, err := gatewayRetrievalKeyPair.EncodePublicKey()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	gatewayRegister := register.GatewayRegister{
-		NodeID:              gatewayNodeID.ToString(),
-		Address:             gatewayDomain,
-		RootSigningKey:      gatewayRootSigningKey,
-		SigningKey:          gatewaySigningKey,
-		RegionCode:          region,
-		NetworkInfoGateway:  gatewayGatewayPort,
-		NetworkInfoProvider: gatewayProviderPort,
-		NetworkInfoClient:   gatewayClientPort,
-		NetworkInfoAdmin:    gatewayAdminPort,
-	}
-
-	return gatewayRegister.RegisterGateway(g.settings.RegisterURL())
+	return gatewayInfo.RegisterGateway(g.settings.RegisterURL())
 }
 
 // BlockGateway adds a host to disallowed list of gateways
@@ -183,13 +148,11 @@ func (g *GatewayManager) Shutdown() {
 	// TODO
 }
 
-func (g *GatewayManager) getConnection(gatewayNodeID *nodeid.NodeID, domain string, port string) (net.Conn, error) {
-	domainAndPort := domain + ":" + port
-
+func (g *GatewayManager) getConnection(gatewayNodeID *nodeid.NodeID, addr string) (net.Conn, error) {
 	// Add new gateway to the connection pool.
 	g.registeredMap[gatewayNodeID.ToString()] = &register.GatewayRegister{
 		NodeID:             gatewayNodeID.ToString(),
-		NetworkInfoGateway: domainAndPort,
+		NetworkInfoGateway: addr,
 	}
 
 	// Get conn for the right gateway

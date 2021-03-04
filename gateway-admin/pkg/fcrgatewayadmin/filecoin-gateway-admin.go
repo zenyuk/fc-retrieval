@@ -21,6 +21,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/settings"
 )
@@ -31,7 +32,6 @@ type FilecoinRetrievalGatewayAdminClient struct {
 	gatewayManager *control.GatewayManager
 	// TODO have a list of gateway objects of all the current gateways being interacted with
 }
-
 
 // NewFilecoinRetrievalGatewayAdminClient initialise the Filecoin Retreival Client library
 func NewFilecoinRetrievalGatewayAdminClient(conf Settings) *FilecoinRetrievalGatewayAdminClient {
@@ -56,28 +56,10 @@ func CreateKey() (*fcrcrypto.KeyPair, error) {
 	return gatewayPrivateKey, nil
 }
 
-// InitializeGatewayDefaultPorts uses default port values.
-func (c *FilecoinRetrievalGatewayAdminClient) InitializeGatewayDefaultPorts(
-	gatewayDomain string, 
-	region string,
-	gatewayRootKeyPair *fcrcrypto.KeyPair, gatewayRetrievalKeyPair *fcrcrypto.KeyPair) error {
-		return c.InitializeGateway(gatewayDomain, 
-			settings.DefaultGatewayGatewayPort, settings.DefaultGatewayProviderPort, 
-			settings.DefaultGatewayClientPort, settings.DefaultGatewayAdminPort,
-			region, gatewayRootKeyPair, gatewayRetrievalKeyPair)
-}
-
-
 // InitializeGateway sends a private key to a Gateway along with a key version number.
-func (c *FilecoinRetrievalGatewayAdminClient) InitializeGateway(
-	gatewayDomain, gatewayGatewayPort, gatewayProviderPort, gatewayClientPort, gatewayAdminPort string, 
-	region string,
-	gatewayRootKeyPair *fcrcrypto.KeyPair, gatewayRetrievalKeyPair *fcrcrypto.KeyPair) error {
+func (c *FilecoinRetrievalGatewayAdminClient) InitializeGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
 	log.Info("Filecoin Retrieval Gateway Admin Client: InitializeGateway()")
-	return c.gatewayManager.InitializeGateway(gatewayDomain, 
-		gatewayGatewayPort, gatewayProviderPort, gatewayClientPort, gatewayAdminPort, 
-		region,
-		gatewayRootKeyPair, gatewayRetrievalKeyPair)
+	return c.gatewayManager.InitializeGateway(gatewayInfo, gatewayPrivKey, gatewayPrivKeyVer)
 }
 
 // ResetClientReputation requests a Gateway to initialise a client's reputation to the default value.
