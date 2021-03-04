@@ -13,17 +13,11 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	c := core.GetSingleInstance()
 	logging.Info("handle key management.")
 
-	logging.Info("Request: %v", request)
-
 	nodeID, encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
 	if err != nil {
 		logging.Error("Error in decoding message.")
 		return
 	}
-
-	logging.Info("Node ID: %s", nodeID)
-	logging.Info("Key: %s", encprivatekey)
-	logging.Info("KeyVer: %s", encprivatekeyversion)
 
 	// Decode private key from hex string to *fcrCrypto.KeyPair
 	privatekey, err := fcrcrypto.DecodePrivateKey(encprivatekey)
