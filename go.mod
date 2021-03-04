@@ -3,7 +3,7 @@ module github.com/ConsenSys/fc-retrieval-provider-admin
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210304055534-fb7e30b2485b
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210304200412-9f78f45afa9f
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect

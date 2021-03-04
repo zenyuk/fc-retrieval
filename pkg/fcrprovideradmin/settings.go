@@ -12,7 +12,7 @@ import (
 // SettingsBuilder holds the library configuration
 type SettingsBuilder interface {
 	// SetLogging sets the log level and target.
-	SetLogging(logLevel string, logTarget string)
+	SetLogging(logLevel string, logTarget string, logServiceName string)
 
 	// SetRegisterURL sets the register URL.
 	SetRegisterURL(url string)
@@ -29,11 +29,10 @@ type SettingsBuilder interface {
 
 // Settings holds the library configuration
 type Settings interface {
-	RegisterURL() string
-
-	BlockchainPrivateKey() *fcrcrypto.KeyPair
-	ProviderAdminPrivateKey() *fcrcrypto.KeyPair
-	ProviderAdminPrivateKeyVer() *fcrcrypto.KeyVersion
+	RegisterURL() 								string
+	BlockchainPrivateKey() 				*fcrcrypto.KeyPair
+	ProviderAdminPrivateKey() 		*fcrcrypto.KeyPair
+	ProviderAdminPrivateKeyVer() 	*fcrcrypto.KeyVersion
 }
 
 // CreateSettings loads up default settings
@@ -52,8 +51,8 @@ func newBuilderImpl() settingsBuilderImpl {
 }
 
 // SetLogging sets the log level and target.
-func (f settingsBuilderImpl) SetLogging(logLevel string, logTarget string) {
-	f.impl.SetLogging(logLevel, logTarget)
+func (f settingsBuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
+	f.impl.SetLogging(logLevel, logTarget, logServiceName)
 }
 
 // SetBlockchainPrivateKey sets the blockchain private key.
