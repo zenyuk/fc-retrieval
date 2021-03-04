@@ -50,8 +50,8 @@ func NewProviderManager(settings *settings.ClientProviderAdminSettings) *Provide
 
 // InitialiseProvider initialise a given provider
 func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	// TODO: Check given providerInfo is correct, particularly check the node id is generated from the private key
-	// Get pubkey
+	// TODO: Check given providerInfo is correct
+	// First, Get pubkey
 	pubKey, err := providerInfo.GetSigningKey()
 	if err != nil {
 		log.Error("Error in obtaining signing key from register info.")
