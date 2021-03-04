@@ -21,7 +21,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/settings"
 )
