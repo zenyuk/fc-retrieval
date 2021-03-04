@@ -5,6 +5,7 @@ RUN apk add --no-cache make gcc musl-dev linux-headers git
 
 WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-itest
 COPY . .
+COPY .env .
 # Remove any cached dependancies. TODO is this really needed?
 RUN go clean -modcache
 
