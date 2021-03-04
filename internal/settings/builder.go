@@ -12,11 +12,12 @@ import (
 
 // BuilderImpl holds the library configuration
 type BuilderImpl struct {
-	logLevel         string
-	logTarget        string
-	establishmentTTL int64
-	clientID         *nodeid.NodeID
-	registerURL      string
+	logLevel         	string
+	logTarget        	string
+	logServiceName		string
+	establishmentTTL 	int64
+	clientID         	*nodeid.NodeID
+	registerURL      	string
 
 	blockchainPrivateKey *fcrcrypto.KeyPair
 
@@ -29,15 +30,17 @@ func CreateSettings() *BuilderImpl {
 	f := BuilderImpl{}
 	f.logLevel = defaultLogLevel
 	f.logTarget = defaultLogTarget
+	f.logServiceName = defaultLogServiceName
 	f.establishmentTTL = defaultEstablishmentTTL
 	f.registerURL = defaultRegisterURL
 	return &f
 }
 
 // SetLogging sets the log level and target.
-func (f *BuilderImpl) SetLogging(logLevel string, logTarget string) {
+func (f *BuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
 	f.logLevel = logLevel
 	f.logTarget = logTarget
+	f.logServiceName = logServiceName
 }
 
 // SetEstablishmentTTL sets the time to live for the establishment message between client and gateway.
@@ -65,7 +68,7 @@ func (f *BuilderImpl) SetRetrievalPrivateKey(rPkey *fcrcrypto.KeyPair, ver *fcrc
 func (f *BuilderImpl) Build() *ClientSettings {
 	var err error
 
-	logging.Init1(f.logLevel, f.logTarget)
+	logging.Init1(f.logLevel, f.logTarget, f.logServiceName)
 	// logging.SetLogLevel(f.logLevel)
 	// logging.SetLogTarget(f.logTarget)
 
