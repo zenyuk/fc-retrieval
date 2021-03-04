@@ -28,6 +28,9 @@ const (
 	// DefaultLogLevel is the default amount of logging to show.
 	defaultLogLevel = "trace"
 
+	// DefaultLogServiceName is the default service name of logging.
+	defaultLogServiceName = "gateway-admin"
+
 	// DefaultLogTarget is the default output location of log output.
 	defaultLogTarget = "STDOUT"
 )
