@@ -101,7 +101,6 @@ func updateRegisteredGateways(url string, c *core.Core) {
 			if update {
 				c.RegisteredGatewaysMapLock.Lock()
 				c.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
-				log.Info("Update registered gateways: %+v", gateways)
 				for _, gateway := range gateways {
 					log.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
 					c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
