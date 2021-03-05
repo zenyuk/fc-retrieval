@@ -69,8 +69,7 @@ License type: Apache License
 
 Project: https://github.com/ConsenSys/fc-retrieval-register/
 License URL: "https://raw.githubusercontent.com/ConsenSys/fc-retrieval-register/master/LICENCE"
-WARNING: No license identified. RESOLVE BEFORE SHIPPING!
-License type: 404 Not Found
+License type: Apache License
 
 Project: https://github.com/go-openapi/errors/
 License URL: https://raw.githubusercontent.com/go-openapi/errors/master/LICENSE
