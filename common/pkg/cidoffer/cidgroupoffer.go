@@ -132,29 +132,34 @@ func (c *CidGroupOffer) HasExpired() bool {
 
 // VerifySignature is used to verify the signature
 func (c *CidGroupOffer) VerifySignature(verify func(sig string, msg interface{}) (bool, error)) (bool, error) {
-	// Clear signature and tree
+	// Clear signature, tree and cid array
 	sig := c.Signature
 	c.Signature = ""
 	tree := c.MerkleTrie
 	c.MerkleTrie = nil
+	cids := c.Cids
+	c.Cids = nil
 
 	// Verify the offer
 	res, err := verify(sig, c)
 	if err != nil {
 		return false, err
 	}
-	// Recover signature and tree
+	// Recover signature, tree and cid array
 	c.Signature = sig
 	c.MerkleTrie = tree
+	c.Cids = cids
 	return res, nil
 }
 
 // SignOffer is used to sign the offer
 func (c *CidGroupOffer) SignOffer(sign func(msg interface{}) (string, error)) error {
-	// Clear signature and tree
+	// Clear signature, tree and cid array
 	c.Signature = ""
 	tree := c.MerkleTrie
 	c.MerkleTrie = nil
+	cids := c.Cids
+	c.Cids = nil
 
 	// Sign the offer
 	sig, err := sign(c)
@@ -163,7 +168,8 @@ func (c *CidGroupOffer) SignOffer(sign func(msg interface{}) (string, error)) er
 	}
 	c.Signature = sig
 
-	// Recover the tree
+	// Recover the tree and cid array
 	c.MerkleTrie = tree
+	c.Cids = cids
 	return nil
 }
