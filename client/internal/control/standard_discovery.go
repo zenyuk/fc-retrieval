@@ -88,6 +88,11 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 		c.ProvidersLock.RUnlock()
 		pubKey, _ := providerInfo.GetSigningKey()
 		// Verify the offer
+
+		logging.Info("Pubkey string is %v", providerInfo.SigningKey)
+		logging.Info("Merkle root is %v", offer.MerkleRoot)
+		logging.Info("CIDs: %v", offer.Cids)
+
 		ok, err := offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 			return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 		})
