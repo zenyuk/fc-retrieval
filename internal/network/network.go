@@ -64,7 +64,7 @@ func Ping(pingserver string) bool {
 // SendMessage sends a message to a given url and obtain a response
 func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
 	mJSON, _ := json.Marshal(message)
-	logging.Info("Provider Manageer sending JSON: %v to url: %v", string(mJSON), url)
+	logging.Info("Client Manageer sending JSON: %v to url: %v", string(mJSON), url)
 	contentReader := bytes.NewReader(mJSON)
 	req, _ := http.NewRequest("POST", "http://"+url+"/v1", contentReader)
 	req.Header.Set("Content-Type", "application/json")
