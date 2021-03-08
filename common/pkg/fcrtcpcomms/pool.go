@@ -27,7 +27,7 @@ type CommunicationChannel struct {
 // CommunicationPool holds the node address map and active node connections.
 type CommunicationPool struct {
 	// AddressMap stores mapping from node id (big int in string repr) to its node info.
-	RegisteredNodeMap     map[string]register.RegisteredNode
+	RegisteredNodeMap     *map[string]register.RegisteredNode
 	RegisteredNodeMapLock *sync.RWMutex
 
 	// ActiveNodes store connected active nodes for outgoing request:
@@ -37,7 +37,7 @@ type CommunicationPool struct {
 }
 
 // NewCommunicationPool creates a new communication commPool.
-func NewCommunicationPool(registeredNodeMap map[string]register.RegisteredNode, registeredNodeMapLock *sync.RWMutex) *CommunicationPool {
+func NewCommunicationPool(registeredNodeMap *map[string]register.RegisteredNode, registeredNodeMapLock *sync.RWMutex) *CommunicationPool {
 	return &CommunicationPool{
 		RegisteredNodeMap:     registeredNodeMap,
 		RegisteredNodeMapLock: registeredNodeMapLock,
@@ -57,7 +57,8 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 		log.Info("No active connection, connect to peer")
 		var address string
 		commPool.RegisteredNodeMapLock.RLock()
-		if node, ok := commPool.RegisteredNodeMap[nodeID.ToString()]; ok {
+		node, ok := (*commPool.RegisteredNodeMap)[nodeID.ToString()]
+		if ok {
 			switch accessFrom {
 			case AccessFromGateway:
 				address = node.GetNetworkInfoGateway()
@@ -66,6 +67,9 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 			}
 		}
 		commPool.RegisteredNodeMapLock.RUnlock()
+		if !ok {
+			return nil, errors.New("Node not found in register")
+		}
 		log.Debug("Got address: %v", address)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
@@ -89,7 +93,7 @@ func (commPool *CommunicationPool) GetConnForRequestingNode(nodeID *nodeid.NodeI
 func (commPool *CommunicationPool) AddRegisteredNode(nodeID *nodeid.NodeID, node *register.RegisteredNode) {
 	commPool.RegisteredNodeMapLock.Lock()
 	defer commPool.RegisteredNodeMapLock.Unlock()
-	commPool.RegisteredNodeMap[nodeID.ToString()] = *node
+	(*commPool.RegisteredNodeMap)[nodeID.ToString()] = *node
 }
 
 // DeregisterNodeAddress deregisters a node address
@@ -97,9 +101,9 @@ func (commPool *CommunicationPool) AddRegisteredNode(nodeID *nodeid.NodeID, node
 func (commPool *CommunicationPool) DeregisterNodeAddress(nodeID *nodeid.NodeID) {
 	commPool.RegisteredNodeMapLock.Lock()
 	defer commPool.RegisteredNodeMapLock.Unlock()
-	_, exist := commPool.RegisteredNodeMap[nodeID.ToString()]
+	_, exist := (*commPool.RegisteredNodeMap)[nodeID.ToString()]
 	if exist {
-		delete(commPool.RegisteredNodeMap, nodeID.ToString())
+		delete(*commPool.RegisteredNodeMap, nodeID.ToString())
 	}
 }
 

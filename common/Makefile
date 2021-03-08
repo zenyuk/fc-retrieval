@@ -12,6 +12,8 @@ utest:
 clean:
 #nothing to do
 
+useremote:
+	cd scripts; bash use-remote-repos.sh
 
 .PHONY: default clean utest
 
