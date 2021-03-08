@@ -9,12 +9,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-<<<<<<< HEAD
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
-=======
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
->>>>>>> main
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
 )
 
