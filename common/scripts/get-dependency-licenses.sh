@@ -81,22 +81,79 @@ check_license() {
 
 # END Functions -------------------%<-----------------------
 
+# Capture the arguments array.
+args=("$@")
+
+# If no command line options are given, process all repositories.
+if [ ${#args[@]} -eq 0 ]; then
+    args+=("-a")
+fi
+
 # Determine whether we should be in verbose mode.
 verbose=
-if [[ " ${BASH_ARGV[*]} " == *"-v"* ]]; then
+if [[ " ${args[0]} " == *"-v"* ]]; then
     error "$0: Processing in verbose mode"
 	verbose=1
 fi
 
-# List all GitHub repositories in this project.
+# List all GitHub repository short names in this project.
+declare -a shortrepositories
+shortrepositories+=("common")
+shortrepositories+=("docs")
+shortrepositories+=("gateway")
+shortrepositories+=("gateway-admin")
+shortrepositories+=("provider")
+shortrepositories+=("provider-admin")
+shortrepositories+=("register")
+
+# This array will hold all GitHub repository names to process.
 declare -a repositories
-repositories+=("fc-retrieval-common")
-repositories+=("fc-retrieval-docs")
-repositories+=("fc-retrieval-gateway")
-repositories+=("fc-retrieval-gateway-admin")
-repositories+=("fc-retrieval-provider")
-repositories+=("fc-retrieval-provider-admin")
-repositories+=("fc-retrieval-register")
+
+if [[ " ${args[0]} " == *"-u"* || " ${args[0]} " == *"-h"* ]]; then
+    echo -e "Usage:"
+	echo -e "\t$0 [-u|-h]"
+	echo -e "\t\tPrint usage message and exit"
+	echo -e "\t$0 [-a]"
+	echo -e "\t\tProcess all repositories"
+	echo -e "\t$0 [one or more short repository names]"
+	echo -e "\t\tProcess only named repositories, e.g."
+	echo -e "\t\t$0 common gateway # Process only the "
+	echo -e "\t\tfc-retrieval-common and fc-retrieval-gateway repositories"
+	echo
+	echo -e "Available repository short names:"
+	for shortname in "${shortrepositories[@]}"
+	do
+		echo -e "\t$shortname"
+	done
+	exit
+elif [[ " ${args[0]} " == *"-a"* ]]; then
+	error "Processing all repositories"
+	for shortname in "${shortrepositories[@]}"
+	do
+		ifverbose "\t$shortname"
+		repositories+=("fc-retrieval-$shortname")
+	done
+else
+	error "Processing named repositories"
+	for arg in "${args[@]}"
+	do
+		# Add the argument to the list of repositories to process if it looks legit.
+		# Do this ONLY if $arg is present in "${shortrepositories[@]}"
+		for repo in "${shortrepositories[@]}"
+		do
+			if [ "$repo" == "$arg" ]; then
+			    repositories+=("fc-retrieval-$arg")
+			fi
+		done
+	done
+fi
+
+# Report the repositories being processed.
+echo -e "Processing these repositories:"
+for repo in "${repositories[@]}"
+do
+	error "\t$repo"
+done
 
 # Ensure that we are operating at the base directory for the current repo
 cd `dirname "$0"` # Go to the directory this script is located in.
