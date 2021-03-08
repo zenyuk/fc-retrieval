@@ -95,8 +95,8 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 			RegistrationMerkleRoot:         "TODO",
 			RegistrationMerkleProof:        nil, //TODO
 		}
-		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
-		instance.ProviderCommPool = fcrtcpcomms.NewCommunicationPool(instance.RegisteredProvidersMap, &instance.RegisteredProvidersMapLock)
+		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
+		instance.ProviderCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredProvidersMap, &instance.RegisteredProvidersMapLock)
 	})
 	return instance
 }

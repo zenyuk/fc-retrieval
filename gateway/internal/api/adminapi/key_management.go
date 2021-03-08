@@ -35,7 +35,7 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
-	encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
+	nodeID, encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
 	if err != nil {
 		return err
 	}
@@ -48,6 +48,7 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	// Decode from int32 to *fcrCrypto.KeyVersion
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
+	g.GatewayID = nodeID
 	g.GatewayPrivateKey = privatekey
 	g.GatewayPrivateKeyVersion = privatekeyversion
 	wg.Done() // need mutex to protect g
