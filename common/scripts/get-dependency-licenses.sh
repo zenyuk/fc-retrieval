@@ -113,7 +113,7 @@ if [[ " ${args[0]} " == *"-u"* || " ${args[0]} " == *"-h"* ]]; then
     echo -e "Usage:"
 	echo -e "\t$0 [-u|-h]"
 	echo -e "\t\tPrint usage message and exit"
-	echo -e "\t$0 -a"
+	echo -e "\t$0 [-a]"
 	echo -e "\t\tProcess all repositories"
 	echo -e "\t$0 [one or more short repository names]"
 	echo -e "\t\tProcess only named repositories, e.g."
