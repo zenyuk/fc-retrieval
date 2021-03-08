@@ -13,7 +13,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	c := core.GetSingleInstance()
 	logging.Info("handle key management.")
 
-	nodeID, encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
+	encprivatekey, encprivatekeyversion, err := fcrmessages.DecodeAdminAcceptKeyChallenge(request)
 	if err != nil {
 		logging.Error("Error in decoding message.")
 		return
@@ -32,7 +32,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	// Set the node id
 	logging.Info("Check if c is nil :%v", c == nil)
 	logging.Info("Setting node id")
-	c.ProviderID = nodeID
+	
 	c.ProviderPrivateKey = privatekey
 	c.ProviderPrivateKeyVersion = privatekeyversion
 
