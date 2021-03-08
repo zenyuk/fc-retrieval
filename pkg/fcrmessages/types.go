@@ -1,6 +1,7 @@
 package fcrmessages
 
 import (
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
@@ -51,15 +52,19 @@ const (
 	AdminAcceptKeyResponseType                  = 205
 	ProviderAdminGetGroupCIDRequestType         = 300
 	ProviderAdminGetGroupCIDResponseType        = 301
+	ProviderAdminPublishGroupCIDRequestType     = 302
+	ProviderAdminDHTPublishGroupCIDRequestType  = 303
+	ProviderAdminPublishOfferAckType            = 304
 )
 
 // CIDGroupInformation represents a cid group information
 type CIDGroupInformation struct {
-	ProviderID           nodeid.NodeID `json:"provider_id"`
-	Price                uint64        `json:"price_per_byte"`
-	Expiry               int64         `json:"expiry_date"`
-	QoS                  uint64        `json:"qos"`
-	Signature            string        `json:"signature"`
-	MerkleRoot           string        `json:"merkle_root"`
-	FundedPaymentChannel bool          `json:"funded_payment_channel"` // TODO: Is this boolean?
+	ProviderID           nodeid.NodeID 								`json:"provider_id"`
+	Price                uint64        								`json:"price_per_byte"`
+	Expiry               int64         								`json:"expiry_date"`
+	QoS                  uint64        								`json:"qos"`
+	Signature            string        								`json:"signature"`
+	MerkleRoot           string        								`json:"merkle_root"`
+	MerkleProof          fcrmerkletree.FCRMerkleProof `json:"merkle_proof"`
+	FundedPaymentChannel bool          								`json:"funded_payment_channel"` // TODO: Is this boolean?
 }

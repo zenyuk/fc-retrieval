@@ -12,20 +12,23 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func Init(conf *viper.Viper) {
+func Init(conf *viper.Viper) zerolog.Logger {
 	setLogLevel(conf)
 	setTimeFormat(conf)
 	writer := getLogTarget(conf)
-	name := getLoggerName(conf)
-	log.Logger = zerolog.New(writer).With().Timestamp().Str("logger", name).Logger()
+	service := getLogServiceName(conf)
+	logger := zerolog.New(writer).With().Timestamp().Str("service", service).Logger()
+	log.Logger = logger
+	return logger
 }
 
 // Init1 initialises the logger without a Viper object
-func Init1(logLevel string, logTarget string) {
+func Init1(logLevel string, logTarget string, logServiceName string) zerolog.Logger {
 	conf := viper.New()
 	conf.Set("LOG_LEVEL", logLevel)
 	conf.Set("LOG_TARGET", logTarget)
-	Init(conf)
+	conf.Set("LOG_SERVICE_NAME", logServiceName)
+	return Init(conf)
 }
 
 func setLogLevel(conf *viper.Viper) {
@@ -48,8 +51,8 @@ func setTimeFormat(conf *viper.Viper) {
 	}
 }
 
-func getLoggerName(conf *viper.Viper) string {
-	logLogger := conf.GetString("LOG_LOGGER_NAME")
+func getLogServiceName(conf *viper.Viper) string {
+	logLogger := conf.GetString("LOG_SERVICE_NAME")
 	return logLogger
 }
 
