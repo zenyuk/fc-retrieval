@@ -58,6 +58,7 @@ func main() {
 }
 
 func updateRegisteredGateways(url string, c *core.Core) {
+	log.Info("Update registered Gateways")
 	for {
 		gateways, err := register.GetRegisteredGateways(url)
 		if err != nil {
@@ -109,7 +110,8 @@ func updateRegisteredGateways(url string, c *core.Core) {
 			}
 		}
 		// Sleep for 5 seconds, refresh every 5 seconds
-		time.Sleep(5 * time.Second)
+		time.Sleep(600 * time.Second)
+		// time.Sleep(5 * time.Second)
 	}
 }
 
