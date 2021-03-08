@@ -25,19 +25,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // GatewayStdCIDDiscovery sends a  and processes a response.
-func (c *ClientManager) GatewayStdCIDDiscovery(nodeID *nodeid.NodeID, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.CidGroupOffer, error) {
-	// Try to get gateway's ap
-	c.GatewaysInUseLock.RLock()
-	defer c.GatewaysInUseLock.RUnlock()
-	gatewayInfo, exist := c.GatewaysInUse[strings.ToLower(nodeID.ToString())]
-	if !exist {
-		return nil, errors.New("GatewayID not found")
-	}
-
+func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.CidGroupOffer, error) {
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl)
 	if err != nil {

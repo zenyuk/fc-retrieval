@@ -16,8 +16,13 @@ package control
  */
 
 import (
+	"math/rand"
 	"sync"
+	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 
 	"github.com/ConsenSys/fc-retrieval-client/internal/settings"
@@ -52,29 +57,24 @@ func NewClientManager(settings settings.ClientSettings) *ClientManager {
 }
 
 // FindOffersStandardDiscovery finds offers using the standard discovery mechanism.
-// func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.CidGroupOffer, error) {
+func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.CidGroupOffer, error) {
+	c.GatewaysInUseLock.RLock()
+	defer c.GatewaysInUseLock.RUnlock()
 
-// 	g.gatewaysLock.RLock()
-// 	gatewaysSnapshot := g.gateways
-// 	g.gatewaysLock.RUnlock()
-
-// 	if len(gatewaysSnapshot) == 0 {
-// 		return nil, fmt.Errorf("No gateways available")
-// 	}
-
-// 	var aggregateOffers []cidoffer.CidGroupOffer
-// 	for _, gw := range gatewaysSnapshot {
-// 		// TODO need to do nonce management
-// 		// TODO need to do requests to all gateways in parallel, rather than serially
-// 		offers, err := gw.comms.GatewayStdCIDDiscovery(contentID, 1)
-// 		if err != nil {
-// 			logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.info.NodeID, err)
-// 		}
-// 		// TODO: probably should remove duplicate offers at this point
-// 		aggregateOffers = append(aggregateOffers, offers...)
-// 	}
-// 	return aggregateOffers, nil
-// }
+	aggregateOffers := make([]cidoffer.CidGroupOffer, 0)
+	for _, gw := range c.GatewaysInUse {
+		// TODO need to do nonce management
+		// TODO need to do requests to all gateways in parallel, rather than serially
+		offers, err := c.GatewayStdCIDDiscovery(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL())
+		if err != nil {
+			logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+			continue
+		}
+		// TODO: probably should remove duplicate offers at this point
+		aggregateOffers = append(aggregateOffers, offers...)
+	}
+	return aggregateOffers, nil
+}
 
 // GetConnectedGateways returns the list of domain names of gateways that the client
 // is currently connected to.
