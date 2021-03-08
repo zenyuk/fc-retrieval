@@ -16,6 +16,9 @@ type SettingsBuilder interface {
 	// SetLogging sets the log level and target.
 	SetLogging(logLevel string, logTarget string, logServiceName string)
 
+	// SetRegisterURL sets the register URL.
+	SetRegisterURL(url string)
+
 	// SetEstablishmentTTL sets the time to live for the establishment message between client and gateway.
 	SetEstablishmentTTL(ttl int64)
 
@@ -26,40 +29,34 @@ type SettingsBuilder interface {
 	SetRetrievalPrivateKey(rPkey *fcrcrypto.KeyPair, ver *fcrcrypto.KeyVersion)
 
 	// Build creates a settings object and initialises the logging system.
-	Build() (*Settings)
+	Build() *Settings
 }
-
 
 // Settings holds the library configuration
 type Settings interface {
-	EstablishmentTTL() 		  int64
-	ClientID() 				  *nodeid.NodeID
+	EstablishmentTTL() int64
+	ClientID() *nodeid.NodeID
 
-	BlockchainPrivateKey()    *fcrcrypto.KeyPair 
+	BlockchainPrivateKey() *fcrcrypto.KeyPair
 
-	RetrievalPrivateKey()	  *fcrcrypto.KeyPair
-	RetrievalPrivateKeyVer()  *fcrcrypto.KeyVersion
+	RetrievalPrivateKey() *fcrcrypto.KeyPair
+	RetrievalPrivateKeyVer() *fcrcrypto.KeyVersion
 }
 
-
-
 // CreateSettings loads up default settings
-func CreateSettings() (SettingsBuilder) {
+func CreateSettings() SettingsBuilder {
 	f := newBuilderImpl()
 	builder := SettingsBuilder(f)
 	return builder
 }
-
-
 
 type settingsBuilderImpl struct {
 	impl *settings.BuilderImpl
 }
 
 func newBuilderImpl() settingsBuilderImpl {
-  	return settingsBuilderImpl{settings.CreateSettings()}
+	return settingsBuilderImpl{settings.CreateSettings()}
 }
-
 
 // SetLogging sets the log level and target.
 func (f settingsBuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
@@ -81,10 +78,14 @@ func (f settingsBuilderImpl) SetRetrievalPrivateKey(rPkey *fcrcrypto.KeyPair, ve
 	f.impl.SetRetrievalPrivateKey(rPkey, ver)
 }
 
+// SetRegisterURL sets the register URL.
+func (f settingsBuilderImpl) SetRegisterURL(url string) {
+	f.impl.SetRegisterURL(url)
+}
+
 // Build generates the settings.
 func (f settingsBuilderImpl) Build() *Settings {
 	clientSettings := f.impl.Build()
 	set := Settings(clientSettings)
 	return &set
 }
-
