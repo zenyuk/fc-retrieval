@@ -32,12 +32,12 @@ type FilecoinRetrievalClient struct {
 }
 
 // NewFilecoinRetrievalClient initialise the Filecoin Retreival Client library
-func NewFilecoinRetrievalClient(conf Settings) (*FilecoinRetrievalClient, error) {
+func NewFilecoinRetrievalClient(conf Settings) *FilecoinRetrievalClient {
 	logging.Info("Filecoin Retrieval Client started")
 	var c = FilecoinRetrievalClient{}
 	clientSettings := conf.(*settings.ClientSettings)
 	c.clientManager = control.NewClientManager(*clientSettings)
-	return &c, nil
+	return &c
 }
 
 // RefreshLatestProviderInfo refreshes the provider info
