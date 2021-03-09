@@ -2,6 +2,7 @@ package control
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -10,8 +11,8 @@ import (
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 /*
@@ -78,14 +79,17 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return err
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage("http://"+providerInfo.NetworkInfoAdmin+"/v1", request)
 	// response, err := SendMessage(providerInfo.NetworkInfoAdmin, request)
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return err
 	}
+
 	// Verify the response
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+
+		fmt.Printf("1: %+v \n2: %+v \n", sig, msg)
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
@@ -234,6 +238,7 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		log.Error("Error in sending the message.")
 		return false, nil, err
 	}
+
 	// Verify the response
 	// Get pubKey
 	p.ActiveProvidersLock.RLock()
@@ -257,12 +262,13 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		log.Error("Error in decoding the message")
 		return false, nil, err
 	}
+	log.Info("GetGroupCIDOffer found: %v, offers: %d\n", found, len(offers))
 	return found, offers, nil
 }
 
 // SendMessage sends a message to a managed provider and obtain a response
 func (p *ProviderManager) SendMessage(providerID *nodeid.NodeID, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
-	log.Info("Provider Manageer sending message to providerID: %v", providerID.ToString())
+	log.Info("Provider Manager sending message to providerID: %v", providerID.ToString())
 	p.ActiveProvidersLock.RLock()
 	defer p.ActiveProvidersLock.RUnlock()
 	providerRegister, ok := p.ActiveProviders[providerID.ToString()]
