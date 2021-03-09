@@ -3,8 +3,11 @@ package request
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"net/http"
 	"time"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
@@ -36,10 +39,11 @@ func SendJSON(url string, data interface{}) error {
 	return nil
 }
 
-// SendJSON request Send JSON
+// SendMessage request Send JSON
 func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
+	var data fcrmessages.FCRMessage
 	jsonData, _ := json.Marshal(message)
-	log.Info("Sending JSON: %v to url: %v", string(jsonData), url)
+	log.Info("Sending JSON to url: %v", url)
 	contentReader := bytes.NewReader(jsonData)
 	req, err := http.NewRequest("POST", url, contentReader)
 	req.Header.Set("Content-Type", "application/json")
@@ -50,7 +54,16 @@ func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRM
 	}
 	defer r.Body.Close()
 
-	var data fcrmessages.FCRMessage
-	json.NewDecoder(r.Body).Decode(&data)
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return &data, err
+	}
+
+	if r.StatusCode != 200 {
+		err := errors.New("SendMessage receive error code: " + r.Status)
+		return nil, err
+	}
+
+	json.Unmarshal(bytes, &data)
 	return &data, nil
 }
