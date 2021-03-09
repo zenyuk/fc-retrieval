@@ -56,6 +56,9 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err
 	}
+
+	logging.Info("RequestProviderPublishGroupCID response: %+v", response)
+
 	// Verify the response
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
