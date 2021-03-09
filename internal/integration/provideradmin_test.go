@@ -15,161 +15,161 @@ package integration
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import (
-	"strconv"
-	"testing"
-	"time"
+// import (
+// 	"strconv"
+// 	"testing"
+// 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
-)
+// 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
+// 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+// 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+// 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+// 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+// 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+// 	"github.com/ConsenSys/fc-retrieval-itest/config"
+// 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+// 	"github.com/stretchr/testify/assert"
+// )
 
-// Test the Provider Admin API.
-var providerConfig = config.NewConfig(".env.provider")
+// // Test the Provider Admin API.
+// var providerConfig = config.NewConfig(".env.provider")
 
-func TestGetProviderAdminVersion(t *testing.T) {
-	versionInfo := fcrclient.GetVersion()
-	// Verify that the client version is an integer number.
-	_, err := strconv.Atoi(versionInfo.Version)
-	if err != nil {
-		panic(err)
-	}
+// func TestGetProviderAdminVersion(t *testing.T) {
+// 	versionInfo := fcrclient.GetVersion()
+// 	// Verify that the client version is an integer number.
+// 	_, err := strconv.Atoi(versionInfo.Version)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	// The version must be 1 or more.
-	assert.LessOrEqual(t, 0, 0)
-}
+// 	// The version must be 1 or more.
+// 	assert.LessOrEqual(t, 0, 0)
+// }
 
-func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
-	logging.Info("/*******************************************************/")
-	logging.Info("/*      Start TestInitProviderAdminNoRetrievalKey	     */")
-	logging.Info("/*******************************************************/")
-	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
-	time.Sleep(2 * time.Second)
+// func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
+// 	logging.Info("/*******************************************************/")
+// 	logging.Info("/*      Start TestInitProviderAdminNoRetrievalKey	     */")
+// 	logging.Info("/*******************************************************/")
+// 	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
+// 	time.Sleep(2 * time.Second)
 
-	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
+// 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
 
-	confBuilder := fcrprovideradmin.CreateSettings()
-	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
-	conf := confBuilder.Build()
+// 	confBuilder := fcrprovideradmin.CreateSettings()
+// 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+// 	confBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+// 	conf := confBuilder.Build()
 
-	// Init client
-	client := fcrprovideradmin.InitFilecoinRetrievalProviderAdminClient(*conf)
+// 	// Init client
+// 	client := fcrprovideradmin.InitFilecoinRetrievalProviderAdminClient(*conf)
 
-	providerRootKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	if err != nil {
-		panic(err)
-	}
-	providerRootSigningKey, err := providerRootKey.EncodePublicKey()
-	if err != nil {
-		panic(err)
-	}
-	// Generate private key for provider
-	providerPrivKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	providerSigningKey, err := providerPrivKey.EncodePublicKey()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	providerID, err := nodeid.NewRandomNodeID()
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
+// 	providerRootKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	providerRootSigningKey, err := providerRootKey.EncodePublicKey()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	// Generate private key for provider
+// 	providerPrivKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	providerSigningKey, err := providerPrivKey.EncodePublicKey()
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	providerID, err := nodeid.NewRandomNodeID()
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
 
-	providerRegister := &register.ProviderRegister{
-		NodeID:             providerID.ToString(),
-		Address:            providerConfig.GetString("PROVIDER_ADDRESS"),
-		RootSigningKey:     providerRootSigningKey,
-		SigningKey:         providerSigningKey,
-		RegionCode:         providerConfig.GetString("PROVIDER_REGION_CODE"),
-		NetworkInfoGateway: providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoClient:  providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:   providerConfig.GetString("NETWORK_INFO_ADMIN"),
-	}
+// 	providerRegister := &register.ProviderRegister{
+// 		NodeID:             providerID.ToString(),
+// 		Address:            providerConfig.GetString("PROVIDER_ADDRESS"),
+// 		RootSigningKey:     providerRootSigningKey,
+// 		SigningKey:         providerSigningKey,
+// 		RegionCode:         providerConfig.GetString("PROVIDER_REGION_CODE"),
+// 		NetworkInfoGateway: providerConfig.GetString("NETWORK_INFO_GATEWAY"),
+// 		NetworkInfoClient:  providerConfig.GetString("NETWORK_INFO_CLIENT"),
+// 		NetworkInfoAdmin:   providerConfig.GetString("NETWORK_INFO_ADMIN"),
+// 	}
 
-	// Initialise provider
-	err = client.InitialiseProvider(providerRegister, providerPrivKey, fcrcrypto.DecodeKeyVersion(1))
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
+// 	// Initialise provider
+// 	err = client.InitialiseProvider(providerRegister, providerPrivKey, fcrcrypto.DecodeKeyVersion(1))
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
 
-	logging.Info("Wait five seconds for the provider to initialise")
-	time.Sleep(5 * time.Second)
+// 	logging.Info("Wait five seconds for the provider to initialise")
+// 	time.Sleep(5 * time.Second)
 
-	// Generate random cid offer
-	contentID, _ := cid.NewRandomContentID()
-	pieceCIDs := []cid.ContentID{*contentID}
-	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
+// 	// Generate random cid offer
+// 	contentID, _ := cid.NewRandomContentID()
+// 	pieceCIDs := []cid.ContentID{*contentID}
+// 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
-	// Publish Group CID
-	err = client.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	logging.Info("Wait 3 seconds")
-	time.Sleep(3 * time.Second)
+// 	// Publish Group CID
+// 	err = client.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	logging.Info("Wait 3 seconds")
+// 	time.Sleep(3 * time.Second)
 
-	// Get all offers
-	var gatewayIDs []nodeid.NodeID
-	gatewayIDs = make([]nodeid.NodeID, 0)
-	logging.Info("Get all offers")
-	_, cidgroupInfo, err := client.GetGroupCIDOffer(providerID, gatewayIDs)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
-		return
-	}
+// 	// Get all offers
+// 	var gatewayIDs []nodeid.NodeID
+// 	gatewayIDs = make([]nodeid.NodeID, 0)
+// 	logging.Info("Get all offers")
+// 	_, cidgroupInfo, err := client.GetGroupCIDOffer(providerID, gatewayIDs)
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
+// 		return
+// 	}
 
-	// Get offers by gatewayIDs real
-	gateways, err := register.GetRegisteredGateways(providerConfig.GetString("REGISTER_API_URL"))
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	realNodeID, err := nodeid.NewNodeIDFromString(gateways[0].NodeID)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	gatewayIDs = append(gatewayIDs, *realNodeID) // Add a gateway
-	logging.Info("Get offers by gatewayID=%s", realNodeID.ToString())
-	_, cidgroupInfo, err = client.GetGroupCIDOffer(providerID, gatewayIDs)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
-		return
-	}
+// 	// Get offers by gatewayIDs real
+// 	gateways, err := register.GetRegisteredGateways(providerConfig.GetString("REGISTER_API_URL"))
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	realNodeID, err := nodeid.NewNodeIDFromString(gateways[0].NodeID)
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	gatewayIDs = append(gatewayIDs, *realNodeID) // Add a gateway
+// 	logging.Info("Get offers by gatewayID=%s", realNodeID.ToString())
+// 	_, cidgroupInfo, err = client.GetGroupCIDOffer(providerID, gatewayIDs)
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
+// 		return
+// 	}
 
-	// Get offers by gatewayIDs fake
-	fakeNodeID, _ := nodeid.NewNodeIDFromString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
-	gatewayIDs[0] = *fakeNodeID
-	logging.Info("Get offers by gatewayID=%s", fakeNodeID.ToString())
-	_, cidgroupInfo, err = client.GetGroupCIDOffer(providerID, gatewayIDs)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
-	if !assert.Equal(t, 0, len(cidgroupInfo), "Offers should be empty") {
-		return
-	}
+// 	// Get offers by gatewayIDs fake
+// 	fakeNodeID, _ := nodeid.NewNodeIDFromString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
+// 	gatewayIDs[0] = *fakeNodeID
+// 	logging.Info("Get offers by gatewayID=%s", fakeNodeID.ToString())
+// 	_, cidgroupInfo, err = client.GetGroupCIDOffer(providerID, gatewayIDs)
+// 	if err != nil {
+// 		logging.ErrorAndPanic(err.Error())
+// 	}
+// 	if !assert.Equal(t, 0, len(cidgroupInfo), "Offers should be empty") {
+// 		return
+// 	}
 
-	// The version must be 1 or more.
-	if !assert.LessOrEqual(t, 1, 1) {
-		return
-	}
+// 	// The version must be 1 or more.
+// 	if !assert.LessOrEqual(t, 1, 1) {
+// 		return
+// 	}
 
-	logging.Info("/*******************************************************/")
-	logging.Info("/*      End TestInitProviderAdminNoRetrievalKey	       */")
-	logging.Info("/*******************************************************/")
-}
+// 	logging.Info("/*******************************************************/")
+// 	logging.Info("/*      End TestInitProviderAdminNoRetrievalKey	       */")
+// 	logging.Info("/*******************************************************/")
+// }
