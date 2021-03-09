@@ -16,7 +16,6 @@ package control
  */
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -89,21 +88,7 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 		c.ProvidersLock.RUnlock()
 		pubKey, _ := providerInfo.GetSigningKey()
 		// Verify the offer
-
-		// Test
-		logging.Info("Pubkey string is %v", providerInfo.SigningKey)
-		logging.Info("Merkle root is %v", offer.MerkleRoot)
-		logging.Info("CIDs: %v", offer.Cids)
-		// End Test
-
 		ok, err := offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-
-			// Test
-			logging.Info("%v", msg)
-			data, _ := json.Marshal(msg)
-			logging.Info("Sig: %v, msg: %v", sig, data)
-			// End Test
-
 			return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 		})
 		if err != nil {
