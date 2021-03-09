@@ -2,12 +2,14 @@ package providerapi
 
 import (
 	// "errors"
+
 	"net"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 
 	// "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -75,6 +77,10 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 		logging.Error("Internal error in encoding publish group cid response.")
 		return err
 	}
+
+	response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 
 	logging.Info("Send response to provider: %+v", response)
 	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
