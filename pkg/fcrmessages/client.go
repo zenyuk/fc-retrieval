@@ -7,6 +7,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
@@ -190,6 +191,7 @@ func EncodeClientStandardDiscoverResponse(
 	if err != nil {
 		return nil, err
 	}
+	logging.Info("Common encoding debug, %v", cidGroupInfo[0].MerkleRoot)
 	return &FCRMessage{
 		MessageType:       ClientStandardDiscoverResponseType,
 		ProtocolVersion:   protocolVersion,
@@ -241,6 +243,7 @@ func DecodeClientStandardDiscoverResponse(fcrMsg *FCRMessage) (
 			fundedPaymentChannel = append(fundedPaymentChannel, offerInfo.FundedPaymentChannel)
 		}
 	}
+	logging.Info("Common decoding debug, %v", msg.CIDGroupInfo[0].MerkleRoot)
 	return &msg.PieceCID, msg.Nonce, msg.Found, offers, roots, proofs, fundedPaymentChannel, nil
 }
 
