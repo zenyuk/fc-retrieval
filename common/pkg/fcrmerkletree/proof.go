@@ -3,6 +3,7 @@ package fcrmerkletree
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 
@@ -27,7 +28,7 @@ func (mp *FCRMerkleProof) VerifyContent(content merkletree.Content, root string)
 		}
 		currentHash = hashFunc.Sum(nil)
 	}
-	return string(currentHash) == root
+	return hex.EncodeToString(currentHash) == root
 }
 
 // MarshalJSON is used to marshal FCRMerkleProof into bytes
