@@ -40,18 +40,6 @@ func NewFilecoinRetrievalClient(conf Settings) *FilecoinRetrievalClient {
 	return &c
 }
 
-// RefreshLatestProviderInfo refreshes the provider info
-func (c *FilecoinRetrievalClient) RefreshLatestProviderInfo() {
-	logging.Info("Filecoin Retrieval Client refresh provider info")
-	c.clientManager.RefreshLatestProviderInfo()
-}
-
-// RefreshLatestGatewayInfo refreshes the gateway info
-func (c *FilecoinRetrievalClient) RefreshLatestGatewayInfo() {
-	logging.Info("Filecoin Retrieval Client refresh gateway info")
-	c.clientManager.RefreshLatestGatewayInfo()
-}
-
 // FindGateways find gateways located near too the specified location. Use AddGateways
 // to use these gateways.
 func (c *FilecoinRetrievalClient) FindGateways(location string, maxNumToLocate int) ([]*nodeid.NodeID, error) {
@@ -59,28 +47,52 @@ func (c *FilecoinRetrievalClient) FindGateways(location string, maxNumToLocate i
 	return c.clientManager.FindGateways(location, maxNumToLocate)
 }
 
-// AddGateways adds one or more gateways to use.
-func (c *FilecoinRetrievalClient) AddGateways(gwNodeIDs []*nodeid.NodeID) int {
-	logging.Info("Add gateways")
-	return c.clientManager.AddGateways(gwNodeIDs)
+// AddGatewaysToUse adds one or more gateways to use
+func (c *FilecoinRetrievalClient) AddGatewaysToUse(gwNodeIDs []*nodeid.NodeID) int {
+	logging.Info("Add gateways to use")
+	return c.clientManager.AddGatewaysToUse(gwNodeIDs)
 }
 
-// RemoveGateways removes one or more gateways from the list of Gateways to use.
-func (c *FilecoinRetrievalClient) RemoveGateways(gwNodeIDs []*nodeid.NodeID) int {
-	logging.Info("Remove gateways")
-	return c.clientManager.RemoveGateways(gwNodeIDs)
+// RemoveGatewaysToUse removes one or more gateways from the list of gateways to use
+func (c *FilecoinRetrievalClient) RemoveGatewaysToUse(gwNodeIDs []*nodeid.NodeID) int {
+	logging.Info("Remove gateways to use")
+	return c.clientManager.RemoveGatewaysToUse(gwNodeIDs)
 }
 
-// RemoveAllGateways removes all gateways from the list of Gateways to use.
-func (c *FilecoinRetrievalClient) RemoveAllGateways() int {
-	logging.Info("Remove all gateways")
-	return c.clientManager.RemoveAllGateways()
+// RemoveAllGatewaysToUse removes all gateways from the list of gateways to use
+func (c *FilecoinRetrievalClient) RemoveAllGatewaysToUse() int {
+	logging.Info("Remove all gateways to use")
+	return c.clientManager.RemoveAllGatewaysToUse()
 }
 
-// GetGateways returns the list of gateways that are being used.
-func (c *FilecoinRetrievalClient) GetGateways() []*nodeid.NodeID {
-	logging.Info("Get gateways")
-	return c.clientManager.GetGateways()
+// GetGatewaysToUse returns the list of gateways that can be used
+func (c *FilecoinRetrievalClient) GetGatewaysToUse() []*nodeid.NodeID {
+	logging.Info("Get gateways to use")
+	return c.clientManager.GetGatewaysToUse()
+}
+
+// AddActiveGateways adds one or more gateways to active.
+func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) int {
+	logging.Info("Add active gateways")
+	return c.clientManager.AddActiveGateways(gwNodeIDs)
+}
+
+// RemoveActiveGateways removes one or more gateways from the list of active gateways.
+func (c *FilecoinRetrievalClient) RemoveActiveGateways(gwNodeIDs []*nodeid.NodeID) int {
+	logging.Info("Remove active gateways")
+	return c.clientManager.RemoveActiveGateways(gwNodeIDs)
+}
+
+// RemoveAllActiveGateways removes all gateways from the list of active gateways.
+func (c *FilecoinRetrievalClient) RemoveAllActiveGateways() int {
+	logging.Info("Remove all active gateways")
+	return c.clientManager.RemoveAllActiveGateways()
+}
+
+// GetActiveGateways returns the list of gateways that are being used.
+func (c *FilecoinRetrievalClient) GetActiveGateways() []*nodeid.NodeID {
+	logging.Info("Get active gateways")
+	return c.clientManager.GetActiveGateways()
 }
 
 // FindOffersStandardDiscovery finds offer using standard discovery

@@ -32,37 +32,33 @@ import (
 type ClientManager struct {
 	Settings settings.ClientSettings
 
-	Gateways     map[string]register.GatewayRegister
-	GatewaysLock sync.RWMutex
+	// List of gateways this client can potentially use
+	GatewaysToUse     map[string]register.GatewayRegister
+	GatewaysToUseLock sync.RWMutex
 
-	Providers     map[string]register.ProviderRegister
-	ProvidersLock sync.RWMutex
-
-	// List of gateway to use. A client may request a node be added to this list e
-	GatewaysInUse     map[string]register.GatewayRegister
-	GatewaysInUseLock sync.RWMutex
+	// List of gateway in use. A client may request a node be added to this list
+	ActiveGateways     map[string]register.GatewayRegister
+	ActiveGatewaysLock sync.RWMutex
 }
 
 // NewClientManager returns an initialised instance of the client manager.
 func NewClientManager(settings settings.ClientSettings) *ClientManager {
 	return &ClientManager{
-		Settings:          settings,
-		Gateways:          make(map[string]register.GatewayRegister),
-		GatewaysLock:      sync.RWMutex{},
-		Providers:         make(map[string]register.ProviderRegister),
-		ProvidersLock:     sync.RWMutex{},
-		GatewaysInUse:     make(map[string]register.GatewayRegister),
-		GatewaysInUseLock: sync.RWMutex{},
+		Settings:           settings,
+		GatewaysToUse:      make(map[string]register.GatewayRegister),
+		GatewaysToUseLock:  sync.RWMutex{},
+		ActiveGateways:     make(map[string]register.GatewayRegister),
+		ActiveGatewaysLock: sync.RWMutex{},
 	}
 }
 
 // FindOffersStandardDiscovery finds offers using the standard discovery mechanism.
 func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.CidGroupOffer, error) {
-	c.GatewaysInUseLock.RLock()
-	defer c.GatewaysInUseLock.RUnlock()
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
 
 	aggregateOffers := make([]cidoffer.CidGroupOffer, 0)
-	for _, gw := range c.GatewaysInUse {
+	for _, gw := range c.ActiveGateways {
 		// TODO need to do nonce management
 		// TODO need to do requests to all gateways in parallel, rather than serially
 		offers, err := c.GatewayStdCIDDiscovery(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL())
@@ -75,66 +71,3 @@ func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([
 	}
 	return aggregateOffers, nil
 }
-
-// GetConnectedGateways returns the list of domain names of gateways that the client
-// is currently connected to.
-// func (c *GatewayManager) GetConnectedGateways() []string {
-// 	urls := make([]string, len(g.gateways))
-// 	for i, gateway := range g.gateways {
-// 		urls[i] = gateway.comms.ApiURL
-// 	}
-// 	return urls
-// }
-
-// func (g *GatewayManager) addGateway(nodeID *nodeid.NodeID) {
-// 	// TODO add gateway by ID
-// 	gws, err := register.GetRegisteredGateways(g.settings.RegisterURL())
-// 	if err != nil {
-// 		logging.Error("Unable to get registered gateways: %v", err)
-// 		return
-// 	}
-// 	logging.Info("Register returned %d gateways", len(gws))
-// 	if len(gws) == 0 {
-// 		logging.Warn("Unable to get registered gateways: %v", err)
-// 		return
-// 	}
-// 	if len(gws) != 1 {
-// 		logging.Warn("Unexpectedly, multiple gateways returned: %d", len(gws))
-// 		return
-// 	}
-// 	gw := gws[0]
-// 	gatewayID, err := nodeid.NewNodeIDFromString(gw.NodeID)
-
-// 	if !g.validateGatewayInfo(&gw) {
-// 		logging.Warn("Gateway registration information for gateway (%s) is invalid. Ignoring.", gatewayID)
-// 		return
-// 	}
-
-// 	logging.Info("Setting-up comms with: %+v", gw)
-// 	comms, err := gatewayapi.NewGatewayAPIComms(&gw, &g.settings)
-// 	if err != nil {
-// 		logging.Error("Error encountered which contacting gateway (%s): %+v", gatewayID, err)
-// 		return
-// 	}
-
-// 	// TODO this should only be done for new gateways.
-// 	// Try to do the establishment with the new gateway
-// 	var challenge [32]byte
-// 	fcrcrypto.GeneratePublicRandomBytes(challenge[:])
-// 	comms.GatewayClientEstablishment(challenge)
-// 	if err != nil {
-// 		logging.Warn("Error processing node id: %+v", err)
-// 		return
-// 	}
-
-// 	activeGateway := ActiveGateway{gw, comms, gatewayID}
-// 	g.gatewaysLock.RLock()
-// 	g.gateways = append(g.gateways, activeGateway)
-// 	g.gatewaysLock.RUnlock()
-
-// 	if len(g.gateways) > 0 {
-// 		logging.Info("Gateway Manager using %d gateways", len(g.gateways))
-// 	} else {
-// 		logging.Warn("No gateways available")
-// 	}
-// }

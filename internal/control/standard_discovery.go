@@ -17,7 +17,6 @@ package control
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/ConsenSys/fc-retrieval-client/internal/network"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -79,13 +78,15 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 	// Verify each offer
 	for i, offer := range offers {
 		// Get the provider's pubkey
-		c.ProvidersLock.RLock()
-		providerInfo, exist := c.Providers[strings.ToLower(offer.NodeID.ToString())]
-		if !exist {
+		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.NodeID)
+		if err != nil {
 			logging.Error("Provider who created this offer does not exist in local storage.")
 			continue
 		}
-		c.ProvidersLock.RUnlock()
+		if !validateProviderInfo(&providerInfo) {
+			logging.Error("Provider register info not valid.")
+			continue
+		}
 		pubKey, _ := providerInfo.GetSigningKey()
 		// Verify the offer
 		ok, err := offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
