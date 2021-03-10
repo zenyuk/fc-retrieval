@@ -21,8 +21,8 @@ github.com/ConsenSys/fc-retrieval-common v0.0.0-20210309021945-823304bbc3fc h1:x
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210309021945-823304bbc3fc/go.mod h1:gREi7jqLyNMu4cl95XvUAky1Q2x60cc9Lac/NBBb4Wk=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210302032234-5bbb23e0837c/go.mod h1:aLqRnp+fkTyxcXakuPlrtstMEIj7d5CtRBkG0LkE+4U=
 github.com/ConsenSys/fc-retrieval-register v0.0.0-20210304201730-61c8a9a0fd9f/go.mod h1:UMaruKBwdE6nkX7LntvF8iWdnlRXrBfKu9X7W16OjI4=
-github.com/ConsenSys/fc-retrieval-register v0.0.0-20210305042819-da4613bcbb05 h1:oBGOg4iO4pZle+PonGUUJRzBbmWcAUuukyHunN16VQA=
-github.com/ConsenSys/fc-retrieval-register v0.0.0-20210305042819-da4613bcbb05/go.mod h1:UMaruKBwdE6nkX7LntvF8iWdnlRXrBfKu9X7W16OjI4=
+github.com/ConsenSys/fc-retrieval-register v0.0.0-20210310004700-1507a8b3268f h1:ET3yFvTInq/zMTxJhTFSoYl/j/mna51ZPCeY2RbdH1I=
+github.com/ConsenSys/fc-retrieval-register v0.0.0-20210310004700-1507a8b3268f/go.mod h1:qV17TFC48vmnszjhn1MxvI5bL4Xl+RgDGW8pX4eDHUs=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
