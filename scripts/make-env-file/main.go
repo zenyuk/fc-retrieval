@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 
@@ -211,12 +212,12 @@ func MakeEnv(sourceFile string, destFile string, overwrite bool, report Report) 
 		}
 		if len(report.SourceNotFound) > 0 {
 			for _, diff := range report.SourceNotFound {
-				log.Printf("\t- %s is not in target config.", diff.Name)
+				log.Printf("\t- %s is not in dest config %s.", diff.Name, destFile)
 			}
 		}
 		if len(report.DestNotFound) > 0 {
 			for _, diff := range report.DestNotFound {
-				log.Printf("\t- %s is not in source config.", diff.Name)
+				log.Printf("\t- %s is not in source config %s.", diff.Name, sourceFile)
 			}
 		}
 		if overwrite {
@@ -251,4 +252,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	time.Sleep(2 * time.Second)
 }
