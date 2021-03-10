@@ -251,9 +251,6 @@ func TestInitClient(t *testing.T) {
 	conf := confBuilder.Build()
 	client = fcrclient.NewFilecoinRetrievalClient(*conf)
 
-	client.RefreshLatestGatewayInfo()
-	client.RefreshLatestProviderInfo()
-
 	logging.Info("/*******************************************************/")
 	logging.Info("/*                 End TestInitClient      	         */")
 	logging.Info("/*******************************************************/")
@@ -264,8 +261,14 @@ func TestClientAddGateway(t *testing.T) {
 	logging.Info("/*             Start TestClientAddGateway     	     */")
 	logging.Info("/*******************************************************/")
 
-	// Add a gateway, this involves doing an establishment
-	added := client.AddGateways([]*nodeid.NodeID{gwID})
+	// Add a gateway to use
+	added := client.AddGatewaysToUse([]*nodeid.NodeID{gwID})
+	if !assert.Equal(t, 1, added, "One gateway should be added") {
+		return
+	}
+
+	// Make the gateway to active, this involves doing an establishment
+	added = client.AddActiveGateways([]*nodeid.NodeID{gwID})
 	if !assert.Equal(t, 1, added, "One gateway should be added") {
 		return
 	}
