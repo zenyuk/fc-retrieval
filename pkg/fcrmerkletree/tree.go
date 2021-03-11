@@ -1,6 +1,8 @@
 package fcrmerkletree
 
 import (
+	"encoding/hex"
+
 	"github.com/cbergoon/merkletree"
 )
 
@@ -20,7 +22,7 @@ func CreateMerkleTrie(contents []merkletree.Content) (*FCRMerkleTrie, error) {
 
 // GetMerkleRoot returns the merkle root of the tree
 func (mt *FCRMerkleTrie) GetMerkleRoot() string {
-	return string(mt.tree.MerkleRoot())
+	return hex.EncodeToString(mt.tree.MerkleRoot())
 }
 
 // GenerateMerkleProof gets the merkle proof for a given cid

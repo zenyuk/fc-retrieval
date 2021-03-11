@@ -232,8 +232,9 @@ func DecodeClientStandardDiscoverResponse(fcrMsg *FCRMessage) (
 			if err != nil {
 				return nil, 0, false, nil, nil, nil, nil, err
 			}
-			// Set signature
+			// Set signature and merkle root
 			offer.Signature = offerInfo.Signature
+			offer.MerkleRoot = offerInfo.MerkleRoot
 			offers = append(offers, *offer)
 			roots = append(roots, offerInfo.MerkleRoot)
 			proofs = append(proofs, offerInfo.MerkleProof)

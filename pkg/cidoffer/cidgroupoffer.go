@@ -43,6 +43,15 @@ type CidGroupOffer struct {
 	Signature  string
 }
 
+// CidGroupOfferSigning is a struct to generate & verify signature
+type CidGroupOfferSigning struct {
+	NodeID     nodeid.NodeID
+	Price      uint64
+	Expiry     int64
+	QoS        uint64
+	MerkleRoot string
+}
+
 // NewCidGroupOffer creates an unsigned CID Group Offer.
 func NewCidGroupOffer(providerID *nodeid.NodeID, cids *[]cid.ContentID, price uint64, expiry int64, qos uint64) (*CidGroupOffer, error) {
 	var c = CidGroupOffer{}
@@ -132,38 +141,34 @@ func (c *CidGroupOffer) HasExpired() bool {
 
 // VerifySignature is used to verify the signature
 func (c *CidGroupOffer) VerifySignature(verify func(sig string, msg interface{}) (bool, error)) (bool, error) {
-	// Clear signature and tree
-	sig := c.Signature
-	c.Signature = ""
-	tree := c.MerkleTrie
-	c.MerkleTrie = nil
-
 	// Verify the offer
-	res, err := verify(sig, c)
+	res, err := verify(c.Signature, CidGroupOfferSigning{
+		NodeID:     *c.NodeID,
+		Price:      c.Price,
+		Expiry:     c.Expiry,
+		QoS:        c.QoS,
+		MerkleRoot: c.MerkleRoot,
+	})
 	if err != nil {
 		return false, err
 	}
-	// Recover signature and tree
-	c.Signature = sig
-	c.MerkleTrie = tree
 	return res, nil
 }
 
 // SignOffer is used to sign the offer
 func (c *CidGroupOffer) SignOffer(sign func(msg interface{}) (string, error)) error {
-	// Clear signature and tree
-	c.Signature = ""
-	tree := c.MerkleTrie
-	c.MerkleTrie = nil
-
 	// Sign the offer
-	sig, err := sign(c)
+	sig, err := sign(CidGroupOfferSigning{
+		NodeID:     *c.NodeID,
+		Price:      c.Price,
+		Expiry:     c.Expiry,
+		QoS:        c.QoS,
+		MerkleRoot: c.MerkleRoot,
+	})
 	if err != nil {
 		return err
 	}
 	c.Signature = sig
 
-	// Recover the tree
-	c.MerkleTrie = tree
 	return nil
 }
