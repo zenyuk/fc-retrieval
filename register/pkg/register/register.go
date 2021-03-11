@@ -2,6 +2,7 @@ package register
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
@@ -41,28 +42,6 @@ type ProviderRegister struct {
 	NetworkInfoGateway string `json:"networkInfoGateway"`
 	NetworkInfoClient  string `json:"networkInfoClient"`
 	NetworkInfoAdmin   string `json:"networkInfoAdmin"`
-}
-
-// GetRegisteredGateways returns registered gateways
-func GetRegisteredGateways(registerURL string) ([]GatewayRegister, error) {
-	url := registerURL + "/registers/gateway"
-	gateways := []GatewayRegister{}
-	err := request.GetJSON(url, &gateways)
-	if err != nil {
-		return gateways, err
-	}
-	return gateways, nil
-}
-
-// GetRegisteredProviders returns registered providers
-func GetRegisteredProviders(registerURL string) ([]ProviderRegister, error) {
-	url := registerURL + "/registers/provider"
-	providers := []ProviderRegister{}
-	err := request.GetJSON(url, &providers)
-	if err != nil {
-		return providers, err
-	}
-	return providers, nil
 }
 
 // GetNodeID gets the node id
@@ -173,4 +152,48 @@ func (r *ProviderRegister) RegisterProvider(registerURL string) error {
 		return err
 	}
 	return nil
+}
+
+// GetRegisteredGateways returns registered gateways
+func GetRegisteredGateways(registerURL string) ([]GatewayRegister, error) {
+	url := registerURL + "/registers/gateway"
+	gateways := []GatewayRegister{}
+	err := request.GetJSON(url, &gateways)
+	if err != nil {
+		return gateways, err
+	}
+	return gateways, nil
+}
+
+// GetRegisteredProviders returns registered providers
+func GetRegisteredProviders(registerURL string) ([]ProviderRegister, error) {
+	url := registerURL + "/registers/provider"
+	providers := []ProviderRegister{}
+	err := request.GetJSON(url, &providers)
+	if err != nil {
+		return providers, err
+	}
+	return providers, nil
+}
+
+// GetGatewayByID gets the gateway register info by a given ID
+func GetGatewayByID(registerURL string, nodeID *nodeid.NodeID) (GatewayRegister, error) {
+	url := registerURL + "/registers/gateway/" + nodeID.ToString()
+	gateway := GatewayRegister{}
+	err := request.GetJSON(url, &gateway)
+	if err != nil {
+		return gateway, err
+	}
+	return gateway, nil
+}
+
+// GetProviderByID gets the provider register info by a given ID
+func GetProviderByID(registerURL string, nodeID *nodeid.NodeID) (ProviderRegister, error) {
+	url := registerURL + "/registers/provider/" + nodeID.ToString()
+	provider := ProviderRegister{}
+	err := request.GetJSON(url, &provider)
+	if err != nil {
+		return provider, err
+	}
+	return provider, nil
 }
