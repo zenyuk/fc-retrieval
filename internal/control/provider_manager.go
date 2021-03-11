@@ -2,7 +2,7 @@ package control
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -88,15 +88,13 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 
 	// Verify the response
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-
-		fmt.Printf("1: %+v \n2: %+v \n", sig, msg)
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the response")
+		return errors.New("Fail to verify the response")
 	}
 
 	ok, err = fcrmessages.DecodeAdminAcceptKeyResponse(response)
@@ -152,10 +150,10 @@ func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the response")
+		return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -199,10 +197,10 @@ func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.Co
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the response")
+		return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -251,10 +249,10 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return false, nil, err
+		return false, nil, err
 	}
 	if !ok {
-		// return false, nil, errors.New("Fail to verify the response")
+		return false, nil, errors.New("Fail to verify the response")
 	}
 
 	found, offers, err := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
@@ -262,7 +260,7 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		log.Error("Error in decoding the message")
 		return false, nil, err
 	}
-	log.Info("GetGroupCIDOffer found: %v, offers: %d\n", found, len(offers))
+	log.Info("GetGroupCIDOffer gatewayIDs:%v, found: %v, offers: %d\n", gatewayIDs, found, len(offers))
 	return found, offers, nil
 }
 
