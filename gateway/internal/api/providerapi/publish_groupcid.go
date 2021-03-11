@@ -2,13 +2,12 @@ package providerapi
 
 import (
 	// "errors"
-
 	"net"
+	// "strings"
 
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 
-	// "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
@@ -29,14 +28,17 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 		return err
 	}
 
+	logging.Info("************************ Offer received: %+v", offer)
+	logging.Info("************************ Offer received: %+v", offer)
+
 	// Need to verify the offer
 	// Get the public key
 	g.RegisteredProvidersMapLock.RLock()
 	defer g.RegisteredProvidersMapLock.RUnlock()
 	// provider, ok := g.RegisteredProvidersMap[offer.NodeID.ToString()]
 	// if !ok {
-	// 	logging.Info("Provider public key not found.")
-	// 	return errors.New("Provider public key not found")
+	// 	logging.Info("Provider not found.")
+	// 	return errors.New("Provider not found")
 	// }
 	// pubKey, err := provider.GetSigningKey()
 	// if err != nil {
@@ -67,6 +69,8 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 		logging.Error("Internal error in adding group cid offer.")
 		return err
 	}
+
+	logging.Info("Stored offers: %+v", g.Offers)
 
 	logging.Info("Encode provider publish group CID response: %+v", offer)
 	response, err := fcrmessages.EncodeProviderPublishGroupCIDResponse(
