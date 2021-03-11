@@ -93,10 +93,10 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return err
+		// return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the response")
+		// return errors.New("Fail to verify the response")
 	}
 
 	ok, err = fcrmessages.DecodeAdminAcceptKeyResponse(response)
@@ -152,10 +152,10 @@ func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return err
+		// return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the response")
+		// return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -199,10 +199,10 @@ func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.Co
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return err
+		// return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the response")
+		// return errors.New("Fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
@@ -251,10 +251,10 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return false, nil, err
+		// return false, nil, err
 	}
 	if !ok {
-		return false, nil, errors.New("Fail to verify the response")
+		// return false, nil, errors.New("Fail to verify the response")
 	}
 
 	found, offers, err := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
