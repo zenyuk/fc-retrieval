@@ -58,6 +58,9 @@ func configureAPI(api *operations.RegisterAPI) http.Handler {
 	api.GatewayGetGatewayRegistersByIDHandler = gateway.GetGatewayRegistersByIDHandlerFunc(func(params gateway.GetGatewayRegistersByIDParams) middleware.Responder {
 		return handlers.GetGatewayRegisterByID(params)
 	})
+	api.GatewayDeleteGatewayRegisterHandler = gateway.DeleteGatewayRegisterHandlerFunc(func(params gateway.DeleteGatewayRegisterParams) middleware.Responder {
+		return handlers.DeleteGatewayRegisters(params)
+	})
 
 	// Register
 	api.ProviderAddProviderRegisterHandler = provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
@@ -68,6 +71,9 @@ func configureAPI(api *operations.RegisterAPI) http.Handler {
 	})
 	api.ProviderGetProviderRegistersByIDHandler = provider.GetProviderRegistersByIDHandlerFunc(func(params provider.GetProviderRegistersByIDParams) middleware.Responder {
 		return handlers.GetProviderRegisterByID(params)
+	})
+	api.ProviderDeleteProviderRegisterHandler = provider.DeleteProviderRegisterHandlerFunc(func(params provider.DeleteProviderRegisterParams) middleware.Responder {
+		return handlers.DeleteProviderRegisters(params)
 	})
 
 	api.PreServerShutdown = func() {}

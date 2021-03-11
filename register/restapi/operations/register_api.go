@@ -52,6 +52,12 @@ func NewRegisterAPI(spec *loads.Document) *RegisterAPI {
 		ProviderAddProviderRegisterHandler: provider.AddProviderRegisterHandlerFunc(func(params provider.AddProviderRegisterParams) middleware.Responder {
 			return middleware.NotImplemented("operation provider.AddProviderRegister has not yet been implemented")
 		}),
+		GatewayDeleteGatewayRegisterHandler: gateway.DeleteGatewayRegisterHandlerFunc(func(params gateway.DeleteGatewayRegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation gateway.DeleteGatewayRegister has not yet been implemented")
+		}),
+		ProviderDeleteProviderRegisterHandler: provider.DeleteProviderRegisterHandlerFunc(func(params provider.DeleteProviderRegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation provider.DeleteProviderRegister has not yet been implemented")
+		}),
 		GatewayGetGatewayRegistersHandler: gateway.GetGatewayRegistersHandlerFunc(func(params gateway.GetGatewayRegistersParams) middleware.Responder {
 			return middleware.NotImplemented("operation gateway.GetGatewayRegisters has not yet been implemented")
 		}),
@@ -108,6 +114,10 @@ type RegisterAPI struct {
 	GatewayAddGatewayRegisterHandler gateway.AddGatewayRegisterHandler
 	// ProviderAddProviderRegisterHandler sets the operation handler for the add provider register operation
 	ProviderAddProviderRegisterHandler provider.AddProviderRegisterHandler
+	// GatewayDeleteGatewayRegisterHandler sets the operation handler for the delete gateway register operation
+	GatewayDeleteGatewayRegisterHandler gateway.DeleteGatewayRegisterHandler
+	// ProviderDeleteProviderRegisterHandler sets the operation handler for the delete provider register operation
+	ProviderDeleteProviderRegisterHandler provider.DeleteProviderRegisterHandler
 	// GatewayGetGatewayRegistersHandler sets the operation handler for the get gateway registers operation
 	GatewayGetGatewayRegistersHandler gateway.GetGatewayRegistersHandler
 	// GatewayGetGatewayRegistersByIDHandler sets the operation handler for the get gateway registers by Id operation
@@ -200,6 +210,12 @@ func (o *RegisterAPI) Validate() error {
 	}
 	if o.ProviderAddProviderRegisterHandler == nil {
 		unregistered = append(unregistered, "provider.AddProviderRegisterHandler")
+	}
+	if o.GatewayDeleteGatewayRegisterHandler == nil {
+		unregistered = append(unregistered, "gateway.DeleteGatewayRegisterHandler")
+	}
+	if o.ProviderDeleteProviderRegisterHandler == nil {
+		unregistered = append(unregistered, "provider.DeleteProviderRegisterHandler")
 	}
 	if o.GatewayGetGatewayRegistersHandler == nil {
 		unregistered = append(unregistered, "gateway.GetGatewayRegistersHandler")
@@ -312,6 +328,14 @@ func (o *RegisterAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/registers/provider"] = provider.NewAddProviderRegister(o.context, o.ProviderAddProviderRegisterHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/registers/gateway"] = gateway.NewDeleteGatewayRegister(o.context, o.GatewayDeleteGatewayRegisterHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/registers/provider"] = provider.NewDeleteProviderRegister(o.context, o.ProviderDeleteProviderRegisterHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
