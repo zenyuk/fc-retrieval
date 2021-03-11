@@ -25,7 +25,7 @@ func AddProviderRegister(params op.AddProviderRegisterParams) middleware.Respond
 		DB:       0, // use default DB
 	})
 
-	err := rdb.HSet(ctx, registerType, register, 0).Err()
+	err := rdb.HSet(ctx, registerType, register.NodeID, register).Err()
 	if err != nil {
 		log.Error("Unable to set Redis value")
 		panic(err)
@@ -49,15 +49,16 @@ func GetProviderRegisters(params op.GetProviderRegistersParams) middleware.Respo
 	})
 
 	registers, err := rdb.HGetAll(ctx, registerType).Result()
+
 	if err != nil {
 		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
 	payload := []*models.ProviderRegister{}
-	for registerJSON, _ := range registers {
+	for _, register := range registers {
 		registerData := models.ProviderRegister{}
-		json.Unmarshal([]byte(registerJSON), &registerData)
+		json.Unmarshal([]byte(register), &registerData)
 		payload = append(payload, &registerData)
 	}
 
@@ -76,23 +77,47 @@ func GetProviderRegisterByID(params op.GetProviderRegistersByIDParams) middlewar
 		DB:       0, // use default DB
 	})
 
+	register, err := rdb.HGet(ctx, registerType, registerID).Result()
+	if err != nil {
+		msg := "Register not found"
+		log.Error(msg)
+		return op.NewGetProviderRegistersByIDDefault(404).WithPayload(&models.Error{Message: &msg})
+	}
+
+	registerData := models.ProviderRegister{}
+	json.Unmarshal([]byte(register), &registerData)
+
+	payload := registerData
+	return op.NewGetProviderRegistersByIDOK().WithPayload(&payload)
+}
+
+// DeleteProviderRegisters deletes all Providers
+func DeleteProviderRegisters(params op.DeleteProviderRegisterParams) middleware.Responder {
+	registerType := "provider"
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
+		Password: apiconfig.GetString("REDIS_PASSWORD"),
+		DB:       0, // use default DB
+	})
+
+	ctx := context.Background()
+
 	registers, err := rdb.HGetAll(ctx, registerType).Result()
 	if err != nil {
 		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
-	payload := models.ProviderRegister{}
-	for registerJSON, _ := range registers {
-		registerData := models.ProviderRegister{}
-		json.Unmarshal([]byte(registerJSON), &registerData)
-		if registerData.NodeID == registerID {
-			log.Info("Register found")
-			payload = registerData
-		} else {
-			log.Info("Register not found")
+	for index, _ := range registers {
+		log.Info("DELETE %v", index)
+		err := rdb.HDel(ctx, registerType, index).Err()
+		if err != nil {
+			log.Error("Unable to set Redis value")
+			panic(err)
 		}
 	}
 
-	return op.NewGetProviderRegistersByIDOK().WithPayload(&payload)
+	payload := models.Ack{Status: "success", Message: "All Providers have been deleted"}
+	return op.NewDeleteProviderRegisterOK().WithPayload(&payload)
 }
