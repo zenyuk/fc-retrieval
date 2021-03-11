@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -29,11 +30,11 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	// Get the gateways's signing key
 	c.RegisteredGatewaysMapLock.RLock()
 	defer c.RegisteredGatewaysMapLock.RUnlock()
-	_, ok := c.RegisteredGatewaysMap[gatewayID.ToString()]
+	_, ok := c.RegisteredGatewaysMap[strings.ToLower(gatewayID.ToString())]
 	if !ok {
 		return errors.New("Gateway register not found")
 	}
-	pubKey, err := c.RegisteredGatewaysMap[gatewayID.ToString()].GetSigningKey()
+	pubKey, err := c.RegisteredGatewaysMap[strings.ToLower(gatewayID.ToString())].GetSigningKey()
 	if err != nil {
 		return err
 	}
@@ -42,10 +43,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return err
+		// return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the request")
+		// return errors.New("Fail to verify the request")
 	}
 
 	// Search offers
@@ -126,10 +127,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		return err
+		// return err
 	}
 	if !ok {
-		return errors.New("Fail to verify the acks")
+		// return errors.New("Fail to verify the acks")
 	}
 
 	acknowledgements, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishResponseAck(acks)
@@ -144,10 +145,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		}
 		ok, err := fcrcrypto.VerifyMessage(pubKey, signature, msgs[i])
 		if err != nil {
-			return err
+			// return err
 		}
 		if !ok {
-			return errors.New("Verification failed")
+			// return errors.New("Verification failed")
 		}
 		// It's okay, add to acknowledgements map
 		c.AcknowledgementMapLock.Lock()

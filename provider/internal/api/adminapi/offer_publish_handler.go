@@ -2,7 +2,6 @@ package adminapi
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -58,9 +57,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 
 		err = providerapi.RequestProviderPublishGroupCID(offer, gatewayID)
 		if err != nil {
-			logging.Error("2222 Error in publishing group offer :%v", err)
-
-			os.Exit(1)
+			logging.Error("Error in publishing group offer :%v", err)
 		}
 	}
 
