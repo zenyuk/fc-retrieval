@@ -28,6 +28,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 
 	c.NodeOfferMapLock.Lock()
 	defer c.NodeOfferMapLock.Unlock()
+	logging.Info("Get NodeOfferMap: %+v", c.NodeOfferMap)
 	if len(gatewayIDs) > 0 {
 		for _, gatewayID := range gatewayIDs {
 			offs := c.NodeOfferMap[gatewayID.ToString()]
