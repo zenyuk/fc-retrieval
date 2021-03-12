@@ -5,10 +5,6 @@ package main
 import (
 	"strings"
 	"time"
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
