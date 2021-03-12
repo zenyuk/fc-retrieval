@@ -110,7 +110,7 @@ func updateRegisteredGateways(url string, c *core.Core) {
 			}
 		}
 		// Sleep for 5 seconds, refresh every 5 seconds
-		time.Sleep(600 * time.Second)
+		time.Sleep(15 * time.Second)
 		// time.Sleep(5 * time.Second)
 	}
 }
