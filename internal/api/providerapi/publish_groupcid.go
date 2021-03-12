@@ -19,6 +19,7 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 
 	// Get the core structure
 	g := gateway.GetSingleInstance()
+	logging.Info("GatewayPrivateKey: %s", g.GatewayPrivateKey.EncodePrivateKey())
 
 	// TODO: Why we need a nonce here?
 	logging.Info("Decode provider publish group CID request: %+v", request)
@@ -28,7 +29,6 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 		return err
 	}
 
-	logging.Info("************************ Offer received: %+v", offer)
 	logging.Info("************************ Offer received: %+v", offer)
 
 	// Need to verify the offer
