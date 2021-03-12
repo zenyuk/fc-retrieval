@@ -5,6 +5,10 @@ package main
 import (
 	"strings"
 	"time"
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -41,18 +45,6 @@ func main() {
 	}
 	g.RegisteredGatewaysMapLock.Unlock()
 
-	// Get all registered Providers
-	// providers, err := register.GetRegisteredProviders(settings.RegisterAPIURL)
-	// if err != nil {
-	// 	logging.Error("Unable to get registered providers: %v", err)
-	// }
-	// g.RegisteredProvidersMapLock.Lock()
-	// logging.Info("All registered providers: %+v", providers)
-	// for _, provider := range providers {
-	// 	g.RegisteredProviders[provider.NodeID] = &provider
-	// }
-	// g.RegisteredProvidersMapLock.Unlock()
-
 	err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		logging.Error("Error starting server: Client REST API: %s", err.Error())
@@ -77,6 +69,10 @@ func main() {
 		return
 	}
 
+	// Get all registerd Gateways
+	go updateRegisteredGateways(settings.RegisterAPIURL, g)
+
+	// Get all registered Providers
 	go updateRegisteredProviders(settings.RegisterAPIURL, g)
 
 	// Configure what should be called if Control-C is hit.
@@ -88,21 +84,84 @@ func main() {
 	select {}
 }
 
-func updateRegisteredProviders(url string, c *gateway.Gateway) {
-	logging.Info("Update registered Providers")
+func updateRegisteredGateways(url string, g *gateway.Gateway) {
 	for {
-		providers, err := register.GetRegisteredProviders(url)
+		gateways, err := register.GetRegisteredGateways(url)
 		if err != nil {
-			logging.Error("Error in getting registered providers: %v", err.Error())
+			logging.Error("Error in getting registered gateways: %s", err.Error())
 		} else {
 			// Check if nothing is changed.
 			update := false
-			c.RegisteredProvidersMapLock.RLock()
-			if len(providers) != len(c.RegisteredProvidersMap) {
+			g.RegisteredGatewaysMapLock.RLock()
+			if len(gateways) != len(g.RegisteredGatewaysMap) {
+				update = true
+			} else {
+				for _, gateway := range gateways {
+					// Skip itself
+					if gateway.NodeID == g.GatewayID.ToString() {
+						continue
+					}
+					storedInfo, exist := g.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)]
+					if !exist {
+						update = true
+						break
+					} else {
+						key, err := storedInfo.GetRootSigningKey()
+						rootSigningKey, err2 := key.EncodePublicKey()
+						key, err3 := storedInfo.GetSigningKey()
+						signingKey, err4 := key.EncodePublicKey()
+						if err != nil || err2 != nil || err3 != nil || err4 != nil {
+							logging.Error("Error in generating key string")
+							break
+						}
+						if gateway.Address != storedInfo.GetAddress() ||
+							gateway.NetworkInfoAdmin != storedInfo.GetNetworkInfoAdmin() ||
+							gateway.NetworkInfoClient != storedInfo.GetNetworkInfoClient() ||
+							gateway.NetworkInfoProvider != storedInfo.GetNetworkInfoProvider() ||
+							gateway.NetworkInfoGateway != storedInfo.GetNetworkInfoGateway() ||
+							gateway.RegionCode != storedInfo.GetRegionCode() ||
+							gateway.RootSigningKey != rootSigningKey ||
+							gateway.SigningKey != signingKey {
+							update = true
+							break
+						}
+					}
+				}
+			}
+			g.RegisteredGatewaysMapLock.RUnlock()
+			if update {
+				g.RegisteredGatewaysMapLock.Lock()
+				g.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
+				for _, gateway := range gateways {
+					// Skip itself
+					if gateway.NodeID == g.GatewayID.ToString() {
+						continue
+					}
+					logging.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
+					g.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
+				}
+				g.RegisteredGatewaysMapLock.Unlock()
+			}
+		}
+		// Sleep for 5 seconds, refresh every 5 seconds
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func updateRegisteredProviders(url string, g *gateway.Gateway) {
+	for {
+		providers, err := register.GetRegisteredProviders(url)
+		if err != nil {
+			logging.Error("Error in getting registered providers: %s", err.Error())
+		} else {
+			// Check if nothing is changed.
+			update := false
+			g.RegisteredProvidersMapLock.RLock()
+			if len(providers) != len(g.RegisteredProvidersMap) {
 				update = true
 			} else {
 				for _, provider := range providers {
-					storedInfo, exist := c.RegisteredProvidersMap[strings.ToLower(provider.NodeID)]
+					storedInfo, exist := g.RegisteredProvidersMap[strings.ToLower(provider.NodeID)]
 					if !exist {
 						update = true
 						break
@@ -128,19 +187,18 @@ func updateRegisteredProviders(url string, c *gateway.Gateway) {
 					}
 				}
 			}
-			c.RegisteredProvidersMapLock.RUnlock()
+			g.RegisteredProvidersMapLock.RUnlock()
 			if update {
-				c.RegisteredProvidersMapLock.Lock()
-				c.RegisteredProvidersMap = make(map[string]register.RegisteredNode)
+				g.RegisteredProvidersMapLock.Lock()
+				g.RegisteredProvidersMap = make(map[string]register.RegisteredNode)
 				for _, provider := range providers {
 					logging.Info("Add to registered providers map: nodeID=%+v", provider.NodeID)
-					c.RegisteredProvidersMap[strings.ToLower(provider.NodeID)] = &provider
+					g.RegisteredProvidersMap[strings.ToLower(provider.NodeID)] = &provider
 				}
-				c.RegisteredProvidersMapLock.Unlock()
+				g.RegisteredProvidersMapLock.Unlock()
 			}
 		}
 		// Sleep for 5 seconds, refresh every 5 seconds
-		//time.Sleep(600 * time.Second)
 		time.Sleep(5 * time.Second)
 	}
 }

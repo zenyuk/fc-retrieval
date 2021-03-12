@@ -45,6 +45,7 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	if err != nil {
 		return err
 	}
+
 	// Decode from int32 to *fcrCrypto.KeyVersion
 	privatekeyversion := fcrcrypto.DecodeKeyVersion(encprivatekeyversion)
 
@@ -65,6 +66,10 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 	})
 
 	logging.Info("Admin action: Key installation complete")
+	// Sign the response
+	response.SignMessage(func(msg interface{}) (string, error) {
+		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
+	})
 	// Send message
 	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
 }
