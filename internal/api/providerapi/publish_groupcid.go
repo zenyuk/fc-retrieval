@@ -1,7 +1,6 @@
 package providerapi
 
 import (
-	// "errors"
 	"errors"
 	"net"
 
@@ -17,6 +16,7 @@ import (
 func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
+	logging.Info("GatewayPrivateKey: %s", g.GatewayPrivateKey.EncodePrivateKey())
 
 	logging.Info("handleProviderPublishGroupCIDRequest: %+v", request)
 	// TODO Add nonce, it looks like nonce is not needed
@@ -31,7 +31,7 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 	defer g.RegisteredProvidersMapLock.RUnlock()
 	_, ok := g.RegisteredProvidersMap[offer.NodeID.ToString()]
 	if !ok {
-		return errors.New("Provider public key not found")
+		return errors.New("Provider not found")
 	}
 	pubKey, err := g.RegisteredProvidersMap[offer.NodeID.ToString()].GetSigningKey()
 	if err != nil {
@@ -70,6 +70,8 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 		logging.Error("Internal error in adding group cid offer.")
 		return err
 	}
+
+	logging.Info("Stored offers: %+v", g.Offers)
 
 	logging.Info("Encode provider publish group CID response: %+v", offer)
 	response, err := fcrmessages.EncodeProviderPublishGroupCIDResponse(

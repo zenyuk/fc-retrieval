@@ -4,8 +4,8 @@ services:
   gateway:
     container_name: fc-retrieval-gateway
     build:
-      context: .
       dockerfile: Dockerfile.dev
+      context: .
     ports:
       - "9010:9010"
       - "9011:9011"
@@ -16,6 +16,7 @@ services:
       - ./:/go/src/app
       - ./go.local.mod:/go/src/app/go.mod
       - ../fc-retrieval-common:/go/src/fc-retrieval-common
+      - ../fc-retrieval-register:/go/src/fc-retrieval-register
     env_file:
       - .env
     environment:
