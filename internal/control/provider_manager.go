@@ -1,10 +1,8 @@
 package control
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"net/http"
+	// "fmt"
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -12,8 +10,9 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 /*
@@ -80,11 +79,13 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return err
 	}
 
-	response, err := SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage("http://"+providerInfo.NetworkInfoAdmin+"/v1", request)
+	// response, err := SendMessage(providerInfo.NetworkInfoAdmin, request)
 	if err != nil {
 		log.Error("Error in sending the message.")
 		return err
 	}
+
 	// Verify the response
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
@@ -235,6 +236,7 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		log.Error("Error in sending the message.")
 		return false, nil, err
 	}
+
 	// Verify the response
 	// Get pubKey
 	p.ActiveProvidersLock.RLock()
@@ -263,7 +265,7 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 
 // SendMessage sends a message to a managed provider and obtain a response
 func (p *ProviderManager) SendMessage(providerID *nodeid.NodeID, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
-	log.Info("Provider Manageer sending message to providerID: %v", providerID.ToString())
+	log.Info("Provider Manager sending message to providerID: %v", providerID.ToString())
 	p.ActiveProvidersLock.RLock()
 	defer p.ActiveProvidersLock.RUnlock()
 	providerRegister, ok := p.ActiveProviders[providerID.ToString()]
@@ -271,25 +273,9 @@ func (p *ProviderManager) SendMessage(providerID *nodeid.NodeID, message *fcrmes
 		log.Error("Provider not found in the provider manager, please initialise it first.")
 		return nil, errors.New("Provider not found")
 	}
-	return SendMessage(providerRegister.NetworkInfoAdmin, message)
-}
-
-// SendMessage sends a message to a given url and obtain a response
-func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
-	mJSON, _ := json.Marshal(message)
-	log.Info("Provider Manageer sending JSON: %v to url: %v", string(mJSON), url)
-	contentReader := bytes.NewReader(mJSON)
-	req, _ := http.NewRequest("POST", "http://"+url+"/v1", contentReader)
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	res, err := client.Do(req)
+	data, err := req.SendMessage("http://"+providerRegister.NetworkInfoAdmin+"/v1", message)
 	if err != nil {
-		log.Fatal("Error: %+v", err)
+		return nil, err
 	}
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-	var data fcrmessages.FCRMessage
-	json.NewDecoder(res.Body).Decode(&data)
-	return &data, nil
+	return data, nil
 }
