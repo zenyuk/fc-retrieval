@@ -43,10 +43,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the request")
+		return errors.New("Fail to verify the request")
 	}
 
 	// Search offers
@@ -127,10 +127,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the acks")
+		return errors.New("Fail to verify the acks")
 	}
 
 	acknowledgements, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishResponseAck(acks)
@@ -145,10 +145,10 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		}
 		ok, err := fcrcrypto.VerifyMessage(pubKey, signature, msgs[i])
 		if err != nil {
-			// return err
+			return err
 		}
 		if !ok {
-			// return errors.New("Verification failed")
+			return errors.New("Verification failed")
 		}
 		// It's okay, add to acknowledgements map
 		c.AcknowledgementMapLock.Lock()
