@@ -116,6 +116,28 @@ func init() {
             }
           }
         }
+      },
+      "delete": {
+        "description": "\u003cb\u003eDelete Gateway registers\u003c/b\u003e",
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Delete Gateway registers",
+        "operationId": "deleteGatewayRegister",
+        "responses": {
+          "200": {
+            "description": "Gateway registers deleted",
+            "schema": {
+              "$ref": "#/definitions/Ack"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
       }
     },
     "/registers/gateway/{id}": {
@@ -200,6 +222,28 @@ func init() {
             "description": "Provider register added",
             "schema": {
               "$ref": "#/definitions/ProviderRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "\u003cb\u003eDelete Provider registers\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Delete Provider registers",
+        "operationId": "deleteProviderRegister",
+        "responses": {
+          "200": {
+            "description": "Provider registers deleted",
+            "schema": {
+              "$ref": "#/definitions/Ack"
             }
           },
           "default": {
@@ -460,6 +504,28 @@ func init() {
             }
           }
         }
+      },
+      "delete": {
+        "description": "\u003cb\u003eDelete Gateway registers\u003c/b\u003e",
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Delete Gateway registers",
+        "operationId": "deleteGatewayRegister",
+        "responses": {
+          "200": {
+            "description": "Gateway registers deleted",
+            "schema": {
+              "$ref": "#/definitions/Ack"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
       }
     },
     "/registers/gateway/{id}": {
@@ -544,6 +610,28 @@ func init() {
             "description": "Provider register added",
             "schema": {
               "$ref": "#/definitions/ProviderRegister"
+            }
+          },
+          "default": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "\u003cb\u003eDelete Provider registers\u003c/b\u003e",
+        "tags": [
+          "Provider"
+        ],
+        "summary": "Delete Provider registers",
+        "operationId": "deleteProviderRegister",
+        "responses": {
+          "200": {
+            "description": "Provider registers deleted",
+            "schema": {
+              "$ref": "#/definitions/Ack"
             }
           },
           "default": {
