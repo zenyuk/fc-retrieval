@@ -260,7 +260,6 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		log.Error("Error in decoding the message")
 		return false, nil, err
 	}
-	log.Info("GetGroupCIDOffer gatewayIDs:%v, found: %v, offers: %d\n", gatewayIDs, found, len(offers))
 	return found, offers, nil
 }
 
