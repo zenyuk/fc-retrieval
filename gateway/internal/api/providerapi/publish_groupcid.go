@@ -1,7 +1,7 @@
 package providerapi
 
 import (
-	// "errors"
+	"errors"
 	"net"
 	// "strings"
 
@@ -35,20 +35,20 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 	// Get the public key
 	g.RegisteredProvidersMapLock.RLock()
 	defer g.RegisteredProvidersMapLock.RUnlock()
-	// provider, ok := g.RegisteredProvidersMap[offer.NodeID.ToString()]
-	// if !ok {
-	// 	logging.Info("Provider not found.")
-	// 	return errors.New("Provider not found")
-	// }
-	// pubKey, err := provider.GetSigningKey()
-	// if err != nil {
-	// 	logging.Info("Fail to get signing key from provider registration info")
-	// 	return err
-	// }
+	provider, ok := g.RegisteredProvidersMap[offer.NodeID.ToString()]
+	if !ok {
+		logging.Info("Provider not found.")
+		return errors.New("Provider not found")
+	}
+	pubKey, err := provider.GetSigningKey()
+	if err != nil {
+		logging.Info("Fail to get signing key from provider registration info")
+		return err
+	}
 
-	// ok, err = offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-	// 	return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	// })
+	ok, err = offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
+		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
+	})
 
 	// Error in verifying message
 	if err != nil {
@@ -58,11 +58,11 @@ func handleProviderPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FC
 	}
 
 	// Offer does not pass verification
-	// if !ok {
-	// 	logging.Info("Offer does not pass verification.")
-	// 	// Ignored.
-	// 	return errors.New("Offer does not pass verification")
-	// }
+	if !ok {
+		logging.Info("Offer does not pass verification.")
+		// Ignored.
+		return errors.New("Offer does not pass verification")
+	}
 
 	// Store the offer
 	if g.Offers.Add(offer) != nil {
