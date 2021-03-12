@@ -3,13 +3,13 @@ package gateway
 import (
 	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
@@ -80,16 +80,16 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		}
 
 		instance = &Gateway{
-			ProtocolVersion:          protocolVersion,
-			ProtocolSupported:        []int32{protocolVersion, protocolSupported},
+			ProtocolVersion:                protocolVersion,
+			ProtocolSupported:              []int32{protocolVersion, protocolSupported},
 			RegisteredGatewaysMap:          make(map[string]register.RegisteredNode),
 			RegisteredGatewaysMapLock:      sync.RWMutex{},
 			RegisteredProvidersMap:         make(map[string]register.RegisteredNode),
 			RegisteredProvidersMapLock:     sync.RWMutex{},
-			GatewayPrivateKey:        nil,
-			GatewayPrivateKeyVersion: nil,
-			GatewayID:                gatewayID,
-			Offers:                   offers.GetSingleInstance(),
+			GatewayPrivateKey:              nil,
+			GatewayPrivateKeyVersion:       nil,
+			GatewayID:                      gatewayID,
+			Offers:                         offers.GetSingleInstance(),
 			RegistrationBlockHash:          "TODO",
 			RegistrationTransactionReceipt: "TODO",
 			RegistrationMerkleRoot:         "TODO",
