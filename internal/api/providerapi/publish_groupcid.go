@@ -36,10 +36,6 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 		return err
 	}
 
-	logging.Info("RequestProviderPublishGroupCID pubKey: %+v", pubKey)
-	gatewaypubKey, _ := pubKey.EncodePublicKey()
-	logging.Info("Gateway pubKey: %s", gatewaypubKey)
-
 	// Construct message, TODO: Add nonce
 	request, err := fcrmessages.EncodeProviderPublishGroupCIDRequest(1, offer)
 	if err != nil {
@@ -61,8 +57,6 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err
 	}
-
-	logging.Info("RequestProviderPublishGroupCID response: %+v", response)
 
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
@@ -100,6 +94,5 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 	} else {
 		return errors.New("Digest not match")
 	}
-	logging.Info("Publish NodeOfferMap: %+v", c.NodeOfferMap)
 	return nil
 }

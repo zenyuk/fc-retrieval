@@ -1,8 +1,6 @@
 package adminapi
 
 import (
-	"fmt"
-
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
@@ -43,12 +41,9 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 
 	// Add offer to storage
 	c.GroupOffers.Add(offer)
-	logging.Info("GroupOffers: %+v", c.GroupOffers)
 
 	c.RegisteredGatewaysMapLock.RLock()
 	defer c.RegisteredGatewaysMapLock.RUnlock()
-
-	logging.Info("RegisteredGatewaysMap: %d", len(c.RegisteredGatewaysMap))
 
 	for _, gw := range c.RegisteredGatewaysMap {
 		gatewayID, err := nodeid.NewNodeIDFromString(gw.GetNodeID())
@@ -56,8 +51,6 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 			logging.Error("Error with nodeID %v: %v", gw.GetNodeID(), err)
 			continue
 		}
-
-		fmt.Printf("Offer: %v, GateID %v", offer, gatewayID)
 
 		err = providerapi.RequestProviderPublishGroupCID(offer, gatewayID)
 		if err != nil {
