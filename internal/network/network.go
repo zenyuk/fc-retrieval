@@ -1,4 +1,4 @@
-package netdbg
+package network
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -16,12 +16,16 @@ package netdbg
  */
 
 import (
+	"bytes"
+	"encoding/json"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/tatsushid/go-fastping"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
@@ -55,4 +59,24 @@ func Ping(pingserver string) bool {
 		return false
 	}
 	return true
+}
+
+// SendMessage sends a message to a given url and obtain a response
+func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
+	mJSON, _ := json.Marshal(message)
+	logging.Info("Client Manageer sending JSON: %v to url: %v", string(mJSON), url)
+	contentReader := bytes.NewReader(mJSON)
+	req, _ := http.NewRequest("POST", "http://"+url+"/v1", contentReader)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		logging.Fatal("Error: %+v", err)
+	}
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+	var data fcrmessages.FCRMessage
+	json.NewDecoder(res.Body).Decode(&data)
+	return &data, nil
 }

@@ -1,4 +1,4 @@
-package netdbg
+package network
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
