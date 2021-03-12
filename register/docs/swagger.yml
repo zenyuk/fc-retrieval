@@ -71,6 +71,21 @@ paths:
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - Gateway
+      summary: Delete Gateway registers
+      operationId: deleteGatewayRegister
+      description: <b>Delete Gateway registers</b>
+      responses:
+        200:
+          description: Gateway registers deleted
+          schema:
+            $ref: "#/definitions/Ack"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
 
   /registers/gateway/{id}:
     get:
@@ -131,6 +146,22 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/ProviderRegister"
+        default:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
+    delete:
+      tags:
+        - Provider
+      summary: Delete Provider registers
+      operationId: deleteProviderRegister
+      description: <b>Delete Provider registers</b>
+      responses:
+        200:
+          description: Provider registers deleted
+          schema:
+            $ref: "#/definitions/Ack"
         default:
           description: Internal error
           schema:
