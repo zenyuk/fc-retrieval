@@ -5,7 +5,6 @@ package main
 import (
 	"strings"
 	"time"
-
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -30,7 +29,19 @@ func main() {
 	// Initialise a dummy gateway instance.
 	g := gateway.GetSingleInstance(&settings)
 
-	err := clientapi.StartClientRestAPI(settings)
+	// Get all registerd Gateways
+	gateways, err := register.GetRegisteredGateways(settings.RegisterAPIURL)
+	if err != nil {
+		logging.Error("Unable to get registered gateways: %v", err)
+	}
+	g.RegisteredGatewaysMapLock.Lock()
+	logging.Info("All registered gateways: %+v", gateways)
+	for _, gateway := range gateways {
+		g.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
+	}
+	g.RegisteredGatewaysMapLock.Unlock()
+
+	err = clientapi.StartClientRestAPI(settings)
 	if err != nil {
 		logging.Error("Error starting server: Client REST API: %s", err.Error())
 		return
