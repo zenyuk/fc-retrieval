@@ -61,10 +61,6 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 		return err
 	}
 
-	response.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
-	})
-
 	logging.Info("Admin action: Key installation complete")
 	// Sign the response
 	response.SignMessage(func(msg interface{}) (string, error) {
