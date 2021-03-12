@@ -40,11 +40,15 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 		logging.Error("Error in signing the offer.")
 		return
 	}
+
 	// Add offer to storage
 	c.GroupOffers.Add(offer)
+	logging.Info("GroupOffers: %+v", c.GroupOffers)
 
 	c.RegisteredGatewaysMapLock.RLock()
 	defer c.RegisteredGatewaysMapLock.RUnlock()
+
+	logging.Info("RegisteredGatewaysMap: %d", len(c.RegisteredGatewaysMap))
 
 	for _, gw := range c.RegisteredGatewaysMap {
 		gatewayID, err := nodeid.NewNodeIDFromString(gw.GetNodeID())

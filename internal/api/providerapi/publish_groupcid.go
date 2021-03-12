@@ -37,6 +37,8 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 	}
 
 	logging.Info("RequestProviderPublishGroupCID pubKey: %+v", pubKey)
+	gatewaypubKey, _ := pubKey.EncodePublicKey()
+	logging.Info("Gateway pubKey: %s", gatewaypubKey)
 
 	// Construct message, TODO: Add nonce
 	request, err := fcrmessages.EncodeProviderPublishGroupCIDRequest(1, offer)
@@ -63,15 +65,15 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 	logging.Info("RequestProviderPublishGroupCID response: %+v", response)
 
 	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		logging.Info("RequestProviderPublishGroupCID pubKey: %+v", pubKey)
-		logging.Info("RequestProviderPublishGroupCID msg: %+v", msg)
 		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
 	})
 	if err != nil {
-		// return err
+		logging.Error("Verify with error", err)
+		return err
 	}
 	if !ok {
-		// return errors.New("Fail to verify the response")
+		logging.Error("Verify not ok")
+		return errors.New("Fail to verify the response")
 	}
 	logging.Info("Got reponse from gateway=%v: %+v", gatewayID.ToString(), response)
 	// TODO: Check nonce
