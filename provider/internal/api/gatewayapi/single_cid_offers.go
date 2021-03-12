@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -29,11 +30,11 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	// Get the gateways's signing key
 	c.RegisteredGatewaysMapLock.RLock()
 	defer c.RegisteredGatewaysMapLock.RUnlock()
-	_, ok := c.RegisteredGatewaysMap[gatewayID.ToString()]
+	_, ok := c.RegisteredGatewaysMap[strings.ToLower(gatewayID.ToString())]
 	if !ok {
 		return errors.New("Gateway register not found")
 	}
-	pubKey, err := c.RegisteredGatewaysMap[gatewayID.ToString()].GetSigningKey()
+	pubKey, err := c.RegisteredGatewaysMap[strings.ToLower(gatewayID.ToString())].GetSigningKey()
 	if err != nil {
 		return err
 	}

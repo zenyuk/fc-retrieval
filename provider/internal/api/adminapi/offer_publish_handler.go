@@ -38,6 +38,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 		logging.Error("Error in signing the offer.")
 		return
 	}
+
 	// Add offer to storage
 	c.GroupOffers.Add(offer)
 
@@ -50,6 +51,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 			logging.Error("Error with nodeID %v: %v", gw.GetNodeID(), err)
 			continue
 		}
+
 		err = providerapi.RequestProviderPublishGroupCID(offer, gatewayID)
 		if err != nil {
 			logging.Error("Error in publishing group offer :%v", err)
