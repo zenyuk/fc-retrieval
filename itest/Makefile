@@ -8,6 +8,9 @@ VERSION?=dev
 IMAGE?=consensys/fc-retrieval-itest
 COMPOSE_FILE?=docker-compose.yml
 
+# Always assume these targets are out of date.
+.PHONY: clean itest itest-dev utest build release push detectmisconfig
+
 
 # This target (the first target in the build file) is the one that is executed if no 
 # command line args are specified.
@@ -104,9 +107,9 @@ check-modules:
 check-main-modules:
 	./scripts/check-main-modules/check-main-modules
 
-# Alays assume these targets are out of date.
-.PHONY: clean itest itest-dev utest build release push detectmisconfig
-
+dev:
+	./scripts/make-env-file/make-env-file -source=.env.example -dest=.env
+	docker-compose -f docker-compose.dev.yml up $(arg)
 
 test:
 	for number in 1 2 3 4 ; do \
