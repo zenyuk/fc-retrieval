@@ -51,35 +51,41 @@ setup-env-localtesting:
 itestdocker:
 	docker network create shared || true
 	docker-compose down
-	docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis 
-	echo *********************************************
-	cat go.mod
-	sleep 10
-	echo REDIS STARTUP *********************************************
-	docker container logs redis
-	echo REGISTER STARTUP *********************************************
-	docker container logs register
-	echo GATEWAY STARTUP *********************************************
-	docker container logs gateway
-	echo PROVIDER STARTUP *********************************************
-	docker container logs provider
-	echo NETWORK CONFIG *********************************************
-	docker network inspect shared
-	echo *********************************************
-	docker-compose up itest
-	echo *********************************************
-	echo REDIS LOGS *********************************************
-	docker container logs redis
-	echo REGISTER LOGS *********************************************
-	docker container logs register
-	echo GATEWAY LOGS *********************************************
-	docker container logs gateway
-	echo PROVIDER LOGS *********************************************
-	docker container logs provider
-	echo ITEST LOGS *********************************************
-	docker container logs itest
-	echo *********************************************
-	docker-compose down
+	for file in ./internal/integration/* ; do \
+		docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis; \
+		echo *********************************************; \
+		cat go.mod; \
+		sleep 10; \
+		echo REDIS STARTUP *********************************************; \
+		docker container logs redis; \
+		echo REGISTER STARTUP *********************************************; \
+		docker container logs register; \
+		echo GATEWAY STARTUP *********************************************; \
+		docker container logs gateway; \
+		echo PROVIDER STARTUP *********************************************; \
+		docker container logs provider; \
+		echo NETWORK CONFIG *********************************************; \
+		docker network inspect shared; \
+		echo *********************************************; \
+		docker-compose run itest go test -v $$file; \
+		echo *********************************************; \
+		docker-compose down; \
+	done
+
+# Remove echo logs
+# 	echo *********************************************
+# 	echo REDIS LOGS *********************************************
+# 	docker container logs redis
+# 	echo REGISTER LOGS *********************************************
+# 	docker container logs register
+# 	echo GATEWAY LOGS *********************************************
+# 	docker container logs gateway
+# 	echo PROVIDER LOGS *********************************************
+# 	docker container logs provider
+# 	echo ITEST LOGS *********************************************
+# 	docker container logs itest
+# 	echo *********************************************
+# 	docker-compose down
 	
 # This is the previous methodology, where the integration tests were in 
 # a Docker container.
@@ -101,3 +107,8 @@ check-main-modules:
 # Alays assume these targets are out of date.
 .PHONY: clean itest itest-dev utest build release push detectmisconfig
 
+
+test:
+	for number in 1 2 3 4 ; do \
+		echo $$number ; \
+	done
