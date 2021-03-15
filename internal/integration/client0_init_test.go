@@ -15,91 +15,73 @@ package integration
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// import (
-// 	"strconv"
-// 	"testing"
-// 	"time"
+import (
+	"strconv"
+	"testing"
+	"time"
 
-// 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
-// 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-// 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/stretchr/testify/assert"
+)
 
-// // Tests in this file use the Client API, but don't need the rest of the system to be
-// // configured. These tests need to be run prior to the other client tests.
+// Tests in this file use the Client API, but don't need the rest of the system to be
+// configured. These tests need to be run prior to the other client tests.
+var fClient *fcrclient.FilecoinRetrievalClient
 
-// func TestGetClientVersion(t *testing.T) {
-// 	versionInfo := fcrclient.GetVersion()
-// 	// Verify that the client version is an integer number.
-// 	ver, err := strconv.Atoi(versionInfo.Version)
-// 	if err != nil {
-// 		panic(err)
-// 	}
+func TestGetClientVersion(t *testing.T) {
+	versionInfo := fcrclient.GetVersion()
+	// Verify that the client version is an integer number.
+	ver, err := strconv.Atoi(versionInfo.Version)
+	if err != nil {
+		panic(err)
+	}
 
-// 	// The version must be 1 or more.
-// 	if !assert.LessOrEqual(t, 1, ver) {
-// 		return
-// 	}
-// }
+	// The version must be 1 or more.
+	if !assert.LessOrEqual(t, 1, ver) {
+		return
+	}
+}
 
-// // Test that the client can be initialized without causing an error.
-// func TestInitClientNoRetrievalKey(t *testing.T) {
-// 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-// 	if err != nil {
-// 		panic(err)
-// 	}
+// Test that the client can be initialized without causing an error.
+func TestInitClientNoRetrievalKey(t *testing.T) {
+	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		panic(err)
+	}
 
-// 	confBuilder := fcrclient.CreateSettings()
-// 	confBuilder.SetEstablishmentTTL(101)
-// 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-// 	conf := confBuilder.Build()
+	confBuilder := fcrclient.CreateSettings()
+	confBuilder.SetEstablishmentTTL(101)
+	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	conf := confBuilder.Build()
 
-// 	client, err := fcrclient.NewFilecoinRetrievalClient(*conf)
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	fClient = fcrclient.NewFilecoinRetrievalClient(*conf)
+}
 
-// 	client.Shutdown()
-// }
+func TestNoConfiguredGateways(t *testing.T) {
+	// The current configuration means that there should only be one connected gateway
+	gateways := fClient.GetGatewaysToUse()
+	assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned")
+}
 
-// func TestNoConfiguredGateways(t *testing.T) {
-// 	// The current configuration means that there should only be one connected gateway
-// 	client := InitClient()
-// 	gateways := client.ConnectedGateways()
-// 	assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned")
-// 	if len(gateways) > 0 {
-// 		if !assert.Equal(t, "http://gateway:9011/", gateways[0]) {
-// 			goto CLEAN_EXIT
-// 		}
-// 	}
-// CLEAN_EXIT:
-// 	CloseClient(client)
-// }
+func TestUnknownGatewayAdded(t *testing.T) {
+	randomGatewayID, err := nodeid.NewRandomNodeID()
+	if err != nil {
+		panic(err)
+	}
+	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
+	newGatwaysToBeAdded = append(newGatwaysToBeAdded, randomGatewayID)
+	numAdded := fClient.AddGatewaysToUse(newGatwaysToBeAdded)
+	assert.Equal(t, 0, numAdded)
+	gws := fClient.GetGatewaysToUse()
+	assert.Equal(t, 0, len(gws))
 
-// func TestUnknownGatewayAdded(t *testing.T) {
-// 	client := InitClient()
-// 	randomGatewayID, err := nodeid.NewRandomNodeID()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
-// 	newGatwaysToBeAdded = append(newGatwaysToBeAdded, randomGatewayID)
-// 	numAdded := client.AddGateways(newGatwaysToBeAdded)
-// 	assert.Equal(t, 1, numAdded)
-// 	gws := client.GetGateways()
-// 	assert.Equal(t, 1, len(gws))
+	// Give the client time to fail the look-up for the random gateway id
+	time.Sleep(500 * time.Millisecond)
 
-// 	// Give the client time to fail the look-up for the random gateway id
-// 	time.Sleep(500 * time.Millisecond)
-
-// 	gateways := client.ConnectedGateways()
-// 	if !assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned") {
-// 		CloseClient(client)
-// 		return
-// 	}
-// 	if len(gateways) > 0 {
-// 		assert.Equal(t, "http://gateway:9011/", gateways[0])
-// 	}
-// 	CloseClient(client)
-// }
+	gateways := fClient.GetActiveGateways()
+	if !assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned") {
+		return
+	}
+}
