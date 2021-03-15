@@ -55,6 +55,9 @@ itestdocker:
 	docker network create shared || true
 	docker-compose down
 	for file in ./internal/integration/* ; do \
+		echo ****** TESTING $$file *********************; \
+		echo ****** TESTING $$file *********************; \
+		echo ****** TESTING $$file *********************; \
 		docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis; \
 		echo *********************************************; \
 		cat go.mod; \
@@ -72,6 +75,10 @@ itestdocker:
 		echo *********************************************; \
 		docker-compose run itest go test -v $$file; \
 		echo *********************************************; \
+		echo PROVIDER LOGS *********************************************; \
+		docker container logs provider; \
+		echo GATEWAY LOGS *********************************************; \
+		docker container logs gateway; \
 		docker-compose down; \
 	done
 
