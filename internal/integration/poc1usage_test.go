@@ -189,8 +189,8 @@ func TestPublishGroupCID(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait 3 seconds")
-	time.Sleep(3 * time.Second)
+	logging.Info("Wait 10 seconds")
+	time.Sleep(10 * time.Second)
 
 	// Test get all offers
 	gatewayIDs := make([]nodeid.NodeID, 0)
