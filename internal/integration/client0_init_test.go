@@ -28,6 +28,7 @@ import (
 
 // Tests in this file use the Client API, but don't need the rest of the system to be
 // configured. These tests need to be run prior to the other client tests.
+var fClient *fcrclient.FilecoinRetrievalClient
 
 func TestGetClientVersion(t *testing.T) {
 	versionInfo := fcrclient.GetVersion()
@@ -55,51 +56,32 @@ func TestInitClientNoRetrievalKey(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	conf := confBuilder.Build()
 
-	client, err := fcrclient.NewFilecoinRetrievalClient(*conf)
-	if err != nil {
-		panic(err)
-	}
-
-	client.Shutdown()
+	fClient = fcrclient.NewFilecoinRetrievalClient(*conf)
 }
 
 func TestNoConfiguredGateways(t *testing.T) {
 	// The current configuration means that there should only be one connected gateway
-	client := InitClient()
-	gateways := client.ConnectedGateways()
+	gateways := fClient.GetGatewaysToUse()
 	assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned")
-	if len(gateways) > 0 {
-		if !assert.Equal(t, "http://gateway:9011/", gateways[0]) {
-			goto CLEAN_EXIT
-		}
-	}
-CLEAN_EXIT:
-	CloseClient(client)
 }
 
 func TestUnknownGatewayAdded(t *testing.T) {
-	client := InitClient()
 	randomGatewayID, err := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
 	}
 	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatwaysToBeAdded = append(newGatwaysToBeAdded, randomGatewayID)
-	numAdded := client.AddGateways(newGatwaysToBeAdded)
-	assert.Equal(t, 1, numAdded)
-	gws := client.GetGateways()
-	assert.Equal(t, 1, len(gws))
+	numAdded := fClient.AddGatewaysToUse(newGatwaysToBeAdded)
+	assert.Equal(t, 0, numAdded)
+	gws := fClient.GetGatewaysToUse()
+	assert.Equal(t, 0, len(gws))
 
 	// Give the client time to fail the look-up for the random gateway id
 	time.Sleep(500 * time.Millisecond)
 
-	gateways := client.ConnectedGateways()
+	gateways := fClient.GetActiveGateways()
 	if !assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned") {
-		CloseClient(client)
 		return
 	}
-	if len(gateways) > 0 {
-		assert.Equal(t, "http://gateway:9011/", gateways[0])
-	}
-	CloseClient(client)
 }

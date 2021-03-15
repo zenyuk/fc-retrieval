@@ -16,27 +16,25 @@ package integration
  */
 
 import (
-	"log"
 	"testing"
-	"time"
 
+	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 )
 
-// Tests in this file check the ability to do node discovery.
-var gatewayConfig = config.NewConfig(".env.gateway")
-
 func TestOneGateway(t *testing.T) {
+	gatewayConfig := config.NewConfig(".env.gateway")
+
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
-		log.Panic(err.Error())
+		logging.Panic(err.Error())
 	}
 
 	confBuilder := fcrgatewayadmin.CreateSettings()
@@ -83,26 +81,27 @@ func TestOneGateway(t *testing.T) {
 	}
 
 	logging.Info("Adding to client config gateway: %s", gatewayID.ToString())
-	client := InitClient()
-	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
-	newGatwaysToBeAdded = append(newGatwaysToBeAdded, gatewayID)
-	numAdded := client.AddGateways(newGatwaysToBeAdded)
-	assert.Equal(t, 1, numAdded)
-	gws := client.GetGateways()
-	assert.Equal(t, 1, len(gws))
 
-	// Give the client time to talk to the register and get the gateway.
-	time.Sleep(500 * time.Millisecond)
-
-	client.ConnectedGateways()
-	gateways := client.ConnectedGateways()
-
-	// TODO this should be just returning one.
-	assert.GreaterOrEqual(t, 1, len(gateways), "Unexpected number of gateways returned")
-	for i, gw := range gateways {
-		logging.Info("Gateway %d: %s", i, gw)
+	blockchainPrivateKey, err = fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		panic(err)
 	}
 
-	CloseClient(client)
-	CloseGatewayAdmin(gwAdmin)
+	clientConfBuilder := fcrclient.CreateSettings()
+	clientConfBuilder.SetEstablishmentTTL(101)
+	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	clientConf := clientConfBuilder.Build()
+
+	client := fcrclient.NewFilecoinRetrievalClient(*clientConf)
+	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
+	newGatwaysToBeAdded = append(newGatwaysToBeAdded, gatewayID)
+	numAdded := client.AddGatewaysToUse(newGatwaysToBeAdded)
+	assert.Equal(t, 1, numAdded)
+	gws := client.GetGatewaysToUse()
+	assert.Equal(t, 1, len(gws))
+
+	numAdded = client.AddActiveGateways(newGatwaysToBeAdded)
+	assert.Equal(t, 1, numAdded)
+	ga := client.GetActiveGateways()
+	assert.Equal(t, 1, len(ga))
 }
