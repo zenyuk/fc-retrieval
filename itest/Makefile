@@ -55,12 +55,8 @@ itestdocker:
 	docker network create shared || true
 	docker-compose down
 	for file in ./internal/integration/* ; do \
-		echo ****** TESTING $$file *********************; \
-		echo ****** TESTING $$file *********************; \
-		echo ****** TESTING $$file *********************; \
 		docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis; \
 		echo *********************************************; \
-		cat go.mod; \
 		sleep 10; \
 		echo REDIS STARTUP *********************************************; \
 		docker container logs redis; \
@@ -70,8 +66,6 @@ itestdocker:
 		docker container logs gateway; \
 		echo PROVIDER STARTUP *********************************************; \
 		docker container logs provider; \
-		echo NETWORK CONFIG *********************************************; \
-		docker network inspect shared; \
 		echo *********************************************; \
 		docker-compose run itest go test -v $$file; \
 		echo *********************************************; \
@@ -82,26 +76,16 @@ itestdocker:
 		docker-compose down; \
 	done
 
-# Remove echo logs
-# 	echo *********************************************
-# 	echo REDIS LOGS *********************************************
-# 	docker container logs redis
-# 	echo REGISTER LOGS *********************************************
-# 	docker container logs register
-# 	echo GATEWAY LOGS *********************************************
-# 	docker container logs gateway
-# 	echo PROVIDER LOGS *********************************************
-# 	docker container logs provider
-# 	echo ITEST LOGS *********************************************
-# 	docker container logs itest
-# 	echo *********************************************
-# 	docker-compose down
 	
 # This is the previous methodology, where the integration tests were in 
 # a Docker container.
 #
 #	docker-compose down
 #	docker-compose up --abort-on-container-exit --exit-code-from itest
+
+# Dump network config:
+#		echo NETWORK CONFIG *********************************************; \
+#		docker network inspect shared; \
 
 
 clean:
