@@ -1,75 +1,19 @@
 version: "3.8"
 services:
-  provider:
-    container_name: provider
-    build:
-      context: ../fc-retrieval-provider
-      dockerfile: Dockerfile
-    networks:
-      - shared
-    ports:
-      - "9030:9030"
-    env_file:
-      - .env.provider
-    depends_on:
-      - register
-      - gateway
-
-  gateway:
-    container_name: gateway
-    build:
-      context: ../fc-retrieval-gateway
-      dockerfile: Dockerfile
-    networks:
-      - shared
-    env_file:
-      - .env.gateway
-    ports:
-      - "9010:9010"
-      - "9011:9011"
-      - "9012:9012"
-      - "9013:9013"
-    depends_on:
-      - register
-
-  register:
-    container_name: register
-    build:
-      context: ../fc-retrieval-register
-      dockerfile: Dockerfile
-    ports:
-      - "9020:9020"
-    networks:
-      - shared
-    restart: unless-stopped
-    env_file:
-      - .env.register
-    depends_on:
-      - redis
-
-  redis:
-    image: "redis:alpine"
-    container_name: redis
-    networks:
-      - shared
-    ports:
-      - "6379:6379"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    restart: always
-
   itest:
     container_name: itest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./:/go/src/app
+      - ./go.local.mod:/go/src/app/go.mod
+      - ../fc-retrieval-provider-admin:/go/src/fc-retrieval-provider-admin
+      - ../fc-retrieval-gateway-admin:/go/src/fc-retrieval-gateway-admin
+      - ../fc-retrieval-common:/go/src/fc-retrieval-common
+      - ../fc-retrieval-client:/go/src/fc-retrieval-client
     networks:
       - shared
-    depends_on:
-      - gateway
-      - register
-      - provider
-
 networks:
   shared:
     name: shared
