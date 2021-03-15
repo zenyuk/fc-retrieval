@@ -3,11 +3,11 @@ module github.com/ConsenSys/fc-retrieval-itest
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210310062823-1492c15b2fab
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210309021945-823304bbc3fc
-	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210309023153-45f2599e0598
-	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210309023212-0c2328a0d2a1
-	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210310004700-1507a8b3268f
+	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210315220115-b5a58266695e
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
+	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
+	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210315220609-1fe0ee54f441
+	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 )
