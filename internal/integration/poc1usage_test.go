@@ -161,8 +161,8 @@ func TestInitialiseProvider(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait five seconds for the provider to initialise")
-	time.Sleep(5 * time.Second)
+	logging.Info("Wait ten seconds for the provider to initialise")
+	time.Sleep(10 * time.Second)
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*              End TestInitialiseProvider	         */")
