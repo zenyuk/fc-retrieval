@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 	"github.com/spf13/pflag"
@@ -30,6 +31,10 @@ func parseUint8(value string) uint8 {
 
 // Map sets the config for the Provider. NB: Providers start without a private key. Private keys are provided by a provider admin client.
 func Map(conf *viper.Viper) settings.AppSettings {
+	registerRefreshDuration, err := time.ParseDuration(conf.GetString("REGISTER_REFRESH_DURATION"))
+	if err != nil {
+		registerRefreshDuration = 5 * time.Second
+	}
 	return settings.AppSettings{
 		BindRestAPI:    conf.GetString("BIND_REST_API"),
 		BindGatewayAPI: conf.GetString("BIND_GATEWAY_API"),
@@ -47,7 +52,9 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		ProviderID:     conf.GetString("PROVIDER_ID"),
 		ProviderSigAlg: parseUint8(conf.GetString("PROVIDER_SIG_ALG")),
 
-		RegisterAPIURL:         conf.GetString("REGISTER_API_URL"),
+		RegisterAPIURL:         	conf.GetString("REGISTER_API_URL"),
+		RegisterRefreshDuration:	registerRefreshDuration,
+		
 		ProviderAddress:        conf.GetString("PROVIDER_ADDRESS"),
 		ProviderRootSigningKey: conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
 		ProviderSigningKey:     conf.GetString("PROVIDER_SIGNING_KEY"),
