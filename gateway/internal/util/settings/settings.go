@@ -40,6 +40,7 @@ const settingsDefaultLogCompress = false
 const settingsDefaultGatewayID = "01"
 
 const settingsDefaultRegisterAPIURL = "http://localhost:9020"
+const settingsDefaultRegisterRefreshDuration = 5000
 const settingsDefaultGatewayAddress = "f0121345"
 const settingsDefaultNetworkInfoClient = "127.0.0.1:9010"
 const settingsDefaultNetworkInfoProvider = "127.0.0.1:9011"
@@ -71,12 +72,13 @@ type AppSettings struct {
 	LogCompress     bool   `mapstructure:"LOG_COMPRESS"`      // Log compress: false
 	GatewayID       string `mapstructure:"GATEWAY_ID"`        // Node id of this gateway
 
-	RegisterAPIURL        string `mapstructure:"REGISTER_API_URL"`         // Register service url
-	GatewayAddress        string `mapstructure:"GATEWAY_ADDRESS"`          // Gateway address
-	NetworkInfoGateway    string `mapstructure:"GATEWAY_NETWORK_INFO"`     // Gateway network info
-	GatewayRegionCode     string `mapstructure:"GATEWAY_REGION_CODE"`      // Gateway region code
-	GatewayRootSigningKey string `mapstructure:"GATEWAY_ROOT_SIGNING_KEY"` // Gateway root signing key
-	GatewaySigningKey     string `mapstructure:"GATEWAY_SIGNING_KEY"`      // Gateway signing key
+	RegisterAPIURL        	string 				`mapstructure:"REGISTER_API_URL"`         	// Register service url
+	RegisterRefreshDuration	time.Duration	`mapstructure:"REGISTER_REFRESH_DURATION"`	// Register refresh duration
+	GatewayAddress        	string 				`mapstructure:"GATEWAY_ADDRESS"`          	// Gateway address
+	NetworkInfoGateway    	string 				`mapstructure:"GATEWAY_NETWORK_INFO"`     	// Gateway network info
+	GatewayRegionCode     	string 				`mapstructure:"GATEWAY_REGION_CODE"`      	// Gateway region code
+	GatewayRootSigningKey 	string 				`mapstructure:"GATEWAY_ROOT_SIGNING_KEY"` 	// Gateway root signing key
+	GatewaySigningKey     	string 				`mapstructure:"GATEWAY_SIGNING_KEY"`      	// Gateway signing key
 
 	NetworkInfoClient   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
 	NetworkInfoProvider string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
@@ -99,6 +101,7 @@ var defaults = AppSettings{
 	settingsDefaultGatewayID,
 
 	settingsDefaultRegisterAPIURL,
+	settingsDefaultRegisterRefreshDuration,
 	settingsDefaultGatewayAddress,
 	settingsDefaultNetworkInfoGateway,
 	settingsDefaultGatewayRegionCode,

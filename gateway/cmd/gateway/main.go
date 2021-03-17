@@ -16,21 +16,22 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
 func main() {
 	conf := config.NewConfig()
-	settings := config.Map(conf)
+	appSettings := config.Map(conf)
 	logging.Init(conf)
 	logging.Info("Filecoin Gateway Start-up: Started")
 
-	logging.Info("Settings: %+v", settings)
+	logging.Info("Settings: %+v", appSettings)
 
 	// Initialise a dummy gateway instance.
-	g := gateway.GetSingleInstance(&settings)
+	g := gateway.GetSingleInstance(&appSettings)
 
 	// Get all registerd Gateways
-	gateways, err := register.GetRegisteredGateways(settings.RegisterAPIURL)
+	gateways, err := register.GetRegisteredGateways(appSettings.RegisterAPIURL)
 	if err != nil {
 		logging.Error("Unable to get registered gateways: %v", err)
 	}
@@ -41,35 +42,35 @@ func main() {
 	}
 	g.RegisteredGatewaysMapLock.Unlock()
 
-	err = clientapi.StartClientRestAPI(settings)
+	err = clientapi.StartClientRestAPI(appSettings)
 	if err != nil {
 		logging.Error("Error starting server: Client REST API: %s", err.Error())
 		return
 	}
 
-	err = gatewayapi.StartGatewayAPI(settings)
+	err = gatewayapi.StartGatewayAPI(appSettings)
 	if err != nil {
 		logging.Error("Error starting gateway tcp server: %s", err.Error())
 		return
 	}
 
-	err = providerapi.StartProviderAPI(settings)
+	err = providerapi.StartProviderAPI(appSettings)
 	if err != nil {
 		logging.Error("Error starting provider tcp server: %s", err.Error())
 		return
 	}
 
-	err = adminapi.StartAdminAPI(settings, g)
+	err = adminapi.StartAdminAPI(appSettings, g)
 	if err != nil {
 		logging.Error("Error starting admin tcp server: %s", err.Error())
 		return
 	}
 
 	// Get all registerd Gateways
-	go updateRegisteredGateways(settings.RegisterAPIURL, g)
+	go updateRegisteredGateways(appSettings, g)
 
 	// Get all registered Providers
-	go updateRegisteredProviders(settings.RegisterAPIURL, g)
+	go updateRegisteredProviders(appSettings, g)
 
 	// Configure what should be called if Control-C is hit.
 	util.SetUpCtrlCExit(gracefulExit)
@@ -80,9 +81,10 @@ func main() {
 	select {}
 }
 
-func updateRegisteredGateways(url string, g *gateway.Gateway) {
+func updateRegisteredGateways(appSettings settings.AppSettings, g *gateway.Gateway) {
 	for {
-		gateways, err := register.GetRegisteredGateways(url)
+		logging.Debug("Update registered gateways")
+		gateways, err := register.GetRegisteredGateways(appSettings.RegisterAPIURL)
 		if err != nil {
 			logging.Error("Error in getting registered gateways: %s", err.Error())
 		} else {
@@ -139,14 +141,15 @@ func updateRegisteredGateways(url string, g *gateway.Gateway) {
 				g.RegisteredGatewaysMapLock.Unlock()
 			}
 		}
-		// Sleep for 5 seconds, refresh every 5 seconds
-		time.Sleep(5 * time.Second)
+		// Sleep for RegisterRefreshDuration duration, refresh every RegisterRefreshDuration duration
+		time.Sleep(appSettings.RegisterRefreshDuration)
 	}
 }
 
-func updateRegisteredProviders(url string, g *gateway.Gateway) {
+func updateRegisteredProviders(appSettings settings.AppSettings, g *gateway.Gateway) {
 	for {
-		providers, err := register.GetRegisteredProviders(url)
+		logging.Debug("Update registered providers")
+		providers, err := register.GetRegisteredProviders(appSettings.RegisterAPIURL)
 		if err != nil {
 			logging.Error("Error in getting registered providers: %s", err.Error())
 		} else {
@@ -194,8 +197,8 @@ func updateRegisteredProviders(url string, g *gateway.Gateway) {
 				g.RegisteredProvidersMapLock.Unlock()
 			}
 		}
-		// Sleep for 5 seconds, refresh every 5 seconds
-		time.Sleep(5 * time.Second)
+		// Sleep for RegisterRefreshDuration duration, refresh every RegisterRefreshDuration duration
+		time.Sleep(appSettings.RegisterRefreshDuration)
 	}
 }
 
