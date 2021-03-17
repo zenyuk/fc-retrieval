@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	_ "github.com/joho/godotenv/autoload"
 
@@ -14,55 +14,56 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 )
 
 // Start Provider service
 func main() {
 	conf := config.NewConfig()
-	settings := config.Map(conf)
-	log.Init(conf)
-	log.Info("Filecoin Provider Start-up: Started")
+	appSettings := config.Map(conf)
+	logging.Init(conf)
+	logging.Info("Filecoin Provider Start-up: Started")
 
-	log.Info("Settings: %+v", settings)
+	logging.Info("Settings: %+v", appSettings)
 
 	// Initialise the provider's core structure
-	c := core.GetSingleInstance(&settings)
+	c := core.GetSingleInstance(&appSettings)
 
-	err := clientapi.StartClientRestAPI(settings)
+	err := clientapi.StartClientRestAPI(appSettings)
 	if err != nil {
-		log.Error("Error starting client rest server: %s", err.Error())
+		logging.Error("Error starting client rest server: %s", err.Error())
 		return
 	}
 
-	err = gatewayapi.StartGatewayAPI(settings)
+	err = gatewayapi.StartGatewayAPI(appSettings)
 	if err != nil {
-		log.Error("Error starting gateway tcp server: %s", err.Error())
+		logging.Error("Error starting gateway tcp server: %s", err.Error())
 	}
 
-	err = adminapi.StartAdminRestAPI(settings)
+	err = adminapi.StartAdminRestAPI(appSettings)
 	if err != nil {
-		log.Error("Error starting admin tcp server: %s", err.Error())
+		logging.Error("Error starting admin tcp server: %s", err.Error())
 		return
 	}
 
 	// Get all registerd Gateways
-	go updateRegisteredGateways(settings.RegisterAPIURL, c)
+	go updateRegisteredGateways(appSettings, c)
 
 	// Configure what should be called if Control-C is hit.
 	util.SetUpCtrlCExit(gracefulExit)
 
-	log.Info("Filecoin Provider Start-up Complete")
+	logging.Info("Filecoin Provider Start-up Complete")
 
 	// Wait forever.
 	select {}
 }
 
-func updateRegisteredGateways(url string, c *core.Core) {
-	log.Info("Update registered Gateways")
+func updateRegisteredGateways(appSettings settings.AppSettings, c *core.Core) {
 	for {
-		gateways, err := register.GetRegisteredGateways(url)
+		logging.Debug("Update registered providers")
+		gateways, err := register.GetRegisteredGateways(appSettings.RegisterAPIURL)
 		if err != nil {
-			log.Error("Error in getting registered gateways: ", err.Error())
+			logging.Error("Error in getting registered gateways: %s", err.Error())
 		} else {
 			// Check if nothing is changed.
 			update := false
@@ -81,7 +82,7 @@ func updateRegisteredGateways(url string, c *core.Core) {
 						key, err3 := storedInfo.GetSigningKey()
 						signingKey, err4 := key.EncodePublicKey()
 						if err != nil || err2 != nil || err3 != nil || err4 != nil {
-							log.Error("Error in generating key string")
+							logging.Error("Error in generating key string")
 							break
 						}
 						if gateway.Address != storedInfo.GetAddress() ||
@@ -103,23 +104,22 @@ func updateRegisteredGateways(url string, c *core.Core) {
 				c.RegisteredGatewaysMapLock.Lock()
 				c.RegisteredGatewaysMap = make(map[string]register.RegisteredNode)
 				for _, gateway := range gateways {
-					log.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
+					logging.Info("Add to registered gateways map: nodeID=%+v", gateway.NodeID)
 					c.RegisteredGatewaysMap[strings.ToLower(gateway.NodeID)] = &gateway
 				}
 				c.RegisteredGatewaysMapLock.Unlock()
 			}
 		}
-		// Sleep for 5 seconds, refresh every 5 seconds
-		time.Sleep(15 * time.Second)
-		// time.Sleep(5 * time.Second)
+		// Sleep for RegisterRefreshDuration duration, refresh every RegisterRefreshDuration duration
+		time.Sleep(appSettings.RegisterRefreshDuration)
 	}
 }
 
 func gracefulExit() {
-	log.Info("Filecoin Provider Shutdown: Start")
+	logging.Info("Filecoin Provider Shutdown: Start")
 
-	log.Error("graceful shutdown code not written yet!")
+	logging.Error("graceful shutdown code not written yet!")
 	// TODO
 
-	log.Info("Filecoin Provider Shutdown: Completed")
+	logging.Info("Filecoin Provider Shutdown: Completed")
 }
