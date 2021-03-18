@@ -19,36 +19,8 @@ import (
 	"time"
 )
 
-const settingsFileName = "settings.json"
-const settingsLocDev = settingsFileName
-const settingsLocContainer = "/etc/gateway/" + settingsFileName
-
-const settingsDefaultBindRestAPI = "9010"
-const settingsDefaultBindProviderAPI = "9011"
-const settingsDefaultBindGatewayAPI = "9012"
-const settingsDefaultBindAdminAPI = "9013"
-const settingsDefaultLogLevel = "TRACE"
-const settingsDefaultLogTarget = "STDOUT"
-const settingsDefaultLogDir = "/var/log/fc-retrieval/fc-retrieval-gateway"
-const settingsDefaultLogFile = "gateway.log"
-const settingsDefaultLogMaxBackups = 3
-const settingsDefaultLogMaxAge = 28
-const settingsDefaultLogMaxSize = 500
-const settingsDefaultLogCompress = false
-
-// TODO id doesn't make sense to have defaults for these values.
-const settingsDefaultGatewayID = "01"
-
-const settingsDefaultRegisterAPIURL = "http://localhost:9020"
-const settingsDefaultRegisterRefreshDuration = 5000
-const settingsDefaultGatewayAddress = "f0121345"
-const settingsDefaultNetworkInfoClient = "127.0.0.1:9010"
-const settingsDefaultNetworkInfoProvider = "127.0.0.1:9011"
-const settingsDefaultNetworkInfoGateway = "127.0.0.1:9012"
-const settingsDefaultNetworkInfoAdmin = "127.0.0.1:9013"
-const settingsDefaultGatewayRegionCode = "US"
-const settingsDefaultGatewayRootSigningKey = "0xABCDE123456789"
-const settingsDefaultGatewaySigningKey = "0x987654321EDCBA"
+// DefaultRegisterRefreshDuration is the default register refresh duration
+const DefaultRegisterRefreshDuration = 5000 * time.Millisecond
 
 // DefaultTCPInactivityTimeout is the default timeout for TCP inactivity
 const DefaultTCPInactivityTimeout = 100 * time.Millisecond
@@ -83,32 +55,4 @@ type AppSettings struct {
 	NetworkInfoClient   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
 	NetworkInfoProvider string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
 	NetworkInfoAdmin    string `mapstructure:"ADMIN_NETWORK_INFO"`    // Gateway admin network info
-}
-
-var defaults = AppSettings{
-	settingsDefaultBindRestAPI,
-	settingsDefaultBindProviderAPI,
-	settingsDefaultBindGatewayAPI,
-	settingsDefaultBindAdminAPI,
-	settingsDefaultLogLevel,
-	settingsDefaultLogTarget,
-	settingsDefaultLogDir,
-	settingsDefaultLogFile,
-	settingsDefaultLogMaxBackups,
-	settingsDefaultLogMaxAge,
-	settingsDefaultLogMaxSize,
-	settingsDefaultLogCompress,
-	settingsDefaultGatewayID,
-
-	settingsDefaultRegisterAPIURL,
-	settingsDefaultRegisterRefreshDuration,
-	settingsDefaultGatewayAddress,
-	settingsDefaultNetworkInfoGateway,
-	settingsDefaultGatewayRegionCode,
-	settingsDefaultGatewayRootSigningKey,
-	settingsDefaultGatewaySigningKey,
-
-	settingsDefaultNetworkInfoClient,
-	settingsDefaultNetworkInfoProvider,
-	settingsDefaultNetworkInfoAdmin,
 }
