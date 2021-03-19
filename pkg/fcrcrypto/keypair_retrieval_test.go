@@ -151,3 +151,71 @@ func TestJson(t *testing.T) {
 	}
 	assert.Equal(t, key1, key2)
 }
+
+func TestEncodeRawPrivKeyWithErr(t *testing.T) {
+	keyPair, err := GenerateRetrievalV1KeyPair()
+	if err != nil {
+		panic(err)
+	}
+	keyPair.alg.algorithm = SigAlgEcdsaSecP256K1Blake2b + 1
+
+	str, err := keyPair.EncodeRawPrivateKey()
+	assert.NotEmpty(t, err)
+	assert.Empty(t, str)
+}
+
+func TestDecodePrivKeyWithError(t *testing.T) {
+	res, err := DecodePrivateKey("abcdefghijklmn")
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
+
+func TestDecodePrivKeyWithUnknownVersion(t *testing.T) {
+	keyPair, err := GenerateRetrievalV1KeyPair()
+	if err != nil {
+		panic(err)
+	}
+	keyPair.alg.algorithm = SigAlgEcdsaSecP256K1Blake2b + 1
+	keyPairStr := keyPair.EncodePrivateKey()
+	res, err := DecodePrivateKey(keyPairStr)
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
+
+func TestDecodeRawPrivKeyWithError(t *testing.T) {
+	res, err := DecodeRawPrivateKey("abcdefghijklmn")
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
+
+func TestDecodeSECP256K1WithError(t *testing.T) {
+	keyBytes := []byte{0x12, 0x13}
+	res, err := decodeSecP256K1PrivateKey(keyBytes)
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
+
+func TestEncodePubKeyWithErr(t *testing.T) {
+	keyPair, err := GenerateRetrievalV1KeyPair()
+	if err != nil {
+		panic(err)
+	}
+	keyPair.alg.algorithm = SigAlgEcdsaSecP256K1Blake2b + 1
+
+	str, err := keyPair.EncodePublicKey()
+	assert.NotEmpty(t, err)
+	assert.Empty(t, str)
+}
+
+func TestDecodePubKeyWithError(t *testing.T) {
+	res, err := DecodePublicKey("abcdefghijklmn")
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
+
+func TestDecodePubSECP256K1WithError(t *testing.T) {
+	keyBytes := []byte{0x12, 0x13}
+	res, err := decodeSecP256K1PublicKey(keyBytes)
+	assert.NotEmpty(t, err)
+	assert.Empty(t, res)
+}
