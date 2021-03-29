@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmessagesbasic"
 )
 
 // IsTimeoutError checks if the given error is a timeout error
@@ -60,16 +59,4 @@ func SendTCPMessage(conn net.Conn, fcrMsg *fcrmessages.FCRMessage, timeout time.
 	// Set timeout
 	conn.SetDeadline(time.Now().Add(timeout))
 	return writer.Flush()
-}
-
-// SendProtocolMismatch sends a protocol mistmatch message to a given connection
-func SendProtocolMismatch(conn net.Conn, timeout time.Duration) error {
-	fcrMsg, _ := fcrmessagesbasic.EncodeProtocolMismatchResponse()
-	return SendTCPMessage(conn, fcrMsg, timeout)
-}
-
-// SendInvalidMessage sends an invalid message to a given connection
-func SendInvalidMessage(conn net.Conn, timeout time.Duration) error {
-	fcrMsg, _ := fcrmessagesbasic.EncodeInvalidMessageResponse()
-	return SendTCPMessage(conn, fcrMsg, timeout)
 }
