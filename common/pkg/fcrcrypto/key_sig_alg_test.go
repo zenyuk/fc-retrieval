@@ -18,37 +18,34 @@ package fcrcrypto
 import (
 	"testing"
 
-    "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestKeySigAlgRoundTrip(t *testing.T) {
-    algObj := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
-    algVal := algObj.EncodeSigAlg()
-    assert.Equal(t, algVal, SigAlgEcdsaSecP256K1Blake2b)
+	algObj := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
+	algVal := algObj.EncodeSigAlg()
+	assert.Equal(t, algVal, SigAlgEcdsaSecP256K1Blake2b)
 }
 
 func TestKeySigAlgRoundTripBytes(t *testing.T) {
-    algObj := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
-    algBytes := algObj.EncodeSigAlgAsBytes()
-    algObj2 := DecodeSigAlgFromBytes(algBytes)
-    assert.True(t, algObj.Equals(algObj2))
+	algObj := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
+	algBytes := algObj.EncodeSigAlgAsBytes()
+	algObj2 := DecodeSigAlgFromBytes(algBytes)
+	assert.True(t, algObj.Equals(algObj2))
 }
 
-
 func TestIs(t *testing.T) {
-    algObj1 := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
-    algObj3 := DecodeSigAlg(101)
-    assert.True(t, algObj1.Is(SigAlgEcdsaSecP256K1Blake2b))
-    assert.False(t, algObj1.Is(101))
-    assert.False(t, algObj3.Is(SigAlgEcdsaSecP256K1Blake2b))
+	algObj1 := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
+	algObj3 := DecodeSigAlg(101)
+	assert.True(t, algObj1.Is(SigAlgEcdsaSecP256K1Blake2b))
+	assert.False(t, algObj1.Is(101))
+	assert.False(t, algObj3.Is(SigAlgEcdsaSecP256K1Blake2b))
 }
 
 func TestIsNot(t *testing.T) {
-    algObj1 := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
-    algObj3 := DecodeSigAlg(101)
-    assert.False(t, algObj1.IsNot(SigAlgEcdsaSecP256K1Blake2b))
-    assert.True(t, algObj1.IsNot(101))
-    assert.True(t, algObj3.IsNot(SigAlgEcdsaSecP256K1Blake2b))
+	algObj1 := DecodeSigAlg(SigAlgEcdsaSecP256K1Blake2b)
+	algObj3 := DecodeSigAlg(101)
+	assert.False(t, algObj1.IsNot(SigAlgEcdsaSecP256K1Blake2b))
+	assert.True(t, algObj1.IsNot(101))
+	assert.True(t, algObj3.IsNot(SigAlgEcdsaSecP256K1Blake2b))
 }

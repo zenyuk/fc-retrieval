@@ -17,6 +17,7 @@ package fcrcrypto
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,12 +26,12 @@ func TestGetPublicPRNG(t *testing.T) {
 	zeroBytes := make([]byte, 32)
 	pub := GetPublicPRNG()
 	pub.ReadBytes(b)
-    assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
+	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
 }
 
 func TestGeneratePublicRandomBytes(t *testing.T) {
 	b := make([]byte, 32)
 	zeroBytes := make([]byte, 32)
 	GeneratePublicRandomBytes(b)
-    assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
+	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
 }

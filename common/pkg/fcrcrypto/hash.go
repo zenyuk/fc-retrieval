@@ -15,23 +15,22 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
 	"hash"
+
 	"golang.org/x/crypto/blake2b"
 )
 
-// GetBlockchainHasher returns a message digest implementation that hashes according to the 
+// GetBlockchainHasher returns a message digest implementation that hashes according to the
 // algorithms used by the Filecoin blockchain.
-func GetBlockchainHasher() (hash.Hash) {
+func GetBlockchainHasher() hash.Hash {
 	digestImpl, err := blake2b.New256(nil)
 	if err != nil {
-		// An error in getting a new message digest instance is catastrophic. 
+		// An error in getting a new message digest instance is catastrophic.
 		panic(err)
 	}
 	return digestImpl
 }
-
 
 // BlockchainHash message digests some data using the algorithm used by the Filecoin blockchain.
 func BlockchainHash(data []byte) []byte {
@@ -39,19 +38,18 @@ func BlockchainHash(data []byte) []byte {
 	return hash[:]
 }
 
-
-// GetRetrievalV1Hasher returns a message digest implementation that hashes according to the 
+// GetRetrievalV1Hasher returns a message digest implementation that hashes according to the
 // algorithms used by version one of the Filecoin retrieval protocol.
 func GetRetrievalV1Hasher() hash.Hash {
 	digestImpl, err := blake2b.New256(nil)
 	if err != nil {
-		// An error in getting a new message digest instance is catastrophic. 
+		// An error in getting a new message digest instance is catastrophic.
 		panic(err)
 	}
 	return digestImpl
 }
 
-// RetrievalV1Hash message digests some data using the algorithm used by version one of the 
+// RetrievalV1Hash message digests some data using the algorithm used by version one of the
 // Filecoin retrieval protocol.
 func RetrievalV1Hash(data []byte) []byte {
 	hash := blake2b.Sum256(data)
@@ -62,7 +60,7 @@ func RetrievalV1Hash(data []byte) []byte {
 func getPRNGHasher() hash.Hash {
 	digestImpl, err := blake2b.New256(nil)
 	if err != nil {
-		// An error in getting a new message digest instance is catastrophic. 
+		// An error in getting a new message digest instance is catastrophic.
 		panic(err)
 	}
 	return digestImpl

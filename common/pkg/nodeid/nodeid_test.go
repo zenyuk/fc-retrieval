@@ -17,15 +17,140 @@ package nodeid
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"testing"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test(t *testing.T) {
-	NewRandomNodeID()
+func TestNewNode(t *testing.T) {
+	id, err := NewNodeID(big.NewInt(5))
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000005", id.ToString())
+}
+
+func TestNewNodeIDFromBytes(t *testing.T) {
+	id, err := NewNodeIDFromBytes([]byte{1})
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000001", id.ToString())
+}
+
+func TestNewNodeIDFromEmptyBytes(t *testing.T) {
+	id, err := NewNodeIDFromBytes([]byte{})
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000000", id.ToString())
+}
+
+func TestNewNodeIDFromMaxBytes(t *testing.T) {
+	idBytes := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		idBytes[i] = 0xff
+	}
+	id, err := NewNodeIDFromBytes(idBytes)
+	assert.Empty(t, err)
+	assert.Equal(t, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", id.ToString())
+}
+
+func TestNewNodeIDFromBytesWithError(t *testing.T) {
+	longBytes := make([]byte, 33)
+	id, err := NewNodeIDFromBytes(longBytes)
+	assert.NotEmpty(t, err)
+	assert.Empty(t, id)
+}
+
+func TestNewNodeIDFromString(t *testing.T) {
+	id, err := NewNodeIDFromHexString("10")
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000010", id.ToString())
+}
+
+func TestNewNodeIDFromEmptyString(t *testing.T) {
+	id, err := NewNodeIDFromHexString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	assert.Empty(t, err)
+	assert.Equal(t, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", id.ToString())
+}
+
+func TestNewNodeIDFromMaxString(t *testing.T) {
+	id, err := NewNodeIDFromHexString("")
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000000", id.ToString())
+}
+
+func TestNewNodeIDFromStringExactLength(t *testing.T) {
+	id, err := NewNodeIDFromHexString("1010101010101010101010101010101010101010101010101010101010101010")
+	assert.Empty(t, err)
+	assert.Equal(t, "1010101010101010101010101010101010101010101010101010101010101010", id.ToString())
+}
+
+func TestNewNodeIDFromStringLongLength(t *testing.T) {
+	id, err := NewNodeIDFromHexString("101010101010101010101010101010101010101010101010101010101010101010")
+	assert.NotEmpty(t, err)
+	assert.Empty(t, id)
+}
+
+func TestNewNodeIDFromInvalidString(t *testing.T) {
+	id, err := NewNodeIDFromHexString("abcdefghijkl")
+	assert.NotEmpty(t, err)
+	assert.Empty(t, id)
+}
+
+func TestNewNodeIDFromPublicKey(t *testing.T) {
+	key, err := fcrcrypto.GenerateRetrievalV1KeyPair()
+	assert.Empty(t, err)
+	id, err := NewNodeIDFromPublicKey(key)
+	assert.Empty(t, err)
+	assert.NotEmpty(t, id)
+}
+
+func TestRandomNodeID(t *testing.T) {
+	id := NewRandomNodeID()
+	assert.NotEmpty(t, id)
+}
+
+func TestToBytes(t *testing.T) {
+	id, err := NewNodeIDFromHexString("10")
+	assert.Empty(t, err)
+	res := make([]byte, 32)
+	res[31] = 0x10
+	assert.Equal(t, res, id.ToBytes())
+}
+
+func TestJSON(t *testing.T) {
+	id1, err := NewNodeIDFromHexString("10")
+	assert.Empty(t, err)
+	p, err := id1.MarshalJSON()
+	assert.Empty(t, err)
+	id2 := NodeID{}
+	err = id2.UnmarshalJSON(p)
+	assert.Empty(t, err)
+	assert.Equal(t, id1.ToBytes(), id2.ToBytes())
+}
+
+func TestJSONWithError(t *testing.T) {
+	id := NodeID{}
+	p := make([]byte, 32)
+	err := id.UnmarshalJSON(p)
+	assert.NotEmpty(t, err)
+}
+
+func TestJSONWithWrongLength(t *testing.T) {
+	id := NodeID{}
+	p0 := make([]byte, 30)
+	p1, err := json.Marshal(p0)
+	assert.Empty(t, err)
+	err = id.UnmarshalJSON(p1)
+	assert.NotEmpty(t, err)
+}
+
+func TestAsBytes32(t *testing.T) {
+	id, err := NewNodeIDFromBytes([]byte{1})
+	assert.Empty(t, err)
+	var res [32]byte
+	res[31] = 1
+	assert.Equal(t, res, id.AsBytes32())
 }
 
 func TestRoundTripBigInt(t *testing.T) {
@@ -87,7 +212,7 @@ func testRoundTripFromBytes(t *testing.T, value string) {
 }
 
 func testRoundTripFromString(t *testing.T, value string) {
-	nodeID, err := NewNodeIDFromString(value)
+	nodeID, err := NewNodeIDFromHexString(value)
 	if err != nil {
 		panic(err)
 	}

@@ -25,48 +25,57 @@ import (
 	"github.com/cbergoon/merkletree"
 )
 
-const wordSize = 32 // 32 bytes
+const wordSize = 32 // the ContentID length is 32 bytes.
 
-// ContentID represents a CID
+// ContentID represents a CID.
 type ContentID struct {
-	//id big.Int
 	id []byte
 }
 
-// NewContentID creates a CID object
+// NewContentID creates a ContentID object.
 func NewContentID(id *big.Int) (*ContentID, error) {
-	var n = ContentID{}
-	//n.id = *id
 	b := id.Bytes()
 	l := len(b)
 	if l > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size1: %d", l)
+		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, wordSize)
 	}
-	idBytes := id.Bytes()
+	var n = ContentID{}
 	n.id = make([]byte, wordSize)
-	copy(n.id, idBytes)
+	copy(n.id[wordSize-l:], b)
 	return &n, nil
 }
 
-// NewContentIDFromBytes creates a CID object
-func NewContentIDFromBytes(id []byte) *ContentID {
+// NewContentIDFromBytes creates a ContentID object from bytes array.
+func NewContentIDFromBytes(id []byte) (*ContentID, error) {
+	l := len(id)
+	if l > wordSize {
+		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, wordSize)
+	}
 	var n = ContentID{}
 	n.id = make([]byte, wordSize)
-	copy(n.id, id)
-	return &n
+	copy(n.id[wordSize-l:], id)
+	return &n, nil
 }
 
-// NewRandomContentID creates a random content id object
-func NewRandomContentID() (*ContentID, error) {
+// NewContentIDFromHexString creates a ContentID object from hex string.
+func NewContentIDFromHexString(id string) (*ContentID, error) {
+	b, err := hex.DecodeString(id)
+	if err != nil {
+		return nil, err
+	}
+	return NewContentIDFromBytes(b)
+}
+
+// NewRandomContentID creates a random ContentID object.
+func NewRandomContentID() *ContentID {
 	var n = ContentID{}
 	n.id = make([]byte, wordSize)
 	fcrcrypto.GeneratePublicRandomBytes(n.id)
-	return &n, nil
+	return &n
 }
 
-// ToString returns a string for the CID.
+// ToString returns a string for the ContentID.
 func (n *ContentID) ToString() string {
-	//return n.id.Text(16)
 	str := hex.EncodeToString(n.id)
 	if str == "" {
 		str = "00"
@@ -74,17 +83,17 @@ func (n *ContentID) ToString() string {
 	return str
 }
 
-// ToBytes returns the byte array representation of the CID.
+// ToBytes returns the byte array representation of the ContentID.
 func (n *ContentID) ToBytes() []byte {
 	return n.id
 }
 
-// MarshalJSON is used to marshal NodeID into bytes
+// MarshalJSON is used to marshal CID into bytes.
 func (n ContentID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.id)
 }
 
-// UnmarshalJSON is used to unmarshal bytes into ContentID
+// UnmarshalJSON is used to unmarshal bytes into ContentID.
 func (n *ContentID) UnmarshalJSON(p []byte) error {
 	var id []byte
 	err := json.Unmarshal(p, &id)
@@ -100,12 +109,12 @@ func (n *ContentID) UnmarshalJSON(p []byte) error {
 	return nil
 }
 
-//CalculateHash hashes the values of a TestContent
+// CalculateHash hashes the values of a ContentID.
 func (n ContentID) CalculateHash() ([]byte, error) {
 	return n.id, nil
 }
 
-//Equals tests for equality of two Contents
+// Equals tests for equality of two ContentIDs.
 func (n ContentID) Equals(other merkletree.Content) (bool, error) {
 	return n.ToString() == other.(*ContentID).ToString(), nil
 }

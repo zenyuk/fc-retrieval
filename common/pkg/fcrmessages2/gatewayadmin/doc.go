@@ -1,4 +1,4 @@
-package fcrcrypto
+package fcrmessagesgatewayadmin
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -15,7 +15,4 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// GenerateBlockchainKeyPair generates a key pair for use with the Filecoin blockchain
-func GenerateBlockchainKeyPair() (*KeyPair, error) {
-	return GenerateRetrievalV1KeyPair()
-}
+// fcrmessagesgatewayadmin contains all messages originating from the gatewayadmin
