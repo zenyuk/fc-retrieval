@@ -18,39 +18,37 @@ package fcrcrypto
 import (
 	"testing"
 
-    "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestBlockchainHasher(t *testing.T) {
-    someBytes := make([]byte, 100)
-    hasher := GetBlockchainHasher()
-    hasher.Write(someBytes)
-    digest1 := hasher.Sum(nil)
+	someBytes := make([]byte, 100)
+	hasher := GetBlockchainHasher()
+	hasher.Write(someBytes)
+	digest1 := hasher.Sum(nil)
 
-    hasher.Reset()
-    hasher.Write(someBytes)
-    digest2 := hasher.Sum(nil)
+	hasher.Reset()
+	hasher.Write(someBytes)
+	digest2 := hasher.Sum(nil)
 
-    digest4 := BlockchainHash(someBytes)
+	digest4 := BlockchainHash(someBytes)
 
-    assert.Equal(t, digest1, digest2)
-    assert.Equal(t, digest1, digest4)
+	assert.Equal(t, digest1, digest2)
+	assert.Equal(t, digest1, digest4)
 }
 
 func TestRetrievalHasher(t *testing.T) {
-    someBytes := make([]byte, 100)
-    hasher := GetRetrievalV1Hasher()
-    hasher.Write(someBytes)
-    digest1 := hasher.Sum(nil)
+	someBytes := make([]byte, 100)
+	hasher := GetRetrievalV1Hasher()
+	hasher.Write(someBytes)
+	digest1 := hasher.Sum(nil)
 
-    hasher.Reset()
-    hasher.Write(someBytes)
-    digest2 := hasher.Sum(nil)
+	hasher.Reset()
+	hasher.Write(someBytes)
+	digest2 := hasher.Sum(nil)
 
-    digest4 := RetrievalV1Hash(someBytes)
+	digest4 := RetrievalV1Hash(someBytes)
 
-    assert.Equal(t, digest1, digest2)
-    assert.Equal(t, digest1, digest4)
+	assert.Equal(t, digest1, digest2)
+	assert.Equal(t, digest1, digest4)
 }

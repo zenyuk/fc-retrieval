@@ -2,8 +2,8 @@ package fcrcrypto
 
 import (
 	"encoding/hex"
-	"reflect"
 	"errors"
+	"reflect"
 )
 
 /**

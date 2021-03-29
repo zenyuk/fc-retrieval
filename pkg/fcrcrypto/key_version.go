@@ -1,4 +1,5 @@
 package fcrcrypto
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -19,19 +20,17 @@ import (
 	"fmt"
 )
 
-
 /**
  * Key Version: Keys used by the Gateway will be versioned to allow for key roll-over.
  *
  */
 const (
-	bitsInKeyVersion = 32
+	bitsInKeyVersion          = 32
 	lengthOfKeyVersionInBytes = 4
 
-	initialKeyVersion = 1
+	initialKeyVersion   = 1
 	keyVersionIncrement = 1
 )
-
 
 // KeyVersion wraps a key version number.
 type KeyVersion struct {
@@ -64,7 +63,7 @@ func DecodeKeyVersionFromBytes(version []byte) (*KeyVersion, error) {
 }
 
 // EncodeKeyVersion converts an object to a number
-func (k *KeyVersion) EncodeKeyVersion() (uint32) {
+func (k *KeyVersion) EncodeKeyVersion() uint32 {
 	return k.ver
 }
 

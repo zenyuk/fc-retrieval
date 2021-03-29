@@ -71,4 +71,3 @@ func TestPRNGEntropyKickMultiple(t *testing.T) {
 	PRNGEntropyKick()
 	PRNGEntropyKick()
 }
-

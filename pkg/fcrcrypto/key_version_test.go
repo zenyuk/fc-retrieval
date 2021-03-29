@@ -21,49 +21,42 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestKeyVersionRoundTrip(t *testing.T) {
-    kv := InitialKeyVersion()
-    rawVer := kv.EncodeKeyVersion()
-    kv1 := DecodeKeyVersion(rawVer)
-    assert.True(t, kv.Equals(kv1))
-    assert.False(t, kv.NotEquals(kv1))
+	kv := InitialKeyVersion()
+	rawVer := kv.EncodeKeyVersion()
+	kv1 := DecodeKeyVersion(rawVer)
+	assert.True(t, kv.Equals(kv1))
+	assert.False(t, kv.NotEquals(kv1))
 }
 
-
 func TestKeyVersionNext(t *testing.T) {
-    kv := InitialKeyVersion()
-    kv2 := kv.NextKeyVersion()
-    assert.False(t, kv.Equals(kv2))
-    assert.True(t, kv.NotEquals(kv2))
+	kv := InitialKeyVersion()
+	kv2 := kv.NextKeyVersion()
+	assert.False(t, kv.Equals(kv2))
+	assert.True(t, kv.NotEquals(kv2))
 }
 
 func TestKeyVersionRaw(t *testing.T) {
-    kv := InitialKeyVersion()
-    ver := kv.EncodeKeyVersion()
-    ver2 := ver+1
+	kv := InitialKeyVersion()
+	ver := kv.EncodeKeyVersion()
+	ver2 := ver + 1
 
-    assert.True(t, kv.EqualsRaw(ver))
-    assert.True(t, kv.NotEqualsRaw(ver2))
+	assert.True(t, kv.EqualsRaw(ver))
+	assert.True(t, kv.NotEqualsRaw(ver2))
 }
 
-
-
 func TestKeyVersionBytesRoundTrip(t *testing.T) {
-    kv := InitialKeyVersion()
-    verBytes := kv.EncodeKeyVersionAsBytes()
-    kv2, err := DecodeKeyVersionFromBytes(verBytes)
-    if err != nil {
-        panic(err)
-    }
-    assert.True(t, kv.Equals(kv2))
+	kv := InitialKeyVersion()
+	verBytes := kv.EncodeKeyVersionAsBytes()
+	kv2, err := DecodeKeyVersionFromBytes(verBytes)
+	if err != nil {
+		panic(err)
+	}
+	assert.True(t, kv.Equals(kv2))
 }
 
 func TestKeyVersionBytesBadLen(t *testing.T) {
-    verBytes := make([]byte, 1)
-    _, err := DecodeKeyVersionFromBytes(verBytes)
-    assert.Error(t, err)
+	verBytes := make([]byte, 1)
+	_, err := DecodeKeyVersionFromBytes(verBytes)
+	assert.Error(t, err)
 }
-
-

@@ -24,49 +24,40 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 )
 
-const wordSize = 32 // 32 bytes
+const wordSize = 32 // the NodeID length is 32 bytes.
 
-// NodeID represents a Gateway id
+// NodeID represents a NodeID.
 type NodeID struct {
 	id []byte
 }
 
-// NewRandomNodeID creates a random node id object
-func NewRandomNodeID() (*NodeID, error) {
-	var n = NodeID{}
-	n.id = make([]byte, wordSize)
-	fcrcrypto.GeneratePublicRandomBytes(n.id)
-	return &n, nil
-}
-
-// NewNodeID creates a node id object
+// NewNodeID creates a NodeID object.
 func NewNodeID(id *big.Int) (*NodeID, error) {
 	var n = NodeID{}
 	b := id.Bytes()
 	l := len(b)
 	if l > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size1: %d", l)
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", l, wordSize)
 	}
-	idBytes := id.Bytes()
 	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-len(idBytes):], idBytes)
+	copy(n.id[wordSize-l:], b)
 	return &n, nil
 }
 
-// NewNodeIDFromBytes creates a node id object
+// NewNodeIDFromBytes creates a NodeID object.
 func NewNodeIDFromBytes(id []byte) (*NodeID, error) {
 	var n = NodeID{}
 	lenID := len(id)
 	if lenID > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size2: %d", lenID)
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", lenID, wordSize)
 	}
 	n.id = make([]byte, wordSize)
 	copy(n.id[wordSize-len(id):], id)
 	return &n, nil
 }
 
-// NewNodeIDFromString creates a NodeID from a string
-func NewNodeIDFromString(id string) (*NodeID, error) {
+// NewNodeIDFromHexString creates a NodeID from a string.
+func NewNodeIDFromHexString(id string) (*NodeID, error) {
 	var n = NodeID{}
 	bytes, err := hex.DecodeString(id)
 	if err != nil {
@@ -74,14 +65,14 @@ func NewNodeIDFromString(id string) (*NodeID, error) {
 	}
 
 	if len(bytes) > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size2: %d", len(id))
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", len(id), wordSize)
 	}
 	n.id = make([]byte, wordSize)
 	copy(n.id[wordSize-len(bytes):], bytes)
 	return &n, nil
 }
 
-// NewNodeIDFromPublicKey create a Node ID based on a public key.
+// NewNodeIDFromPublicKey create a NodeID based on a public key.
 func NewNodeIDFromPublicKey(pubKey *fcrcrypto.KeyPair) (*NodeID, error) {
 	hashedPubKey, err := pubKey.HashPublicKey()
 	if err != nil {
@@ -90,7 +81,15 @@ func NewNodeIDFromPublicKey(pubKey *fcrcrypto.KeyPair) (*NodeID, error) {
 	return NewNodeIDFromBytes(hashedPubKey)
 }
 
-// ToString returns a string for the node id.
+// NewRandomNodeID creates a random NodeID object.
+func NewRandomNodeID() *NodeID {
+	var n = NodeID{}
+	n.id = make([]byte, wordSize)
+	fcrcrypto.GeneratePublicRandomBytes(n.id)
+	return &n
+}
+
+// ToString returns a string for the NodeID.
 func (n *NodeID) ToString() string {
 	str := hex.EncodeToString(n.id)
 	if str == "" {
@@ -99,23 +98,23 @@ func (n *NodeID) ToString() string {
 	return str
 }
 
-// ToBytes returns the byte array representation of the node id.
+// ToBytes returns the byte array representation of the NodeID.
 func (n *NodeID) ToBytes() []byte {
 	return n.id
 }
 
-// AsBytes32 returns the node id as a [32]byte
+// AsBytes32 returns the NodeID as a [32]byte.
 func (n *NodeID) AsBytes32() (result [wordSize]byte) {
 	copy(result[:], n.id)
 	return
 }
 
-// MarshalJSON is used to marshal NodeID into bytes
+// MarshalJSON is used to marshal NodeID into bytes.
 func (n NodeID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.id)
 }
 
-// UnmarshalJSON is used to unmarshal bytes into NodeID
+// UnmarshalJSON is used to unmarshal bytes into NodeID.
 func (n *NodeID) UnmarshalJSON(p []byte) error {
 	var id []byte
 	err := json.Unmarshal(p, &id)
@@ -124,7 +123,7 @@ func (n *NodeID) UnmarshalJSON(p []byte) error {
 	}
 
 	if len(id) != wordSize {
-		return fmt.Errorf("NodeID: Incorrect size: %d", len(id))
+		return fmt.Errorf("NodeID: Incorrect size: %d, should be %d", len(id), wordSize)
 	}
 	n.id = make([]byte, wordSize)
 	copy(n.id, id)
