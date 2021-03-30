@@ -37,11 +37,15 @@ func EncodeClientStandardDiscoverRequest(
 	pieceCID *cid.ContentID,
 	nonce int64,
 	ttl int64,
+	paychAddr string,
+	voucher string,
 ) (*fcrmessages.FCRMessage, error) {
 	body, err := json.Marshal(clientStandardDiscoverRequest{
-		PieceCID: *pieceCID,
-		Nonce:    nonce,
-		TTL:      ttl,
+		PieceCID:  *pieceCID,
+		Nonce:     nonce,
+		TTL:       ttl,
+		PaychAddr: paychAddr,
+		Voucher:   voucher,
 	})
 	if err != nil {
 		return nil, err
