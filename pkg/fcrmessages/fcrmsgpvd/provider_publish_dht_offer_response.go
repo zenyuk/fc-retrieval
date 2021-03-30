@@ -29,7 +29,7 @@ type providerPublishDHTOfferResponse struct {
 }
 
 // EncodeProviderPublishDHTOfferResponse is used to get the FCRMessage of ProviderPublishDHTOfferResponse
-func EncodeProviderDHTPublishGroupCIDAck(
+func EncodeProviderPublishDHTOfferResponse(
 	nonce int64,
 	signature string,
 ) (*fcrmessages.FCRMessage, error) {
@@ -43,8 +43,8 @@ func EncodeProviderDHTPublishGroupCIDAck(
 	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderPublishDHTOfferResponseType, body), nil
 }
 
-// DecodeProviderDHTPublishGroupCIDAck is used to get the fields from FCRMessage of ProviderDHTPublishGroupCIDAck
-func DecodeProviderDHTPublishGroupCIDAck(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderPublishDHTOfferResponse is used to get the fields from FCRMessage of ProviderPublishDHTOfferResponse
+func DecodeProviderPublishDHTOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
 	int64, // nonce
 	string, // signature
 	error, // error
