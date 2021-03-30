@@ -21,10 +21,12 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // gatewayDHTDiscoverRequest is the request from gateway to gateway to discover cid offer
 type gatewayDHTDiscoverRequest struct {
+	GatewayID nodeid.NodeID `json:"gateway_id"`
 	PieceCID  cid.ContentID `json:"piece_cid"`
 	Nonce     int64         `json:"nonce"`
 	TTL       int64         `json:"ttl"`
@@ -34,6 +36,7 @@ type gatewayDHTDiscoverRequest struct {
 
 // EncodeGatewayDHTDiscoverRequest is used to get the FCRMessage of gatewayDHTDiscoverRequest
 func EncodeGatewayDHTDiscoverRequest(
+	gatewayID *nodeid.NodeID,
 	pieceCID *cid.ContentID,
 	nonce int64,
 	ttl int64,
@@ -41,6 +44,7 @@ func EncodeGatewayDHTDiscoverRequest(
 	voucher string,
 ) (*fcrmessages.FCRMessage, error) {
 	body, err := json.Marshal(gatewayDHTDiscoverRequest{
+		GatewayID: *gatewayID,
 		PieceCID:  *pieceCID,
 		Nonce:     nonce,
 		TTL:       ttl,
@@ -55,6 +59,7 @@ func EncodeGatewayDHTDiscoverRequest(
 
 // DecodeGatewayDHTDiscoverRequest is used to get the fields from FCRMessage of GatewayDHTDiscoverRequest
 func DecodeGatewayDHTDiscoverRequest(fcrMsg *fcrmessages.FCRMessage) (
+	*nodeid.NodeID, // gateway id
 	*cid.ContentID, // piece cid
 	int64, // nonce
 	int64, // ttl
@@ -63,12 +68,12 @@ func DecodeGatewayDHTDiscoverRequest(fcrMsg *fcrmessages.FCRMessage) (
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != fcrmessages.GatewayDHTDiscoverRequestType {
-		return nil, 0, 0, "", "", errors.New("Message type mismatch")
+		return nil, nil, 0, 0, "", "", errors.New("Message type mismatch")
 	}
 	msg := gatewayDHTDiscoverRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, 0, 0, "", "", err
+		return nil, nil, 0, 0, "", "", err
 	}
-	return &msg.PieceCID, msg.Nonce, msg.TTL, msg.PaychAddr, msg.Voucher, nil
+	return &msg.GatewayID, &msg.PieceCID, msg.Nonce, msg.TTL, msg.PaychAddr, msg.Voucher, nil
 }

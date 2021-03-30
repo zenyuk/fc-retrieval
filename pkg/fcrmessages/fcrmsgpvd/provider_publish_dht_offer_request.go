@@ -26,21 +26,21 @@ import (
 
 // providerPublishDHTOfferRequest is the request from provider to gateway to publish dht offer
 type providerPublishDHTOfferRequest struct {
-	Nonce      int64               `json:"nonce"`
 	ProviderID nodeid.NodeID       `json:"provider_id"`
+	Nonce      int64               `json:"nonce"`
 	NumOffers  int64               `json:"num_of_offers"`
 	Offers     []cidoffer.CIDOffer `json:"single_offers"`
 }
 
 // EncodeProviderPublishDHTOfferRequest is used to get the FCRMessage of providerPublishDHTOfferRequest
 func EncodeProviderPublishDHTOfferRequest(
-	nonce int64,
 	providerID *nodeid.NodeID,
+	nonce int64,
 	offers []cidoffer.CIDOffer,
 ) (*fcrmessages.FCRMessage, error) {
 	body, err := json.Marshal(providerPublishDHTOfferRequest{
-		Nonce:      nonce,
 		ProviderID: *providerID,
+		Nonce:      nonce,
 		NumOffers:  int64(len(offers)),
 		Offers:     offers,
 	})
@@ -52,25 +52,24 @@ func EncodeProviderPublishDHTOfferRequest(
 
 // DecodeProviderPublishDHTOfferRequest is used to get the fields from FCRMessage of providerPublishDHTOfferRequest
 func DecodeProviderDHTPublishGroupCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
-	int64, // nonce
 	*nodeid.NodeID, // provider id
+	int64, // nonce
 	[]cidoffer.CIDOffer, // offers
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != fcrmessages.ProviderPublishDHTOfferRequestType {
-		return 0, nil, nil, errors.New("Message type mismatch")
+		return nil, 0, nil, errors.New("Message type mismatch")
 	}
 	msg := providerPublishDHTOfferRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return 0, nil, nil, err
+		return nil, 0, nil, err
 	}
 	// Check every offer is single offer
 	for _, offer := range msg.Offers {
 		if len(offer.GetCIDs()) != 1 {
-			return 0, nil, nil, errors.New("Offers contain group offer")
+			return nil, 0, nil, errors.New("Offers contain group offer")
 		}
 	}
-
-	return msg.Nonce, &msg.ProviderID, msg.Offers, nil
+	return &msg.ProviderID, msg.Nonce, msg.Offers, nil
 }
