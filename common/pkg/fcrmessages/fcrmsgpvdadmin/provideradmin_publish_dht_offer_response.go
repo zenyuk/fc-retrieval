@@ -41,7 +41,7 @@ func EncodeProviderAdminPublishDHTOfferResponse(
 }
 
 // DecodeProviderAdminPublishDHTOfferResponse is used to get the fields from FCRMessage of providerAdminPublishDHTOfferResponse
-func DecodeProviderAdminPublishDHTCIDResponse(fcrMsg *fcrmessages.FCRMessage) (
+func DecodeProviderAdminPublishDHTOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
 	bool, // received
 	error, // error
 ) {
