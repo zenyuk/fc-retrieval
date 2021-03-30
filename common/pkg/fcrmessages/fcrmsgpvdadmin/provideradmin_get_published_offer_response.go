@@ -23,37 +23,37 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 )
 
-// providerAdminGetPublishedGroupOfferResponse is the response to providerAdminGetPublishedGroupOfferRequest
-type providerAdminGetPublishedGroupOfferResponse struct {
+// providerAdminGetPublishedOfferResponse is the response to providerAdminGetPublishedOfferRequest
+type providerAdminGetPublishedOfferResponse struct {
 	Exists bool                `json:"exists"`
 	Offers []cidoffer.CIDOffer `json:"cid_offers"`
 }
 
-// EncodeProviderAdminGetPublishedGroupOfferResponse is used to get the FCRMessage of providerAdminGetPublishedGroupOfferResponse
-func EncodeProviderAdminGetPublishedGroupOfferResponse(
+// EncodeProviderAdminGetPublishedOfferResponse is used to get the FCRMessage of providerAdminGetPublishedOfferResponse
+func EncodeProviderAdminGetPublishedOfferResponse(
 	exists bool,
 	offers []cidoffer.CIDOffer,
 ) (*fcrmessages.FCRMessage, error) {
-	body, err := json.Marshal(providerAdminGetPublishedGroupOfferResponse{
+	body, err := json.Marshal(providerAdminGetPublishedOfferResponse{
 		Exists: exists,
 		Offers: offers,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedGroupOfferResponseType, body), nil
+	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedOfferResponseType, body), nil
 }
 
-// DecodeProviderAdminGetPublishedGroupOfferResponse is used to get the fields from FCRMessage of providerAdminGetPublishedGroupOfferResponse
-func DecodeProviderAdminGetPublishedGroupOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderAdminGetPublishedOfferResponse is used to get the fields from FCRMessage of providerAdminGetPublishedOfferResponse
+func DecodeProviderAdminGetPublishedOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
 	bool, // exists
 	[]cidoffer.CIDOffer, // cid offers
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != fcrmessages.ProviderAdminGetPublishedGroupOfferResponseType {
+	if fcrMsg.GetMessageType() != fcrmessages.ProviderAdminGetPublishedOfferResponseType {
 		return false, nil, errors.New("Message type mismatch")
 	}
-	msg := providerAdminGetPublishedGroupOfferResponse{}
+	msg := providerAdminGetPublishedOfferResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return false, nil, err
