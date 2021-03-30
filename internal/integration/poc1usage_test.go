@@ -75,7 +75,7 @@ func TestInitialiseGateway(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	gatewayID, err := nodeid.NewRandomNodeID()
+	gatewayID := nodeid.NewRandomNodeID()
 	if err != nil {
 		panic(err)
 	}
@@ -139,11 +139,7 @@ func TestInitialiseProvider(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	providerID, err := nodeid.NewRandomNodeID()
-	if err != nil {
-		panic(err)
-	}
-	pID = providerID
+	providerID := nodeid.NewRandomNodeID()
 
 	providerRegister := &register.ProviderRegister{
 		NodeID:             providerID.ToString(),
@@ -175,9 +171,9 @@ func TestPublishGroupCID(t *testing.T) {
 	logging.Info("/*******************************************************/")
 
 	// Generate random group cid offer
-	contentID1, _ := cid.NewRandomContentID()
-	contentID2, _ := cid.NewRandomContentID()
-	contentID3, _ := cid.NewRandomContentID()
+	contentID1 := cid.NewRandomContentID()
+	contentID2 := cid.NewRandomContentID()
+	contentID3 := cid.NewRandomContentID()
 	pieceCIDs := []cid.ContentID{*contentID1, *contentID2, *contentID3}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
@@ -218,7 +214,7 @@ func TestPublishGroupCID(t *testing.T) {
 	}
 
 	// Get offers by gatewayIDs fake
-	fakeNodeID, _ := nodeid.NewNodeIDFromString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
+	fakeNodeID, _ := nodeid.NewNodeIDFromHexString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
 	gatewayIDs[0] = *fakeNodeID
 	logging.Info("Get offers by gatewayID=%s", fakeNodeID.ToString())
 	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(pID, gatewayIDs)
@@ -307,7 +303,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		return
 	}
 
-	randomCID, _ := cid.NewRandomContentID()
+	randomCID := cid.NewRandomContentID()
 	offers, err = client.FindOffersStandardDiscovery(randomCID)
 	if err != nil {
 		panic(err)
