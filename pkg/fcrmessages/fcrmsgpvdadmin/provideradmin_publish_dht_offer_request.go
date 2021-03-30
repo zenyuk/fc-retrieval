@@ -51,7 +51,7 @@ func EncodeProviderAdminPublishDHTOfferRequest(
 }
 
 // DecodeProviderAdminPublishDHTOfferRequest is used to get the fields from FCRMessage of providerAdminPublishDHTOfferRequest
-func DecodeProviderAdminPublishDHTCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
+func DecodeProviderAdminPublishDHTOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	[]cid.ContentID, // cids
 	[]uint64, // price
 	[]int64, // expity

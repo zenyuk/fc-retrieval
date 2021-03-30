@@ -41,8 +41,8 @@ func EncodeProviderAdminGetPublishedGroupOfferRequest(
 	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedGroupOfferRequestType, body), nil
 }
 
-// DecodeProviderAdminGetGroupCIDRequest is used to get the fields from FCRMessage of providerAdminGetGroupCIDRequest
-func DecodeProviderAdminGetGroupCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderAdminGetPublishedGroupOfferRequest is used to get the fields from FCRMessage of providerAdminGetPublishedGroupOfferRequest
+func DecodeProviderAdminGetPublishedGroupOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	[]nodeid.NodeID, // piece cids
 	error, // error
 ) {

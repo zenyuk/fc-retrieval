@@ -44,8 +44,8 @@ func EncodeProviderAdminGetPublishedDHTOfferResponse(
 	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedDHTOfferResponseType, body), nil
 }
 
-// DecodeProviderAdminGetDHTCIDResponse is used to get the fields from FCRMessage of providerAdminGetDHTCIDResponse
-func DecodeProviderAdminGetDHTCIDResponse(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderAdminGetPublishedDHTOfferResponse is used to get the fields from FCRMessage of providerAdminGetPublishedDHTOfferResponse
+func DecodeProviderAdminGetPublishedDHTOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
 	bool, // exists
 	[]cidoffer.CIDOffer, // cid offers
 	error, // error

@@ -41,7 +41,7 @@ func EncodeProviderAdminPublishGroupOfferResponse(
 }
 
 // DecodeProviderAdminPublishGroupOfferResponse is used to get the fields from FCRMessage of providerAdminPublishGroupOfferResponse
-func DecodeProviderAdminPublishGroupCIDResponse(fcrMsg *fcrmessages.FCRMessage) (
+func DecodeProviderAdminPublishGroupOfferResponse(fcrMsg *fcrmessages.FCRMessage) (
 	bool, // received
 	error, // error
 ) {

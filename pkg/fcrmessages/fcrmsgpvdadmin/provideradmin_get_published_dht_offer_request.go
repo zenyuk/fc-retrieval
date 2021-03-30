@@ -41,8 +41,8 @@ func EncodeProviderAdminGetPublishedDHTOfferRequest(
 	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedDHTOfferRequestType, body), nil
 }
 
-// DecodeProviderAdminGetDHTCIDRequest is used to get the fields from FCRMessage of providerAdminGetDHTCIDRequest
-func DecodeProviderAdminGetDHTCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderAdminGetPublishedDHTOfferRequest is used to get the fields from FCRMessage of providerAdminGetPublishedDHTOfferRequest
+func DecodeProviderAdminGetPublishedDHTOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	[]nodeid.NodeID, // piece cids
 	error, // error
 ) {

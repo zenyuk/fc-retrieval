@@ -51,7 +51,7 @@ func EncodeProviderAdminPublishGroupOfferRequest(
 }
 
 // DecodeProviderAdminPublishGroupOfferRequest is used to get the fields from FCRMessage of providerAdminPublishGroupOfferRequest
-func DecodeProviderAdminPublishGroupCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
+func DecodeProviderAdminPublishGroupOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	[]cid.ContentID, // cids
 	uint64, // price
 	int64, // expity
