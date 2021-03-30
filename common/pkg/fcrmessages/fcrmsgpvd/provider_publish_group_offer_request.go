@@ -21,22 +21,26 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // providerPublishGroupOfferRequest is the request from provider to gateway to publish group cid offer
 type providerPublishGroupOfferRequest struct {
-	Nonce int64             `json:"nonce"`
-	Offer cidoffer.CIDOffer `json:"offer"`
+	ProviderID nodeid.NodeID     `json:"provider_id"`
+	Nonce      int64             `json:"nonce"`
+	Offer      cidoffer.CIDOffer `json:"offer"`
 }
 
 // EncodeProviderPublishGroupOfferRequest is used to get the FCRMessage of ProviderPublishGroupCIDRequest
 func EncodeProviderPublishGroupOfferRequest(
+	providerID *nodeid.NodeID,
 	nonce int64,
 	offer *cidoffer.CIDOffer,
 ) (*fcrmessages.FCRMessage, error) {
 	body, err := json.Marshal(providerPublishGroupOfferRequest{
-		Nonce: nonce,
-		Offer: *offer,
+		ProviderID: *providerID,
+		Nonce:      nonce,
+		Offer:      *offer,
 	})
 	if err != nil {
 		return nil, err
@@ -46,17 +50,18 @@ func EncodeProviderPublishGroupOfferRequest(
 
 // DecodeProviderPublishGroupOfferRequest is used to get the fields from FCRMessage of providerPublishGroupOfferRequest
 func DecodeProviderPublishGroupOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
+	*nodeid.NodeID, // provider id
 	int64, // nonce
 	*cidoffer.CIDOffer, // offer
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != fcrmessages.ProviderPublishGroupOfferRequestType {
-		return 0, nil, errors.New("Message type mismatch")
+		return nil, 0, nil, errors.New("Message type mismatch")
 	}
 	msg := providerPublishGroupOfferRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return 0, nil, err
+		return nil, 0, nil, err
 	}
-	return msg.Nonce, &msg.Offer, nil
+	return &msg.ProviderID, msg.Nonce, &msg.Offer, nil
 }
