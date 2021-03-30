@@ -20,8 +20,7 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval-client/internal/network"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
@@ -36,7 +35,7 @@ func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayReg
 	b := make([]byte, base64.StdEncoding.EncodedLen(len(challenge)))
 	base64.StdEncoding.Encode(b, challenge[:])
 
-	request, err := fcrmessages.EncodeClientEstablishmentRequest(clientID, string(b), ttl)
+	request, err := fcrmsgclient.EncodeClientEstablishmentRequest(clientID, string(b), ttl)
 	if err != nil {
 		logging.Error("Error encoding Client Establishment Request: %+v", err)
 		return err
@@ -54,17 +53,11 @@ func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayReg
 	}
 
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return err
+	if response.Verify(pubKey) != nil {
+		return errors.New("Fail to verify response")
 	}
 	// Finally check if gatewayID and received challenge matches.
-	gatewayID, recvChallenge, err := fcrmessages.DecodeClientEstablishmentResponse(response)
+	gatewayID, recvChallenge, err := fcrmsgclient.DecodeClientEstablishmentResponse(response)
 	if err != nil {
 		return err
 	}

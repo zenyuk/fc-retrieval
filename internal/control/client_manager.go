@@ -53,11 +53,11 @@ func NewClientManager(settings settings.ClientSettings) *ClientManager {
 }
 
 // FindOffersStandardDiscovery finds offers using the standard discovery mechanism.
-func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.CidGroupOffer, error) {
+func (c *ClientManager) FindOffersStandardDiscovery(contentID *cid.ContentID) ([]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
-	aggregateOffers := make([]cidoffer.CidGroupOffer, 0)
+	aggregateOffers := make([]cidoffer.SubCIDOffer, 0)
 	for _, gw := range c.ActiveGateways {
 		// TODO need to do nonce management
 		// TODO need to do requests to all gateways in parallel, rather than serially

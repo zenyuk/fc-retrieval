@@ -96,7 +96,7 @@ func (c *FilecoinRetrievalClient) GetActiveGateways() []*nodeid.NodeID {
 }
 
 // FindOffersStandardDiscovery finds offer using standard discovery
-func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *(cid.ContentID)) ([]cidoffer.CidGroupOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *(cid.ContentID)) ([]cidoffer.SubCIDOffer, error) {
 	logging.Info("Find offers std discovery")
 	return c.clientManager.FindOffersStandardDiscovery(contentID)
 }
