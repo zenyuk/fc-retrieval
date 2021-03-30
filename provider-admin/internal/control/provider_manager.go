@@ -6,8 +6,10 @@ import (
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
@@ -57,26 +59,22 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 		return err
 	}
 
-	nodeID, err := nodeid.NewNodeIDFromString(providerInfo.NodeID)
+	nodeID, err := nodeid.NewNodeIDFromHexString(providerInfo.NodeID)
 	if err != nil {
 		log.Error("Error in generating nodeID.")
 		return err
 	}
 
 	// Second, send key exchange to activate the given provider
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, providerPrivKey.EncodePrivateKey(), providerPrivKeyVer.EncodeKeyVersion())
+	request, err := fcrmsgpvdadmin.EncodeProviderAdminInitialiseKeyRequest(nodeID, providerPrivKey, providerPrivKeyVer)
 	if err != nil {
 		log.Error("Error in encoding message.")
 		return err
 	}
 
 	// Sign the request
-	err = request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer(), msg)
-	})
-	if err != nil {
-		log.Error("Error in signing the request.")
-		return err
+	if request.Sign(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer()) != nil {
+		return errors.New("Error in signing the request")
 	}
 
 	response, err := req.SendMessage("http://"+providerInfo.NetworkInfoAdmin+"/v1", request)
@@ -87,17 +85,11 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 	}
 
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
-	ok, err = fcrmessages.DecodeAdminAcceptKeyResponse(response)
+	ok, err := fcrmsgpvdadmin.DecodeProviderAdminInitialiseKeyResponse(response)
 	if err != nil {
 		log.Error("Error in decoding the message.")
 		return err
@@ -123,14 +115,10 @@ func (p *ProviderManager) InitialiseProvider(providerInfo *register.ProviderRegi
 
 // PublishGroupCID publish a group cid offer to a given provider
 func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
-	request, err := fcrmessages.EncodeProviderAdminPublishGroupCIDRequest(cids, price, expiry, qos)
+	request, err := fcrmsgpvdadmin.EncodeProviderAdminPublishGroupOfferRequest(cids, price, expiry, qos)
 	// Sign the request
-	err = request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer(), msg)
-	})
-	if err != nil {
-		log.Error("Error in signing the request.")
-		return err
+	if request.Sign(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer()) != nil {
+		return errors.New("Error in signing the request")
 	}
 
 	response, err := p.SendMessage(providerID, request)
@@ -146,17 +134,11 @@ func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.
 		return err
 	}
 	p.ActiveProvidersLock.RUnlock()
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
-	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
+	received, err := fcrmsgpvdadmin.DecodeProviderAdminPublishGroupOfferResponse(response)
 	if err != nil {
 		log.Error("Error in decoding the message.")
 		return err
@@ -170,14 +152,10 @@ func (p *ProviderManager) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.
 
 // PublishDHTCID publish a dht cid offer to a given provider
 func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
-	request, err := fcrmessages.EncodeProviderAdminDHTPublishGroupCIDRequest(cids, price, expiry, qos)
+	request, err := fcrmsgpvdadmin.EncodeProviderAdminPublishDHTOfferRequest(cids, price, expiry, qos)
 	// Sign the request
-	err = request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer(), msg)
-	})
-	if err != nil {
-		log.Error("Error in signing the request.")
-		return err
+	if request.Sign(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer()) != nil {
+		return errors.New("Error in signing the request")
 	}
 
 	response, err := p.SendMessage(providerID, request)
@@ -193,17 +171,11 @@ func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.Co
 		return err
 	}
 	p.ActiveProvidersLock.RUnlock()
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
-	received, err := fcrmessages.DecodeProviderAdminPublishOfferAck(response)
+	received, err := fcrmsgpvdadmin.DecodeProviderAdminPublishDHTOfferResponse(response)
 	if err != nil {
 		log.Error("Error in decoding the message.")
 		return err
@@ -218,15 +190,12 @@ func (p *ProviderManager) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.Co
 // GetGroupCIDOffer checks the group offer stored in the provider
 func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (
 	bool, // found
-	[]fcrmessages.CIDGroupInformation, // offers
+	[]cidoffer.CIDOffer, // offers
 	error, // error
 ) {
-	request, err := fcrmessages.EncodeProviderAdminGetGroupCIDRequest(gatewayIDs)
+	request, err := fcrmsgpvdadmin.EncodeProviderAdminGetPublishedOfferRequest(gatewayIDs)
 	// Sign the request
-	err = request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer(), msg)
-	})
-	if err != nil {
+	if request.Sign(p.settings.ProviderAdminPrivateKey(), p.settings.ProviderAdminPrivateKeyVer()) != nil {
 		log.Error("Error in signing the request.")
 		return false, nil, err
 	}
@@ -245,17 +214,11 @@ func (p *ProviderManager) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs
 		return false, nil, err
 	}
 	p.ActiveProvidersLock.RUnlock()
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return false, nil, err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return false, nil, errors.New("Fail to verify the response")
 	}
 
-	found, offers, err := fcrmessages.DecodeProviderAdminGetGroupCIDResponse(response)
+	found, offers, err := fcrmsgpvdadmin.DecodeProviderAdminGetPublishedOfferResponse(response)
 	if err != nil {
 		log.Error("Error in decoding the message")
 		return false, nil, err
