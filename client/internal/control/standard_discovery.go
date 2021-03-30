@@ -21,16 +21,15 @@ import (
 	"github.com/ConsenSys/fc-retrieval-client/internal/network"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // GatewayStdCIDDiscovery sends a  and processes a response.
-func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.CidGroupOffer, error) {
+func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.SubCIDOffer, error) {
 	// Construct request
-	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl)
+	request, err := fcrmsgclient.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, "", "")
 	if err != nil {
 		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
 		return nil, err
@@ -49,18 +48,12 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 	}
 
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return nil, errors.New("Verification failed")
 	}
 
-	// Decode the response, TODO, fundedpayment channels? and found?, how to deal with them
-	cid, nonceRecv, _, offers, merkleRoots, merkleProofs, _, err := fcrmessages.DecodeClientStandardDiscoverResponse(response)
+	// Decode the response, TODO deal with fundedpayment channels and found
+	cid, nonceRecv, _, offers, _, err := fcrmsgclient.DecodeClientStandardDiscoverResponse(response)
 	if err != nil {
 		return nil, err
 	}
@@ -70,15 +63,12 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 	if nonce != nonceRecv {
 		return nil, errors.New("Nonce mismatch")
 	}
-	if len(offers) != len(merkleRoots) || len(offers) != len(merkleProofs) {
-		return nil, errors.New("offer length and proof length not match")
-	}
 
-	result := make([]cidoffer.CidGroupOffer, 0)
+	result := make([]cidoffer.SubCIDOffer, 0)
 	// Verify each offer
-	for i, offer := range offers {
+	for _, offer := range offers {
 		// Get the provider's pubkey
-		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.NodeID)
+		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
 		if err != nil {
 			logging.Error("Provider who created this offer does not exist in local storage.")
 			continue
@@ -89,26 +79,13 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 		}
 		pubKey, _ := providerInfo.GetSigningKey()
 		// Verify the offer
-		ok, err := offer.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-			return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-		})
-		if err != nil {
-			logging.Error("Error in verifying the offer.")
-			continue
-		}
-		if !ok {
+		if offer.Verify(pubKey) != nil {
 			logging.Error("Offer signature fail to verify.")
 			continue
 		}
-		// Now Verify the merkle root
-		if offer.GetMerkleRoot() != merkleRoots[i] {
-			logging.Error("Merkle root does not match.")
-			continue
-		}
-		// Now verify the merkle proof
-		ok = merkleProofs[i].VerifyContent(*cid, merkleRoots[i]) //TODO, Need to check this, if using pointer?
-		if !ok {
-			logging.Error("Merkle Proof verifcation failed.")
+		// Now Verify the merkle proof
+		if offer.VerifyMerkleProof() != nil {
+			logging.Error("Merkle proof verification failed.")
 			continue
 		}
 		// Offer pass verification

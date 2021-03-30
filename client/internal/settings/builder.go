@@ -12,12 +12,12 @@ import (
 
 // BuilderImpl holds the library configuration
 type BuilderImpl struct {
-	logLevel         	string
-	logTarget        	string
-	logServiceName		string
-	establishmentTTL 	int64
-	clientID         	*nodeid.NodeID
-	registerURL      	string
+	logLevel         string
+	logTarget        string
+	logServiceName   string
+	establishmentTTL int64
+	clientID         *nodeid.NodeID
+	registerURL      string
 
 	blockchainPrivateKey *fcrcrypto.KeyPair
 
@@ -66,7 +66,6 @@ func (f *BuilderImpl) SetRetrievalPrivateKey(rPkey *fcrcrypto.KeyPair, ver *fcrc
 
 // Build creates a settings object and initialises the logging system.
 func (f *BuilderImpl) Build() *ClientSettings {
-	var err error
 
 	logging.Init1(f.logLevel, f.logTarget, f.logServiceName)
 	// logging.SetLogLevel(f.logLevel)
@@ -84,10 +83,7 @@ func (f *BuilderImpl) Build() *ClientSettings {
 	if f.clientID == nil {
 		logging.Info("Settings: No Client ID set. Generating random client ID")
 		// TODO replace once NewRandomNodeID becomes available.
-		g.clientID, err = nodeid.NewRandomNodeID()
-		if err != nil {
-			logging.ErrorAndPanic("Settings: Error while generating random client ID: %s", err)
-		}
+		g.clientID = nodeid.NewRandomNodeID()
 	} else {
 		g.clientID = f.clientID
 	}
