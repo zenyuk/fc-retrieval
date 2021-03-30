@@ -23,33 +23,33 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
-// providerAdminGetPublishedDHTOfferRequest is the requset from provideradmin to provider to ask for published dht offers for given gateway ids
-type providerAdminGetPublishedDHTOfferRequest struct {
+// providerAdminGetPublishedOfferRequest is the requset from provideradmin to provider to ask for published  offers for given gateway ids
+type providerAdminGetPublishedOfferRequest struct {
 	GatewayIDs []nodeid.NodeID `json:"gateway_id"`
 }
 
-// EncodeProviderAdminGetPublishedDHTOfferRequest is used to get the FCRMessage of providerAdminGetPublishedDHTOfferRequest
-func EncodeProviderAdminGetPublishedDHTOfferRequest(
+// EncodeProviderAdminGetPublishedOfferRequest is used to get the FCRMessage of providerAdminGetPublishedOfferRequest
+func EncodeProviderAdminGetPublishedOfferRequest(
 	gatewayIDs []nodeid.NodeID,
 ) (*fcrmessages.FCRMessage, error) {
-	body, err := json.Marshal(providerAdminGetPublishedDHTOfferRequest{
+	body, err := json.Marshal(providerAdminGetPublishedOfferRequest{
 		GatewayIDs: gatewayIDs,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedDHTOfferRequestType, body), nil
+	return fcrmessages.CreateFCRMessage(fcrmessages.ProviderAdminGetPublishedOfferRequestType, body), nil
 }
 
-// DecodeProviderAdminGetPublishedDHTOfferRequest is used to get the fields from FCRMessage of providerAdminGetPublishedDHTOfferRequest
-func DecodeProviderAdminGetPublishedDHTOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
+// DecodeProviderAdminGetPublishedOfferRequest is used to get the fields from FCRMessage of providerAdminGetPublishedOfferRequest
+func DecodeProviderAdminGetPublishedOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	[]nodeid.NodeID, // piece cids
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != fcrmessages.ProviderAdminGetPublishedDHTOfferRequestType {
+	if fcrMsg.GetMessageType() != fcrmessages.ProviderAdminGetPublishedOfferRequestType {
 		return nil, errors.New("Message type mismatch")
 	}
-	msg := providerAdminGetPublishedDHTOfferRequest{}
+	msg := providerAdminGetPublishedOfferRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return nil, err

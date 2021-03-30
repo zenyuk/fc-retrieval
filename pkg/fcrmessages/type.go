@@ -49,16 +49,14 @@ const (
 	GatewayAdminSetReputationResponseType = 405
 
 	// Message originating from provider admin
-	ProviderAdminInitialiseKeyRequestType           = 500
-	ProviderAdminInitialiseKeyResponseType          = 501
-	ProviderAdminPublishGroupOfferRequestType       = 502
-	ProviderAdminPublishGroupOfferResponseType      = 503
-	ProviderAdminPublishDHTOfferRequestType         = 504
-	ProviderAdminPublishDHTOfferResponseType        = 505
-	ProviderAdminGetPublishedGroupOfferRequestType  = 506
-	ProviderAdminGetPublishedGroupOfferResponseType = 507
-	ProviderAdminGetPublishedDHTOfferRequestType    = 508
-	ProviderAdminGetPublishedDHTOfferResponseType   = 509
+	ProviderAdminInitialiseKeyRequestType      = 500
+	ProviderAdminInitialiseKeyResponseType     = 501
+	ProviderAdminPublishGroupOfferRequestType  = 502
+	ProviderAdminPublishGroupOfferResponseType = 503
+	ProviderAdminPublishDHTOfferRequestType    = 504
+	ProviderAdminPublishDHTOfferResponseType   = 505
+	ProviderAdminGetPublishedOfferRequestType  = 506
+	ProviderAdminGetPublishedOfferResponseType = 507
 
 	// Messages for basic protocol
 	ProtocolChangeRequestType     = 900
