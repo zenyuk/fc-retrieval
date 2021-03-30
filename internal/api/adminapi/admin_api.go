@@ -91,7 +91,7 @@ func msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	switch request.GetMessageType() {
 	case fcrmessages.ProviderAdminPublishGroupOfferRequestType:
 		handleProviderPublishGroupCID(w, request)
-	case fcrmessages.ProviderAdminGetPublishedGroupOfferRequestType:
+	case fcrmessages.ProviderAdminGetPublishedOfferRequestType:
 		handleProviderGetGroupCID(w, request)
 	case fcrmessages.ProviderAdminInitialiseKeyRequestType:
 		handleKeyManagement(w, request)

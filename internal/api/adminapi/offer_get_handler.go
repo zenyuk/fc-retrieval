@@ -18,7 +18,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 	}
 
 	logging.Info("handleProviderGetGroupCID: %+v", request)
-	gatewayIDs, err := fcrmsgpvdadmin.DecodeProviderAdminGetPublishedGroupOfferRequest(request)
+	gatewayIDs, err := fcrmsgpvdadmin.DecodeProviderAdminGetPublishedOfferRequest(request)
 	if err != nil {
 		logging.Info("Provider get group cid request fail to decode request.")
 		return
@@ -44,7 +44,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 	}
 	logging.Info("Found offers: %+v", len(offers))
 
-	response, err := fcrmsgpvdadmin.EncodeProviderAdminGetPublishedGroupOfferResponse(
+	response, err := fcrmsgpvdadmin.EncodeProviderAdminGetPublishedOfferResponse(
 		len(offers) > 0,
 		offers,
 	)
