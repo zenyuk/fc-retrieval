@@ -5,8 +5,8 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
@@ -23,7 +23,7 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 	}
 	logging.Info("handleProviderDHTPublishGroupCID : %+v", request)
 
-	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminDHTPublishGroupCIDRequest(request)
+	cids, price, expiry, qos, err := fcrmsgpvdadmin.DecodeProviderAdminPublishDHTOfferRequest(request)
 	if err != nil {
 		logging.Error("Error in decoding the incoming request ", err.Error())
 		return
@@ -33,18 +33,15 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 		return
 	}
 
-	offers := make([]cidoffer.CidGroupOffer, 0)
+	offers := make([]cidoffer.CIDOffer, 0)
 	for i := 0; i < len(cids); i++ {
-		offer, err := cidoffer.NewCidGroupOffer(c.ProviderID, &[]cid.ContentID{cids[i]}, price[i], expiry[i], qos[i])
+		offer, err := cidoffer.NewCIDOffer(c.ProviderID, []cid.ContentID{cids[i]}, price[i], expiry[i], qos[i])
 		if err != nil {
 			logging.Error("Error in creating new offer ", err.Error())
 			return
 		}
 		// Sign the offer
-		err = offer.SignOffer(func(msg interface{}) (string, error) {
-			return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-		})
-		if err != nil {
+		if offer.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
 			logging.Error("Error in signing the offer.")
 			return
 		}
@@ -61,7 +58,7 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 	defer c.RegisteredGatewaysMapLock.RUnlock()
 
 	for _, gw := range c.RegisteredGatewaysMap {
-		gatewayID, err := nodeid.NewNodeIDFromString(gw.GetNodeID())
+		gatewayID, err := nodeid.NewNodeIDFromHexString(gw.GetNodeID())
 		if err != nil {
 			logging.Error("Error with nodeID %v: %v", gw.GetNodeID(), err)
 			continue
@@ -69,21 +66,22 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 		// TODO, Need to select only cid offers that are close to the gatewayID
 		// For now, it selects a random offer from the offers.
 		offer := offers[rand.Intn(len(offers))]
-		err = providerapi.RequestDHTProviderPublishGroupCID([]cidoffer.CidGroupOffer{offer}, gatewayID)
+		err = providerapi.RequestDHTProviderPublishGroupCID([]cidoffer.CIDOffer{offer}, gatewayID)
 		if err != nil {
 			logging.Error("Error in publishing group offer :%v", err)
 		}
 	}
 
 	// Respond to admin
-	response, err := fcrmessages.EncodeProviderAdminPublishOfferAck(true)
+	response, err := fcrmsgpvdadmin.EncodeProviderAdminPublishDHTOfferResponse(true)
 	if err != nil {
 		logging.Error("Error in encoding response.")
 		return
 	}
 	// Sign the response
-	response.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
+	if response.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+		logging.Error("Error in signing message.")
+		return
+	}
 	w.WriteJson(response)
 }

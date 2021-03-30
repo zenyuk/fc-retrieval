@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgbasic"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
@@ -88,11 +89,11 @@ func msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	switch request.GetMessageType() {
-	case fcrmessages.ProviderAdminPublishGroupCIDRequestType:
+	case fcrmessages.ProviderAdminPublishGroupOfferRequestType:
 		handleProviderPublishGroupCID(w, request)
-	case fcrmessages.ProviderAdminGetGroupCIDRequestType:
+	case fcrmessages.ProviderAdminGetPublishedGroupOfferRequestType:
 		handleProviderGetGroupCID(w, request)
-	case fcrmessages.AdminAcceptKeyChallengeType:
+	case fcrmessages.ProviderAdminInitialiseKeyRequestType:
 		handleKeyManagement(w, request)
 	default:
 		logging.Warn("Client Request: Unknown message type: %d", request.GetMessageType())
@@ -104,14 +105,14 @@ func checkProtocol(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *co
 	protocolVersion := c.ProtocolVersion
 	protocolSupported := c.ProtocolSupported
 	// Only process the rest of the message if the protocol version is understood.
-	if request.ProtocolVersion != protocolVersion {
+	if request.GetProtocolVersion() != protocolVersion {
 		// Check to see if the client supports the gateway's preferred version
-		for _, clientProvVer := range request.ProtocolSupported {
+		for _, clientProvVer := range request.GetProtocolSupported() {
 			if clientProvVer == protocolVersion {
 				// Request the client switch to this protocol version
 				// TODO what can we get from request object?
-				logging.Info("Requesting client (TODO) switch protocol versions from %d to %d", request.ProtocolVersion, protocolVersion)
-				response, _ := fcrmessages.EncodeProtocolChangeResponse(protocolVersion)
+				logging.Info("Requesting client (TODO) switch protocol versions from %d to %d", request.GetProtocolVersion(), protocolVersion)
+				response, _ := fcrmsgbasic.EncodeProtocolChangeRequest(protocolVersion)
 				w.WriteJson(response)
 				return false
 			}
@@ -120,7 +121,7 @@ func checkProtocol(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *co
 		// Go through the protocol versions supported by the client and the
 		// gateway to search for any common version, prioritising
 		// the gateway preference over the client preference.
-		for _, clientProvVer := range request.ProtocolSupported {
+		for _, clientProvVer := range request.GetProtocolSupported() {
 			for _, gatewayProtVer := range protocolSupported {
 				if clientProvVer == gatewayProtVer {
 					// When we support more than one version of the protocol, this code will change the gateway
@@ -132,8 +133,8 @@ func checkProtocol(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *co
 		}
 		// No common protocol versions supported.
 		// TODO what can we get from request object?
-		logging.Warn("Client Request: Unsupported protocol version(s): %d", request.ProtocolVersion)
-		response, _ := fcrmessages.EncodeProtocolMismatchResponse()
+		logging.Warn("Client Request: Unsupported protocol version(s): %d", request.GetProtocolVersion())
+		response, _ := fcrmsgbasic.EncodeProtocolChangeResponse(false)
 		w.WriteJson(response)
 		return false
 	}

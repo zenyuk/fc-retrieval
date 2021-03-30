@@ -10,9 +10,9 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/offers"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 const (
@@ -53,7 +53,7 @@ type Core struct {
 	SingleOffers *offers.Offers
 
 	// Node to offer map
-	NodeOfferMap     map[string]([]cidoffer.CidGroupOffer)
+	NodeOfferMap     map[string]([]cidoffer.CIDOffer)
 	NodeOfferMapLock sync.Mutex
 
 	// Acknowledgement for every single cid offer sent (map from cid id -> map of gateway -> ack)
@@ -76,7 +76,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 		}
 		conf := confs[0]
 
-		providerID, err := nodeid.NewNodeIDFromString(conf.ProviderID)
+		providerID, err := nodeid.NewNodeIDFromHexString(conf.ProviderID)
 		if err != nil {
 			logging.ErrorAndPanic("Error decoding node id: %s", err)
 		}
@@ -94,7 +94,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 
 			GroupOffers:      offers.GetSingleInstance(),
 			SingleOffers:     offers.GetSingleInstance(),
-			NodeOfferMap:     make(map[string]([]cidoffer.CidGroupOffer)),
+			NodeOfferMap:     make(map[string]([]cidoffer.CIDOffer)),
 			NodeOfferMapLock: sync.Mutex{},
 
 			AcknowledgementMap:     make(map[string](map[string]DHTAcknowledgement)),

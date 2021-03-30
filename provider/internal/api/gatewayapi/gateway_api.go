@@ -45,7 +45,7 @@ func handleIncomingGatewayConnection(conn net.Conn) {
 			return
 		}
 		if err == nil {
-			if message.MessageType == fcrmessages.GatewayDHTDiscoverRequestType {
+			if message.GetMessageType() == fcrmessages.GatewayDHTDiscoverRequestType {
 				err = handleSingleCIDOffersPublishRequest(conn, message)
 				if err != nil && fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection
