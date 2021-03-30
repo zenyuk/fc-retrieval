@@ -140,6 +140,7 @@ func TestInitialiseProvider(t *testing.T) {
 		panic(err)
 	}
 	providerID := nodeid.NewRandomNodeID()
+	pID = providerID
 
 	providerRegister := &register.ProviderRegister{
 		NodeID:             providerID.ToString(),
