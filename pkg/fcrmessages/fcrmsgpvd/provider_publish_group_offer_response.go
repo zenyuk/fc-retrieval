@@ -31,7 +31,7 @@ type providerPublishGroupOfferResponse struct {
 }
 
 // EncodeProviderPublishGroupOfferResponse is used to get the FCRMessage of ProviderPublishGroupOfferResponse
-func EncodeProviderPublishGroupCIDResponse(
+func EncodeProviderPublishGroupOfferResponse(
 	gatewayID nodeid.NodeID,
 	digest [cidoffer.CIDOfferDigestSize]byte,
 ) (*fcrmessages.FCRMessage, error) {

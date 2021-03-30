@@ -51,7 +51,7 @@ func EncodeProviderPublishDHTOfferRequest(
 }
 
 // DecodeProviderPublishDHTOfferRequest is used to get the fields from FCRMessage of providerPublishDHTOfferRequest
-func DecodeProviderDHTPublishGroupCIDRequest(fcrMsg *fcrmessages.FCRMessage) (
+func DecodeProviderPublishDHTOfferRequest(fcrMsg *fcrmessages.FCRMessage) (
 	*nodeid.NodeID, // provider id
 	int64, // nonce
 	[]cidoffer.CIDOffer, // offers
