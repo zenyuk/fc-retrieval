@@ -28,7 +28,7 @@ type gatewayListDHTOfferResponse struct {
 }
 
 // EncodeGatewayListDHTOfferResponse is used to get the FCRMessage of GatewayListDHTOfferResponse
-func EncodeGatewaySingleCIDOfferPublishResponse(
+func EncodeGatewayListDHTOfferResponse(
 	publishedDHTOffers []fcrmessages.FCRMessage,
 ) (*fcrmessages.FCRMessage, error) {
 	body, err := json.Marshal(gatewayListDHTOfferResponse{
