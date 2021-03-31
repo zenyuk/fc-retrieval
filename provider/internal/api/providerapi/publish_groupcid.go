@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvd"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -36,7 +36,7 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.
 	}
 
 	// Construct message, TODO: Add nonce
-	request, err := fcrmsgpvd.EncodeProviderPublishGroupOfferRequest(c.ProviderID, 1, offer)
+	request, err := fcrmessages.EncodeProviderPublishGroupOfferRequest(c.ProviderID, 1, offer)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.
 	}
 	logging.Info("Got reponse from gateway=%v: %+v", gatewayID.ToString(), response)
 	// TODO: Check nonce
-	_, candidate, err := fcrmsgpvd.DecodeProviderPublishGroupOfferResponse(response)
+	_, candidate, err := fcrmessages.DecodeProviderPublishGroupOfferResponse(response)
 	if err != nil {
 		logging.Error("Error with decode response: %v", err)
 		return err

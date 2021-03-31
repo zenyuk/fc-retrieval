@@ -6,7 +6,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
@@ -23,7 +22,7 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 	}
 	logging.Info("handleProviderDHTPublishGroupCID : %+v", request)
 
-	cids, price, expiry, qos, err := fcrmsgpvdadmin.DecodeProviderAdminPublishDHTOfferRequest(request)
+	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminPublishDHTOfferRequest(request)
 	if err != nil {
 		logging.Error("Error in decoding the incoming request ", err.Error())
 		return
@@ -73,7 +72,7 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 	}
 
 	// Respond to admin
-	response, err := fcrmsgpvdadmin.EncodeProviderAdminPublishDHTOfferResponse(true)
+	response, err := fcrmessages.EncodeProviderAdminPublishDHTOfferResponse(true)
 	if err != nil {
 		logging.Error("Error in encoding response.")
 		return

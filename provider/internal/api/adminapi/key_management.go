@@ -2,7 +2,6 @@ package adminapi
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -13,7 +12,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	c := core.GetSingleInstance()
 	logging.Info("handle key management.")
 
-	nodeID, privKey, privKeyVer, err := fcrmsgpvdadmin.DecodeProviderAdminInitialiseKeyRequest(request)
+	nodeID, privKey, privKeyVer, err := fcrmessages.DecodeProviderAdminInitialiseKeyRequest(request)
 	if err != nil {
 		logging.Error("Error in decoding message.")
 		return
@@ -27,7 +26,7 @@ func handleKeyManagement(w rest.ResponseWriter, request *fcrmessages.FCRMessage)
 	c.ProviderPrivateKeyVersion = privKeyVer
 
 	// Construct messaqe
-	response, err := fcrmsgpvdadmin.EncodeProviderAdminInitialiseKeyResponse(true)
+	response, err := fcrmessages.EncodeProviderAdminInitialiseKeyResponse(true)
 	if err != nil {
 		logging.Error("Error in encoding message")
 		return

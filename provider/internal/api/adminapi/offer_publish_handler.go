@@ -3,7 +3,6 @@ package adminapi
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
@@ -20,7 +19,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 	}
 	logging.Info("handleProviderPublishGroupCID: %+v", request)
 
-	cids, price, expiry, qos, err := fcrmsgpvdadmin.DecodeProviderAdminPublishGroupOfferRequest(request)
+	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminPublishGroupOfferRequest(request)
 	if err != nil {
 		logging.Error("Error in decoding the incoming request")
 		return
@@ -56,7 +55,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 	}
 
 	// Respond to admin
-	response, err := fcrmsgpvdadmin.EncodeProviderAdminPublishGroupOfferResponse(true)
+	response, err := fcrmessages.EncodeProviderAdminPublishGroupOfferResponse(true)
 	if err != nil {
 		logging.Error("Error in encoding response.")
 		return
