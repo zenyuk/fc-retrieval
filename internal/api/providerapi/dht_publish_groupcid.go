@@ -5,7 +5,7 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvd"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
@@ -34,7 +34,7 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *no
 	}
 
 	// Construct message, TODO: Add nonce
-	request, err := fcrmsgpvd.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers)
+	request, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *no
 
 	// Verify the acks
 	// TODO: Check nonce
-	_, sig, err := fcrmsgpvd.DecodeProviderPublishDHTOfferResponse(response)
+	_, sig, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(response)
 	if err != nil {
 		return err
 	}

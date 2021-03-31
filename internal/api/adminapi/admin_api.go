@@ -20,7 +20,6 @@ import (
 	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgbasic"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
@@ -112,7 +111,7 @@ func checkProtocol(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *co
 				// Request the client switch to this protocol version
 				// TODO what can we get from request object?
 				logging.Info("Requesting client (TODO) switch protocol versions from %d to %d", request.GetProtocolVersion(), protocolVersion)
-				response, _ := fcrmsgbasic.EncodeProtocolChangeRequest(protocolVersion)
+				response, _ := fcrmessages.EncodeProtocolChangeRequest(protocolVersion)
 				w.WriteJson(response)
 				return false
 			}
@@ -134,7 +133,7 @@ func checkProtocol(w rest.ResponseWriter, request *fcrmessages.FCRMessage, c *co
 		// No common protocol versions supported.
 		// TODO what can we get from request object?
 		logging.Warn("Client Request: Unsupported protocol version(s): %d", request.GetProtocolVersion())
-		response, _ := fcrmsgbasic.EncodeProtocolChangeResponse(false)
+		response, _ := fcrmessages.EncodeProtocolChangeResponse(false)
 		w.WriteJson(response)
 		return false
 	}

@@ -11,8 +11,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsggw"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvd"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
@@ -22,7 +20,7 @@ import (
 func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
 	// Get core structure
 	c := core.GetSingleInstance()
-	gatewayID, cidMin, cidMax, registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof, err := fcrmsggw.DecodeGatewayListDHTOfferRequest(request)
+	gatewayID, cidMin, cidMax, registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof, err := fcrmessages.DecodeGatewayListDHTOfferRequest(request)
 	if err != nil {
 		return err
 	}
@@ -82,14 +80,14 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	msgs := make([]fcrmessages.FCRMessage, 0)
 	for {
 		if len(offers) > maxOffersPerMsg {
-			msg, err := fcrmsgpvd.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
+			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
 			if err != nil {
 				return err
 			}
 			msgs = append(msgs, *msg)
 			offers = offers[50:]
 		} else {
-			msg, err := fcrmsgpvd.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers) //TODO: Add nonce
+			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers) //TODO: Add nonce
 			if err != nil {
 				return err
 			}
@@ -99,7 +97,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	}
 
 	// Construct response
-	response, err := fcrmsggw.EncodeGatewayListDHTOfferResponse(msgs)
+	response, err := fcrmessages.EncodeGatewayListDHTOfferResponse(msgs)
 	if err != nil {
 		return err
 	}
@@ -123,13 +121,13 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return errors.New("Fail to verify the acks")
 	}
 
-	acknowledgements, err := fcrmsggw.DecodeGatewayListDHTOfferAck(acks)
+	acknowledgements, err := fcrmessages.DecodeGatewayListDHTOfferAck(acks)
 	if len(acknowledgements) != len(offers) {
 		return errors.New("Invalid response")
 	}
 	for i, acknowledgement := range acknowledgements {
 		// TODO: Check nonce.
-		_, signature, err := fcrmsgpvd.DecodeProviderPublishDHTOfferResponse(&acknowledgement)
+		_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(&acknowledgement)
 		if err != nil {
 			return err
 		}

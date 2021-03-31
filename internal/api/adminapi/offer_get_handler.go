@@ -3,7 +3,6 @@ package adminapi
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgpvdadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -18,7 +17,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 	}
 
 	logging.Info("handleProviderGetGroupCID: %+v", request)
-	gatewayIDs, err := fcrmsgpvdadmin.DecodeProviderAdminGetPublishedOfferRequest(request)
+	gatewayIDs, err := fcrmessages.DecodeProviderAdminGetPublishedOfferRequest(request)
 	if err != nil {
 		logging.Info("Provider get group cid request fail to decode request.")
 		return
@@ -44,7 +43,7 @@ func handleProviderGetGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMe
 	}
 	logging.Info("Found offers: %+v", len(offers))
 
-	response, err := fcrmsgpvdadmin.EncodeProviderAdminGetPublishedOfferResponse(
+	response, err := fcrmessages.EncodeProviderAdminGetPublishedOfferResponse(
 		len(offers) > 0,
 		offers,
 	)
