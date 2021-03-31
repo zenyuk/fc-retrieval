@@ -25,7 +25,6 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsggwadmin"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
@@ -77,7 +76,7 @@ func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister
 	}
 
 	// Second, send key exchange to activate the given gateway
-	request, err := fcrmsggwadmin.EncodeGatewayAdminInitialiseKeyRequest(nodeID, gatewayPrivKey, gatewayPrivKeyVer)
+	request, err := fcrmessages.EncodeGatewayAdminInitialiseKeyRequest(nodeID, gatewayPrivKey, gatewayPrivKeyVer)
 	if err != nil {
 		log.Error("Error in encoding message.")
 		return err
@@ -114,7 +113,7 @@ func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister
 		return errors.New("Fail to verify the response")
 	}
 
-	keyAccepted, err := fcrmsggwadmin.DecodeGatewayAdminInitialiseKeyResponse(response)
+	keyAccepted, err := fcrmessages.DecodeGatewayAdminInitialiseKeyResponse(response)
 	if err != nil {
 		return err
 	}
