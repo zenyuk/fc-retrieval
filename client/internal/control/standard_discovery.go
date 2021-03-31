@@ -21,7 +21,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-client/internal/network"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgclient"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
@@ -29,7 +29,7 @@ import (
 // GatewayStdCIDDiscovery sends a  and processes a response.
 func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.SubCIDOffer, error) {
 	// Construct request
-	request, err := fcrmsgclient.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, "", "")
+	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, "", "")
 	if err != nil {
 		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
 		return nil, err
@@ -53,7 +53,7 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 	}
 
 	// Decode the response, TODO deal with fundedpayment channels and found
-	cid, nonceRecv, _, offers, _, err := fcrmsgclient.DecodeClientStandardDiscoverResponse(response)
+	cid, nonceRecv, _, offers, _, err := fcrmessages.DecodeClientStandardDiscoverResponse(response)
 	if err != nil {
 		return nil, err
 	}

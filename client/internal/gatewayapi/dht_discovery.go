@@ -19,13 +19,13 @@ import (
 	//	"encoding/base64"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages/fcrmsgclient"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 // GatewayDHTCIDDiscovery sends a GatewayClientEstablishmentRequest and processes a response.
 func (c *Comms) GatewayDHTCIDDiscovery(contentID *cid.ContentID, nonce int64, numDHT int64, incrementalResults bool) (bool, error) {
-	request, err := fcrmsgclient.EncodeClientDHTDiscoverRequest(
+	request, err := fcrmessages.EncodeClientDHTDiscoverRequest(
 		contentID, nonce, c.settings.EstablishmentTTL(), numDHT, incrementalResults, "", "")
 	if err != nil {
 		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
