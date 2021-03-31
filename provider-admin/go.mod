@@ -3,9 +3,7 @@ module github.com/ConsenSys/fc-retrieval-provider-admin
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210330065813-2acc4d8a905d // indirect
 	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210331012500-bf32c4270d66
-	github.com/ConsenSys/fc-retrieval-provider v0.0.0-20210330065836-cddafcf340eb // indirect
 	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210331012722-2659896d78fb
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
