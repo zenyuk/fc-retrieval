@@ -6,13 +6,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestEncodeInvalidMessageResponse success test
 func TestEncodeInvalidMessageResponse(t *testing.T) {
-	var mockMessageBodyValid = []byte(`{}`)
 	emptyMsg := &FCRMessage{
 		messageType:902,
 		protocolVersion:1,
 		protocolSupported:[]int32{1, 1},
-		messageBody:mockMessageBodyValid,
+		messageBody: []byte(`{}`),
 		signature:"",
 	}
 
@@ -21,13 +21,13 @@ func TestEncodeInvalidMessageResponse(t *testing.T) {
 	assert.Equal(t, msg, emptyMsg)
 }
 
+// TestDecodeInvalidMessageResponseValid success test
 func TestDecodeInvalidMessageResponseValid(t *testing.T) {
-	var mockMessageBodyValid = []byte(`{}`)
 	validMsg := &FCRMessage{
 		messageType:902,
 		protocolVersion:1,
 		protocolSupported:[]int32{1, 1},
-		messageBody:mockMessageBodyValid, 
+		messageBody:[]byte(`{}`), 
 		signature:"",
 	}
 
@@ -35,13 +35,13 @@ func TestDecodeInvalidMessageResponseValid(t *testing.T) {
 	assert.Equal(t, err, nil)
 }
 
+// TestDecodeInvalidMessageResponseInvalid error test
 func TestDecodeInvalidMessageResponseInvalid(t *testing.T) {
-	var mockMessageBodyValid = []byte(`{}`)
 	invalidTypeMsg := &FCRMessage{
 		messageType:-1,
 		protocolVersion:1,
 		protocolSupported:[]int32{1, 1},
-		messageBody:mockMessageBodyValid, 
+		messageBody: []byte(`{}`), 
 		signature:"",
 	}
 
