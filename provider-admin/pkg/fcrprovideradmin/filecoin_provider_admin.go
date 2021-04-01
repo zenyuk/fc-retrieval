@@ -17,13 +17,13 @@ package fcrprovideradmin
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/control"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // FilecoinRetrievalProviderAdminClient holds information about the interaction of
@@ -76,6 +76,6 @@ func (c *FilecoinRetrievalProviderAdminClient) PublishDHTCID(providerID *nodeid.
 }
 
 // GetGroupCIDOffer checks the group offer stored in the provider
-func (c *FilecoinRetrievalProviderAdminClient) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []fcrmessages.CIDGroupInformation, error) {
+func (c *FilecoinRetrievalProviderAdminClient) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
 	return c.providerManager.GetGroupCIDOffer(providerID, gatewayIDs)
 }
