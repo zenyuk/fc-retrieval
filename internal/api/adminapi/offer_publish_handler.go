@@ -2,7 +2,6 @@ package adminapi
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -20,21 +19,18 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 	}
 	logging.Info("handleProviderPublishGroupCID: %+v", request)
 
-	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminPublishGroupCIDRequest(request)
+	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminPublishGroupOfferRequest(request)
 	if err != nil {
 		logging.Error("Error in decoding the incoming request")
 		return
 	}
-	offer, err := cidoffer.NewCidGroupOffer(c.ProviderID, &cids, price, expiry, qos)
+	offer, err := cidoffer.NewCIDOffer(c.ProviderID, cids, price, expiry, qos)
 	if err != nil {
 		logging.Error("Error in creating offer")
 		return
 	}
 	// Sign the offer
-	err = offer.SignOffer(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
-	if err != nil {
+	if offer.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
 		logging.Error("Error in signing the offer.")
 		return
 	}
@@ -46,7 +42,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 	defer c.RegisteredGatewaysMapLock.RUnlock()
 
 	for _, gw := range c.RegisteredGatewaysMap {
-		gatewayID, err := nodeid.NewNodeIDFromString(gw.GetNodeID())
+		gatewayID, err := nodeid.NewNodeIDFromHexString(gw.GetNodeID())
 		if err != nil {
 			logging.Error("Error with nodeID %v: %v", gw.GetNodeID(), err)
 			continue
@@ -59,14 +55,15 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 	}
 
 	// Respond to admin
-	response, err := fcrmessages.EncodeProviderAdminPublishOfferAck(true)
+	response, err := fcrmessages.EncodeProviderAdminPublishGroupOfferResponse(true)
 	if err != nil {
 		logging.Error("Error in encoding response.")
 		return
 	}
 	// Sign the response
-	response.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
+	if response.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+		logging.Error("Error in signing the response.")
+		return
+	}
 	w.WriteJson(response)
 }

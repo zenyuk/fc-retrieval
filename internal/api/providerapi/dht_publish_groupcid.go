@@ -13,7 +13,7 @@ import (
 )
 
 // RequestDHTProviderPublishGroupCID is used to publish a dht group CID offer to a given gateway
-func RequestDHTProviderPublishGroupCID(offers []cidoffer.CidGroupOffer, gatewayID *nodeid.NodeID) error {
+func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *nodeid.NodeID) error {
 	// Get the core structure
 	c := core.GetSingleInstance()
 
@@ -34,14 +34,14 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CidGroupOffer, gatewayI
 	}
 
 	// Construct message, TODO: Add nonce
-	request, err := fcrmessages.EncodeProviderDHTPublishGroupCIDRequest(1, c.ProviderID, offers)
+	request, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers)
 	if err != nil {
 		return err
 	}
 	// Sign the request
-	request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
+	if request.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+		return errors.New("Error in signing the message")
+	}
 	// Send request
 	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
@@ -55,23 +55,17 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CidGroupOffer, gatewayI
 		return err
 	}
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
 	// Verify the acks
 	// TODO: Check nonce
-	_, sig, err := fcrmessages.DecodeProviderDHTPublishGroupCIDAck(response)
+	_, sig, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(response)
 	if err != nil {
 		return err
 	}
-	ok, err = fcrcrypto.VerifyMessage(pubKey, sig, request)
+	ok, err := fcrcrypto.VerifyMessage(pubKey, sig, request)
 	if err != nil {
 		return errors.New("Internal error in verifying ack")
 	}
@@ -85,17 +79,17 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CidGroupOffer, gatewayI
 		c.NodeOfferMapLock.Lock()
 		sentOffers, ok := c.NodeOfferMap[gatewayID.ToString()]
 		if !ok {
-			sentOffers = make([]cidoffer.CidGroupOffer, 0)
+			sentOffers = make([]cidoffer.CIDOffer, 0)
 		}
 		sentOffers = append(sentOffers, offer)
 		c.NodeOfferMap[gatewayID.ToString()] = sentOffers
 		c.NodeOfferMapLock.Unlock()
 		// Add offer to ack map
 		c.AcknowledgementMapLock.Lock()
-		cidMap, ok := c.AcknowledgementMap[(*offer.GetCIDs())[0].ToString()]
+		cidMap, ok := c.AcknowledgementMap[(offer.GetCIDs())[0].ToString()]
 		if !ok {
 			cidMap = make(map[string]core.DHTAcknowledgement)
-			c.AcknowledgementMap[(*offer.GetCIDs())[0].ToString()] = cidMap
+			c.AcknowledgementMap[(offer.GetCIDs())[0].ToString()] = cidMap
 		}
 		cidMap[gatewayID.ToString()] = core.DHTAcknowledgement{
 			Msg:    *request,
