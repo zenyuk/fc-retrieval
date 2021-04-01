@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -16,7 +15,7 @@ import (
 )
 
 // RequestProviderPublishGroupCID is used to publish a group CID offer to a given gateway
-func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *nodeid.NodeID) error {
+func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.NodeID) error {
 	// Get the core structure
 	c := core.GetSingleInstance()
 
@@ -37,14 +36,14 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 	}
 
 	// Construct message, TODO: Add nonce
-	request, err := fcrmessages.EncodeProviderPublishGroupCIDRequest(1, offer)
+	request, err := fcrmessages.EncodeProviderPublishGroupOfferRequest(c.ProviderID, 1, offer)
 	if err != nil {
 		return err
 	}
 	// Sign the request
-	request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
+	if request.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+		return errors.New("Error in signing request")
+	}
 	// Send request
 	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.DefaultTCPInactivityTimeout)
 	if err != nil {
@@ -58,20 +57,13 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 		return err
 	}
 
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		logging.Error("Verify with error", err)
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		logging.Error("Verify not ok")
 		return errors.New("Fail to verify the response")
 	}
 	logging.Info("Got reponse from gateway=%v: %+v", gatewayID.ToString(), response)
 	// TODO: Check nonce
-	_, candidate, err := fcrmessages.DecodeProviderPublishGroupCIDResponse(response)
+	_, candidate, err := fcrmessages.DecodeProviderPublishGroupOfferResponse(response)
 	if err != nil {
 		logging.Error("Error with decode response: %v", err)
 		return err
@@ -87,7 +79,7 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CidGroupOffer, gatewayID *no
 		defer c.NodeOfferMapLock.Unlock()
 		sentOffers, ok := c.NodeOfferMap[gatewayID.ToString()]
 		if !ok {
-			sentOffers = make([]cidoffer.CidGroupOffer, 0)
+			sentOffers = make([]cidoffer.CIDOffer, 0)
 		}
 		sentOffers = append(sentOffers, *offer)
 		c.NodeOfferMap[gatewayID.ToString()] = sentOffers

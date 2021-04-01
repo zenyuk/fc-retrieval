@@ -20,7 +20,7 @@ import (
 func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
 	// Get core structure
 	c := core.GetSingleInstance()
-	gatewayID, cidMin, cidMax, registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishRequest(request)
+	gatewayID, cidMin, cidMax, registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof, err := fcrmessages.DecodeGatewayListDHTOfferRequest(request)
 	if err != nil {
 		return err
 	}
@@ -39,13 +39,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return err
 	}
 	// Verify the incoming request
-	ok, err = request.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if request.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the request")
 	}
 
@@ -63,7 +57,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	}
 
 	maxOffers := 500
-	offers := make([]cidoffer.CidGroupOffer, 0)
+	offers := make([]cidoffer.CIDOffer, 0)
 	for i := min; i <= max; i++ {
 		id, err := cid.NewContentID(big.NewInt(i))
 		if err != nil {
@@ -86,14 +80,14 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	msgs := make([]fcrmessages.FCRMessage, 0)
 	for {
 		if len(offers) > maxOffersPerMsg {
-			msg, err := fcrmessages.EncodeProviderDHTPublishGroupCIDRequest(1, c.ProviderID, offers[:50]) //TODO: Add nonce
+			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
 			if err != nil {
 				return err
 			}
 			msgs = append(msgs, *msg)
 			offers = offers[50:]
 		} else {
-			msg, err := fcrmessages.EncodeProviderDHTPublishGroupCIDRequest(1, c.ProviderID, offers) //TODO: Add nonce
+			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers) //TODO: Add nonce
 			if err != nil {
 				return err
 			}
@@ -103,14 +97,14 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 	}
 
 	// Construct response
-	response, err := fcrmessages.EncodeGatewaySingleCIDOfferPublishResponse(msgs)
+	response, err := fcrmessages.EncodeGatewayListDHTOfferResponse(msgs)
 	if err != nil {
 		return err
 	}
 	// Sign the response
-	response.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion, msg)
-	})
+	if response.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+		return errors.New("Error in signing the response")
+	}
 	// Respond
 	err = fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultLongTCPInactivityTimeout)
 	if err != nil {
@@ -123,23 +117,17 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return err
 	}
 	// Verify the acks
-	ok, err = acks.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if acks.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the acks")
 	}
 
-	acknowledgements, err := fcrmessages.DecodeGatewaySingleCIDOfferPublishResponseAck(acks)
+	acknowledgements, err := fcrmessages.DecodeGatewayListDHTOfferAck(acks)
 	if len(acknowledgements) != len(offers) {
 		return errors.New("Invalid response")
 	}
 	for i, acknowledgement := range acknowledgements {
 		// TODO: Check nonce.
-		_, signature, err := fcrmessages.DecodeProviderDHTPublishGroupCIDAck(&acknowledgement)
+		_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(&acknowledgement)
 		if err != nil {
 			return err
 		}
@@ -152,7 +140,7 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		}
 		// It's okay, add to acknowledgements map
 		c.AcknowledgementMapLock.Lock()
-		c.AcknowledgementMap[offers[i].Cids[0].ToString()][gatewayID.ToString()] = core.DHTAcknowledgement{
+		c.AcknowledgementMap[offers[i].GetCIDs()[0].ToString()][gatewayID.ToString()] = core.DHTAcknowledgement{
 			Msg:    msgs[i],
 			MsgAck: acknowledgement,
 		}
