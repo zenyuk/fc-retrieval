@@ -40,7 +40,7 @@ func (c *ClientManager) FindGateways(location string, maxNumToLocate int) ([]*no
 	count := 0
 	for _, info := range gateways {
 		if info.GetRegionCode() == location {
-			nodeID, err := nodeid.NewNodeIDFromString(info.GetNodeID())
+			nodeID, err := nodeid.NewNodeIDFromHexString(info.GetNodeID())
 			if err != nil {
 				logging.Error("Error in generating node id, skipping: %v", info.GetNodeID())
 				continue
@@ -126,7 +126,7 @@ func (c *ClientManager) GetGatewaysToUse() []*nodeid.NodeID {
 
 	res := make([]*nodeid.NodeID, 0)
 	for key := range c.GatewaysToUse {
-		nodeID, err := nodeid.NewNodeIDFromString(key)
+		nodeID, err := nodeid.NewNodeIDFromHexString(key)
 		if err != nil {
 			logging.Error("Error in generating node id.")
 			continue
@@ -208,7 +208,7 @@ func (c *ClientManager) GetActiveGateways() []*nodeid.NodeID {
 
 	res := make([]*nodeid.NodeID, 0)
 	for key := range c.ActiveGateways {
-		nodeID, err := nodeid.NewNodeIDFromString(key)
+		nodeID, err := nodeid.NewNodeIDFromHexString(key)
 		if err != nil {
 			logging.Error("Error in generating node id.")
 			continue
