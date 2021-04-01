@@ -61,7 +61,7 @@ func TestOneGateway(t *testing.T) {
 		panic(err)
 	}
 
-	gatewayID, err := nodeid.NewRandomNodeID()
+	gatewayID := nodeid.NewRandomNodeID()
 
 	gatewayRegister := &register.GatewayRegister{
 		NodeID:              gatewayID.ToString(),

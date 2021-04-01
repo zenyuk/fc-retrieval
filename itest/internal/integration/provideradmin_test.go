@@ -92,7 +92,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	// gatewayRootSigningKey := "0104d799bc7141b058b4c9d819ba8d8fa1e87b2ee9132f5b59d3a91edcd72c08cd64d2fd44f99f8d4a0159a65a0c8c0409f646712793ab4fb7b6151654b6e00ca69f"
 	// gatewayRetrievalSigningKey := "01041ee440cab4f5e92803e29de7079d317a332b206b21df612fe0d1c34b585df4f44180aa9a75e4c95116ac341256333d7356d42704be43efd8828293ef013d9139"
 	// gatewayID, err := nodeid.NewRandomNodeID()
-	gatewayID, err := nodeid.NewNodeIDFromString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
+	gatewayID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	gatewayRegister := &register.GatewayRegister{
 		NodeID:              gatewayID.ToString(),
 		Address:             gatewayConfig_gatewayConfig.GetString("GATEWAY_ADDRESS"),
@@ -139,7 +139,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
-	providerID, err := nodeid.NewNodeIDFromString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
+	providerID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -165,7 +165,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	time.Sleep(20 * time.Second)
 
 	// Generate random cid offer
-	contentID, _ := cid.NewRandomContentID()
+	contentID := cid.NewRandomContentID()
 	pieceCIDs := []cid.ContentID{*contentID}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
@@ -195,7 +195,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		logging.ErrorAndPanic(err.Error())
 	}
 	logging.Info("Registered gateways: %+v", gateways)
-	realNodeID, err := nodeid.NewNodeIDFromString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
+	realNodeID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -209,7 +209,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Get offers by gatewayIDs real should be found")
 
 	// Get offers by gatewayIDs fake
-	fakeNodeID, _ := nodeid.NewNodeIDFromString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
+	fakeNodeID, _ := nodeid.NewNodeIDFromHexString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
 	gatewayIDs[0] = *fakeNodeID
 	logging.Info("Get offers by fake gatewayID=%s", fakeNodeID.ToString())
 	_, cidgroupInfo, err = pvadmin.GetGroupCIDOffer(providerID, gatewayIDs)
