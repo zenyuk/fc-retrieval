@@ -69,23 +69,21 @@ func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister
 		return err
 	}
 
-	nodeID, err := nodeid.NewNodeIDFromString(gatewayInfo.NodeID)
+	nodeID, err := nodeid.NewNodeIDFromHexString(gatewayInfo.NodeID)
 	if err != nil {
 		log.Error("Error in generating nodeID.")
 		return err
 	}
 
 	// Second, send key exchange to activate the given gateway
-	request, err := fcrmessages.EncodeAdminAcceptKeyChallenge(nodeID, gatewayPrivKey.EncodePrivateKey(), gatewayPrivKeyVer.EncodeKeyVersion())
+	request, err := fcrmessages.EncodeGatewayAdminInitialiseKeyRequest(nodeID, gatewayPrivKey, gatewayPrivKeyVer)
 	if err != nil {
 		log.Error("Error in encoding message.")
 		return err
 	}
 
 	// Sign the request
-	if request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(g.settings.GatewayAdminPrivateKey(), g.settings.GatewayAdminPrivateKeyVer(), msg)
-	}) != nil {
+	if request.Sign(g.settings.GatewayAdminPrivateKey(), g.settings.GatewayAdminPrivateKeyVer()) != nil {
 		log.Error("Error signing message for sending private key to gateway: %+v", err)
 		return err
 	}
@@ -105,23 +103,17 @@ func (g *GatewayManager) InitializeGateway(gatewayInfo *register.GatewayRegister
 	// Process the response from the gateway.
 	response, err := fcrtcpcomms.ReadTCPMessage(conn, time.Second*1)
 	log.Info("Response message: %+v", response)
-	if response.MessageType != fcrmessages.AdminAcceptKeyResponseType {
+	if response.GetMessageType() != fcrmessages.GatewayAdminInitialiseKeyResponseType {
 		// TODO other types of messages such as protocol version negotiation need to be handled.
-		return fmt.Errorf("Unexpected message in response to set-up Gateway message: %d", response.MessageType)
+		return fmt.Errorf("Unexpected message in response to set-up Gateway message: %d", response.GetMessageType())
 	}
 
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
-	keyAccepted, err := fcrmessages.DecodeAdminAcceptKeyResponse(response)
+	keyAccepted, err := fcrmessages.DecodeGatewayAdminInitialiseKeyResponse(response)
 	if err != nil {
 		return err
 	}
