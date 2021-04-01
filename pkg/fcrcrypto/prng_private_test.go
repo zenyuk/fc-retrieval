@@ -17,6 +17,7 @@ package fcrcrypto
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,14 +26,14 @@ func TestGetPrivatePRNG(t *testing.T) {
 	zeroBytes := make([]byte, 32)
 	rand := GetPrivatePRNG()
 	rand.ReadBytes(b)
-    assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
+	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
 }
 
 func TestGeneratePrivateRandomBytes(t *testing.T) {
 	b := make([]byte, 32)
 	zeroBytes := make([]byte, 32)
 	GeneratePrivateRandomBytes(b)
-    assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
+	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
 }
 
 func TestNewPrivatePRNG(t *testing.T) {
@@ -41,5 +42,5 @@ func TestNewPrivatePRNG(t *testing.T) {
 	securityDomain := []byte("fc-retrieval-client-keys")
 	rand := NewPrivatePRNG(securityDomain)
 	rand.ReadBytes(b)
-    assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
+	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")
 }

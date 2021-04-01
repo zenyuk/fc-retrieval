@@ -15,7 +15,7 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
- import (
+import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -29,9 +29,8 @@ package fcrcrypto
 // All variables have been prefixed with secp256k1 to namespace them
 // The PRNG passed into generate key pair is the shared private PRNG.
 
-// Having all usages of SecP256K1 go through this file means that if 
+// Having all usages of SecP256K1 go through this file means that if
 // the underlying library needs to be changed, it will only need to be changed here.
-
 
 // PrivateKeyBytes is the size of a serialized private key.
 const secp256k1PrivateKeyBytes = 32

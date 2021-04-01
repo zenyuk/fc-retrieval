@@ -15,13 +15,11 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
-
 // Array of PRNGs that will be reseeded by the global quick reseed.
 var prngPool []Random
 
 // PRNGEntropyKick is called when an application event occurs that an attacker
-// on a computer on the network can not observe. For example, when a message 
+// on a computer on the network can not observe. For example, when a message
 // arrives, this function can be called. Attackers may know down to the milli
 // or even micro second when a message is serviced. However, they are unlikely
 // to know the timing down to the nearest nano second.
@@ -30,6 +28,3 @@ func PRNGEntropyKick() {
 		prng.QuickReseedKick()
 	}
 }
-
-
-

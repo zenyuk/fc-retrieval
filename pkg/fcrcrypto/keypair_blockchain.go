@@ -17,5 +17,5 @@ package fcrcrypto
 
 // GenerateBlockchainKeyPair generates a key pair for use with the Filecoin blockchain
 func GenerateBlockchainKeyPair() (*KeyPair, error) {
-    return GenerateRetrievalV1KeyPair()
+	return GenerateRetrievalV1KeyPair()
 }

@@ -15,24 +15,20 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
 	"sync"
 )
 
-// This file contains the Pseudo Random Number Generator (PRNG) to be used for generating 
-// public values. 
-
+// This file contains the Pseudo Random Number Generator (PRNG) to be used for generating
+// public values.
 
 // GeneratePrivateRandomBytes generates zero or more random numbers using the Private
 // PRNG instance. These bytes should never be made public. Users of this function
-// should consider creating a separate PRNG using GetNewPrivatePRNG if security 
+// should consider creating a separate PRNG using GetNewPrivatePRNG if security
 // domain separation is required.
 func GeneratePrivateRandomBytes(b []byte) {
 	GetPrivatePRNG().ReadBytes(b)
 }
-
-
 
 // Single instance of the gateway
 var privatePRNG Random
@@ -49,12 +45,10 @@ func GetPrivatePRNG() Random {
 }
 
 // NewPrivatePRNG returns the PRNG that should be used for generating random values
-// that will stay private. Creating a separate PRNG for each set of usages helps to 
+// that will stay private. Creating a separate PRNG for each set of usages helps to
 // guarentee security domain separation.
 func NewPrivatePRNG(securityDomain []byte) Random {
 	aPRNG := NewPRNG(securityDomain)
 	prngPool = append(prngPool, aPRNG)
 	return aPRNG
 }
-
-

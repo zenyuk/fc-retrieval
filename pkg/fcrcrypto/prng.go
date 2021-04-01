@@ -15,12 +15,11 @@ package fcrcrypto
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"io"
 	"hash"
+	"io"
 	"math/big"
 	"net"
 	"time"
@@ -30,14 +29,12 @@ import (
 
 // This file contains a Pseudo Random Number Generator (PRNG). The PRNG is a
 // SP800-90a HMAC DRBG instance wrapped with a simple Psuedo Random Function (PRF).
-// The reason for wrapping the DRBG in a PRF is to ensure random output even if 
+// The reason for wrapping the DRBG in a PRF is to ensure random output even if
 // the HMAC DRBG has been compromised. The PRF has been designed to not dillute the
-// security strength of the DRBG. 
+// security strength of the DRBG.
 //
-// The PRNG should be reseeded regularly. The simplest way to do this is to call 
+// The PRNG should be reseeded regularly. The simplest way to do this is to call
 // QuickReseedKick when things happen such as messages arrive from remove servers.
-
-
 
 // Random is the interface for pseudo random number generators in this project.
 type Random interface {
@@ -49,15 +46,14 @@ type Random interface {
 
 // RandomImpl holds the underlying DRBG and the PRF state.
 type randomImpl struct {
-	drbg *drbg.DRBG
-	prfHasher hash.Hash
-	prfState []byte
+	drbg       *drbg.DRBG
+	prfHasher  hash.Hash
+	prfState   []byte
 	prfCounter *big.Int
 }
 
-
 // NewPRNG returns a new instance of the PRNG. The PRNG has a custom
-// personalisation string, so identical instances on identical hardware should have 
+// personalisation string, so identical instances on identical hardware should have
 // differently seeded PRNGs.
 func NewPRNG(securityDomain []byte) Random {
 	personalizationString := securityDomain
@@ -72,7 +68,6 @@ func NewPRNG(securityDomain []byte) Random {
 	systemRandomBytes(r.prfState)
 	return &r
 }
-
 
 // ReadBytes reads random values into b
 func (r *randomImpl) ReadBytes(b []byte) {
@@ -90,18 +85,18 @@ func (r *randomImpl) ReadBytes(b []byte) {
 		drbgBytes := make([]byte, lengthPerIteration)
 		r.drbg.Read(drbgBytes)
 		r.prfHasher.Write(drbgBytes)
-	
+
 		// Incorporate the current state of the PRF into the message digest.
 		r.prfHasher.Write(r.prfState)
 		hashOutput := r.prfHasher.Sum(nil)
 
 		// Update the PRF state.
 		r.prfState = hashOutput
-	
+
 		oldOfs := ofs
 		ofs += lengthPerIteration
 
-		// If the output length 
+		// If the output length
 		if ofs <= lenOutput {
 			copy(b[oldOfs:ofs], hashOutput)
 		} else {
@@ -110,13 +105,11 @@ func (r *randomImpl) ReadBytes(b []byte) {
 	}
 }
 
-
 // Read reads random values into b
 func (r *randomImpl) Read(b []byte) (n int, err error) {
 	r.ReadBytes(b)
 	return len(b), nil
 }
-
 
 // Reseed adds seed material to the PRNG.
 func (r *randomImpl) Reseed(seed []byte) {
@@ -130,7 +123,7 @@ func (r *randomImpl) Reseed(seed []byte) {
 	r.prfState = hashOutput
 }
 
-// QuickReseedKick aims to execute in a small amount of time and should add a few bits 
+// QuickReseedKick aims to execute in a small amount of time and should add a few bits
 // of entropy to the entropy pool. The idea is to call this low cost function regularly
 // to overall gather lots of entropy.
 func (r *randomImpl) QuickReseedKick() {
@@ -142,26 +135,23 @@ func (r *randomImpl) GetReader() io.Reader {
 	return r
 }
 
-
-
 // Nano time as bytes
 func nanotime() []byte {
 	// Get the time now as accurately as Golang and the CPU will allow. For some systems
 	// this will be tens of ns, some will be single us, and some will only update this
-	// timer ever several tens of ms. 
+	// timer ever several tens of ms.
 	nowNano := time.Now().UnixNano()
-    bytes := make([]byte, 8)
-    binary.BigEndian.PutUint64(bytes, uint64(nowNano))
+	bytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(bytes, uint64(nowNano))
 	return bytes
 }
-
 
 // Use the bytes from the first interface.
 func getMACAddr() []byte {
 	var result []byte
-    ifas, err := net.Interfaces()
-    if err != nil {
-        panic(err)
+	ifas, err := net.Interfaces()
+	if err != nil {
+		panic(err)
 	}
 	for _, ifa := range ifas {
 		if ifa.HardwareAddr != nil {
