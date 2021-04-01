@@ -66,10 +66,7 @@ func TestNoConfiguredGateways(t *testing.T) {
 }
 
 func TestUnknownGatewayAdded(t *testing.T) {
-	randomGatewayID, err := nodeid.NewRandomNodeID()
-	if err != nil {
-		panic(err)
-	}
+	randomGatewayID := nodeid.NewRandomNodeID()
 	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatwaysToBeAdded = append(newGatwaysToBeAdded, randomGatewayID)
 	numAdded := fClient.AddGatewaysToUse(newGatwaysToBeAdded)
