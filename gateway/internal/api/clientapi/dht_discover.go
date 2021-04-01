@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -19,7 +18,7 @@ func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRM
 	// Get core structure
 	g := gateway.GetSingleInstance()
 
-	cid, nonce, ttl, numDHT, _, err := fcrmessages.DecodeClientDHTDiscoverRequest(request)
+	cid, nonce, ttl, numDHT, _, _, _, err := fcrmessages.DecodeClientDHTDiscoverRequest(request)
 	if err != nil {
 		s := "Client DHT CID Discovery: Failed to decode payload."
 		logging.Error(s + err.Error())
@@ -51,7 +50,7 @@ func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRM
 		if i >= int(numDHT) {
 			break
 		}
-		gatewayIDs[i], _ = nodeid.NewNodeIDFromString(k)
+		gatewayIDs[i], _ = nodeid.NewNodeIDFromHexString(k)
 		i++
 	}
 	// Construct response
@@ -78,9 +77,8 @@ func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRM
 	}
 
 	// Sign the message
-	if response.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion, msg)
-	}) != nil {
+	// Sign message
+	if response.Sign(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion) != nil {
 		s := "Internal error."
 		logging.Error(s + err.Error())
 		rest.Error(w, s, http.StatusInternalServerError)
