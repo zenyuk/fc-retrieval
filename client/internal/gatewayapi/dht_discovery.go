@@ -19,7 +19,6 @@ import (
 	//	"encoding/base64"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
@@ -27,15 +26,13 @@ import (
 // GatewayDHTCIDDiscovery sends a GatewayClientEstablishmentRequest and processes a response.
 func (c *Comms) GatewayDHTCIDDiscovery(contentID *cid.ContentID, nonce int64, numDHT int64, incrementalResults bool) (bool, error) {
 	request, err := fcrmessages.EncodeClientDHTDiscoverRequest(
-		contentID, nonce, c.settings.EstablishmentTTL(), numDHT, incrementalResults)
+		contentID, nonce, c.settings.EstablishmentTTL(), numDHT, incrementalResults, "", "")
 	if err != nil {
 		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
 		return false, err
 	}
 
-	if request.SignMessage(func(msg interface{}) (string, error) {
-		return fcrcrypto.SignMessage(c.settings.RetrievalPrivateKey(), c.settings.RetrievalPrivateKeyVer(), msg)
-	}) != nil {
+	if request.Sign(c.settings.RetrievalPrivateKey(), c.settings.RetrievalPrivateKeyVer()) != nil {
 		logging.Error("Error signing message for Client Establishment Request: %+v", err)
 		return false, err
 	}

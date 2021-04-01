@@ -20,7 +20,6 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval-client/internal/network"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -54,14 +53,8 @@ func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayReg
 	}
 
 	// Verify the response
-	ok, err := response.VerifySignature(func(sig string, msg interface{}) (bool, error) {
-		return fcrcrypto.VerifyMessage(pubKey, sig, msg)
-	})
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return err
+	if response.Verify(pubKey) != nil {
+		return errors.New("Fail to verify response")
 	}
 	// Finally check if gatewayID and received challenge matches.
 	gatewayID, recvChallenge, err := fcrmessages.DecodeClientEstablishmentResponse(response)
