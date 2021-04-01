@@ -1,5 +1,20 @@
 package fcrmessages
 
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import (
 	"bytes"
 	"fmt"
@@ -11,20 +26,17 @@ import (
 // hex and printable ASCII.
 // From https://github.com/augustoroman/hexdump/blob/master/hexdump.go
 
-
-
 // Dump the byte slice to a human-readable hex dump using the default
 // configuration.
-func dumpMessage(data []byte) string { 
+func dumpMessage(data []byte) string {
 	var out bytes.Buffer
 	state := dumpState{32, 0, 0}
 	state.dump(&out, data)
 	return out.String()
 }
 
-
 type dumpState struct {
-	width int
+	width       int
 	rowIndex    int
 	maxRowWidth int
 }

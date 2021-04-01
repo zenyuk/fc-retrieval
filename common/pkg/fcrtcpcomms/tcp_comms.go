@@ -42,7 +42,7 @@ func ReadTCPMessage(conn net.Conn, timeout time.Duration) (*fcrmessages.FCRMessa
 // SendTCPMessage sends a tcp message to a given connection
 func SendTCPMessage(conn net.Conn, fcrMsg *fcrmessages.FCRMessage, timeout time.Duration) error {
 	// Get data
-	data, err := fcrmessages.FCRMsgToBytes(fcrMsg)
+	data, err := fcrMsg.FCRMsgToBytes()
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func SendTCPMessage(conn net.Conn, fcrMsg *fcrmessages.FCRMessage, timeout time.
 
 // SendProtocolMismatch sends a protocol mistmatch message to a given connection
 func SendProtocolMismatch(conn net.Conn, timeout time.Duration) error {
-	fcrMsg, _ := fcrmessages.EncodeProtocolMismatchResponse()
+	fcrMsg, _ := fcrmessages.EncodeProtocolChangeResponse(false)
 	return SendTCPMessage(conn, fcrMsg, timeout)
 }
 

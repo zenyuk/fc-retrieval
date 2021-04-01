@@ -16,15 +16,14 @@ package fcrcrypto
  */
 
 /**
- * Key and signature algorithm. 
- * 
+ * Key and signature algorithm.
+ *
  */
-
 
 const (
 	lengthOfSigAlgInBytes = 1
 
-	// SigAlgEcdsaSecP256K1Blake2b indicates the signature algorithm ECDSA 
+	// SigAlgEcdsaSecP256K1Blake2b indicates the signature algorithm ECDSA
 	// using curve SecP256K1 with Blake2b message digest algorithm.
 	SigAlgEcdsaSecP256K1Blake2b = uint8(1)
 )
@@ -58,7 +57,6 @@ func (k *KeySigAlg) EncodeSigAlgAsBytes() []byte {
 	return algBytes
 }
 
-
 // Is returns true if the value passed in matches the algorithm.
 func (k *KeySigAlg) Is(other uint8) bool {
 	return other == k.algorithm
@@ -73,4 +71,3 @@ func (k *KeySigAlg) Equals(other *KeySigAlg) bool {
 func (k *KeySigAlg) IsNot(other uint8) bool {
 	return other != k.algorithm
 }
-
