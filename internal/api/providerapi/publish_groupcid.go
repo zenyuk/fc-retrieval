@@ -15,7 +15,7 @@ import (
 )
 
 // RequestProviderPublishGroupCID is used to publish a group CID offer to a given gateway
-func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.NodeID) error {
+func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.NodeID, settings settings.AppSettings) error {
 	// Get the core structure
 	c := core.GetSingleInstance()
 
@@ -45,13 +45,13 @@ func RequestProviderPublishGroupCID(offer *cidoffer.CIDOffer, gatewayID *nodeid.
 		return errors.New("Error in signing request")
 	}
 	// Send request
-	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.DefaultTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.TCPInactivityTimeout)
 	if err != nil {
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err
 	}
 	// Get a response
-	response, err := fcrtcpcomms.ReadTCPMessage(gComm.Conn, settings.DefaultTCPInactivityTimeout)
+	response, err := fcrtcpcomms.ReadTCPMessage(gComm.Conn, settings.TCPInactivityTimeout)
 	if err != nil {
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err

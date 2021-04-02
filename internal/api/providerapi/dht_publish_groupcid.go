@@ -13,7 +13,7 @@ import (
 )
 
 // RequestDHTProviderPublishGroupCID is used to publish a dht group CID offer to a given gateway
-func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *nodeid.NodeID) error {
+func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *nodeid.NodeID, settings settings.AppSettings) error {
 	// Get the core structure
 	c := core.GetSingleInstance()
 
@@ -43,13 +43,13 @@ func RequestDHTProviderPublishGroupCID(offers []cidoffer.CIDOffer, gatewayID *no
 		return errors.New("Error in signing the message")
 	}
 	// Send request
-	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.DefaultTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(gComm.Conn, request, settings.TCPInactivityTimeout)
 	if err != nil {
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err
 	}
 	// Get a response
-	response, err := fcrtcpcomms.ReadTCPMessage(gComm.Conn, settings.DefaultLongTCPInactivityTimeout)
+	response, err := fcrtcpcomms.ReadTCPMessage(gComm.Conn, settings.TCPLongInactivityTimeout)
 	if err != nil {
 		c.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return err
