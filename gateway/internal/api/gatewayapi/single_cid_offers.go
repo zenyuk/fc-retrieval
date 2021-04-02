@@ -14,7 +14,7 @@ import (
 
 // RequestSingleCIDOffers is used at start-up to request a set of single CID Offers
 // from a provider with a given provider id.
-func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.NodeID) (*fcrmessages.FCRMessage, error) {
+func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.NodeID, settings settings.AppSettings) (*fcrmessages.FCRMessage, error) {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
@@ -43,13 +43,13 @@ func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.No
 		return nil, errors.New("Error in signing request")
 	}
 	// Send request
-	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.DefaultTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.TCPInactivityTimeout)
 	if err != nil {
 		g.ProviderCommPool.DeregisterNodeCommunication(providerID)
 		return nil, err
 	}
 	// Get a response.
-	response, err := fcrtcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultLongTCPInactivityTimeout)
+	response, err := fcrtcpcomms.ReadTCPMessage(pComm.Conn, settings.TCPLongInactivityTimeout)
 	if err != nil {
 		g.ProviderCommPool.DeregisterNodeCommunication(providerID)
 		return nil, err
@@ -73,7 +73,7 @@ func RequestSingleCIDOffers(cidMin, cidMax *cid.ContentID, providerID *nodeid.No
 }
 
 // AcknowledgeSingleCIDOffers is used to acknowledge a response
-func AcknowledgeSingleCIDOffers(response *fcrmessages.FCRMessage, providerID *nodeid.NodeID) ([]fcrmessages.FCRMessage, error) {
+func AcknowledgeSingleCIDOffers(response *fcrmessages.FCRMessage, providerID *nodeid.NodeID, settings settings.AppSettings) ([]fcrmessages.FCRMessage, error) {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
@@ -118,7 +118,7 @@ func AcknowledgeSingleCIDOffers(response *fcrmessages.FCRMessage, providerID *no
 		return nil, errors.New("Error in signing the ack")
 	}
 	// Send ack
-	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, ack, settings.DefaultTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, ack, settings.TCPInactivityTimeout)
 	if err != nil {
 		g.ProviderCommPool.DeregisterNodeCommunication(providerID)
 		return nil, err

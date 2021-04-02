@@ -55,4 +55,7 @@ type AppSettings struct {
 	NetworkInfoClient   string `mapstructure:"CLIENT_NETWORK_INFO"`   // Gateway client network info
 	NetworkInfoProvider string `mapstructure:"PROVIDER_NETWORK_INFO"` // Gateway provider network info
 	NetworkInfoAdmin    string `mapstructure:"ADMIN_NETWORK_INFO"`    // Gateway admin network info
+
+	TCPInactivityTimeout 			time.Duration	`mapstructure:"TCP_INACTIVITY_TIMEOUT"`				// TCP inactivity timeout
+	TCPLongInactivityTimeout 	time.Duration	`mapstructure:"TCP_LONG_INACTIVITY_TIMEOUT"`	// TCP long inactivity timeout
 }
