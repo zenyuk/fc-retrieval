@@ -26,7 +26,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
-func handleAdminGetReputationChallenge(conn net.Conn, request *fcrmessages.FCRMessage) error {
+func handleAdminGetReputationChallenge(conn net.Conn, request *fcrmessages.FCRMessage, settings settings.AppSettings) error {
 	// Get core structure
 	g := gateway.GetSingleInstance()
 	if g.GatewayPrivateKey == nil {
@@ -52,5 +52,5 @@ func handleAdminGetReputationChallenge(conn net.Conn, request *fcrmessages.FCRMe
 		return errors.New("Error in signing message")
 	}
 	// Send message
-	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
+	return fcrtcpcomms.SendTCPMessage(conn, response, settings.TCPInactivityTimeout)
 }

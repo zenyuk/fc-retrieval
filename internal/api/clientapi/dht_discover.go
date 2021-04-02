@@ -10,11 +10,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/gatewayapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/gateway"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HandleClientDHTCIDDiscover is used to handle client request for cid offer
-func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
+func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRMessage, settings settings.AppSettings) {
 	// Get core structure
 	g := gateway.GetSingleInstance()
 
@@ -60,7 +61,7 @@ func handleClientDHTCIDDiscover(w rest.ResponseWriter, request *fcrmessages.FCRM
 	contacted := make([]fcrmessages.FCRMessage, 0)
 	unContactable := make([]nodeid.NodeID, 0)
 	for _, id := range gatewayIDs {
-		res, err := gatewayapi.RequestGatewayDHTDiscover(cid, id)
+		res, err := gatewayapi.RequestGatewayDHTDiscover(cid, id, settings)
 		if err != nil {
 			unContactable = append(unContactable, *id)
 		} else {

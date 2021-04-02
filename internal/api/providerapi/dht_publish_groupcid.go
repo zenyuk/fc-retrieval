@@ -12,7 +12,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
-func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
+func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages.FCRMessage, settings settings.AppSettings) error {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
@@ -67,5 +67,5 @@ func handleProviderDHTPublishGroupCIDRequest(conn net.Conn, request *fcrmessages
 	if response.Sign(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion) != nil {
 		return errors.New("Error in signing message")
 	}
-	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
+	return fcrtcpcomms.SendTCPMessage(conn, response, settings.TCPInactivityTimeout)
 }
