@@ -17,7 +17,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 )
 
-func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
+func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCRMessage, settings settings.AppSettings) error {
 	// Get core structure
 	c := core.GetSingleInstance()
 	gatewayID, cidMin, cidMax, registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof, err := fcrmessages.DecodeGatewayListDHTOfferRequest(request)
@@ -106,13 +106,13 @@ func handleSingleCIDOffersPublishRequest(conn net.Conn, request *fcrmessages.FCR
 		return errors.New("Error in signing the response")
 	}
 	// Respond
-	err = fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultLongTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(conn, response, settings.TCPLongInactivityTimeout)
 	if err != nil {
 		return err
 	}
 
 	// Get acks
-	acks, err := fcrtcpcomms.ReadTCPMessage(conn, settings.DefaultLongTCPInactivityTimeout)
+	acks, err := fcrtcpcomms.ReadTCPMessage(conn, settings.TCPLongInactivityTimeout)
 	if err != nil {
 		return err
 	}

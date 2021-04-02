@@ -38,12 +38,13 @@ func StartAdminRestAPI(settings settings.AppSettings) error {
 func startRestAPI(settings settings.AppSettings, errChannel chan<- error) {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
+	m := NewMsgRouter(&settings)
 	router, err := rest.MakeRouter(
 		// TODO: Remove these debug APIs prior to production release.
 		// rest.Get("/time", getTime),     // Get system time.
 		// rest.Get("/ip", getIP),         // Get IP address.
 		// rest.Get("/host", getHostname), // Get host name.
-		rest.Post("/v1", msgRouter),
+		rest.Post("/v1", m.msgRouter),
 	)
 	if err != nil {
 		logging.Error1(err)
@@ -57,7 +58,17 @@ func startRestAPI(settings settings.AppSettings, errChannel chan<- error) {
 	panic("Error binding")
 }
 
-func msgRouter(w rest.ResponseWriter, r *rest.Request) {
+type MsgRouter struct {
+	settings *settings.AppSettings
+}
+
+func NewMsgRouter(settings *settings.AppSettings) *MsgRouter{
+	return &MsgRouter{
+		settings: settings,
+	}
+}
+
+func (m *MsgRouter) msgRouter(w rest.ResponseWriter, r *rest.Request) {
 	// Get core structure
 	c := core.GetSingleInstance()
 
@@ -89,7 +100,7 @@ func msgRouter(w rest.ResponseWriter, r *rest.Request) {
 
 	switch request.GetMessageType() {
 	case fcrmessages.ProviderAdminPublishGroupOfferRequestType:
-		handleProviderPublishGroupCID(w, request)
+		handleProviderPublishGroupCID(w, request, *m.settings)
 	case fcrmessages.ProviderAdminGetPublishedOfferRequestType:
 		handleProviderGetGroupCID(w, request)
 	case fcrmessages.ProviderAdminInitialiseKeyRequestType:
