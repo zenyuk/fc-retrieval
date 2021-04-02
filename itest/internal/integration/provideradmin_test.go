@@ -53,7 +53,6 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	logging.Info("/*      Start TestInitProviderAdminNoRetrievalKey	     */")
 	logging.Info("/*******************************************************/")
 	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
-	time.Sleep(2 * time.Second)
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
@@ -162,7 +161,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 
 	logging.Info("Wait 5 seconds for the provider to initialise")
-	time.Sleep(20 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	// Generate random cid offer
 	contentID := cid.NewRandomContentID()
@@ -174,9 +173,6 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
-
-	logging.Info("Wait 5 seconds for the provider to publish")
-	time.Sleep(5 * time.Second)
 
 	// Get all offers
 	var gatewayIDs []nodeid.NodeID
