@@ -24,20 +24,20 @@ func StartProviderAPI(settings settings.AppSettings) error {
 				continue
 			}
 			logging.Info("Incoming connection from provider at :%s\n", conn.RemoteAddr())
-			go handleIncomingProviderConnection(conn)
+			go handleIncomingProviderConnection(conn, settings)
 		}
 	}(ln)
 	logging.Info("Listening on %s for connections from Providers\n", settings.BindProviderAPI)
 	return nil
 }
 
-func handleIncomingProviderConnection(conn net.Conn) {
+func handleIncomingProviderConnection(conn net.Conn, settings settings.AppSettings) {
 	// Close connection on exit.
 	defer conn.Close()
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
+		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.TCPInactivityTimeout)
 
 		if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
@@ -47,7 +47,7 @@ func handleIncomingProviderConnection(conn net.Conn) {
 		if err == nil {
 			logging.Info("Message received: %+v", message)
 			if message.GetMessageType() == fcrmessages.ProviderPublishGroupOfferRequestType {
-				err = handleProviderPublishGroupCIDRequest(conn, message)
+				err = handleProviderPublishGroupCIDRequest(conn, message, settings)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection
 					logging.Error(err.Error())
@@ -55,7 +55,7 @@ func handleIncomingProviderConnection(conn net.Conn) {
 				}
 				continue
 			} else if message.GetMessageType() == fcrmessages.ProviderPublishDHTOfferRequestType {
-				err = handleProviderDHTPublishGroupCIDRequest(conn, message)
+				err = handleProviderDHTPublishGroupCIDRequest(conn, message, settings)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection
 					logging.Error(err.Error())
@@ -64,7 +64,7 @@ func handleIncomingProviderConnection(conn net.Conn) {
 				continue
 			}
 			// Message is invalid.
-			err = fcrtcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
+			err = fcrtcpcomms.SendInvalidMessage(conn, settings.TCPInactivityTimeout)
 			if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 				// Error in tcp communication, drop the connection.
 				logging.Error(err.Error())

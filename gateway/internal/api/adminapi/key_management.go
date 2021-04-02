@@ -26,7 +26,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
-func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessage, wg *sync.WaitGroup) error {
+func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessage, wg *sync.WaitGroup, settings settings.AppSettings) error {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
@@ -51,5 +51,5 @@ func handleAdminAcceptKeysChallenge(conn net.Conn, request *fcrmessages.FCRMessa
 		return errors.New("Error in signing message")
 	}
 	// Send message
-	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
+	return fcrtcpcomms.SendTCPMessage(conn, response, settings.TCPInactivityTimeout)
 }

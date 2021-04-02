@@ -33,7 +33,15 @@ func parseUint8(value string) uint8 {
 func Map(conf *viper.Viper) settings.AppSettings {
 	registerRefreshDuration, err := time.ParseDuration(conf.GetString("REGISTER_REFRESH_DURATION"))
 	if err != nil {
-		registerRefreshDuration = 5 * time.Second
+		registerRefreshDuration = settings.DefaultRegisterRefreshDuration
+	}
+	tcpInactivityTimeout, err := time.ParseDuration(conf.GetString("TCP_INACTIVITY_TIMEOUT"))
+	if err != nil {
+		tcpInactivityTimeout = settings.DefaultTCPInactivityTimeout
+	}
+	tcpLongInactivityTimeout, err := time.ParseDuration(conf.GetString("TCP_LONG_INACTIVITY_TIMEOUT"))
+	if err != nil {
+		tcpLongInactivityTimeout = settings.DefaultLongTCPInactivityTimeout
 	}
 	return settings.AppSettings{
 		BindRestAPI:     conf.GetString("BIND_REST_API"),
@@ -62,6 +70,9 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		NetworkInfoClient:   conf.GetString("IP") + ":" + conf.GetString("BIND_REST_API"),
 		NetworkInfoProvider: conf.GetString("IP") + ":" + conf.GetString("BIND_PROVIDER_API"),
 		NetworkInfoAdmin:    conf.GetString("IP") + ":" + conf.GetString("BIND_ADMIN_API"),
+
+		TCPInactivityTimeout: tcpInactivityTimeout,
+		TCPLongInactivityTimeout: tcpLongInactivityTimeout,
 	}
 }
 
