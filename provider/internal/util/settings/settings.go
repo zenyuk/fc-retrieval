@@ -25,6 +25,9 @@ const DefaultTCPInactivityTimeout = 100 * time.Millisecond
 // DefaultLongTCPInactivityTimeout is the default timeout for long TCP inactivity. This timeout should never be ignored.
 const DefaultLongTCPInactivityTimeout = 5000 * time.Millisecond
 
+// DefaultRefreshDuration is the default register refresh duration
+const DefaultRegisterRefreshDuration = 5000 * time.Millisecond
+
 // AppSettings defines the server configuraiton
 type AppSettings struct {
 	BindRestAPI    string `mapstructure:"BIND_REST_API"`    // Port number to bind to for client REST API.
@@ -52,4 +55,7 @@ type AppSettings struct {
 	NetworkInfoClient      	string 				`mapstructure:"NETWORK_CLIENT_INFO"`       	// Provider client network info
 	NetworkInfoGateway     	string 				`mapstructure:"NETWORK_GATEWAY_INFO"`      	// Provider provider network info
 	NetworkInfoAdmin       	string 				`mapstructure:"NETWORK_ADMIN_INFO"`        	// Provider admin network info
+
+	TCPInactivityTimeout 			time.Duration	`mapstructure:"TCP_INACTIVITY_TIMEOUT"`				// TCP inactivity timeout
+	TCPLongInactivityTimeout 	time.Duration	`mapstructure:"TCP_LONG_INACTIVITY_TIMEOUT"`	// TCP long inactivity timeout
 }

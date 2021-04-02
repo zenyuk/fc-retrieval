@@ -7,10 +7,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
+func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage, settings settings.AppSettings) {
 	// Get core structure
 	c := core.GetSingleInstance()
 	if c.ProviderPrivateKey == nil {
@@ -48,7 +49,7 @@ func handleProviderPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.F
 			continue
 		}
 
-		err = providerapi.RequestProviderPublishGroupCID(offer, gatewayID)
+		err = providerapi.RequestProviderPublishGroupCID(offer, gatewayID, settings)
 		if err != nil {
 			logging.Error("Error in publishing group offer :%v", err)
 		}
