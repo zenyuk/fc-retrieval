@@ -41,20 +41,20 @@ func StartAdminAPI(settings settings.AppSettings, g *gateway.Gateway) error {
 				continue
 			}
 			logging.Info("Incoming connection from admin client at :%s", conn.RemoteAddr())
-			go handleIncomingAdminConnection(conn, g)
+			go handleIncomingAdminConnection(conn, g, settings)
 		}
 	}(ln)
 	logging.Info("Listening on %s for connections from admin clients", settings.BindAdminAPI)
 	return nil
 }
 
-func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
+func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway, settings settings.AppSettings) {
 	// Close connection on exit.
 	defer conn.Close()
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
+		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.TCPInactivityTimeout)
 		if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
@@ -63,7 +63,7 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 		// Respond to requests for a client's reputation.
 		if err == nil {
 			if message.GetMessageType() == fcrmessages.GatewayAdminGetReputationRequestType {
-				err = handleAdminGetReputationChallenge(conn, message)
+				err = handleAdminGetReputationChallenge(conn, message, settings)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
@@ -71,7 +71,7 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 				}
 				continue
 			} else if message.GetMessageType() == fcrmessages.GatewayAdminSetReputationRequestType {
-				err = handleAdminSetReputationChallenge(conn, message)
+				err = handleAdminSetReputationChallenge(conn, message, settings)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
@@ -81,7 +81,7 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 			} else if message.GetMessageType() == fcrmessages.GatewayAdminInitialiseKeyRequestType {
 				var wg sync.WaitGroup
 				wg.Add(1)
-				err = handleAdminAcceptKeysChallenge(conn, message, &wg)
+				err = handleAdminAcceptKeysChallenge(conn, message, &wg, settings)
 				if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection.
 					logging.Error1(err)
@@ -109,6 +109,6 @@ func handleIncomingAdminConnection(conn net.Conn, g *gateway.Gateway) {
 		*/
 
 		// Message is invalid.
-		fcrtcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
+		fcrtcpcomms.SendInvalidMessage(conn, settings.TCPInactivityTimeout)
 	}
 }

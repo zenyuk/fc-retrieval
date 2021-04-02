@@ -14,14 +14,14 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
-func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMessage) error {
+func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMessage, settings settings.AppSettings) error {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
 	gatewayID, pieceCID, nonce, ttl, _, _, err := fcrmessages.DecodeGatewayDHTDiscoverRequest(request)
 	if err != nil {
 		// Reply with invalid message
-		return fcrtcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
+		return fcrtcpcomms.SendInvalidMessage(conn, settings.TCPInactivityTimeout)
 	}
 	// Get the gateway's signing key
 	g.RegisteredGatewaysMapLock.RLock()
@@ -69,11 +69,11 @@ func handleGatewayDHTDiscoverRequest(conn net.Conn, request *fcrmessages.FCRMess
 	if response.Sign(g.GatewayPrivateKey, g.GatewayPrivateKeyVersion) != nil {
 		return errors.New("Error in signing the response")
 	}
-	return fcrtcpcomms.SendTCPMessage(conn, response, settings.DefaultTCPInactivityTimeout)
+	return fcrtcpcomms.SendTCPMessage(conn, response, settings.TCPInactivityTimeout)
 }
 
 // RequestGatewayDHTDiscover is used to request a DHT CID Discover
-func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID) (*fcrmessages.FCRMessage, error) {
+func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID, settings settings.AppSettings) (*fcrmessages.FCRMessage, error) {
 	// Get the core structure
 	g := gateway.GetSingleInstance()
 
@@ -94,13 +94,13 @@ func RequestGatewayDHTDiscover(cid *cid.ContentID, gatewayID *nodeid.NodeID) (*f
 		return nil, errors.New("Error in signing the request")
 	}
 	// Send the request
-	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.DefaultTCPInactivityTimeout)
+	err = fcrtcpcomms.SendTCPMessage(pComm.Conn, request, settings.TCPInactivityTimeout)
 	if err != nil {
 		g.GatewayCommPool.DeregisterNodeCommunication(gatewayID)
 		return nil, err
 	}
 	// Get a response
-	response, err := fcrtcpcomms.ReadTCPMessage(pComm.Conn, settings.DefaultTCPInactivityTimeout)
+	response, err := fcrtcpcomms.ReadTCPMessage(pComm.Conn, settings.TCPInactivityTimeout)
 	if err != nil && fcrtcpcomms.IsTimeoutError(err) {
 		// Timeout can be ignored. Since this message can expire.
 		return nil, nil

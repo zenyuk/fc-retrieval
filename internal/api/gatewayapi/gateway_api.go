@@ -26,7 +26,7 @@ func StartGatewayAPI(settings settings.AppSettings) error {
 				continue
 			}
 			logging.Info("Incoming connection from gateway at :%s", conn.RemoteAddr())
-			go handleIncomingGatewayConnection(conn)
+			go handleIncomingGatewayConnection(conn, settings)
 		}
 	}(ln)
 	logging.Info("Listening on %s for connections from Gateways", settings.BindGatewayAPI)
@@ -34,13 +34,13 @@ func StartGatewayAPI(settings settings.AppSettings) error {
 	return nil
 }
 
-func handleIncomingGatewayConnection(conn net.Conn) {
+func handleIncomingGatewayConnection(conn net.Conn, settings settings.AppSettings) {
 	// Close connection on exit.
 	defer conn.Close()
 
 	// Loop until error occurs and connection is dropped.
 	for {
-		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.DefaultTCPInactivityTimeout)
+		message, err := fcrtcpcomms.ReadTCPMessage(conn, settings.TCPInactivityTimeout)
 		if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error1(err)
@@ -48,7 +48,7 @@ func handleIncomingGatewayConnection(conn net.Conn) {
 		}
 		if err == nil {
 			if message.GetMessageType() == fcrmessages.GatewayDHTDiscoverRequestType {
-				err = handleGatewayDHTDiscoverRequest(conn, message)
+				err = handleGatewayDHTDiscoverRequest(conn, message, settings)
 				if err != nil && fcrtcpcomms.IsTimeoutError(err) {
 					// Error in tcp communication, drop the connection
 					logging.Error1(err)
@@ -57,7 +57,7 @@ func handleIncomingGatewayConnection(conn net.Conn) {
 				continue
 			}
 			// Message is invalid.
-			err = fcrtcpcomms.SendInvalidMessage(conn, settings.DefaultTCPInactivityTimeout)
+			err = fcrtcpcomms.SendInvalidMessage(conn, settings.TCPInactivityTimeout)
 			if err != nil && !fcrtcpcomms.IsTimeoutError(err) {
 				// Error in tcp communication, drop the connection.
 				logging.Error1(err)
