@@ -10,10 +10,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
+func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage, settings settings.AppSettings) {
 	// Get core structure
 	c := core.GetSingleInstance()
 	if c.ProviderPrivateKey == nil {
@@ -65,7 +66,7 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 		// TODO, Need to select only cid offers that are close to the gatewayID
 		// For now, it selects a random offer from the offers.
 		offer := offers[rand.Intn(len(offers))]
-		err = providerapi.RequestDHTProviderPublishGroupCID([]cidoffer.CIDOffer{offer}, gatewayID)
+		err = providerapi.RequestDHTProviderPublishGroupCID([]cidoffer.CIDOffer{offer}, gatewayID, settings)
 		if err != nil {
 			logging.Error("Error in publishing group offer :%v", err)
 		}
