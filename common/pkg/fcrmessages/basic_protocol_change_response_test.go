@@ -15,9 +15,9 @@ func TestEncodeProtocolChangeResponse(t *testing.T) {
 		messageBody:[]byte(`{"success":true}`), 
 		signature:"",
 	}
-	version, err := EncodeProtocolChangeResponse(true)
+	msg, err := EncodeProtocolChangeResponse(true)
 	assert.Empty(t, err)
-	assert.Equal(t, version, validMsg)
+	assert.Equal(t, msg, validMsg)
 }
 
 // TestDecodeProtocolChangeResponse success test
