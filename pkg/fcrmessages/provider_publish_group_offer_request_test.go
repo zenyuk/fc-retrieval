@@ -1,6 +1,7 @@
 package fcrmessages
 
 import (
+	"fmt"
 	"testing"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -9,56 +10,59 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 )
 
-// // TestEncodeProviderPublishGroupOfferResponse success test
-func TestEncodeProviderPublishGroupOfferResponse(t *testing.T) {
+// TestEncodeProviderPublishGroupOfferRequest success test
+func TestEncodeProviderPublishGroupOfferRequest(t *testing.T) {
 	mockProviderID, _ := nodeid.NewNodeIDFromHexString("42")
-	// mockNonce := int64(42)
+	mockNodeID, _ := nodeid.NewNodeIDFromHexString("42")
+	mockNonce := int64(42)
 	contentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockCids := []cid.ContentID{*contentID}
 	var mockPrice uint64 = 41
 	var mockExpiry int64 = 42
 	var mockQos uint64 = 43
 	mockOffer, err := cidoffer.NewCIDOffer(mockProviderID, mockCids, mockPrice, mockExpiry, mockQos)
-	mockMsgDigest := mockOffer.GetMessageDigest()
+		
 	validMsg := &FCRMessage{
-		messageType:301,
+		messageType:300,
 		protocolVersion:1,
 		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","digest":[179,39,63,55,115,199,133,123,164,143,223,117,88,234,218,129,141,20,110,11,165,108,175,4,83,15,0,120,195,74,216,203]}`), 
+		messageBody:[]byte(`{"provider_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","nonce":42,"offer":{"provider_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","cids":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE="],"price":41,"expiry":42,"qos":43,"signature":""}}`), 
 		signature:"",
 	}
 
-	msg, err := EncodeProviderPublishGroupOfferResponse(*mockProviderID, mockMsgDigest)
+	msg, err := EncodeProviderPublishGroupOfferRequest(mockNodeID, mockNonce, mockOffer)
 	assert.Empty(t, err)
 	assert.Equal(t, msg, validMsg)
 }
 
-
-// TestDecodeProviderPublishGroupOfferResponse success test
-func TestDecodeProviderPublishGroupOfferResponse(t *testing.T) {
+// TestDecodeProviderPublishGroupOfferRequest success test
+func TestDecodeProviderPublishGroupOfferRequest(t *testing.T) {
 	mockProviderID, _ := nodeid.NewNodeIDFromHexString("42")
+	mockNonce := int64(42)
 	contentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockCids := []cid.ContentID{*contentID}
 	var mockPrice uint64 = 41
 	var mockExpiry int64 = 42
 	var mockQos uint64 = 43
 	mockOffer, err := cidoffer.NewCIDOffer(mockProviderID, mockCids, mockPrice, mockExpiry, mockQos)
-	mockMsgDigest := mockOffer.GetMessageDigest()
 
-	mockOfferResponse, _ := json.Marshal(providerPublishGroupOfferResponse{
-		GatewaydID: *mockProviderID,
-		Digest:     mockMsgDigest,
+	mockOfferRequest, _ := json.Marshal(providerPublishGroupOfferRequest{
+		ProviderID: *mockProviderID,
+		Nonce:     mockNonce,
+		Offer:     *mockOffer,
 	})
 
 	validMsg := &FCRMessage{
-		messageType:301,
+		messageType:300,
 		protocolVersion:1,
 		protocolSupported:[]int32{1, 1},
-		messageBody:mockOfferResponse, 
+		messageBody:mockOfferRequest, 
 		signature:"",
 	}
-	nodeID, digest, err := DecodeProviderPublishGroupOfferResponse(validMsg)
+	
+	nodeID, nonce, CIDOffer, err := DecodeProviderPublishGroupOfferRequest(validMsg)
 	assert.Empty(t, err)
 	assert.Equal(t, nodeID, mockProviderID)
-	assert.Equal(t, digest, mockMsgDigest)
+	assert.Equal(t, nonce, mockNonce)
+	assert.Equal(t, CIDOffer.GetMessageDigest(), mockOffer.GetMessageDigest())
 }
