@@ -12,7 +12,6 @@ import (
 // // TestEncodeProviderPublishGroupOfferResponse success test
 func TestEncodeProviderPublishGroupOfferResponse(t *testing.T) {
 	mockProviderID, _ := nodeid.NewNodeIDFromHexString("42")
-	// mockNonce := int64(42)
 	contentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockCids := []cid.ContentID{*contentID}
 	var mockPrice uint64 = 41
