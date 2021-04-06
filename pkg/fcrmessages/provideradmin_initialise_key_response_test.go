@@ -2,7 +2,6 @@ package fcrmessages
 
 import (
 	"testing"
-	// "errors"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,7 +1,6 @@
 package fcrmessages
 
 import (
-	"fmt"
 	"testing"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
