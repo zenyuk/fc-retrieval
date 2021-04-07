@@ -140,7 +140,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 			err = sendInvalidMessage(conn, s.timeout)
 			if err != nil {
 				// Error in tcp communication, drop the connection.
-				logging.Error("P2P Server has error responding to %s: %s", s.name, conn.RemoteAddr(), err.Error())
+				logging.Error("P2P Server %s has error responding to %s: %s", s.name, conn.RemoteAddr(), err.Error())
 				return
 			}
 		}
