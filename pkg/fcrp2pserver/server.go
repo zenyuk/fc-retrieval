@@ -18,6 +18,7 @@ package fcrp2pserver
 import (
 	"errors"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
@@ -33,9 +34,11 @@ type FCRP2PServer struct {
 	name    string
 	timeout time.Duration
 
+	// Connection pool
+	pool *communicationPool
+
 	// Payment manager
-	paymentMgr  *fcrpaymentmgr.FCRPaymentMgr
-	registerMgr *fcrregistermgr.FCRRegisterMgr
+	paymentMgr *fcrpaymentmgr.FCRPaymentMgr
 
 	// handlers for different message type
 	handlers   map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error
@@ -47,14 +50,21 @@ func NewFCRP2PServer(
 	name string,
 	paymentMgr *fcrpaymentmgr.FCRPaymentMgr,
 	registerMgr *fcrregistermgr.FCRRegisterMgr,
-	timeout time.Duration) *FCRP2PServer {
+	defaultTimeout time.Duration) *FCRP2PServer {
 	return &FCRP2PServer{
-		start:       false,
-		name:        name,
-		handlers:    make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
-		requesters:  make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error),
-		paymentMgr:  paymentMgr,
-		registerMgr: registerMgr,
+		start:   false,
+		name:    name,
+		timeout: defaultTimeout,
+		pool: &communicationPool{
+			registerMgr:         registerMgr,
+			activeGateways:      make(map[string](*communicationChannel)),
+			activeGatewaysLock:  sync.RWMutex{},
+			activeProviders:     make(map[string](*communicationChannel)),
+			activeProvidersLock: sync.RWMutex{},
+		},
+		paymentMgr: paymentMgr,
+		handlers:   make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
+		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error),
 	}
 }
 
@@ -111,7 +121,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 		message, err := readTCPMessage(conn, s.timeout)
 		if err != nil {
 			// Error in tcp communication, drop the connection.
-			logging.Error("P2P Server has error reading message from %s: %s", conn.RemoteAddr(), err.Error())
+			logging.Error("P2P Server %s has error reading message from %s: %s", s.name, conn.RemoteAddr(), err.Error())
 			return
 		}
 		handler := s.handlers[message.GetMessageType()]
@@ -122,7 +132,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 			err = handler(reader, writer, message)
 			if err != nil {
 				// Error that couldn't ignore, drop the connection.
-				logging.Error("P2P Server has error handling message from %s: %s", conn.RemoteAddr(), err.Error())
+				logging.Error("P2P Server %s has error handling message from %s: %s", s.name, conn.RemoteAddr(), err.Error())
 				return
 			}
 		} else {
@@ -130,7 +140,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 			err = sendInvalidMessage(conn, s.timeout)
 			if err != nil {
 				// Error in tcp communication, drop the connection.
-				logging.Error("P2P Server has error responding to %s: %s", conn.RemoteAddr(), err.Error())
+				logging.Error("P2P Server has error responding to %s: %s", s.name, conn.RemoteAddr(), err.Error())
 				return
 			}
 		}
@@ -138,16 +148,82 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 }
 
 // RequestGatewayFromGateway uses a given requester to send a request to a given gateway from gateway.
-func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int, args ...interface{}) error {
-	return errors.New("Not yet implemented")
+func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+	if !s.start {
+		return errors.New("Server not started")
+	}
+	requester := s.requesters[msgType]
+	if requester == nil {
+		return errors.New("No available requester found for given type")
+	}
+	comm, err := s.pool.getGatewayConn(s.name, id, accessFromGateway)
+	if err != nil {
+		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
+		return err
+	}
+	comm.lock.Lock()
+	// Call requester to request
+	writer := &FCRServerWriter{conn: comm.conn}
+	reader := &FCRServerReader{conn: comm.conn}
+	err = requester(reader, writer, args)
+	comm.lock.Unlock()
+	if err != nil {
+		// Error that couldn't ignore, remove the connection.
+		s.pool.removeActiveGateway(id)
+	}
+	return err
 }
 
 // RequestGatewayFromProvider uses a given requester to send a request to a given gateway from provider.
-func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int, args ...interface{}) error {
-	return errors.New("Not yet implemented")
+func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+	if !s.start {
+		return errors.New("Server not started")
+	}
+	requester := s.requesters[msgType]
+	if requester == nil {
+		return errors.New("No available requester found for given type")
+	}
+	comm, err := s.pool.getGatewayConn(s.name, id, accessFromProvider)
+	if err != nil {
+		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
+		return err
+	}
+	comm.lock.Lock()
+	// Call requester to request
+	writer := &FCRServerWriter{conn: comm.conn}
+	reader := &FCRServerReader{conn: comm.conn}
+	err = requester(reader, writer, args)
+	comm.lock.Unlock()
+	if err != nil {
+		// Error that couldn't ignore, remove the connection.
+		s.pool.removeActiveGateway(id)
+	}
+	return err
 }
 
 // RequestProvider uses a given requester to send a request to a given provider. (Only possible from gateway)
-func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int, args ...interface{}) error {
-	return errors.New("Not yet implemented")
+func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+	if !s.start {
+		return errors.New("Server not started")
+	}
+	requester := s.requesters[msgType]
+	if requester == nil {
+		return errors.New("No available requester found for given type")
+	}
+	comm, err := s.pool.getProviderConn(s.name, id)
+	if err != nil {
+		logging.Error("P2P Server %s has error get provider connection to %s: %s", s.name, id.ToString(), err.Error())
+		return err
+	}
+	comm.lock.Lock()
+	// Call requester to request
+	writer := &FCRServerWriter{conn: comm.conn}
+	reader := &FCRServerReader{conn: comm.conn}
+	err = requester(reader, writer, args)
+	comm.lock.Unlock()
+	if err != nil {
+		// Error that couldn't ignore, remove the connection.
+		s.pool.removeActiveProvider(id)
+	}
+	return err
 }

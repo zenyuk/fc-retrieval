@@ -22,10 +22,36 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 )
 
+// FCRServerWriter stores the connection to write to.
 type FCRServerWriter struct {
 	conn net.Conn
 }
 
+// Write writes a given message.
 func (w *FCRServerWriter) Write(msg *fcrmessages.FCRMessage, timeout time.Duration) error {
 	return sendTCPMessage(w.conn, msg, timeout)
+}
+
+// WriteProtocolChanged writes a protocol changed message.
+func (w *FCRServerWriter) WriteProtocolChanged(timeout time.Duration) error {
+	fcrMsg, _ := fcrmessages.EncodeProtocolChangeResponse(true)
+	return sendTCPMessage(w.conn, fcrMsg, timeout)
+}
+
+// WriteProtocolMismatch sends a protocol mistmatch message.
+func (w *FCRServerWriter) WriteProtocolMismatch(timeout time.Duration) error {
+	fcrMsg, _ := fcrmessages.EncodeProtocolChangeResponse(false)
+	return sendTCPMessage(w.conn, fcrMsg, timeout)
+}
+
+// WriteInvalidMessage sends an invalid message.
+func (w *FCRServerWriter) WriteInvalidMessage(timeout time.Duration) error {
+	fcrMsg, _ := fcrmessages.EncodeInvalidMessageResponse()
+	return sendTCPMessage(w.conn, fcrMsg, timeout)
+}
+
+// WriteInsufficientFunds sends a insufficient payment message.
+func (w *FCRServerWriter) WriteInsufficientFunds(timeout time.Duration, paymentChannelID int64) error {
+	fcrMsg, _ := fcrmessages.EncodeInsufficientFundsResponse(paymentChannelID)
+	return sendTCPMessage(w.conn, fcrMsg, timeout)
 }
