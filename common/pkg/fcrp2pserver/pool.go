@@ -50,12 +50,12 @@ type communicationPool struct {
 }
 
 // getGatewayConn gets a connection to a given gateway for sending request
-func (c *communicationPool) getGatewayConn(id *nodeid.NodeID, accessFrom int) (*communicationChannel, error) {
+func (c *communicationPool) getGatewayConn(name string, id *nodeid.NodeID, accessFrom int) (*communicationChannel, error) {
 	c.activeGatewaysLock.RLock()
 	comm := c.activeGateways[id.ToString()]
 	c.activeGatewaysLock.RUnlock()
 	if comm == nil {
-		logging.Info("P2P server has no active connection to gateway %s, attempt connecting", id.ToString())
+		logging.Info("P2P server %s has no active connection to gateway %s, attempt connecting", name, id.ToString())
 		gatewayInfo, err := c.registerMgr.GetGateway(id)
 		if err != nil {
 			return nil, err
@@ -93,12 +93,12 @@ func (c *communicationPool) getGatewayConn(id *nodeid.NodeID, accessFrom int) (*
 }
 
 // getProviderConn gets a connection to a given provider for sending request
-func (c *communicationPool) getProviderConn(id *nodeid.NodeID) (*communicationChannel, error) {
+func (c *communicationPool) getProviderConn(name string, id *nodeid.NodeID) (*communicationChannel, error) {
 	c.activeProvidersLock.RLock()
 	comm := c.activeProviders[id.ToString()]
 	c.activeProvidersLock.RUnlock()
 	if comm == nil {
-		logging.Info("P2P server has no active connection to provider %s, attempt connecting", id.ToString())
+		logging.Info("P2P server %s has no active connection to provider %s, attempt connecting", name, id.ToString())
 		providerInfo, err := c.registerMgr.GetProvider(id)
 		if err != nil {
 			return nil, err
@@ -129,7 +129,7 @@ func (c *communicationPool) getProviderConn(id *nodeid.NodeID) (*communicationCh
 	return comm, nil
 }
 
-// removeActiveGateway remove a given gateway, close the connection.
+// removeActiveGateway remove a given gateway, and close the connection.
 func (c *communicationPool) removeActiveGateway(id *nodeid.NodeID) {
 	c.activeGatewaysLock.Lock()
 	comm := c.activeGateways[id.ToString()]
@@ -142,7 +142,7 @@ func (c *communicationPool) removeActiveGateway(id *nodeid.NodeID) {
 	c.activeGatewaysLock.Unlock()
 }
 
-// removeActiveProvider remove a given provider, close the connection.
+// removeActiveProvider remove a given provider, and close the connection.
 func (c *communicationPool) removeActiveProvider(id *nodeid.NodeID) {
 	c.activeProvidersLock.Lock()
 	comm := c.activeProviders[id.ToString()]

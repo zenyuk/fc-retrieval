@@ -22,10 +22,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 )
 
+// FCRServerReader stores the connection to read from.
 type FCRServerReader struct {
 	conn net.Conn
 }
 
+// Write reads a message.
 func (r *FCRServerReader) Read(timeout time.Duration) (*fcrmessages.FCRMessage, error) {
 	return readTCPMessage(r.conn, timeout)
 }
