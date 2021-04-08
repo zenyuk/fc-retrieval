@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 go test ./... -coverprofile cover.out
 curr_coverage=$(go tool cover -func cover.out | grep total | awk '{print $3}' | tr -d '%')
