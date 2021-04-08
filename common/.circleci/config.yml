@@ -6,9 +6,9 @@ version: 2.1
 jobs:
   utest:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: circleci/golang:1.15
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
     steps:
-      - checkout
       - run: go test ./...
 
 workflows:
