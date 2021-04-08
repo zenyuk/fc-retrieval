@@ -9,6 +9,9 @@ default: clean utest
 utest:
 	go test ./...
 
+coverage:
+	bash coverage.sh
+
 clean:
 #nothing to do
 

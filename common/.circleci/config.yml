@@ -10,7 +10,14 @@ jobs:
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
     steps:
       - checkout
-      - run: go test ./...
+      - run: make utest
+  coverage:
+    docker:
+      - image: circleci/golang:1.15
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
+    steps:
+      - checkout
+      - run: make coverage
 
 workflows:
   version: 2
@@ -19,3 +26,6 @@ workflows:
       - utest:
           context:
             - dockerhub-quorumengineering-rw
+      - coverage:
+          requires:
+            - utest
