@@ -17,6 +17,7 @@ func TestEncodeInsufficientFundsResponseValidMessage(t *testing.T) {
 
 	msg, err := EncodeInsufficientFundsResponse(mockPaymentChannelIDValid)
 	assert.Empty(t, err)
+	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, msg, nil)
 }
 
