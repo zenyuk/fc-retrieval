@@ -9,7 +9,7 @@ jobs:
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
     steps:
       - checkout
-      - run: make utest
+      - run: go test ./...
 
 workflows:
   version: 2
