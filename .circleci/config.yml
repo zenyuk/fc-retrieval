@@ -17,7 +17,7 @@ jobs:
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
     steps:
       - checkout
-      - run: make coverage
+      - run: make coverage COV=$CODE_COVERAGE
 
 workflows:
   version: 2
