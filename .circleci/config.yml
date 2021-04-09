@@ -28,9 +28,7 @@ workflows:
   version: 2
   test:
     jobs:
-      - utest:
-          context:
-            - dockerhub-quorumengineering-rw
+      - utest
       - coverage:
           requires:
             - utest
