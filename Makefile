@@ -52,5 +52,5 @@ clean:
 	docker rmi -f "${REGISTRY}fc-retrieval-gateway-admin:${VERSION}" || true
 
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest coverage build release push detectmisconfig detectlocal
+.PHONY: clean itest utest coverage build release push detectmisconfig detectlocal uselocal
 
