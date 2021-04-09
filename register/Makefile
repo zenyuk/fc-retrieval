@@ -1,5 +1,6 @@
 VERSION?=dev
 IMAGE?=consensys/fc-retrieval-register
+COV?=80
 
 default: clean build tag
 
@@ -40,3 +41,12 @@ useremote:
 # system when building the register
 clean:
 	echo Does nothing
+
+utest:
+	go test ./...
+
+coverage:
+	bash ./scripts/coverage.sh $(COV)
+
+# Alays assume these targets are out of date.
+.PHONY: dev dev-local build build-local build-dev push tag uselocal useremote clean utest coverage
