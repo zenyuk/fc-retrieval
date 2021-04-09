@@ -12,6 +12,8 @@ jobs:
       - checkout
       - run: make utest
   coverage:
+    environment:
+      CODE_COVERAGE: 80
     docker:
       - image: circleci/golang:1.15
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
