@@ -7,7 +7,7 @@ curr_coverage=$(go tool cover -func cover.out | grep total | awk '{print $3}' | 
 
 echo "Total: $curr_coverage%"
 
-if awk 'BEGIN {exit !('$curr_coverage' >= '$trgt_coverage')}'; then
+if awk "BEGIN {exit !("$curr_coverage" >= "$trgt_coverage")}"; then
   echo "Unit tests coverage is OK!"
   exit 0
 else
