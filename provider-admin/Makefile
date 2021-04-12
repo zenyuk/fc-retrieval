@@ -1,6 +1,7 @@
 # Copyright (C) 2020 ConsenSys Software Inc.
 
 # Build the Filecoin Retrieval Provider Admin
+COV?=80
 
 # This target (the first target in the build file) is the one that is executed if no 
 # command line args are specified.
@@ -25,10 +26,13 @@ detectmisconfig:
 utest:
 	go test ./...
 
+coverage:
+	bash ./scripts/coverage.sh $(COV)
+
 
 # remove previous images and containers
 clean:
 
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest build release push detectmisconfig detectlocal
+.PHONY: clean itest utest coverage build release push detectmisconfig detectlocal
 
