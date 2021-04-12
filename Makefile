@@ -6,6 +6,7 @@
 #   [VERSION=v3] [REGISTRY="gcr.io/google_containers"] make build
 VERSION?=dev
 REGISTRY?=
+COV?=80
 
 # This target (the first target in the build file) is the one that is executed if no 
 # command line args are specified.
@@ -30,6 +31,9 @@ uselocal:
 utest:
 	go test ./...
 
+coverage:
+	bash ./scripts/coverage.sh $(COV)
+
 # Alays assume these targets are out of date.
-.PHONY: clean itest utest build release push detectmisconfig detectlocal stop
+.PHONY: clean itest utest build release push detectmisconfig detectlocal stop coverage
 
