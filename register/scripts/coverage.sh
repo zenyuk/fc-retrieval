@@ -2,7 +2,7 @@
 
 trgt_coverage=${1:-"80"}
 
-go test ./... -coverprofile cover.out
+go test ./... -coverprofile cover.out -coverpkg=./...
 curr_coverage=$(go tool cover -func cover.out | grep total | awk '{print $3}' | tr -d '%')
 
 echo "Total: $curr_coverage%"
