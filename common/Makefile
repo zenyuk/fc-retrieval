@@ -8,7 +8,7 @@ utest:
 	go test ./...
 
 coverage:
-	bash coverage.sh $(COV)
+	bash ./scripts/coverage.sh $(COV)
 
 clean:
 #nothing to do
