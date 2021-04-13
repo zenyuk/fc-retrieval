@@ -142,18 +142,18 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 }
 
 // RequestGatewayFromGateway uses a given requester to send a request to a given gateway from gateway.
-func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int32, args ...interface{}) (*fcrmessages.FCRMessage, error) {
 	if !s.start {
-		return errors.New("Server not started")
+		return nil, errors.New("Server not started")
 	}
 	requester := s.requesters[msgType]
 	if requester == nil {
-		return errors.New("No available requester found for given type")
+		return nil, errors.New("No available requester found for given type")
 	}
 	comm, err := s.pool.getGatewayConn(s.name, id, accessFromGateway)
 	if err != nil {
 		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
-		return err
+		return nil, err
 	}
 	comm.lock.Lock()
 	// Call requester to request
@@ -164,23 +164,24 @@ func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int3
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveGateway(id)
+		return nil, err
 	}
-	return err
+	return reader.response, nil
 }
 
 // RequestGatewayFromProvider uses a given requester to send a request to a given gateway from provider.
-func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) (*fcrmessages.FCRMessage, error) {
 	if !s.start {
-		return errors.New("Server not started")
+		return nil, errors.New("Server not started")
 	}
 	requester := s.requesters[msgType]
 	if requester == nil {
-		return errors.New("No available requester found for given type")
+		return nil, errors.New("No available requester found for given type")
 	}
 	comm, err := s.pool.getGatewayConn(s.name, id, accessFromProvider)
 	if err != nil {
 		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
-		return err
+		return nil, err
 	}
 	comm.lock.Lock()
 	// Call requester to request
@@ -191,23 +192,24 @@ func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveGateway(id)
+		return nil, err
 	}
-	return err
+	return reader.response, err
 }
 
 // RequestProvider uses a given requester to send a request to a given provider. (Only possible from gateway)
-func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) error {
+func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ...interface{}) (*fcrmessages.FCRMessage, error) {
 	if !s.start {
-		return errors.New("Server not started")
+		return nil, errors.New("Server not started")
 	}
 	requester := s.requesters[msgType]
 	if requester == nil {
-		return errors.New("No available requester found for given type")
+		return nil, errors.New("No available requester found for given type")
 	}
 	comm, err := s.pool.getProviderConn(s.name, id)
 	if err != nil {
 		logging.Error("P2P Server %s has error get provider connection to %s: %s", s.name, id.ToString(), err.Error())
-		return err
+		return nil, err
 	}
 	comm.lock.Lock()
 	// Call requester to request
@@ -218,6 +220,7 @@ func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ..
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveProvider(id)
+		return nil, err
 	}
-	return err
+	return reader.response, err
 }
