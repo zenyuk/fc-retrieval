@@ -38,7 +38,7 @@ type FCRP2PServer struct {
 
 	// handlers for different message type
 	handlers   map[string]map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error
-	requesters map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error
+	requesters map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) (*fcrmessages.FCRMessage, error)
 }
 
 // NewFCRP2PServer creates an empty FCRP2PServer.
@@ -58,7 +58,7 @@ func NewFCRP2PServer(
 			activeProvidersLock: sync.RWMutex{},
 		},
 		handlers:   make(map[string]map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
-		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error),
+		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) (*fcrmessages.FCRMessage, error)),
 	}
 }
 
@@ -76,7 +76,7 @@ func (s *FCRP2PServer) AddHandler(listenAddr string, msgType int32, handler func
 }
 
 // AddRequester is used to add a requester to the server for a given type.
-func (s *FCRP2PServer) AddRequester(msgType int32, requester func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error) *FCRP2PServer {
+func (s *FCRP2PServer) AddRequester(msgType int32, requester func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) (*fcrmessages.FCRMessage, error)) *FCRP2PServer {
 	if s.start {
 		return s
 	}
@@ -165,14 +165,14 @@ func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int3
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	err = requester(reader, writer, args)
+	response, err := requester(reader, writer, args)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveGateway(id)
 		return nil, err
 	}
-	return reader.response, nil
+	return response, err
 }
 
 // RequestGatewayFromProvider uses a given requester to send a request to a given gateway from provider.
@@ -193,14 +193,14 @@ func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	err = requester(reader, writer, args)
+	response, err := requester(reader, writer, args)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveGateway(id)
 		return nil, err
 	}
-	return reader.response, err
+	return response, err
 }
 
 // RequestProvider uses a given requester to send a request to a given provider. (Only possible from gateway)
@@ -221,12 +221,12 @@ func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ..
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	err = requester(reader, writer, args)
+	response, err := requester(reader, writer, args)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
 		s.pool.removeActiveProvider(id)
 		return nil, err
 	}
-	return reader.response, err
+	return response, err
 }
