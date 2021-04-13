@@ -385,6 +385,11 @@ func (mgr *FCRPaymentMgr) Receive(channel string, voucher string) (*big.Int, err
 	return paymentValue, nil
 }
 
+// Shutdown will safely shutdown the payment manager.
+func (mgr *FCRPaymentMgr) Shutdown() {
+	// TODO: Need to save the internal storage of the channel state
+}
+
 // Dump is used for debugging only, it returns the string repr of payment manager.
 // This is not threadsafe and should only be called for debugging.
 func (mgr *FCRPaymentMgr) Dump() string {
