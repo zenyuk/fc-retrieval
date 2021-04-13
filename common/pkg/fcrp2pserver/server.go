@@ -29,27 +29,27 @@ import (
 
 // FCRP2PServer represents a server handling p2p connection using tcp.
 type FCRP2PServer struct {
-	start   bool
-	name    string
-	timeout time.Duration
+	start       bool
+	listenAddrs []string
+	timeout     time.Duration
 
 	// Connection pool
 	pool *communicationPool
 
 	// handlers for different message type
-	handlers   map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error
+	handlers   map[string]map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error
 	requesters map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error
 }
 
 // NewFCRP2PServer creates an empty FCRP2PServer.
 func NewFCRP2PServer(
-	name string,
+	listenAddrs []string,
 	registerMgr *fcrregistermgr.FCRRegisterMgr,
 	defaultTimeout time.Duration) *FCRP2PServer {
 	return &FCRP2PServer{
-		start:   false,
-		name:    name,
-		timeout: defaultTimeout,
+		start:       false,
+		listenAddrs: listenAddrs,
+		timeout:     defaultTimeout,
 		pool: &communicationPool{
 			registerMgr:         registerMgr,
 			activeGateways:      make(map[string](*communicationChannel)),
@@ -57,17 +57,21 @@ func NewFCRP2PServer(
 			activeProviders:     make(map[string](*communicationChannel)),
 			activeProvidersLock: sync.RWMutex{},
 		},
-		handlers:   make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
+		handlers:   make(map[string]map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
 		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error),
 	}
 }
 
 // AddHandler is used to add a handler to the server for a given type.
-func (s *FCRP2PServer) AddHandler(msgType int32, handler func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error) *FCRP2PServer {
+func (s *FCRP2PServer) AddHandler(listenAddr string, msgType int32, handler func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error) *FCRP2PServer {
 	if s.start {
 		return s
 	}
-	s.handlers[msgType] = handler
+	addrHandler, ok := s.handlers[listenAddr]
+	if !ok {
+		return s
+	}
+	addrHandler[msgType] = handler
 	return s
 }
 
@@ -81,32 +85,34 @@ func (s *FCRP2PServer) AddRequester(msgType int32, requester func(reader *FCRSer
 }
 
 // Start is used to start the server.
-func (s *FCRP2PServer) Start(listenAddr string) error {
-	// Start server
-	if s.start {
-		return errors.New("Server already started")
-	}
-	ln, err := net.Listen("tcp", ":"+listenAddr)
-	if err != nil {
-		return err
-	}
-	go func(ln net.Listener) {
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				logging.Error("P2P server %s has error accepting connection: %s", s.name, err.Error())
-				continue
-			}
-			logging.Info("P2P server %s has incoming connection from :%s", s.name, conn.RemoteAddr())
-			go s.handleIncomingConnection(conn)
+func (s *FCRP2PServer) Start() error {
+	for _, listenAddr := range s.listenAddrs {
+		// Start server
+		if s.start {
+			return errors.New("Server already started")
 		}
-	}(ln)
-	logging.Info("P2P server %s starts listening on %s for connections.", s.name, listenAddr)
+		ln, err := net.Listen("tcp", ":"+listenAddr)
+		if err != nil {
+			return err
+		}
+		go func(ln net.Listener) {
+			for {
+				conn, err := ln.Accept()
+				if err != nil {
+					logging.Error("P2P server has error accepting connection: %s", err.Error())
+					continue
+				}
+				logging.Info("P2P server has incoming connection from :%s", conn.RemoteAddr())
+				go s.handleIncomingConnection(conn, s.handlers[listenAddr])
+			}
+		}(ln)
+		logging.Info("P2P server starts listening on %s for connections.", listenAddr)
+	}
 	return nil
 }
 
 // handleIncomingConnection handles incomming connection using given handlers.
-func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
+func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn, handlers map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error) {
 	// Close connection on exit.
 	defer conn.Close()
 
@@ -115,10 +121,10 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 		message, err := readTCPMessage(conn, s.timeout)
 		if err != nil {
 			// Error in tcp communication, drop the connection.
-			logging.Error("P2P Server %s has error reading message from %s: %s", s.name, conn.RemoteAddr(), err.Error())
+			logging.Error("P2P Server has error reading message from %s: %s", conn.RemoteAddr(), err.Error())
 			return
 		}
-		handler := s.handlers[message.GetMessageType()]
+		handler := handlers[message.GetMessageType()]
 		if handler != nil {
 			// Call handler to handle the request
 			writer := &FCRServerWriter{conn: conn}
@@ -126,7 +132,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 			err = handler(reader, writer, message)
 			if err != nil {
 				// Error that couldn't ignore, drop the connection.
-				logging.Error("P2P Server %s has error handling message from %s: %s", s.name, conn.RemoteAddr(), err.Error())
+				logging.Error("P2P Server has error handling message from %s: %s", conn.RemoteAddr(), err.Error())
 				return
 			}
 		} else {
@@ -134,7 +140,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn) {
 			err = sendInvalidMessage(conn, s.timeout)
 			if err != nil {
 				// Error in tcp communication, drop the connection.
-				logging.Error("P2P Server %s has error responding to %s: %s", s.name, conn.RemoteAddr(), err.Error())
+				logging.Error("P2P Server has error responding to %s: %s", conn.RemoteAddr(), err.Error())
 				return
 			}
 		}
@@ -150,9 +156,9 @@ func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int3
 	if requester == nil {
 		return nil, errors.New("No available requester found for given type")
 	}
-	comm, err := s.pool.getGatewayConn(s.name, id, accessFromGateway)
+	comm, err := s.pool.getGatewayConn(id, accessFromGateway)
 	if err != nil {
-		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
+		logging.Error("P2P Server has error get gateway connection to %s: %s", id.ToString(), err.Error())
 		return nil, err
 	}
 	comm.lock.Lock()
@@ -178,9 +184,9 @@ func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int
 	if requester == nil {
 		return nil, errors.New("No available requester found for given type")
 	}
-	comm, err := s.pool.getGatewayConn(s.name, id, accessFromProvider)
+	comm, err := s.pool.getGatewayConn(id, accessFromProvider)
 	if err != nil {
-		logging.Error("P2P Server %s has error get gateway connection to %s: %s", s.name, id.ToString(), err.Error())
+		logging.Error("P2P Server has error get gateway connection to %s: %s", id.ToString(), err.Error())
 		return nil, err
 	}
 	comm.lock.Lock()
@@ -206,9 +212,9 @@ func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ..
 	if requester == nil {
 		return nil, errors.New("No available requester found for given type")
 	}
-	comm, err := s.pool.getProviderConn(s.name, id)
+	comm, err := s.pool.getProviderConn(id)
 	if err != nil {
-		logging.Error("P2P Server %s has error get provider connection to %s: %s", s.name, id.ToString(), err.Error())
+		logging.Error("P2P Server has error get provider connection to %s: %s", id.ToString(), err.Error())
 		return nil, err
 	}
 	comm.lock.Lock()
