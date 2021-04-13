@@ -155,7 +155,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount string) error {
 		var decodedReturn init3.ExecReturn
 		err = decodedReturn.UnmarshalCBOR(bytes.NewReader(receipt.Return))
 		if err != nil {
-			logging.Error("Error unmarshal receipt: %v", receipt)
+			logging.Error("Payment manager has error unmarshal receipt: %v", receipt)
 			return errors.New("Error unmarshal receipt")
 		}
 		// Create new channel
@@ -490,7 +490,7 @@ func waitReceipt(cid *cid.Cid, api *apistruct.FullNodeStruct) *types.MessageRece
 	for {
 		receipt, err = api.StateGetReceipt(context.Background(), *cid, types.EmptyTSK)
 		if err != nil {
-			logging.Warn("Error getting recipient of cid: %s", cid.String())
+			logging.Warn("Payment manager has error getting recipient of cid: %s", cid.String())
 		}
 		if receipt != nil {
 			break

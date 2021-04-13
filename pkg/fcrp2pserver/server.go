@@ -94,7 +94,7 @@ func (s *FCRP2PServer) Start(listenAddr string) error {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
-				logging.Error(err.Error())
+				logging.Error("P2P server %s has error accepting connection: %s", err.Error())
 				continue
 			}
 			logging.Info("P2P server %s has incoming connection from :%s", s.name, conn.RemoteAddr())
