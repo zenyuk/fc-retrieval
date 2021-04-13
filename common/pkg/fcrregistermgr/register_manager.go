@@ -20,21 +20,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
-
-// To implement register manager.
-// 1. NewFCRRegisterMgr() initialises a register manager.
-//		If given gateway param is true, initialise a map[nodeid](register.GatewayRegister) <- this can be a db
-//		If given provider param is true, initialise a map[nodeid](register.ProviderRegister) <- this can be a db
-// 2. Start() starts a thread to auto update the internal map every given duration.
-//		Make sure Start() only works at first time, later attempt to call should fail.
-// 3. Refresh() refreshs the internal map immediately.
-// 4. GetGateway() returns a gateway register if found.
-// 5. GetProvider() returns a provider register if found.
-// Note to handle access from multiple threads (RWMutex is required to access internal storage for example).
 
 // Register Manager manages the internal storage of registered nodes.
 type FCRRegisterMgr struct {
@@ -132,6 +122,13 @@ func (mgr *FCRRegisterMgr) Refresh() {
 	}
 }
 
+// GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
+func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID) []register.GatewayRegister {
+	// TODO: To implement.
+	// Note: needs to return a list of copies.
+	return nil
+}
+
 // GetGateway returns a gateway register if found.
 func (mgr *FCRRegisterMgr) GetGateway(id *nodeid.NodeID) *register.GatewayRegister {
 	if !mgr.start || !mgr.gatewayDiscv {
@@ -139,15 +136,27 @@ func (mgr *FCRRegisterMgr) GetGateway(id *nodeid.NodeID) *register.GatewayRegist
 	}
 	mgr.registeredGatewaysMapLock.RLock()
 	gateway, ok := mgr.registeredGatewaysMap[id.ToString()]
-	mgr.registeredGatewaysMapLock.RUnlock()
 	if !ok {
+		mgr.registeredGatewaysMapLock.RUnlock()
 		// TODO: Do we call refresh here, if can't find a gateway?
 		// mgr.Refresh()
 		mgr.registeredGatewaysMapLock.RLock()
 		gateway = mgr.registeredGatewaysMap[id.ToString()]
-		mgr.registeredGatewaysMapLock.RUnlock()
 	}
-	return &gateway
+	defer mgr.registeredGatewaysMapLock.RUnlock()
+	// Return the pointer of a copy of the register
+	res := register.GatewayRegister{
+		NodeID:              gateway.NodeID,
+		Address:             gateway.Address,
+		RootSigningKey:      gateway.RootSigningKey,
+		SigningKey:          gateway.SigningKey,
+		RegionCode:          gateway.RegionCode,
+		NetworkInfoGateway:  gateway.NetworkInfoGateway,
+		NetworkInfoProvider: gateway.NetworkInfoProvider,
+		NetworkInfoClient:   gateway.NetworkInfoClient,
+		NetworkInfoAdmin:    gateway.NetworkInfoAdmin,
+	}
+	return &res
 }
 
 // GetProvider returns a provider register if found.
@@ -157,15 +166,26 @@ func (mgr *FCRRegisterMgr) GetProvider(id *nodeid.NodeID) *register.ProviderRegi
 	}
 	mgr.registeredProvidersMapLock.RLock()
 	provider, ok := mgr.registeredProvidersMap[id.ToString()]
-	mgr.registeredProvidersMapLock.RUnlock()
 	if !ok {
+		mgr.registeredGatewaysMapLock.RUnlock()
 		// TODO: Do we call refresh here, if can't find a provider?
 		// mgr.Refresh()
 		mgr.registeredProvidersMapLock.RLock()
 		provider = mgr.registeredProvidersMap[id.ToString()]
-		mgr.registeredProvidersMapLock.RUnlock()
 	}
-	return &provider
+	defer mgr.registeredGatewaysMapLock.RUnlock()
+	// Return the pointer of a copy of the register
+	res := register.ProviderRegister{
+		NodeID:             provider.NodeID,
+		Address:            provider.Address,
+		RootSigningKey:     provider.RootSigningKey,
+		SigningKey:         provider.SigningKey,
+		RegionCode:         provider.RegionCode,
+		NetworkInfoGateway: provider.NetworkInfoGateway,
+		NetworkInfoClient:  provider.NetworkInfoClient,
+		NetworkInfoAdmin:   provider.NetworkInfoAdmin,
+	}
+	return &res
 }
 
 // updateGateways updates gateways.
