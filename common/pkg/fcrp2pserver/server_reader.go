@@ -24,10 +24,13 @@ import (
 
 // FCRServerReader stores the connection to read from.
 type FCRServerReader struct {
-	conn net.Conn
+	conn     net.Conn
+	response *fcrmessages.FCRMessage
 }
 
 // Write reads a message.
 func (r *FCRServerReader) Read(timeout time.Duration) (*fcrmessages.FCRMessage, error) {
-	return readTCPMessage(r.conn, timeout)
+	res, err := readTCPMessage(r.conn, timeout)
+	r.response = res
+	return res, err
 }
