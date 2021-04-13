@@ -51,12 +51,12 @@ type communicationPool struct {
 }
 
 // getGatewayConn gets a connection to a given gateway for sending request
-func (c *communicationPool) getGatewayConn(name string, id *nodeid.NodeID, accessFrom int) (*communicationChannel, error) {
+func (c *communicationPool) getGatewayConn(id *nodeid.NodeID, accessFrom int) (*communicationChannel, error) {
 	c.activeGatewaysLock.RLock()
 	comm := c.activeGateways[id.ToString()]
 	c.activeGatewaysLock.RUnlock()
 	if comm == nil {
-		logging.Info("P2P server %s has no active connection to gateway %s, attempt connecting", name, id.ToString())
+		logging.Info("P2P server has no active connection to gateway %s, attempt connecting", id.ToString())
 		gatewayInfo := c.registerMgr.GetGateway(id)
 		if gatewayInfo == nil {
 			return nil, errors.New("Gateway not found")
@@ -94,12 +94,12 @@ func (c *communicationPool) getGatewayConn(name string, id *nodeid.NodeID, acces
 }
 
 // getProviderConn gets a connection to a given provider for sending request
-func (c *communicationPool) getProviderConn(name string, id *nodeid.NodeID) (*communicationChannel, error) {
+func (c *communicationPool) getProviderConn(id *nodeid.NodeID) (*communicationChannel, error) {
 	c.activeProvidersLock.RLock()
 	comm := c.activeProviders[id.ToString()]
 	c.activeProvidersLock.RUnlock()
 	if comm == nil {
-		logging.Info("P2P server %s has no active connection to provider %s, attempt connecting", name, id.ToString())
+		logging.Info("P2P server has no active connection to provider %s, attempt connecting", id.ToString())
 		providerInfo := c.registerMgr.GetProvider(id)
 		if providerInfo == nil {
 			return nil, errors.New("Provider not found")
