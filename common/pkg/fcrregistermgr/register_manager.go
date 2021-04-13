@@ -123,10 +123,10 @@ func (mgr *FCRRegisterMgr) Refresh() {
 }
 
 // GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
-func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID) []register.GatewayRegister {
+func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int) ([]register.GatewayRegister, error) {
 	// TODO: To implement.
 	// Note: needs to return a list of copies.
-	return nil
+	return nil, errors.New("Not yet implemented")
 }
 
 // GetGateway returns a gateway register if found.
