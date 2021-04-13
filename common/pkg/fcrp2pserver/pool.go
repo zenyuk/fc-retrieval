@@ -16,6 +16,7 @@ package fcrp2pserver
  */
 
 import (
+	"errors"
 	"net"
 	"sync"
 
@@ -56,9 +57,9 @@ func (c *communicationPool) getGatewayConn(name string, id *nodeid.NodeID, acces
 	c.activeGatewaysLock.RUnlock()
 	if comm == nil {
 		logging.Info("P2P server %s has no active connection to gateway %s, attempt connecting", name, id.ToString())
-		gatewayInfo, err := c.registerMgr.GetGateway(id)
-		if err != nil {
-			return nil, err
+		gatewayInfo := c.registerMgr.GetGateway(id)
+		if gatewayInfo == nil {
+			return nil, errors.New("Gateway not found")
 		}
 		// Get address
 		var address string
@@ -99,9 +100,9 @@ func (c *communicationPool) getProviderConn(name string, id *nodeid.NodeID) (*co
 	c.activeProvidersLock.RUnlock()
 	if comm == nil {
 		logging.Info("P2P server %s has no active connection to provider %s, attempt connecting", name, id.ToString())
-		providerInfo, err := c.registerMgr.GetProvider(id)
-		if err != nil {
-			return nil, err
+		providerInfo := c.registerMgr.GetProvider(id)
+		if providerInfo == nil {
+			return nil, errors.New("Provider not found")
 		}
 		// Get address
 		address := providerInfo.GetNetworkInfoGateway()
