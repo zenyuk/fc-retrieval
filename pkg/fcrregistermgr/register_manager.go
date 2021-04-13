@@ -122,13 +122,6 @@ func (mgr *FCRRegisterMgr) Refresh() {
 	}
 }
 
-// GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
-func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int) ([]register.GatewayRegister, error) {
-	// TODO: To implement.
-	// Note: needs to return a list of copies.
-	return nil, errors.New("Not yet implemented")
-}
-
 // GetGateway returns a gateway register if found.
 func (mgr *FCRRegisterMgr) GetGateway(id *nodeid.NodeID) *register.GatewayRegister {
 	if !mgr.start || !mgr.gatewayDiscv {
@@ -167,13 +160,13 @@ func (mgr *FCRRegisterMgr) GetProvider(id *nodeid.NodeID) *register.ProviderRegi
 	mgr.registeredProvidersMapLock.RLock()
 	provider, ok := mgr.registeredProvidersMap[id.ToString()]
 	if !ok {
-		mgr.registeredGatewaysMapLock.RUnlock()
+		mgr.registeredProvidersMapLock.RUnlock()
 		// TODO: Do we call refresh here, if can't find a provider?
 		// mgr.Refresh()
 		mgr.registeredProvidersMapLock.RLock()
 		provider = mgr.registeredProvidersMap[id.ToString()]
 	}
-	defer mgr.registeredGatewaysMapLock.RUnlock()
+	defer mgr.registeredProvidersMapLock.RUnlock()
 	// Return the pointer of a copy of the register
 	res := register.ProviderRegister{
 		NodeID:             provider.NodeID,
@@ -186,6 +179,60 @@ func (mgr *FCRRegisterMgr) GetProvider(id *nodeid.NodeID) *register.ProviderRegi
 		NetworkInfoAdmin:   provider.NetworkInfoAdmin,
 	}
 	return &res
+}
+
+// GetAllGateways returns  all discovered gateways.
+func (mgr *FCRRegisterMgr) GetAllGateways() []register.GatewayRegister {
+	if !mgr.start || !mgr.gatewayDiscv {
+		return nil
+	}
+	res := make([]register.GatewayRegister, 0)
+	mgr.registeredGatewaysMapLock.RLock()
+	defer mgr.registeredGatewaysMapLock.RUnlock()
+	for _, gateway := range mgr.registeredGatewaysMap {
+		res = append(res, register.GatewayRegister{
+			NodeID:              gateway.NodeID,
+			Address:             gateway.Address,
+			RootSigningKey:      gateway.RootSigningKey,
+			SigningKey:          gateway.SigningKey,
+			RegionCode:          gateway.RegionCode,
+			NetworkInfoGateway:  gateway.NetworkInfoGateway,
+			NetworkInfoProvider: gateway.NetworkInfoProvider,
+			NetworkInfoClient:   gateway.NetworkInfoClient,
+			NetworkInfoAdmin:    gateway.NetworkInfoAdmin,
+		})
+	}
+	return res
+}
+
+// GetAllProviders returns  all discovered providers.
+func (mgr *FCRRegisterMgr) GetAllProviders() []register.ProviderRegister {
+	if !mgr.start || !mgr.providerDiscv {
+		return nil
+	}
+	res := make([]register.ProviderRegister, 0)
+	mgr.registeredProvidersMapLock.RLock()
+	defer mgr.registeredProvidersMapLock.RUnlock()
+	for _, provider := range mgr.registeredProvidersMap {
+		res = append(res, register.ProviderRegister{
+			NodeID:             provider.NodeID,
+			Address:            provider.Address,
+			RootSigningKey:     provider.RootSigningKey,
+			SigningKey:         provider.SigningKey,
+			RegionCode:         provider.RegionCode,
+			NetworkInfoGateway: provider.NetworkInfoGateway,
+			NetworkInfoClient:  provider.NetworkInfoClient,
+			NetworkInfoAdmin:   provider.NetworkInfoAdmin,
+		})
+	}
+	return res
+}
+
+// GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
+func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int) ([]register.GatewayRegister, error) {
+	// TODO: To implement.
+	// Note: needs to return a list of copies.
+	return nil, errors.New("Not yet implemented")
 }
 
 // updateGateways updates gateways.
