@@ -51,9 +51,6 @@ type FCRRegisterMgr struct {
 	gatewayDiscv  bool
 	providerDiscv bool
 
-	// Gateway ID of self (only required when gateway is true)
-	gatewayID string
-
 	// Channels to control the threads
 	gatewayShutdownCh  chan bool
 	providerShutdownCh chan bool
@@ -70,14 +67,13 @@ type FCRRegisterMgr struct {
 }
 
 // NewFCRRegisterMgr creates a new register manager.
-func NewFCRRegisterMgr(registerAPI string, providerDiscv bool, gatewayDiscv bool, gatewayID nodeid.NodeID, refreshDuration time.Duration) *FCRRegisterMgr {
+func NewFCRRegisterMgr(registerAPI string, providerDiscv bool, gatewayDiscv bool, refreshDuration time.Duration) *FCRRegisterMgr {
 	res := &FCRRegisterMgr{
 		start:           false,
 		registerAPI:     registerAPI,
 		refreshDuration: refreshDuration,
 		gatewayDiscv:    gatewayDiscv,
 		providerDiscv:   providerDiscv,
-		gatewayID:       gatewayID.ToString(),
 	}
 	if gatewayDiscv {
 		res.registeredGatewaysMap = make(map[string]register.GatewayRegister)
@@ -181,10 +177,6 @@ func (mgr *FCRRegisterMgr) updateGateways() {
 		} else {
 			// Check for update
 			for _, gateway := range gateways {
-				// Skip itself
-				if gateway.NodeID == mgr.gatewayID {
-					continue
-				}
 				mgr.registeredGatewaysMapLock.RLock()
 				storedInfo, ok := mgr.registeredGatewaysMap[gateway.NodeID]
 				mgr.registeredGatewaysMapLock.RUnlock()
