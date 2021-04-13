@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -37,9 +36,6 @@ type FCRP2PServer struct {
 	// Connection pool
 	pool *communicationPool
 
-	// Payment manager
-	paymentMgr *fcrpaymentmgr.FCRPaymentMgr
-
 	// handlers for different message type
 	handlers   map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error
 	requesters map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error
@@ -48,7 +44,6 @@ type FCRP2PServer struct {
 // NewFCRP2PServer creates an empty FCRP2PServer.
 func NewFCRP2PServer(
 	name string,
-	paymentMgr *fcrpaymentmgr.FCRPaymentMgr,
 	registerMgr *fcrregistermgr.FCRRegisterMgr,
 	defaultTimeout time.Duration) *FCRP2PServer {
 	return &FCRP2PServer{
@@ -62,7 +57,6 @@ func NewFCRP2PServer(
 			activeProviders:     make(map[string](*communicationChannel)),
 			activeProvidersLock: sync.RWMutex{},
 		},
-		paymentMgr: paymentMgr,
 		handlers:   make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
 		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) error),
 	}
