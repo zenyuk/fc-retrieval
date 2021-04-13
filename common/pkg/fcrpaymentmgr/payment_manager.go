@@ -316,6 +316,7 @@ func (mgr *FCRPaymentMgr) Receive(channel string, voucher string) (*big.Int, err
 			lock:       sync.RWMutex{},
 			laneStates: make(map[uint64]*laneState),
 		}
+		mgr.inboundChs[channel] = cs
 	} else {
 		// Need to update the channel state
 		defer mgr.inboundChsLock.RUnlock()
