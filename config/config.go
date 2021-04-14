@@ -60,9 +60,9 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		ProviderID:     conf.GetString("PROVIDER_ID"),
 		ProviderSigAlg: parseUint8(conf.GetString("PROVIDER_SIG_ALG")),
 
-		RegisterAPIURL:         	conf.GetString("REGISTER_API_URL"),
-		RegisterRefreshDuration:	registerRefreshDuration,
-		
+		RegisterAPIURL:          conf.GetString("REGISTER_API_URL"),
+		RegisterRefreshDuration: registerRefreshDuration,
+
 		ProviderAddress:        conf.GetString("PROVIDER_ADDRESS"),
 		ProviderRootSigningKey: conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
 		ProviderSigningKey:     conf.GetString("PROVIDER_SIGNING_KEY"),
@@ -71,7 +71,7 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		NetworkInfoGateway:     conf.GetString("IP") + ":" + conf.GetString("NETWORK_GATEWAY_INFO"),
 		NetworkInfoAdmin:       conf.GetString("IP") + ":" + conf.GetString("NETWORK_ADMIN_INFO"),
 
-		TCPInactivityTimeout: 		tcpInactivityTimeout,
+		TCPInactivityTimeout:     tcpInactivityTimeout,
 		TCPLongInactivityTimeout: tcpLongInactivityTimeout,
 	}
 }
