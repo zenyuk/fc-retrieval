@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/ConsenSys/fc-retrieval-register v0.0.0-20210304201730-61c8a9a0fd9f
+	github.com/ant0ine/go-json-rest v3.3.2+incompatible // indirect
 	github.com/cbergoon/merkletree v0.2.0
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c
 	github.com/filecoin-project/go-address v0.0.5

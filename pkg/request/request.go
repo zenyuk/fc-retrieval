@@ -1,5 +1,20 @@
 package request
 
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import (
 	"bytes"
 	"encoding/json"
@@ -9,7 +24,7 @@ import (
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
@@ -43,7 +58,7 @@ func SendJSON(url string, data interface{}) error {
 func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRMessage, error) {
 	var data fcrmessages.FCRMessage
 	jsonData, _ := json.Marshal(message)
-	log.Info("Sending JSON to url: %v", url)
+	logging.Info("Sending JSON to url: %v", url)
 	contentReader := bytes.NewReader(jsonData)
 	req, err := http.NewRequest("POST", url, contentReader)
 	req.Header.Set("Content-Type", "application/json")
