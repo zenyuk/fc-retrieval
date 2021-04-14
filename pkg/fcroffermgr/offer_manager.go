@@ -24,15 +24,15 @@ import (
 
 // FCROfferMgr manages offer storage
 type FCROfferMgr struct {
-	DHTOffers   *offerStorage
-	GroupOffers *offerStorage
+	dhtOffers   *offerStorage
+	groupOffers *offerStorage
 }
 
 // NewFCROfferMgr returns
 func NewFCROfferMgr() *FCROfferMgr {
 	return &FCROfferMgr{
-		DHTOffers:   newOfferStorage(),
-		GroupOffers: newOfferStorage(),
+		dhtOffers:   newOfferStorage(),
+		groupOffers: newOfferStorage(),
 	}
 }
 
@@ -41,7 +41,7 @@ func (mgr *FCROfferMgr) AddGroupOffer(offer *cidoffer.CIDOffer) error {
 	if len(offer.GetCIDs()) <= 1 {
 		return errors.New("Not a group offer")
 	}
-	return mgr.GroupOffers.add(offer)
+	return mgr.groupOffers.add(offer)
 }
 
 // AddDHTOffer stores a dht offer
@@ -49,23 +49,23 @@ func (mgr *FCROfferMgr) AddDHTOffer(offer *cidoffer.CIDOffer) error {
 	if len(offer.GetCIDs()) != 1 {
 		return errors.New("Not a DHT offer")
 	}
-	return mgr.DHTOffers.add(offer)
+	return mgr.dhtOffers.add(offer)
 }
 
 // GetGroupOffers returns a list of group offers that contain the given cid
 func (mgr *FCROfferMgr) GetGroupOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, bool) {
-	res := mgr.GroupOffers.get(cid)
+	res := mgr.groupOffers.get(cid)
 	return res, len(res) > 0
 }
 
 // GetDHTOffers returns a list of dht offers that contain the given cid
 func (mgr *FCROfferMgr) GetDHTOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, bool) {
-	res := mgr.DHTOffers.get(cid)
+	res := mgr.dhtOffers.get(cid)
 	return res, len(res) > 0
 }
 
 // GetOffers returns a list of all offers (group or dht) that contain the given cid
 func (mgr *FCROfferMgr) GetOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, bool) {
-	res := append(mgr.GroupOffers.get(cid), mgr.DHTOffers.get(cid)...)
+	res := append(mgr.groupOffers.get(cid), mgr.dhtOffers.get(cid)...)
 	return res, len(res) > 0
 }
