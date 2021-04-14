@@ -116,9 +116,11 @@ func (mgr *FCRRegisterMgr) Refresh() {
 	}
 	if mgr.gatewayDiscv {
 		mgr.gatewayRefreshCh <- true
+		<-mgr.gatewayRefreshCh
 	}
 	if mgr.providerDiscv {
 		mgr.providerRefreshCh <- true
+		<-mgr.providerRefreshCh
 	}
 }
 
@@ -237,6 +239,7 @@ func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int) ([
 
 // updateGateways updates gateways.
 func (mgr *FCRRegisterMgr) updateGateways() {
+	refreshForce := false
 	for {
 		gateways, err := register.GetRegisteredGateways(mgr.registerAPI)
 		if err != nil {
@@ -270,11 +273,16 @@ func (mgr *FCRRegisterMgr) updateGateways() {
 				}
 			}
 		}
+		if refreshForce {
+			mgr.gatewayRefreshCh <- true
+			refreshForce = false
+		}
 		afterChan := time.After(mgr.refreshDuration)
 		select {
 		case <-mgr.gatewayRefreshCh:
 			// Need to refresh
 			logging.Error("Register manager force update internal gateway map.")
+			refreshForce = true
 		case <-afterChan:
 			// Need to refresh
 		case <-mgr.gatewayShutdownCh:
@@ -287,6 +295,7 @@ func (mgr *FCRRegisterMgr) updateGateways() {
 
 // updateProviders updates providers.
 func (mgr *FCRRegisterMgr) updateProviders() {
+	refreshForce := false
 	for {
 		providers, err := register.GetRegisteredProviders(mgr.registerAPI)
 		if err != nil {
@@ -319,11 +328,16 @@ func (mgr *FCRRegisterMgr) updateProviders() {
 				}
 			}
 		}
+		if refreshForce {
+			mgr.providerRefreshCh <- true
+			refreshForce = false
+		}
 		afterChan := time.After(mgr.refreshDuration)
 		select {
 		case <-mgr.providerRefreshCh:
 			// Need to refresh
 			logging.Error("Register manager force update internal provider map.")
+			refreshForce = true
 		case <-afterChan:
 			// Need to refresh
 		case <-mgr.providerShutdownCh:
