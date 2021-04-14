@@ -86,11 +86,11 @@ func (s *FCRP2PServer) AddRequester(msgType int32, requester func(reader *FCRSer
 
 // Start is used to start the server.
 func (s *FCRP2PServer) Start() error {
+	// Start server
+	if s.start {
+		return errors.New("Server already started")
+	}
 	for _, listenAddr := range s.listenAddrs {
-		// Start server
-		if s.start {
-			return errors.New("Server already started")
-		}
 		ln, err := net.Listen("tcp", ":"+listenAddr)
 		if err != nil {
 			return err
@@ -108,6 +108,7 @@ func (s *FCRP2PServer) Start() error {
 		}(ln)
 		logging.Info("P2P server starts listening on %s for connections.", listenAddr)
 	}
+	s.start = true
 	return nil
 }
 
