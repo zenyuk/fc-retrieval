@@ -63,7 +63,8 @@ func main() {
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminInitialiseKeyRequestType, adminapi.HandleProviderAdminInitialiseKeyRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminGetPublishedOfferRequestType, adminapi.HandleProviderAdminGetPublishedOfferRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminPublishDHTOfferRequestType, adminapi.HandleProviderAdminPublishDHTOfferRequest).
-		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminPublishGroupOfferRequestType, adminapi.HandleProviderAdminPublishGroupOfferRequest)
+		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminPublishGroupOfferRequestType, adminapi.HandleProviderAdminPublishGroupOfferRequest).
+		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminForceRefreshRequestType, adminapi.HandleProviderAdminForceRefreshRequest)
 
 	// Start REST Server
 	err := c.RESTServer.Start()
