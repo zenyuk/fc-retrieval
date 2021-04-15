@@ -1,35 +1,56 @@
 package adminapi
 
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import (
-	"math/rand"
+	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessages.FCRMessage, settings settings.AppSettings) {
+// HandleProviderAdminPublishDHTOfferRequest handles provider admin publish dht offer request
+func HandleProviderAdminPublishDHTOfferRequest(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
 	// Get core structure
 	c := core.GetSingleInstance()
+
 	if c.ProviderPrivateKey == nil {
-		logging.Error("This provider hasn't been initialised by the admin.")
+		s := "This provider hasn't been initialised by the admin"
+		logging.Error(s)
+		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}
-	logging.Info("handleProviderDHTPublishGroupCID : %+v", request)
 
 	cids, price, expiry, qos, err := fcrmessages.DecodeProviderAdminPublishDHTOfferRequest(request)
 	if err != nil {
-		logging.Error("Error in decoding the incoming request %+v", err.Error())
+		s := "Fail to decode message."
+		logging.Error(s + err.Error())
+		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}
+
 	if len(cids) == 0 || len(cids) != len(price) || len(cids) != len(expiry) || len(cids) != len(qos) {
-		logging.Error("Incoming offer info does not have same length/have zero length")
+		s := "Incoming offer info does not have same length/have zero length"
+		logging.Error(s)
+		rest.Error(w, s, http.StatusBadRequest)
 		return
 	}
 
@@ -37,12 +58,16 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 	for i := 0; i < len(cids); i++ {
 		offer, err := cidoffer.NewCIDOffer(c.ProviderID, []cid.ContentID{cids[i]}, price[i], expiry[i], qos[i])
 		if err != nil {
-			logging.Error("Error in creating new offer %+v", err.Error())
+			s := "Internal error: Fail to create new offer."
+			logging.Error(s + err.Error())
+			rest.Error(w, s, http.StatusInternalServerError)
 			return
 		}
 		// Sign the offer
 		if offer.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
-			logging.Error("Error in signing the offer.")
+			s := "Internal error: Fail to sign offer."
+			logging.Error(s + err.Error())
+			rest.Error(w, s, http.StatusInternalServerError)
 			return
 		}
 		// Append offer
@@ -51,24 +76,29 @@ func handleProviderDHTPublishGroupCID(w rest.ResponseWriter, request *fcrmessage
 
 	// Add offers
 	for _, offer := range offers {
-		c.SingleOffers.Add(&offer)
+		c.OffersMgr.AddDHTOffer(&offer)
 	}
 
-	c.RegisteredGatewaysMapLock.RLock()
-	defer c.RegisteredGatewaysMapLock.RUnlock()
-
-	for _, gw := range c.RegisteredGatewaysMap {
-		gatewayID, err := nodeid.NewNodeIDFromHexString(gw.GetNodeID())
+	for _, cid := range cids {
+		gateways, err := c.RegisterMgr.GetGatewaysNearCID(&cid, 0)
 		if err != nil {
-			logging.Error("Error with nodeID %v: %v", gw.GetNodeID(), err)
-			continue
+			s := "Internal error: Fail to get gateways near the given cid."
+			logging.Error(s + err.Error())
+			rest.Error(w, s, http.StatusInternalServerError)
+			return
 		}
-		// TODO, Need to select only cid offers that are close to the gatewayID
-		// For now, it selects a random offer from the offers.
-		offer := offers[rand.Intn(len(offers))]
-		err = providerapi.RequestDHTProviderPublishGroupCID([]cidoffer.CIDOffer{offer}, gatewayID, settings)
-		if err != nil {
-			logging.Error("Error in publishing group offer :%v", err)
+		for _, gw := range gateways {
+			gatewayID, err := nodeid.NewNodeIDFromHexString(gw.NodeID)
+			if err != nil {
+				s := "Fail to generate node id."
+				logging.Error(s + err.Error())
+				rest.Error(w, s, http.StatusBadRequest)
+				return
+			}
+			_, err = c.P2PServer.RequestGatewayFromProvider(gatewayID, fcrmessages.ProviderPublishDHTOfferRequestType, offers, gatewayID)
+			if err != nil {
+				logging.Error("Error in publishing dht offer to %s: %s", gatewayID.ToString(), err.Error())
+			}
 		}
 	}
 
