@@ -23,8 +23,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // RequestDHTOfferAck requests a dht offer ack to a given provider for a pair of cid and gateway id

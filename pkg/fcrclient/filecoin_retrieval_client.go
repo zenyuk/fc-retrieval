@@ -26,7 +26,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // FilecoinRetrievalClient is an example implementation using the api,
