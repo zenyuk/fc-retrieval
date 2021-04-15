@@ -25,10 +25,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,9 +65,9 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	gwConfBuilder.SetRegisterURL(providerTest_providerConfig.GetString("REGISTER_API_URL"))
 	gwConf := gwConfBuilder.Build()
 
-	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdminClient(*gwConf)
+	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gwConf)
 
-	gatewayRootKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	logging.Info("gatewayRootKey: %v", gatewayRootKey)
 	if err != nil {
 		panic(err)
@@ -77,7 +77,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	gatewayRetrievalPrivateKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRetrievalPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
 	logging.Info("gatewayRetrievalPrivateKey: %v", gatewayRetrievalPrivateKey)
 	if err != nil {
 		panic(err)
@@ -104,7 +104,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		NetworkInfoAdmin:    gatewayConfig_gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
 	}
 
-	err = gwAdmin.InitializeGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
@@ -115,7 +115,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	confBuilder.SetRegisterURL(providerTest_providerConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
 
-	pvadmin := fcrprovideradmin.InitFilecoinRetrievalProviderAdminClient(*conf)
+	pvadmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
 
 	providerRootKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
 	logging.Info("providerRootKey: %v", providerRootKey)

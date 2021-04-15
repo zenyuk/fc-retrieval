@@ -22,8 +22,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
@@ -38,13 +38,12 @@ func TestOneGateway(t *testing.T) {
 	}
 
 	confBuilder := fcrgatewayadmin.CreateSettings()
-	confBuilder.SetEstablishmentTTL(101)
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL("http://register:9020")
 	conf := confBuilder.Build()
-	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdminClient(*conf)
+	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
-	gatewayRootKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +51,7 @@ func TestOneGateway(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	gatewayRetrievalPrivateKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRetrievalPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +74,7 @@ func TestOneGateway(t *testing.T) {
 		NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
 	}
 
-	err = gwAdmin.InitializeGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
