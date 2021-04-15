@@ -1,4 +1,4 @@
-package settings
+package fcrprovideradmin
 
 const (
 	// DefaultLogLevel is the default amount of logging to show.
