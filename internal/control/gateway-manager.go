@@ -39,7 +39,7 @@ type GatewayManager struct {
 	settings      settings.ClientGatewayAdminSettings
 	gateway       ActiveGateway
 	gatewaysLock  sync.RWMutex
-	registeredMap map[string]register.RegisteredNode
+	registeredMap map[string]fcrtcpcomms.RegisteredNode
 	conxPool      *fcrtcpcomms.CommunicationPool
 }
 
@@ -52,7 +52,7 @@ type ActiveGateway struct {
 func NewGatewayManager(conf settings.ClientGatewayAdminSettings) *GatewayManager {
 	g := GatewayManager{}
 	g.settings = conf
-	g.registeredMap = make(map[string]register.RegisteredNode)
+	g.registeredMap = make(map[string]fcrtcpcomms.RegisteredNode)
 	g.conxPool = fcrtcpcomms.NewCommunicationPool(&g.registeredMap, &sync.RWMutex{})
 	return &g
 }
