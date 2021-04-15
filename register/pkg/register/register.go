@@ -6,19 +6,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
-// RegisteredNode stored network information of a registered node
-type RegisteredNode interface {
-	GetNodeID() string
-	GetAddress() string
-	GetRegionCode() string
-	GetRootSigningKey() (*fcrcrypto.KeyPair, error)
-	GetSigningKey() (*fcrcrypto.KeyPair, error)
-	GetNetworkInfoGateway() string
-	GetNetworkInfoProvider() string
-	GetNetworkInfoClient() string
-	GetNetworkInfoAdmin() string
-}
-
 // GatewayRegister stores information of a registered gateway
 type GatewayRegister struct {
 	NodeID              string `json:"nodeId"`
