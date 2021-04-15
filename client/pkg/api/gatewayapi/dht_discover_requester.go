@@ -23,8 +23,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // RequestDHTDiscover requests a dht discover to a given gateway for a given contentID, nonce and ttl.

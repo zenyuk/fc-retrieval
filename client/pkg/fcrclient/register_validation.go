@@ -17,7 +17,7 @@ package fcrclient
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // Validate the information coming from the Register.

@@ -22,8 +22,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 )
 
 // RequestStandardDiscover requests a standard discover to a given gateway for a given contentID, nonce and ttl.
