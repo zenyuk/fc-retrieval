@@ -60,7 +60,7 @@ func SendMessage(url string, message *fcrmessages.FCRMessage) (*fcrmessages.FCRM
 	jsonData, _ := json.Marshal(message)
 	logging.Info("Sending JSON to url: %v", url)
 	contentReader := bytes.NewReader(jsonData)
-	req, err := http.NewRequest("POST", url, contentReader)
+	req, err := http.NewRequest("POST", "http://"+url+"/v1", contentReader)
 	req.Header.Set("Content-Type", "application/json")
 
 	r, err := httpClient.Do(req)
