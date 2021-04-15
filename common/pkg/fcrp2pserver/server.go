@@ -46,7 +46,7 @@ func NewFCRP2PServer(
 	listenAddrs []string,
 	registerMgr *fcrregistermgr.FCRRegisterMgr,
 	defaultTimeout time.Duration) *FCRP2PServer {
-	return &FCRP2PServer{
+	s := &FCRP2PServer{
 		start:       false,
 		listenAddrs: listenAddrs,
 		timeout:     defaultTimeout,
@@ -60,6 +60,10 @@ func NewFCRP2PServer(
 		handlers:   make(map[string]map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error),
 		requesters: make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, args ...interface{}) (*fcrmessages.FCRMessage, error)),
 	}
+	for _, listenAddr := range listenAddrs {
+		s.handlers[listenAddr] = make(map[int32]func(reader *FCRServerReader, writer *FCRServerWriter, request *fcrmessages.FCRMessage) error)
+	}
+	return s
 }
 
 // AddHandler is used to add a handler to the server for a given type.

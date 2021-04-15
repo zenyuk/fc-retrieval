@@ -38,11 +38,15 @@ type FCRRESTServer struct {
 func NewFCRRESTServer(
 	listenAddrs []string,
 ) *FCRRESTServer {
-	return &FCRRESTServer{
+	s := &FCRRESTServer{
 		start:       false,
 		listenAddrs: listenAddrs,
 		handlers:    make(map[string]map[int32]func(rw rest.ResponseWriter, request *fcrmessages.FCRMessage)),
 	}
+	for _, listenAddr := range listenAddrs {
+		s.handlers[listenAddr] = make(map[int32]func(rw rest.ResponseWriter, request *fcrmessages.FCRMessage))
+	}
+	return s
 }
 
 // AddHandler is used to add a handler to the server for a given type.
