@@ -55,12 +55,12 @@ func (o *offerStorage) add(newOffer *cidoffer.CIDOffer) error {
 	digest := newOffer.GetMessageDigest()
 	o.lock.RLock()
 	digestMap, exists := o.cidMap[testCIDStr]
+	o.lock.RUnlock()
 	if exists {
 		digestMap.lock.RLock()
 		_, exists = digestMap.dMap[digest]
 		digestMap.lock.RUnlock()
 	}
-	o.lock.RUnlock()
 	if exists {
 		// This offer is already in the system.
 		return nil
@@ -74,9 +74,9 @@ func (o *offerStorage) add(newOffer *cidoffer.CIDOffer) error {
 		cidStr := cid.ToString()
 		o.lock.RLock()
 		digestMap, exists = o.cidMap[cidStr]
+		o.lock.RUnlock()
 		if !exists {
 			// Need a new entry in cid map
-			o.lock.RUnlock()
 			o.lock.Lock()
 			digestMap = &digestOffer{
 				dMap: make(map[[cidoffer.CIDOfferDigestSize]byte]*cidoffer.CIDOffer),
@@ -84,7 +84,6 @@ func (o *offerStorage) add(newOffer *cidoffer.CIDOffer) error {
 			}
 			o.cidMap[cidStr] = digestMap
 			o.lock.Unlock()
-			o.lock.RLock()
 		}
 		// Add offer to digest map
 		digestMap.lock.Lock()
@@ -105,29 +104,35 @@ func (o *offerStorage) get(cid *cid.ContentID) []cidoffer.CIDOffer {
 	if !exists {
 		return res
 	}
+	toRemove := make([]cidoffer.CIDOffer, 0)
 	digestMap.lock.RLock()
-	for digest, offer := range digestMap.dMap {
+	for _, offer := range digestMap.dMap {
 		if offer.HasExpired() {
-			// Need to remove this offer
-			digestMap.lock.RUnlock()
-			o.lock.RLock()
-			for _, offerCID := range offer.GetCIDs() {
-				toUpdateDigestMap, exists := o.cidMap[offerCID.ToString()]
-				if !exists {
-					// Something is wrong.
-					panic("Internal error: Try to remove cid offer that are not existed in cid map")
-				}
-				toUpdateDigestMap.lock.Lock()
-				delete(toUpdateDigestMap.dMap, digest)
-				toUpdateDigestMap.lock.Unlock()
-				// After this deletion, it is possible this cid entry has no offers.
-				// This shouldn't be a problem, since this cid entry will be used in the future.
-			}
-			o.lock.RUnlock()
+			toRemove = append(toRemove, *offer)
 		} else {
 			res = append(res, *offer)
 		}
 	}
 	digestMap.lock.RUnlock()
+
+	// Before return the result
+	// Remove all expired offer
+	o.lock.RLock()
+	for _, offer := range toRemove {
+		digest := offer.GetMessageDigest()
+		for _, cid := range offer.GetCIDs() {
+			digestMap, exists := o.cidMap[cid.ToString()]
+			if !exists {
+				// Something is wrong
+				panic("Internal error: Try to remove cid offer that are not existed in cid map")
+			}
+			digestMap.lock.Lock()
+			delete(digestMap.dMap, digest)
+			digestMap.lock.Unlock()
+			// After this deletion, it is possible this cid entry has no offers.
+			// This shouldn't be a problem, since this cid entry will be used in the future.
+		}
+	}
+	o.lock.RUnlock()
 	return res
 }
