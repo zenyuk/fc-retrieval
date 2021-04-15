@@ -28,8 +28,9 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/api/adminapi"
 )
 
-// FilecoinRetrievalProviderAdmin holds information about the interaction of
-// the Filecoin Retrieval Provider Admin with Filecoin Retrieval Providers.
+// FilecoinRetrievalProviderAdmin is an example implementation using the api,
+// which holds information about the interaction of the Filecoin
+// Retrieval Provider Admin with Filecoin Retrieval Providers.
 type FilecoinRetrievalProviderAdmin struct {
 	Settings ProviderAdminSettings
 
