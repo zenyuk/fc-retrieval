@@ -15,16 +15,20 @@ package fcrclient
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const ver = "1"
-const build = "unknown"
+const (
+	// DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
+	defaultEstablishmentTTL = int64(100)
 
-// VersionInfo holds the version information for the Filecoin Retrieval Client library.
-type VersionInfo struct {
-	Version   string
-	BuildDate string
-}
+	// DefaultLogLevel is the default amount of logging to show.
+	defaultLogLevel = "trace"
 
-// GetVersion returns the static build information.
-func GetVersion() VersionInfo {
-	return VersionInfo{ver, build}
-}
+	// DefaultLogTarget is the default output location of log output.
+	defaultLogTarget = "STDOUT"
+
+	// DefaultLogServiceName is the default service name of logging.
+	defaultLogServiceName = "client"
+
+	// DefaultRegisterURL is the default location of the Register service.
+	// register:9020 is the value that will work for the integration test system.
+	defaultRegisterURL = "http://register:9020"
+)

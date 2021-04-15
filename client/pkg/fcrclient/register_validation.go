@@ -1,4 +1,4 @@
-package control
+package fcrclient
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
