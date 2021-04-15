@@ -20,36 +20,34 @@ import (
 	"errors"
 )
 
-// providerAdminEnrollGatewayResponse is the response to providerAdminEnrollGatewayRequest
-type providerAdminEnrollGatewayResponse struct {
-	Enrolled bool `json:"enrolled"`
+// providerAdminForceRefreshRequest is the request from an admin client to a provider to refresh internal register status
+type providerAdminForceRefreshRequest struct {
+	Refresh bool `json:"refresh"`
 }
 
-// EncodeProviderAdminEnrollGatewayResponse is used to get the FCRMessage of providerAdminEnrollGatewayResponse
-func EncodeProviderAdminEnrollGatewayResponse(
-	enrolled bool,
-) (*FCRMessage, error) {
-	body, err := json.Marshal(providerAdminEnrollGatewayResponse{
-		Enrolled: enrolled,
+// EncodeProviderAdminForceRefreshRequest is used to get the FCRMessage of providerAdminForceRefreshRequest
+func EncodeProviderAdminForceRefreshRequest(refresh bool) (*FCRMessage, error) {
+	body, err := json.Marshal(providerAdminForceRefreshRequest{
+		Refresh: refresh,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return CreateFCRMessage(ProviderAdminEnrollGatewayResponseType, body), nil
+	return CreateFCRMessage(ProviderAdminForceRefreshRequestType, body), nil
 }
 
-// DecodeProviderAdminEnrollGatewayResponse is used to get the fields from FCRMessage of providerAdminEnrollGatewayResponse
-func DecodeProviderAdminEnrollGatewayResponse(fcrMsg *FCRMessage) (
-	bool, // enrolled
+// DecodeProviderAdminForceRefreshRequest is used to get the fields from FCRMessage of providerAdminForceRefreshRequest
+func DecodeProviderAdminForceRefreshRequest(fcrMsg *FCRMessage) (
+	bool, // refresh
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != ProviderAdminEnrollGatewayResponseType {
+	if fcrMsg.GetMessageType() != ProviderAdminForceRefreshRequestType {
 		return false, errors.New("message type mismatch")
 	}
-	msg := providerAdminEnrollGatewayResponse{}
+	msg := providerAdminForceRefreshRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return false, err
 	}
-	return msg.Enrolled, nil
+	return msg.Refresh, nil
 }

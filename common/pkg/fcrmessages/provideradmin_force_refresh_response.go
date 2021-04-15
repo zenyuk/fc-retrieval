@@ -20,36 +20,36 @@ import (
 	"errors"
 )
 
-// gatewayAdminEnrollProviderResponse is the response to gatewayAdminEnrollProviderRequest
-type gatewayAdminEnrollProviderResponse struct {
-	Enrolled bool `json:"enrolled"`
+// providerAdminForceRefreshResponse is the response to providerAdminForceRefreshRequest
+type providerAdminForceRefreshResponse struct {
+	Refreshed bool `json:"refreshed"`
 }
 
-// EncodeGatewayAdminEnrollProviderResponse is used to get the FCRMessage of gatewayAdminEnrollProviderResponse
-func EncodeGatewayAdminEnrollProviderResponse(
-	enrolled bool,
+// EncodeProviderAdminForceRefreshResponse is used to get the FCRMessage of providerAdminForceRefreshResponse
+func EncodeProviderAdminForceRefreshResponse(
+	refreshed bool,
 ) (*FCRMessage, error) {
-	body, err := json.Marshal(gatewayAdminEnrollProviderResponse{
-		Enrolled: enrolled,
+	body, err := json.Marshal(providerAdminForceRefreshResponse{
+		Refreshed: refreshed,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return CreateFCRMessage(GatewayAdminEnrollProviderResponseType, body), nil
+	return CreateFCRMessage(ProviderAdminForceRefreshResponseType, body), nil
 }
 
-// DecodeGatewayAdminEnrollProviderResponse is used to get the fields from FCRMessage of gatewayAdminEnrollProviderResponse
-func DecodeGatewayAdminEnrollProviderResponse(fcrMsg *FCRMessage) (
-	bool,  // enrolled
+// DecodeProviderAdminForceRefreshResponse is used to get the fields from FCRMessage of providerAdminForceRefreshResponse
+func DecodeProviderAdminForceRefreshResponse(fcrMsg *FCRMessage) (
+	bool, // refreshed
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != GatewayAdminEnrollProviderResponseType {
+	if fcrMsg.GetMessageType() != ProviderAdminForceRefreshResponseType {
 		return false, errors.New("message type mismatch")
 	}
-	msg := gatewayAdminEnrollProviderResponse{}
+	msg := providerAdminForceRefreshResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return false, err
 	}
-	return msg.Enrolled, nil
+	return msg.Refreshed, nil
 }
