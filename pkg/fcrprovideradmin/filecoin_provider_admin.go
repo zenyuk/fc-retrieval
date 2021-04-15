@@ -16,66 +16,98 @@ package fcrprovideradmin
  */
 
 import (
+	"errors"
+	"sync"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/control"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/internal/settings"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/api/adminapi"
 )
 
-// FilecoinRetrievalProviderAdminClient holds information about the interaction of
-// the Filecoin Retrieval Provider Admin Client with Filecoin Retrieval Providers.
-type FilecoinRetrievalProviderAdminClient struct {
-	providerManager *control.ProviderManager
-	// TODO have a list of provider objects of all the current providers being interacted with
+// FilecoinRetrievalProviderAdmin holds information about the interaction of
+// the Filecoin Retrieval Provider Admin with Filecoin Retrieval Providers.
+type FilecoinRetrievalProviderAdmin struct {
+	Settings ProviderAdminSettings
+
+	// List of providers this admin is in use
+	ActiveProviders     map[string]register.ProviderRegister
+	ActiveProvidersLock sync.RWMutex
 }
 
-var singleInstance *FilecoinRetrievalProviderAdminClient
-var initialised = false
-
-// InitFilecoinRetrievalProviderAdminClient initialise the Filecoin Retreival Client library
-func InitFilecoinRetrievalProviderAdminClient(conf Settings) *FilecoinRetrievalProviderAdminClient {
-	if initialised {
-		logging.ErrorAndPanic("Attempt to init Filecoin Retrieval Provider Admin Client a second time")
+// NewFilecoinRetrievalProviderAdmin initialise the Filecoin Retreival Provider Admin library
+func NewFilecoinRetrievalProviderAdmin(settings ProviderAdminSettings) *FilecoinRetrievalProviderAdmin {
+	return &FilecoinRetrievalProviderAdmin{
+		Settings:            settings,
+		ActiveProviders:     make(map[string]register.ProviderRegister),
+		ActiveProvidersLock: sync.RWMutex{},
 	}
-	var c = FilecoinRetrievalProviderAdminClient{}
-	singleInstance = &c
-	initialised = true
-
-	clientSettings := conf.(*settings.ClientProviderAdminSettings)
-	c.providerManager = control.NewProviderManager(clientSettings)
-	return singleInstance
-
-}
-
-// GetFilecoinRetrievalProviderAdminClient creates a Filecoin Retrieval Provider Admin Client
-func GetFilecoinRetrievalProviderAdminClient() *FilecoinRetrievalProviderAdminClient {
-	if !initialised {
-		logging.ErrorAndPanic("Filecoin Retrieval Provider Admin Client not initialised")
-	}
-
-	return singleInstance
 }
 
 // InitialiseProvider initialise a given provider
-func (c *FilecoinRetrievalProviderAdminClient) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	return c.providerManager.InitialiseProvider(providerInfo, providerPrivKey, providerPrivKeyVer)
+func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := adminapi.RequestInitialiseKey(providerInfo, providerPrivKey, providerPrivKeyVer, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	if err != nil {
+		return err
+	}
+
+	// Register this provider
+	err = providerInfo.RegisterProvider(c.Settings.RegisterURL())
+	if err != nil {
+		logging.Error("Error in register the provider.")
+		return err
+	}
+
+	// Add this provider to the active providers list
+	c.ActiveProvidersLock.Lock()
+	c.ActiveProviders[providerInfo.NodeID] = *providerInfo
+	c.ActiveProvidersLock.Unlock()
+	return nil
 }
 
 // PublishGroupCID publish a group cid offer to a given provider
-func (c *FilecoinRetrievalProviderAdminClient) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
-	return c.providerManager.PublishGroupCID(providerID, cids, price, expiry, qos)
+func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
+	c.ActiveProvidersLock.RLock()
+	defer c.ActiveProvidersLock.RUnlock()
+	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	if !exists {
+		return errors.New("Unable to find the provider in admin storage")
+	}
+	return adminapi.RequestPublishGroupOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // PublishDHTCID publish a dht cid offer to a given provider
-func (c *FilecoinRetrievalProviderAdminClient) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
-	return c.providerManager.PublishDHTCID(providerID, cids, price, expiry, qos)
+func (c *FilecoinRetrievalProviderAdmin) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
+	c.ActiveProvidersLock.RLock()
+	defer c.ActiveProvidersLock.RUnlock()
+	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	if !exists {
+		return errors.New("Unable to find the provider in admin storage")
+	}
+	return adminapi.RequestPublishDHTOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // GetGroupCIDOffer checks the group offer stored in the provider
-func (c *FilecoinRetrievalProviderAdminClient) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
-	return c.providerManager.GetGroupCIDOffer(providerID, gatewayIDs)
+func (c *FilecoinRetrievalProviderAdmin) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
+	c.ActiveProvidersLock.RLock()
+	defer c.ActiveProvidersLock.RUnlock()
+	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	if !exists {
+		return false, nil, errors.New("Unable to find the provider in admin storage")
+	}
+	return adminapi.RequestGetPublishedOffer(&providerInfo, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+}
+
+// ForceUpdate forces the provider to update its internal register
+func (c *FilecoinRetrievalProviderAdmin) ForceUpdate(providerID *nodeid.NodeID) error {
+	c.ActiveProvidersLock.RLock()
+	defer c.ActiveProvidersLock.RUnlock()
+	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	if !exists {
+		return errors.New("Unable to find the provider in admin storage")
+	}
+	return adminapi.RequestForceRefresh(&providerInfo, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
