@@ -136,7 +136,10 @@ func (mgr *FCRRegisterMgr) GetGateway(id *nodeid.NodeID) *register.GatewayRegist
 		// TODO: Do we call refresh here, if can't find a gateway?
 		// mgr.Refresh()
 		mgr.registeredGatewaysMapLock.RLock()
-		gateway = mgr.registeredGatewaysMap[id.ToString()]
+		gateway, ok = mgr.registeredGatewaysMap[id.ToString()]
+		if !ok {
+			return nil
+		}
 	}
 	defer mgr.registeredGatewaysMapLock.RUnlock()
 	// Return the pointer of a copy of the register
@@ -166,7 +169,10 @@ func (mgr *FCRRegisterMgr) GetProvider(id *nodeid.NodeID) *register.ProviderRegi
 		// TODO: Do we call refresh here, if can't find a provider?
 		// mgr.Refresh()
 		mgr.registeredProvidersMapLock.RLock()
-		provider = mgr.registeredProvidersMap[id.ToString()]
+		provider, ok = mgr.registeredProvidersMap[id.ToString()]
+		if !ok {
+			return nil
+		}
 	}
 	defer mgr.registeredProvidersMapLock.RUnlock()
 	// Return the pointer of a copy of the register
