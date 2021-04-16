@@ -160,13 +160,20 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		logging.ErrorAndPanic(err.Error())
 	}
 
-	logging.Info("Wait 5 seconds for the provider to initialise")
-	time.Sleep(5 * time.Second)
-
 	// Generate random cid offer
 	contentID := cid.NewRandomContentID()
 	pieceCIDs := []cid.ContentID{*contentID}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
+
+	// Force update
+	err = pvadmin.ForceUpdate(providerID)
+	if err != nil {
+		panic(err)
+	}
+	err = gwAdmin.ForceUpdate(gatewayID)
+	if err != nil {
+		panic(err)
+	}
 
 	// Publish Group CID
 	err = pvadmin.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
