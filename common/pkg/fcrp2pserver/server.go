@@ -170,7 +170,7 @@ func (s *FCRP2PServer) RequestGatewayFromGateway(id *nodeid.NodeID, msgType int3
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	response, err := requester(reader, writer, args)
+	response, err := requester(reader, writer, args...)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
@@ -198,7 +198,7 @@ func (s *FCRP2PServer) RequestGatewayFromProvider(id *nodeid.NodeID, msgType int
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	response, err := requester(reader, writer, args)
+	response, err := requester(reader, writer, args...)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
@@ -226,7 +226,7 @@ func (s *FCRP2PServer) RequestProvider(id *nodeid.NodeID, msgType int32, args ..
 	// Call requester to request
 	writer := &FCRServerWriter{conn: comm.conn}
 	reader := &FCRServerReader{conn: comm.conn}
-	response, err := requester(reader, writer, args)
+	response, err := requester(reader, writer, args...)
 	comm.lock.Unlock()
 	if err != nil {
 		// Error that couldn't ignore, remove the connection.
