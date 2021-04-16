@@ -161,8 +161,9 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 
 	// Generate random cid offer
-	contentID := cid.NewRandomContentID()
-	pieceCIDs := []cid.ContentID{*contentID}
+	contentID1 := cid.NewRandomContentID()
+	contentID2 := cid.NewRandomContentID()
+	pieceCIDs := []cid.ContentID{*contentID1, *contentID2}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
 	// Force update
