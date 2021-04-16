@@ -81,7 +81,9 @@ func (s *FCRRESTServer) Start() error {
 		}
 		api.SetApp(router)
 
-		go logging.Error(http.ListenAndServe(":"+listenAddr, api.MakeHandler()).Error())
+		go func() {
+			logging.Error(http.ListenAndServe(":"+listenAddr, api.MakeHandler()).Error())
+		}()
 		logging.Info("P2P server starts listening on %s for connections.", listenAddr)
 	}
 	s.start = true
