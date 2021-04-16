@@ -96,8 +96,6 @@ func TestInitialiseGateway(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait five seconds for the gateway to initialise")
-	time.Sleep(5 * time.Second)
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*               End TestInitialiseGateway	         */")
@@ -157,8 +155,6 @@ func TestInitialiseProvider(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait ten seconds for the provider to initialise")
-	time.Sleep(10 * time.Second)
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*              End TestInitialiseProvider	         */")
@@ -180,13 +176,21 @@ func TestPublishGroupCID(t *testing.T) {
 	// Set global variable
 	testCIDs = pieceCIDs
 
-	// Publish Group CID
-	err := pAdmin.PublishGroupCID(pID, pieceCIDs, 42, expiryDate, 42)
+	// Force update
+	err := pAdmin.ForceUpdate(pID)
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait 10 seconds")
-	time.Sleep(10 * time.Second)
+	err = gwAdmin.ForceUpdate(gwID)
+	if err != nil {
+		panic(err)
+	}
+
+	// Publish Group CID
+	err = pAdmin.PublishGroupCID(pID, pieceCIDs, 42, expiryDate, 42)
+	if err != nil {
+		panic(err)
+	}
 
 	// Test get all offers
 	gatewayIDs := make([]nodeid.NodeID, 0)
