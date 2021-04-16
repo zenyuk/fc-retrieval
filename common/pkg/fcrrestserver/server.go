@@ -69,21 +69,27 @@ func (s *FCRRESTServer) Start() error {
 		return errors.New("Server already started")
 	}
 	for _, listenAddr := range s.listenAddrs {
-		api := rest.NewApi()
-		api.Use(rest.DefaultDevStack...)
-		router, err := rest.MakeRouter(
-			rest.Post("/v1", func(w rest.ResponseWriter, r *rest.Request) {
-				s.msgRouter(w, r, listenAddr)
-			}),
-		)
-		if err != nil {
-			return err
+		errChan := make(chan bool)
+		go func(addr string, errChan chan bool) {
+			api := rest.NewApi()
+			api.Use(rest.DefaultDevStack...)
+			router, err := rest.MakeRouter(
+				rest.Post("/v1", func(w rest.ResponseWriter, r *rest.Request) {
+					s.msgRouter(w, r, addr)
+				}),
+			)
+			if err != nil {
+				logging.Error(err.Error())
+				errChan <- true
+				return
+			}
+			api.SetApp(router)
+			errChan <- false
+			logging.Error(http.ListenAndServe(":"+addr, api.MakeHandler()).Error())
+		}(listenAddr, errChan)
+		if <-errChan {
+			return errors.New("Fail to start REST Server")
 		}
-		api.SetApp(router)
-
-		go func() {
-			logging.Error(http.ListenAndServe(":"+listenAddr, api.MakeHandler()).Error())
-		}()
 		logging.Info("REST server starts listening on %s for connections.", listenAddr)
 	}
 	s.start = true
