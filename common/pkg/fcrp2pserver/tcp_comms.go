@@ -25,6 +25,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 )
 
+// isTimeoutError checks if the given error is a timeout error
+func isTimeoutError(err error) bool {
+	neterr, ok := err.(net.Error)
+	return ok && neterr.Timeout()
+}
+
 // readTCPMessage read the tcp message from a given connection.
 func readTCPMessage(conn net.Conn, timeout time.Duration) (*fcrmessages.FCRMessage, error) {
 	// Initialise a reader

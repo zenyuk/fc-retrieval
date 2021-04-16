@@ -124,7 +124,7 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn, handlers map[int3
 	// Loop until error occurs and connection is dropped.
 	for {
 		message, err := readTCPMessage(conn, s.timeout)
-		if err != nil {
+		if err != nil && !isTimeoutError(err) {
 			// Error in tcp communication, drop the connection.
 			logging.Error("P2P Server has error reading message from %s: %s", conn.RemoteAddr(), err.Error())
 			return
