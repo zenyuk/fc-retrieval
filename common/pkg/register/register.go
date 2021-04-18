@@ -152,21 +152,13 @@ func (r *ProviderRegister) GetSigningKey() (*fcrcrypto.KeyPair, error) {
 // RegisterGateway to register a gateway
 func (r *GatewayRegister) RegisterGateway(registerURL string) error {
 	url := registerURL + "/registers/gateway"
-	err := request.SendJSON(url, r)
-	if err != nil {
-		return err
-	}
-	return nil
+	return request.SendJSON(url, r)
 }
 
 // RegisterProvider to register a provider
 func (r *ProviderRegister) RegisterProvider(registerURL string) error {
 	url := registerURL + "/registers/provider"
-	err := request.SendJSON(url, r)
-	if err != nil {
-		return err
-	}
-	return nil
+	return request.SendJSON(url, r)
 }
 
 // GetRegisteredGateways returns registered gateways

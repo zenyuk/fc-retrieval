@@ -55,41 +55,42 @@ func (c *communicationPool) getGatewayConn(id *nodeid.NodeID, accessFrom int) (*
 	c.activeGatewaysLock.RLock()
 	comm := c.activeGateways[id.ToString()]
 	c.activeGatewaysLock.RUnlock()
-	if comm == nil {
-		logging.Info("P2P server has no active connection to gateway %s, attempt connecting", id.ToString())
-		gatewayInfo := c.registerMgr.GetGateway(id)
-		if gatewayInfo == nil {
-			return nil, errors.New("Gateway not found")
-		}
-		// Get address
-		var address string
-		switch accessFrom {
-		case accessFromGateway:
-			address = gatewayInfo.GetNetworkInfoGateway()
-		case accessFromProvider:
-			address = gatewayInfo.GetNetworkInfoProvider()
-		}
-		conn, err := net.Dial("tcp", address)
-		if err != nil {
-			return nil, err
-		}
-		// Get connection
-		// Store the communication
-		c.activeGatewaysLock.Lock()
-		// It is possible that another thread creates a connection before this thread,
-		// so do a final check here.
-		if c.activeGateways[id.ToString()] == nil {
-			comm = &communicationChannel{
-				lock: sync.RWMutex{},
-				conn: conn,
-			}
-			c.activeGateways[id.ToString()] = comm
-		} else {
-			comm = c.activeGateways[id.ToString()]
-			conn.Close()
-		}
-		c.activeGatewaysLock.Unlock()
+	if comm != nil {
+		return comm, nil
 	}
+	logging.Info("P2P server has no active connection to gateway %s, attempt connecting", id.ToString())
+	gatewayInfo := c.registerMgr.GetGateway(id)
+	if gatewayInfo == nil {
+		return nil, errors.New("Gateway not found")
+	}
+	// Get address
+	var address string
+	switch accessFrom {
+	case accessFromGateway:
+		address = gatewayInfo.GetNetworkInfoGateway()
+	case accessFromProvider:
+		address = gatewayInfo.GetNetworkInfoProvider()
+	}
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return nil, err
+	}
+	// Get connection
+	// Store the communication
+	c.activeGatewaysLock.Lock()
+	// It is possible that another thread creates a connection before this thread,
+	// so do a final check here.
+	if c.activeGateways[id.ToString()] == nil {
+		comm = &communicationChannel{
+			lock: sync.RWMutex{},
+			conn: conn,
+		}
+		c.activeGateways[id.ToString()] = comm
+	} else {
+		comm = c.activeGateways[id.ToString()]
+		conn.Close()
+	}
+	c.activeGatewaysLock.Unlock()
 	return comm, nil
 }
 
@@ -98,35 +99,36 @@ func (c *communicationPool) getProviderConn(id *nodeid.NodeID) (*communicationCh
 	c.activeProvidersLock.RLock()
 	comm := c.activeProviders[id.ToString()]
 	c.activeProvidersLock.RUnlock()
-	if comm == nil {
-		logging.Info("P2P server has no active connection to provider %s, attempt connecting", id.ToString())
-		providerInfo := c.registerMgr.GetProvider(id)
-		if providerInfo == nil {
-			return nil, errors.New("Provider not found")
-		}
-		// Get address
-		address := providerInfo.GetNetworkInfoGateway()
-		conn, err := net.Dial("tcp", address)
-		if err != nil {
-			return nil, err
-		}
-		// Get connection
-		// Store the communication
-		c.activeProvidersLock.Lock()
-		// It is possible that another thread creates a connection before this thread,
-		// so do a final check here.
-		if c.activeProviders[id.ToString()] == nil {
-			comm = &communicationChannel{
-				lock: sync.RWMutex{},
-				conn: conn,
-			}
-			c.activeProviders[id.ToString()] = comm
-		} else {
-			comm = c.activeProviders[id.ToString()]
-			conn.Close()
-		}
-		c.activeProvidersLock.Unlock()
+	if comm != nil {
+		return comm, nil
 	}
+	logging.Info("P2P server has no active connection to provider %s, attempt connecting", id.ToString())
+	providerInfo := c.registerMgr.GetProvider(id)
+	if providerInfo == nil {
+		return nil, errors.New("Provider not found")
+	}
+	// Get address
+	address := providerInfo.GetNetworkInfoGateway()
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return nil, err
+	}
+	// Get connection
+	// Store the communication
+	c.activeProvidersLock.Lock()
+	// It is possible that another thread creates a connection before this thread,
+	// so do a final check here.
+	if c.activeProviders[id.ToString()] == nil {
+		comm = &communicationChannel{
+			lock: sync.RWMutex{},
+			conn: conn,
+		}
+		c.activeProviders[id.ToString()] = comm
+	} else {
+		comm = c.activeProviders[id.ToString()]
+		conn.Close()
+	}
+	c.activeProvidersLock.Unlock()
 	return comm, nil
 }
 

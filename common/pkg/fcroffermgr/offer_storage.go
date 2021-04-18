@@ -60,10 +60,10 @@ func (o *offerStorage) add(newOffer *cidoffer.CIDOffer) error {
 		digestMap.lock.RLock()
 		_, exists = digestMap.dMap[digest]
 		digestMap.lock.RUnlock()
-	}
-	if exists {
-		// This offer is already in the system.
-		return nil
+		if exists {
+			// This offer is already in the system.
+			return nil
+		}
 	}
 
 	if newOffer.HasExpired() {
