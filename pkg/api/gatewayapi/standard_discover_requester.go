@@ -1,4 +1,4 @@
-package control
+package gatewayapi
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -18,25 +18,32 @@ package control
 import (
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-client/internal/network"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
-// GatewayStdCIDDiscovery sends a  and processes a response.
-func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64) ([]cidoffer.SubCIDOffer, error) {
+// RequestStandardDiscover requests a standard discover to a given gateway for a given contentID, nonce and ttl.
+func RequestStandardDiscover(
+	gatewayInfo *register.GatewayRegister,
+	contentID *cid.ContentID,
+	nonce int64,
+	ttl int64,
+	paychAddr string,
+	voucher string,
+) ([]cidoffer.SubCIDOffer, error) {
 	// Construct request
-	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, "", "")
+	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, paychAddr, voucher)
 	if err != nil {
 		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
 		return nil, err
 	}
 
 	// Send request and get response
-	response, err := network.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return nil, err
 	}
@@ -64,35 +71,5 @@ func (c *ClientManager) GatewayStdCIDDiscovery(gatewayInfo *register.GatewayRegi
 		return nil, errors.New("Nonce mismatch")
 	}
 
-	result := make([]cidoffer.SubCIDOffer, 0)
-	// Verify each offer
-	for _, offer := range offers {
-		// Get the provider's pubkey
-		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
-		if err != nil {
-			logging.Error("Provider who created this offer does not exist in local storage.")
-			continue
-		}
-		if !validateProviderInfo(&providerInfo) {
-			logging.Error("Provider register info not valid.")
-			continue
-		}
-		pubKey, _ := providerInfo.GetSigningKey()
-		// Verify the offer
-		if offer.Verify(pubKey) != nil {
-			logging.Error("Offer signature fail to verify.")
-			continue
-		}
-		// Now Verify the merkle proof
-		if offer.VerifyMerkleProof() != nil {
-			logging.Error("Merkle proof verification failed.")
-			continue
-		}
-		// Offer pass verification
-		logging.Info("Offer pass every verification, added to result")
-		result = append(result, offer)
-	}
-
-	logging.Info("Total received offer: %d, total verified offer: %d", len(offers), len(result))
-	return result, nil
+	return offers, nil
 }
