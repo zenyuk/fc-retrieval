@@ -1,18 +1,33 @@
 package core
 
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import (
-  "sync"
+	"sync"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-
-  "github.com/ConsenSys/fc-retrieval-provider/internal/offers"
-  "github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcroffermgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-provider/internal/util/settings"
 )
 
 const (
@@ -31,6 +46,9 @@ type Core struct {
 	ProtocolVersion   int32
 	ProtocolSupported []int32
 
+	// Settings
+	Settings *settings.AppSettings
+
 	// ProviderID of this provider
 	ProviderID *nodeid.NodeID
 
@@ -40,19 +58,19 @@ type Core struct {
 	// ProviderPrivateKeyVersion is the key version number of the private key.
 	ProviderPrivateKeyVersion *fcrcrypto.KeyVersion
 
-	// RegisteredGatewaysMap stores mapping from gateway id (big int in string repr) to its registration info
-	RegisteredGatewaysMap     map[string]fcrtcpcomms.RegisteredNode
-	RegisteredGatewaysMapLock sync.RWMutex
+	// RegisterMgr manages all register related activities
+	RegisterMgr *fcrregistermgr.FCRRegisterMgr
 
-	GatewayCommPool *fcrtcpcomms.CommunicationPool
+	// P2PServer handles all communication to/from gateways/providers
+	P2PServer *fcrp2pserver.FCRP2PServer
 
-	// GroupOffers sent, it is threadsafe
-	GroupOffers *offers.Offers
+	// RESTServer handles all communication to/from client/admin
+	RESTServer *fcrrestserver.FCRRESTServer
 
-	// SingleOffers sent, it is threadsafe
-	SingleOffers *offers.Offers
+	// Offer Manager
+	OffersMgr *fcroffermgr.FCROfferMgr
 
-	// Node to offer map
+	// Node to offer map, TODO: Use a manager
 	NodeOfferMap     map[string]([]cidoffer.CIDOffer)
 	NodeOfferMapLock sync.Mutex
 
@@ -69,38 +87,25 @@ var doOnce sync.Once
 func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 	doOnce.Do(func() {
 		if len(confs) == 0 {
-			log.ErrorAndPanic("No settings supplied to Gateway start-up")
+			logging.ErrorAndPanic("No settings supplied to Gateway start-up")
 		}
 		if len(confs) != 1 {
-			log.ErrorAndPanic("More than one sets of settings supplied to Gateway start-up")
-		}
-		conf := confs[0]
-
-		providerID, err := nodeid.NewNodeIDFromHexString(conf.ProviderID)
-		if err != nil {
-			logging.ErrorAndPanic("Error decoding node id: %s", err)
+			logging.ErrorAndPanic("More than one sets of settings supplied to Gateway start-up")
 		}
 
 		instance = &Core{
-			ProtocolVersion:   protocolVersion,
-			ProtocolSupported: []int32{protocolVersion, protocolSupported},
-
-			ProviderID:                providerID,
+			ProtocolVersion:           protocolVersion,
+			ProtocolSupported:         []int32{protocolVersion, protocolSupported},
+			Settings:                  confs[0],
+			ProviderID:                nil,
 			ProviderPrivateKey:        nil,
 			ProviderPrivateKeyVersion: nil,
-
-			RegisteredGatewaysMap:     make(map[string]fcrtcpcomms.RegisteredNode),
-			RegisteredGatewaysMapLock: sync.RWMutex{},
-
-			GroupOffers:      offers.GetSingleInstance(),
-			SingleOffers:     offers.GetSingleInstance(),
-			NodeOfferMap:     make(map[string]([]cidoffer.CIDOffer)),
-			NodeOfferMapLock: sync.Mutex{},
-
-			AcknowledgementMap:     make(map[string](map[string]DHTAcknowledgement)),
-			AcknowledgementMapLock: sync.RWMutex{},
+			OffersMgr:                 fcroffermgr.NewFCROfferMgr(),
+			NodeOfferMap:              make(map[string]([]cidoffer.CIDOffer)),
+			NodeOfferMapLock:          sync.Mutex{},
+			AcknowledgementMap:        make(map[string](map[string]DHTAcknowledgement)),
+			AcknowledgementMapLock:    sync.RWMutex{},
 		}
-		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
 	})
 	return instance
 }
