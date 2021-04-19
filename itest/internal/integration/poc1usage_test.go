@@ -9,10 +9,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,8 +33,8 @@ import (
 
 var gatewayConfig = config.NewConfig(".env.gateway")
 var providerConfig = config.NewConfig(".env.provider")
-var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdminClient
-var pAdmin *fcrprovideradmin.FilecoinRetrievalProviderAdminClient
+var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdmin
+var pAdmin *fcrprovideradmin.FilecoinRetrievalProviderAdmin
 var client *fcrclient.FilecoinRetrievalClient
 var gwID *nodeid.NodeID
 var pID *nodeid.NodeID
@@ -53,13 +53,12 @@ func TestInitialiseGateway(t *testing.T) {
 	}
 
 	confBuilder := fcrgatewayadmin.CreateSettings()
-	confBuilder.SetEstablishmentTTL(101)
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
-	gwAdmin = fcrgatewayadmin.NewFilecoinRetrievalGatewayAdminClient(*conf)
+	gwAdmin = fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
-	gatewayRootKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +66,7 @@ func TestInitialiseGateway(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	gatewayRetrievalPrivateKey, err := fcrgatewayadmin.CreateKey()
+	gatewayRetrievalPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
 	if err != nil {
 		panic(err)
 	}
@@ -93,12 +92,10 @@ func TestInitialiseGateway(t *testing.T) {
 		NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
 	}
 
-	err = gwAdmin.InitializeGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait five seconds for the gateway to initialise")
-	time.Sleep(5 * time.Second)
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*               End TestInitialiseGateway	         */")
@@ -121,7 +118,7 @@ func TestInitialiseProvider(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
-	pAdmin = fcrprovideradmin.InitFilecoinRetrievalProviderAdminClient(*conf)
+	pAdmin = fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
 
 	providerRootKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
 	if err != nil {
@@ -158,8 +155,6 @@ func TestInitialiseProvider(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait ten seconds for the provider to initialise")
-	time.Sleep(10 * time.Second)
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*              End TestInitialiseProvider	         */")
@@ -181,13 +176,21 @@ func TestPublishGroupCID(t *testing.T) {
 	// Set global variable
 	testCIDs = pieceCIDs
 
-	// Publish Group CID
-	err := pAdmin.PublishGroupCID(pID, pieceCIDs, 42, expiryDate, 42)
+	// Force update
+	err := pAdmin.ForceUpdate(pID)
 	if err != nil {
 		panic(err)
 	}
-	logging.Info("Wait 10 seconds")
-	time.Sleep(10 * time.Second)
+	err = gwAdmin.ForceUpdate(gwID)
+	if err != nil {
+		panic(err)
+	}
+
+	// Publish Group CID
+	err = pAdmin.PublishGroupCID(pID, pieceCIDs, 42, expiryDate, 42)
+	if err != nil {
+		panic(err)
+	}
 
 	// Test get all offers
 	gatewayIDs := make([]nodeid.NodeID, 0)
