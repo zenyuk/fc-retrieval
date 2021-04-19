@@ -20,36 +20,34 @@ import (
 	"errors"
 )
 
-// gatewayAdminEnrollGatewayResponse is the response to gatewayAdminEnrollGatewayRequest
-type gatewayAdminEnrollGatewayResponse struct {
-	Enrolled bool `json:"enrolled"`
+// gatewayAdminForceRefreshRequest is the request from an admin client to a gateway to refresh internal register status
+type gatewayAdminForceRefreshRequest struct {
+	Refresh bool `json:"refresh"`
 }
 
-// EncodeGatewayAdminEnrollGatewayResponse is used to get the FCRMessage of gatewayAdminEnrollGatewayResponse
-func EncodeGatewayAdminEnrollGatewayResponse(
-	enrolled bool,
-) (*FCRMessage, error) {
-	body, err := json.Marshal(gatewayAdminEnrollGatewayResponse{
-		Enrolled: enrolled,
+// EncodeGatewayAdminForceRefreshRequest is used to get the FCRMessage of gatewayAdminForceRefreshRequest
+func EncodeGatewayAdminForceRefreshRequest(refresh bool) (*FCRMessage, error) {
+	body, err := json.Marshal(gatewayAdminForceRefreshRequest{
+		Refresh: refresh,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return CreateFCRMessage(GatewayAdminEnrollGatewayResponseType, body), nil
+	return CreateFCRMessage(GatewayAdminForceRefreshRequestType, body), nil
 }
 
-// DecodeGatewayAdminEnrollGatewayResponse is used to get the fields from FCRMessage of gatewayAdminEnrollGatewayResponse
-func DecodeGatewayAdminEnrollGatewayResponse(fcrMsg *FCRMessage) (
-	bool,  // enrolled
+// DecodeGatewayAdminForceRefreshRequest is used to get the fields from FCRMessage of gatewayAdminForceRefreshRequest
+func DecodeGatewayAdminForceRefreshRequest(fcrMsg *FCRMessage) (
+	bool, // refresh
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != GatewayAdminEnrollGatewayResponseType {
+	if fcrMsg.GetMessageType() != GatewayAdminForceRefreshRequestType {
 		return false, errors.New("message type mismatch")
 	}
-	msg := gatewayAdminEnrollGatewayResponse{}
+	msg := gatewayAdminForceRefreshRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return false, err
 	}
-	return msg.Enrolled, nil
+	return msg.Refresh, nil
 }
