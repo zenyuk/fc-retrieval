@@ -1,16 +1,5 @@
 package cidoffer
 
-import (
-	"math/big"
-	"testing"
-	"time"
-
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/stretchr/testify/assert"
-)
-
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -25,6 +14,17 @@ import (
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+import (
+	"math/big"
+	"testing"
+	"time"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/stretchr/testify/assert"
+)
 
 const (
 	PrivKey     = "015ed053eab6fdf18c03954373ff7f89089992017d56beb8b05305b19800d6afe0"
