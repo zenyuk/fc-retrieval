@@ -1,4 +1,4 @@
-package control
+package gatewayapi
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -19,16 +19,15 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-client/internal/network"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
-// GatewayClientEstablishment sends a GatewayClientEstablishmentRequest and processes a response.
-// Return true if the establishment request was successful.
-func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
+// RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
+func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
 	if len(challenge) != 32 {
 		return errors.New("Challenge is not 32 bytes")
 	}
@@ -41,13 +40,13 @@ func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayReg
 		return err
 	}
 
-	response, err := network.SendMessage(nodeInfo.NetworkInfoClient, request)
+	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := nodeInfo.GetSigningKey()
+	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
 		return err
 	}
@@ -62,7 +61,7 @@ func (c *ClientManager) GatewayClientEstablishment(nodeInfo *register.GatewayReg
 		return err
 	}
 
-	if nodeInfo.NodeID != gatewayID.ToString() {
+	if gatewayInfo.NodeID != gatewayID.ToString() {
 		return errors.New("Gateway ID not match")
 	}
 	if recvChallenge != string(b) {

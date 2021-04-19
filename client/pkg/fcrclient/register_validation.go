@@ -1,4 +1,4 @@
-package control
+package fcrclient
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -17,7 +17,7 @@ package control
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // Validate the information coming from the Register.
