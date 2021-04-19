@@ -1,14 +1,32 @@
-package gateway
+package core
+
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import (
 	"sync"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrtcpcomms"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcroffermgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/offers"
+	"github.com/ConsenSys/fc-retrieval-gateway/internal/reputation"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
 )
 
@@ -17,10 +35,14 @@ const (
 	protocolSupported = 1 // Alternative protocol version
 )
 
-// Gateway holds the main data structure for the whole gateway.
-type Gateway struct {
+// Core holds the main data structure for the whole gateway.
+type Core struct {
+	// Protocol versions of this gateway
 	ProtocolVersion   int32
 	ProtocolSupported []int32
+
+	// Settings
+	Settings *settings.AppSettings
 
 	// GatewayID of this gateway
 	GatewayID *nodeid.NodeID
@@ -31,22 +53,20 @@ type Gateway struct {
 	// GatewayPrivateKeyVersion is the key version number of the private key.
 	GatewayPrivateKeyVersion *fcrcrypto.KeyVersion
 
-	// RegisteredGatewaysMap stores mapping from gateway id (big int in string repr) to its registration info
-	RegisteredGatewaysMap     map[string]fcrtcpcomms.RegisteredNode
-	RegisteredGatewaysMapLock sync.RWMutex
+	// RegisterMgr manages all register related activities
+	RegisterMgr *fcrregistermgr.FCRRegisterMgr
 
-	// RegisteredProvidersMap stores mapping from provider id (big int in string repr) to its registration info
-	RegisteredProvidersMap     map[string]fcrtcpcomms.RegisteredNode
-	RegisteredProvidersMapLock sync.RWMutex
+	// P2PServer handles all communication to/from gateways/providers
+	P2PServer *fcrp2pserver.FCRP2PServer
 
-	// GatewayCommPool manages connection for outgoing request to gateways
-	GatewayCommPool *fcrtcpcomms.CommunicationPool
+	// RESTServer handles all communication to/from client/admin
+	RESTServer *fcrrestserver.FCRRESTServer
 
-	// ProviderCommPool manages connection for outgoing request to providers
-	ProviderCommPool *fcrtcpcomms.CommunicationPool
+	// Offer Manager
+	OffersMgr *fcroffermgr.FCROfferMgr
 
-	// Offers, it is threadsafe.
-	Offers *offers.Offers
+	// Reputation Manager
+	ReputationMgr *reputation.Reputation
 
 	// RegistrationBlockHash is the hash of the block that registers this gateway
 	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
@@ -59,11 +79,11 @@ type Gateway struct {
 }
 
 // Single instance of the gateway
-var instance *Gateway
+var instance *Core
 var doOnce sync.Once
 
 // GetSingleInstance returns the single instance of the gateway
-func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
+func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 	doOnce.Do(func() {
 		if len(confs) == 0 {
 			logging.ErrorAndPanic("No settings supplied to Gateway start-up")
@@ -71,31 +91,21 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Gateway {
 		if len(confs) != 1 {
 			logging.ErrorAndPanic("More than one sets of settings supplied to Gateway start-up")
 		}
-		conf := confs[0]
 
-		gatewayID, err := nodeid.NewNodeIDFromHexString(conf.GatewayID)
-		if err != nil {
-			logging.ErrorAndPanic("Error decoding node id: %s", err)
-		}
-
-		instance = &Gateway{
+		instance = &Core{
 			ProtocolVersion:                protocolVersion,
 			ProtocolSupported:              []int32{protocolVersion, protocolSupported},
-			RegisteredGatewaysMap:          make(map[string]fcrtcpcomms.RegisteredNode),
-			RegisteredGatewaysMapLock:      sync.RWMutex{},
-			RegisteredProvidersMap:         make(map[string]fcrtcpcomms.RegisteredNode),
-			RegisteredProvidersMapLock:     sync.RWMutex{},
+			Settings:                       confs[0],
+			GatewayID:                      nil,
 			GatewayPrivateKey:              nil,
 			GatewayPrivateKeyVersion:       nil,
-			GatewayID:                      gatewayID,
-			Offers:                         offers.GetSingleInstance(),
+			OffersMgr:                      fcroffermgr.NewFCROfferMgr(),
+			ReputationMgr:                  reputation.GetSingleInstance(),
 			RegistrationBlockHash:          "TODO",
 			RegistrationTransactionReceipt: "TODO",
 			RegistrationMerkleRoot:         "TODO",
 			RegistrationMerkleProof:        nil, //TODO
 		}
-		instance.GatewayCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredGatewaysMap, &instance.RegisteredGatewaysMapLock)
-		instance.ProviderCommPool = fcrtcpcomms.NewCommunicationPool(&instance.RegisteredProvidersMap, &instance.RegisteredProvidersMapLock)
 	})
 	return instance
 }
