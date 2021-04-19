@@ -16,79 +16,80 @@ package fcrgatewayadmin
  */
 
 import (
-	"container/list"
+	"errors"
+	"sync"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-register/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/control"
-	"github.com/ConsenSys/fc-retrieval-gateway-admin/internal/settings"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/api/adminapi"
 )
 
-// FilecoinRetrievalGatewayAdminClient holds information about the interaction of
-// the Filecoin Retrieval Gateway Admin Client with Filecoin Retrieval Gateways.
-type FilecoinRetrievalGatewayAdminClient struct {
-	gatewayManager *control.GatewayManager
-	// TODO have a list of gateway objects of all the current gateways being interacted with
+// FilecoinRetrievalGatewayAdmin is an example implementation using the api,
+// which holds information about the interaction of the Filecoin
+// Retrieval Gateway Admin with Filecoin Retrieval Gateways.
+type FilecoinRetrievalGatewayAdmin struct {
+	Settings GatewayAdminSettings
+
+	// List of gateways this admin is in use
+	ActiveGateways     map[string]register.GatewayRegister
+	ActiveGatewaysLock sync.RWMutex
 }
 
-// NewFilecoinRetrievalGatewayAdminClient initialise the Filecoin Retreival Client library
-func NewFilecoinRetrievalGatewayAdminClient(conf Settings) *FilecoinRetrievalGatewayAdminClient {
-	var c = FilecoinRetrievalGatewayAdminClient{}
-	log.Info("Filecoin Retrieval Gateway Admin Client started")
-	clientSettings := conf.(*settings.ClientGatewayAdminSettings)
-	c.gatewayManager = control.NewGatewayManager(*clientSettings)
-	return &c
-
+// NewFilecoinRetrievalGatewayAdmin initialise the Filecoin Retreival Gateway Admin library
+func NewFilecoinRetrievalGatewayAdmin(settings GatewayAdminSettings) *FilecoinRetrievalGatewayAdmin {
+	return &FilecoinRetrievalGatewayAdmin{
+		Settings:           settings,
+		ActiveGateways:     make(map[string]register.GatewayRegister),
+		ActiveGatewaysLock: sync.RWMutex{},
+	}
 }
 
-// CreateKey creates a private key for a Gateway.
-func CreateKey() (*fcrcrypto.KeyPair, error) {
-	log.Info("Filecoin Retrieval Gateway Admin Client: RequestKeyCreation()")
-
-	gatewayPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
+// InitialiseGateway initialise a given gateway
+func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := adminapi.RequestInitialiseKey(gatewayInfo, gatewayPrivKey, gatewayPrivKeyVer, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 	if err != nil {
-		log.Error("Error creating Gateway Private Key: %s", err)
-		return nil, err
+		return err
 	}
 
-	return gatewayPrivateKey, nil
-}
+	// Register this gateway
+	err = gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	if err != nil {
+		logging.Error("Error in register the gateway.")
+		return err
+	}
 
-// InitializeGateway sends a private key to a Gateway along with a key version number.
-func (c *FilecoinRetrievalGatewayAdminClient) InitializeGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
-	log.Info("Filecoin Retrieval Gateway Admin Client: InitializeGateway()")
-	return c.gatewayManager.InitializeGateway(gatewayInfo, gatewayPrivKey, gatewayPrivKeyVer)
+	// Add this provider to the active gateways list
+	c.ActiveGatewaysLock.Lock()
+	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGatewaysLock.Unlock()
+	return nil
 }
 
 // ResetClientReputation requests a Gateway to initialise a client's reputation to the default value.
-func ResetClientReputation(clientID *nodeid.NodeID) bool {
-	log.Info("Filecoin Retrieval Gateway Admin Client: InitialiseClientReputation(clientID: %s", clientID)
-	// TODO DHW
-	log.Info("InitialiseClientReputation(clientID: %s) failed to initialise reputation.", clientID)
-	return false
+func (c *FilecoinRetrievalGatewayAdmin) ResetClientReputation(clientID *nodeid.NodeID) error {
+	return errors.New("Not implemented yet")
 }
 
 // SetClientReputation requests a Gateway to set a client's reputation to a specified value.
-func SetClientReputation(clientID *nodeid.NodeID, rep int64) bool {
-	log.Info("Filecoin Retrieval Gateway Admin Client: SetClientReputation(clientID: %s, reputation: %d", clientID, rep)
-	// TODO DHW
-	log.Info("SetClientReputation(clientID: %s, reputation: %d) failed to set reputation.", clientID, rep)
-	return false
+func (c *FilecoinRetrievalGatewayAdmin) SetClientReputation(clientID *nodeid.NodeID, rep int64) error {
+	return errors.New("Not implemented yet")
 }
 
 // GetCIDOffersList requests a Gateway's current list of CID Offers.
-func GetCIDOffersList() *list.List {
-	log.Info("Filecoin Retrieval Gateway Admin Client: GetCIDOffersList()")
-	// TODO
-	log.Info("GetCIDOffersList() failed to find any CID Offers.")
-	emptyList := list.New()
-	return emptyList
+func (c *FilecoinRetrievalGatewayAdmin) GetCIDOffersList() ([]cidoffer.CIDOffer, error) {
+	return nil, errors.New("Not implemented yet")
 }
 
-// Shutdown releases all resources used by the library
-func (c *FilecoinRetrievalGatewayAdminClient) Shutdown() {
-	log.Info("Filecoin Retrieval Gateway Admin Client shutting down")
-	c.gatewayManager.Shutdown()
+// ForceUpdate forces the provider to update its internal register
+func (c *FilecoinRetrievalGatewayAdmin) ForceUpdate(gatewayID *nodeid.NodeID) error {
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return errors.New("Unable to find the gateway in admin storage")
+	}
+	return adminapi.RequestForceRefresh(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }

@@ -15,16 +15,23 @@ package fcrgatewayadmin
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const ver = "1.0"
-const build = "unknown"
+import (
+	"time"
+)
 
-// VersionInfo holds the version information for the Filecoin Retrieval Client library.
-type VersionInfo struct {
-	Version   string
-	BuildDate string
-}
+const (
+	// DefaultTCPInactivityTimeout is the default TCP timeout
+	DefaultTCPInactivityTimeout = 100 * time.Millisecond
 
-// GetVersion returns the static build information.
-func GetVersion() VersionInfo {
-	return VersionInfo{ver, build}
-}
+	// DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
+	defaultEstablishmentTTL = int64(100)
+
+	// DefaultLogLevel is the default amount of logging to show.
+	defaultLogLevel = "trace"
+
+	// DefaultLogServiceName is the default service name of logging.
+	defaultLogServiceName = "gateway-admin"
+
+	// DefaultLogTarget is the default output location of log output.
+	defaultLogTarget = "STDOUT"
+)
