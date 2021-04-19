@@ -15,16 +15,17 @@ package fcrprovideradmin
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const ver = "1.0"
-const build = "unknown"
+const (
+	// DefaultLogLevel is the default amount of logging to show.
+	defaultLogLevel = "trace"
 
-// VersionInfo holds the version information for the Filecoin Retrieval Client library.
-type VersionInfo struct {
-	Version   string
-	BuildDate string
-}
+	// DefaultLogTarget is the default output location of log output.
+	defaultLogTarget = "STDOUT"
 
-// GetVersion returns the static build information.
-func GetVersion() VersionInfo {
-	return VersionInfo{ver, build}
-}
+	// DefaultLogServiceName is the default service name of logging.
+	defaultLogServiceName = "provider-admin"
+
+	// DefaultRegisterURL is the default location of the Register service.
+	// register:9020 is the value that will work for the integration test system.
+	defaultRegisterURL = "http://register:9020"
+)

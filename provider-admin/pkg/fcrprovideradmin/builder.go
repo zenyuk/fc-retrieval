@@ -1,25 +1,41 @@
-package settings
+package fcrprovideradmin
+
+/*
+ * Copyright 2020 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
-// BuilderImpl holds the library configuration
-type BuilderImpl struct {
-	logLevel                   string
-	logTarget                  string
-	logServiceName             string
-	registerURL                string
-	blockchainPrivateKey       *fcrcrypto.KeyPair
+// SettingsBuilder holds the library configuration
+type SettingsBuilder struct {
+	logLevel       string
+	logTarget      string
+	logServiceName string
+	registerURL    string
+
+	blockchainPrivateKey *fcrcrypto.KeyPair
+
 	providerAdminPrivateKey    *fcrcrypto.KeyPair
 	providerAdminPrivateKeyVer *fcrcrypto.KeyVersion
 }
 
 // CreateSettings creates an object with the default settings
-func CreateSettings() *BuilderImpl {
-	f := BuilderImpl{}
+func CreateSettings() *SettingsBuilder {
+	f := SettingsBuilder{}
 	f.logLevel = defaultLogLevel
 	f.logTarget = defaultLogTarget
 	f.logServiceName = defaultLogServiceName
@@ -28,38 +44,38 @@ func CreateSettings() *BuilderImpl {
 }
 
 // SetLogging sets the log level and target.
-func (f *BuilderImpl) SetLogging(logLevel string, logTarget string, logServiceName string) {
+func (f *SettingsBuilder) SetLogging(logLevel string, logTarget string, logServiceName string) {
 	f.logLevel = logLevel
 	f.logTarget = logTarget
 	f.logServiceName = logServiceName
 }
 
 // SetRegisterURL sets the register URL.
-func (f *BuilderImpl) SetRegisterURL(url string) {
+func (f *SettingsBuilder) SetRegisterURL(url string) {
 	f.registerURL = url
 }
 
 // SetBlockchainPrivateKey sets the blockchain private key.
-func (f *BuilderImpl) SetBlockchainPrivateKey(bcPkey *fcrcrypto.KeyPair) {
+func (f *SettingsBuilder) SetBlockchainPrivateKey(bcPkey *fcrcrypto.KeyPair) {
 	f.blockchainPrivateKey = bcPkey
 }
 
 // SetProviderAdminPrivateKey sets the retrieval private key.
-func (f *BuilderImpl) SetProviderAdminPrivateKey(key *fcrcrypto.KeyPair, ver *fcrcrypto.KeyVersion) {
+func (f *SettingsBuilder) SetProviderAdminPrivateKey(key *fcrcrypto.KeyPair, ver *fcrcrypto.KeyVersion) {
 	f.providerAdminPrivateKey = key
 	f.providerAdminPrivateKeyVer = ver
 }
 
 // Build creates a settings object and initialise the logging system
-func (f *BuilderImpl) Build() *ClientProviderAdminSettings {
+func (f *SettingsBuilder) Build() *ProviderAdminSettings {
 
-	log.Init1(f.logLevel, f.logTarget, f.logServiceName)
+	logging.Init1(f.logLevel, f.logTarget, f.logServiceName)
 
-	c := &ClientProviderAdminSettings{}
+	c := &ProviderAdminSettings{}
 	c.registerURL = f.registerURL
 
 	if f.blockchainPrivateKey == nil {
-		log.ErrorAndPanic("Settings: Blockchain Private Key not set")
+		logging.ErrorAndPanic("Settings: Blockchain Private Key not set")
 	}
 	c.blockchainPrivateKey = f.blockchainPrivateKey
 
