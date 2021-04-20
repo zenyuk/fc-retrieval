@@ -25,7 +25,7 @@ import (
 	"github.com/cbergoon/merkletree"
 )
 
-const wordSize = 32 // the ContentID length is 32 bytes.
+const WordSize = 32 // the ContentID length is 32 bytes.
 
 // ContentID represents a CID.
 type ContentID struct {
@@ -36,24 +36,24 @@ type ContentID struct {
 func NewContentID(id *big.Int) (*ContentID, error) {
 	b := id.Bytes()
 	l := len(b)
-	if l > wordSize {
-		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, wordSize)
+	if l > WordSize {
+		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, WordSize)
 	}
 	var n = ContentID{}
-	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-l:], b)
+	n.id = make([]byte, WordSize)
+	copy(n.id[WordSize-l:], b)
 	return &n, nil
 }
 
 // NewContentIDFromBytes creates a ContentID object from bytes array.
 func NewContentIDFromBytes(id []byte) (*ContentID, error) {
 	l := len(id)
-	if l > wordSize {
-		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, wordSize)
+	if l > WordSize {
+		return nil, fmt.Errorf("ContentID: Incorrect size: %d, should be fewer than %d", l, WordSize)
 	}
 	var n = ContentID{}
-	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-l:], id)
+	n.id = make([]byte, WordSize)
+	copy(n.id[WordSize-l:], id)
 	return &n, nil
 }
 
@@ -69,7 +69,7 @@ func NewContentIDFromHexString(id string) (*ContentID, error) {
 // NewRandomContentID creates a random ContentID object.
 func NewRandomContentID() *ContentID {
 	var n = ContentID{}
-	n.id = make([]byte, wordSize)
+	n.id = make([]byte, WordSize)
 	fcrcrypto.GeneratePublicRandomBytes(n.id)
 	return &n
 }
@@ -101,10 +101,10 @@ func (n *ContentID) UnmarshalJSON(p []byte) error {
 		return err
 	}
 
-	if len(id) != wordSize {
+	if len(id) != WordSize {
 		return fmt.Errorf("ContentID: Incorrect size: %d", len(id))
 	}
-	n.id = make([]byte, wordSize)
+	n.id = make([]byte, WordSize)
 	copy(n.id, id)
 	return nil
 }
