@@ -1,4 +1,4 @@
-package dht
+package dhtring
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
