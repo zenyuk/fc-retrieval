@@ -24,7 +24,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 )
 
-const wordSize = 32 // the NodeID length is 32 bytes.
+const WordSize = 32 // the NodeID length is 32 bytes.
 
 // NodeID represents a NodeID.
 type NodeID struct {
@@ -36,11 +36,11 @@ func NewNodeID(id *big.Int) (*NodeID, error) {
 	var n = NodeID{}
 	b := id.Bytes()
 	l := len(b)
-	if l > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", l, wordSize)
+	if l > WordSize {
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", l, WordSize)
 	}
-	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-l:], b)
+	n.id = make([]byte, WordSize)
+	copy(n.id[WordSize-l:], b)
 	return &n, nil
 }
 
@@ -48,11 +48,11 @@ func NewNodeID(id *big.Int) (*NodeID, error) {
 func NewNodeIDFromBytes(id []byte) (*NodeID, error) {
 	var n = NodeID{}
 	lenID := len(id)
-	if lenID > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", lenID, wordSize)
+	if lenID > WordSize {
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", lenID, WordSize)
 	}
-	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-len(id):], id)
+	n.id = make([]byte, WordSize)
+	copy(n.id[WordSize-len(id):], id)
 	return &n, nil
 }
 
@@ -64,11 +64,11 @@ func NewNodeIDFromHexString(id string) (*NodeID, error) {
 		return nil, err
 	}
 
-	if len(bytes) > wordSize {
-		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", len(id), wordSize)
+	if len(bytes) > WordSize {
+		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", len(id), WordSize)
 	}
-	n.id = make([]byte, wordSize)
-	copy(n.id[wordSize-len(bytes):], bytes)
+	n.id = make([]byte, WordSize)
+	copy(n.id[WordSize-len(bytes):], bytes)
 	return &n, nil
 }
 
@@ -84,7 +84,7 @@ func NewNodeIDFromPublicKey(pubKey *fcrcrypto.KeyPair) (*NodeID, error) {
 // NewRandomNodeID creates a random NodeID object.
 func NewRandomNodeID() *NodeID {
 	var n = NodeID{}
-	n.id = make([]byte, wordSize)
+	n.id = make([]byte, WordSize)
 	fcrcrypto.GeneratePublicRandomBytes(n.id)
 	return &n
 }
@@ -104,7 +104,7 @@ func (n *NodeID) ToBytes() []byte {
 }
 
 // AsBytes32 returns the NodeID as a [32]byte.
-func (n *NodeID) AsBytes32() (result [wordSize]byte) {
+func (n *NodeID) AsBytes32() (result [WordSize]byte) {
 	copy(result[:], n.id)
 	return
 }
@@ -122,10 +122,10 @@ func (n *NodeID) UnmarshalJSON(p []byte) error {
 		return err
 	}
 
-	if len(id) != wordSize {
-		return fmt.Errorf("NodeID: Incorrect size: %d, should be %d", len(id), wordSize)
+	if len(id) != WordSize {
+		return fmt.Errorf("NodeID: Incorrect size: %d, should be %d", len(id), WordSize)
 	}
-	n.id = make([]byte, wordSize)
+	n.id = make([]byte, WordSize)
 	copy(n.id, id)
 	return nil
 }
