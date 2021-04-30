@@ -18,32 +18,62 @@ package dhtring
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/stretchr/testify/assert"
 )
 
-// TestGetClosestNodeIDs
-func TestGetClosestNodeIDs(t *testing.T) {
-	pieceCID, _ := cid.NewContentIDFromHexString("01")
+// TestGetNodeIDsClosestToContentID
+func TestGetNodeIDsClosestToContentID(t *testing.T) {
+	contentID, _ := cid.NewContentIDFromHexString("01")
 	nodeID00, _ := nodeid.NewNodeIDFromHexString("00")
 	nodeID01, _ := nodeid.NewNodeIDFromHexString("01")
 	nodeID02, _ := nodeid.NewNodeIDFromHexString("02")
 	nodeID5A, _ := nodeid.NewNodeIDFromHexString("5A")
 	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
-	
-	actual1, _ := GetClosestNodeIDs(
-		*pieceCID,
+
+	actual1, _ := GetNodeIDsClosestToContentID(
+		*contentID,
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		1,
 	)
-	actual2, _ := GetClosestNodeIDs(
-		*pieceCID,
+	actual2, _ := GetNodeIDsClosestToContentID(
+		*contentID,
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		2,
 	)
-	actual3, _ := GetClosestNodeIDs(
-		*pieceCID,
+	actual3, _ := GetNodeIDsClosestToContentID(
+		*contentID,
+		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
+		16,
+	)
+
+	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01}, actual1)
+	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00}, actual2)
+	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00, nodeID02, nodeID5A, nodeIDFFFF}, actual3)
+}
+
+// TestGetNodeIDsClosestToNodeID
+func TestGetNodeIDsClosestToNodeID(t *testing.T) {
+	nodeID, _ := nodeid.NewNodeIDFromHexString("01")
+	nodeID00, _ := nodeid.NewNodeIDFromHexString("00")
+	nodeID01, _ := nodeid.NewNodeIDFromHexString("01")
+	nodeID02, _ := nodeid.NewNodeIDFromHexString("02")
+	nodeID5A, _ := nodeid.NewNodeIDFromHexString("5A")
+	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
+
+	actual1, _ := GetNodeIDsClosestToNodeID(
+		*nodeID,
+		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
+		1,
+	)
+	actual2, _ := GetNodeIDsClosestToNodeID(
+		*nodeID,
+		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
+		2,
+	)
+	actual3, _ := GetNodeIDsClosestToNodeID(
+		*nodeID,
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		16,
 	)
