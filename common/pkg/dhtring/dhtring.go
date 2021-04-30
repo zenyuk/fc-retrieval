@@ -24,12 +24,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
-// GetClosestNodeIDs gets nodeIDs that are close to pieceCID
-func GetClosestNodeIDs(pieceCID cid.ContentID, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
+func getClosestNodeIDs(landmark []byte, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
 	var m = make(map[*big.Int][]*nodeid.NodeID)
-	cardinality := big.NewInt(0).Exp(big.NewInt(2), big.NewInt(cid.WordSize * 8), nil) // 2**(32*8)
+	cardinality := big.NewInt(0).Exp(big.NewInt(2), big.NewInt(cid.WordSize*8), nil) // 2**(32*8)
 	for _, nodeID := range nodeIDs {
-		dist, _ := math.GetDistance(nodeID.ToBytes(), pieceCID.ToBytes(), cardinality)
+		dist, _ := math.GetDistance(nodeID.ToBytes(), landmark, cardinality)
 		a, ok := m[dist]
 		if !ok {
 			a = make([]*nodeid.NodeID, 0)
@@ -42,7 +41,7 @@ func GetClosestNodeIDs(pieceCID cid.ContentID, nodeIDs []*nodeid.NodeID, maxResu
 		keys = append(keys, k)
 	}
 	sort.SliceStable(keys, func(i, j int) bool {
-    return keys[i].Cmp(keys[j]) < 0
+		return keys[i].Cmp(keys[j]) < 0
 	})
 	var r = make([]*nodeid.NodeID, 0)
 	for _, k := range keys {
@@ -54,4 +53,14 @@ func GetClosestNodeIDs(pieceCID cid.ContentID, nodeIDs []*nodeid.NodeID, maxResu
 	} else {
 		return r[0:maxResults], nil
 	}
+}
+
+// GetNodeIDsClosestToContentID gets nodeIDs that are close to a contentID
+func GetNodeIDsClosestToContentID(landmark cid.ContentID, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
+	return getClosestNodeIDs(landmark.ToBytes(), nodeIDs, maxResults)
+}
+
+// GetNodeIDsClosestToNodeID gets nodeIDs that are close to a nodeID
+func GetNodeIDsClosestToNodeID(landmark nodeid.NodeID, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
+	return getClosestNodeIDs(landmark.ToBytes(), nodeIDs, maxResults)
 }
