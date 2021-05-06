@@ -22,6 +22,7 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 // FCROfferMgr manages offer storage
@@ -80,7 +81,17 @@ func (mgr *FCROfferMgr) GetDHTOffersWithinRange(cidMin, cidMax *cid.ContentID, m
 		return offers, false
 	}
 	if max < min {
-		return offers, false
+		// TODO, Test boundary cases
+		cidNewMax, err := cid.NewContentIDFromHexString("0xFFFFFFFF")
+		if err != nil {
+			logging.Error("Error in getting maximum cid")
+			return offers, false
+		}
+		tempOffers, _ := mgr.GetDHTOffersWithinRange(cidMax, cidNewMax, maxOffers)
+		max = min
+		min = 0
+		offers = append(offers, tempOffers...)
+		maxOffers = maxOffers - len(tempOffers)
 	}
 
 	for i := min; i <= max; i++ {
