@@ -17,11 +17,7 @@ package gatewayapi
 
 import (
 	"errors"
-	"math/big"
-	"strconv"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
@@ -61,56 +57,33 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 	// TODO, Need to check registration info
 	logging.Info("Registration info: %v, %v, %v, %v", registrationBlock, registrationTransactionReceipt, registrationMerkleRoot, registrationMerkleProof)
 
-	// Search offers, TODO: Need to have create an API in the registerMgr to return dht offers within range
-	min, err := strconv.ParseInt(cidMin.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
-	if err != nil {
-		return err
-	}
-	max, err := strconv.ParseInt(cidMax.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
-	if err != nil {
-		return err
-	}
-	if max < min {
-		return errors.New("Invalid parameters")
-	}
-
-	maxOffers := 500
-	offers := make([]cidoffer.CIDOffer, 0)
-	for i := min; i <= max; i++ {
-		id, err := cid.NewContentID(big.NewInt(i))
-		if err != nil {
-			return err
-		}
-		offers, exists := c.OffersMgr.GetDHTOffers(id)
-		if exists {
-			for _, offer := range offers {
-				offers = append(offers, offer)
-				if len(offers) >= maxOffers {
-					break
-				}
-			}
-		}
-		if len(offers) >= maxOffers {
-			break
-		}
-	}
-	maxOffersPerMsg := 50
+	// Search offers
+	maxOffers := 500      //TODO, max offers configurable?
+	maxOffersPerMsg := 50 //TODO, max offer per message?
 	msgs := make([]fcrmessages.FCRMessage, 0)
-	for {
-		if len(offers) > maxOffersPerMsg {
-			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
-			if err != nil {
-				return err
+	offers, exists := c.OffersMgr.GetDHTOffersWithinRange(cidMin, cidMax, maxOffers)
+	if exists {
+		for {
+			var msg *fcrmessages.FCRMessage
+			if len(offers) > maxOffersPerMsg {
+				msg, err = fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
+				if err != nil {
+					return err
+				}
+				offers = offers[50:]
+			} else {
+				msg, err = fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers) //TODO: Add nonce
+				if err != nil {
+					return err
+				}
+				break
+			}
+			// Sign the sub message
+			if msg.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
+				logging.Error("Internal error in signing message.")
+				return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 			}
 			msgs = append(msgs, *msg)
-			offers = offers[50:]
-		} else {
-			msg, err := fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers) //TODO: Add nonce
-			if err != nil {
-				return err
-			}
-			msgs = append(msgs, *msg)
-			break
 		}
 	}
 
@@ -124,7 +97,6 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 		logging.Error("Internal error in signing message.")
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
-
 	// Respond
 	err = writer.Write(response, c.Settings.TCPInactivityTimeout)
 	if err != nil {
