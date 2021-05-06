@@ -60,7 +60,7 @@ func GetNodeIDsClosestToContentID(landmark cid.ContentID, nodeIDs []*nodeid.Node
 	return getClosestNodeIDs(landmark.ToBytes(), nodeIDs, maxResults)
 }
 
-// GetNodeIDsClosestToNodeID gets nodeIDs that are close to a nodeID
-func GetNodeIDsClosestToNodeID(landmark nodeid.NodeID, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
-	return getClosestNodeIDs(landmark.ToBytes(), nodeIDs, maxResults)
+// SortClosestNodesIDs sort nodeIDs that are close to a nodeID
+func SortClosestNodesIDs(landmark string, nodeIDs []*nodeid.NodeID) ([]*nodeid.NodeID, error) {
+	return getClosestNodeIDs([]byte(landmark), nodeIDs, len(nodeIDs))
 }
