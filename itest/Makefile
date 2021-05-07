@@ -19,7 +19,8 @@ default: clean utest build tag
 # builds a docker image that builds the app and packages it into a minimal docker image
 build:
 	docker build -t ${IMAGE}:${VERSION} .
-
+	docker build -t consensys/lotus-base lotus/lotus-base
+	docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
 # push the image to an registry
 push:
@@ -39,7 +40,11 @@ detectmisconfig:
 
 # Local build: make sure the test code compiles. 
 lbuild:
-	go test -c github.com/ConsenSys/fc-retrieval-itest/internal/integration
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-gateway
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-init
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 
 itestlocal: setup-env-localtesting itestdocker
 

@@ -1,4 +1,4 @@
-package integration
+package client_init
 
 /*
  * Copyright 2021 ConsenSys Software Inc.
@@ -16,19 +16,33 @@ package integration
  */
 
 import (
+	"os"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/stretchr/testify/assert"
+	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 )
 
 // Tests in this file use the Client API, but don't need the rest of the system to be
 // configured. These tests need to be run prior to the other client tests.
 var fClient *fcrclient.FilecoinRetrievalClient
+
+func TestMain(m *testing.M) {
+	composeID, err := tc.StartContainers()
+	if err != nil {
+		logging.Error("Can't start containers %s", err.Error())
+		os.Exit(1)
+	}
+	defer tc.StopContainers(composeID)
+	m.Run()
+}
 
 func TestGetClientVersion(t *testing.T) {
 	versionInfo := fcrclient.GetVersion()
