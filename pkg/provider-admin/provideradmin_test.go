@@ -1,4 +1,4 @@
-package integration
+package provider_admin
 
 /*
  * Copyright 2021 ConsenSys Software Inc.
@@ -16,9 +16,12 @@ package integration
  */
 
 import (
+	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -27,14 +30,25 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ConsenSys/fc-retrieval-itest/config"
+	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 )
 
 // Test the Provider Admin API.
 var providerTest_providerConfig = config.NewConfig(".env.provider")
 var gatewayConfig_gatewayConfig = config.NewConfig(".env.gateway")
+
+func TestMain(m *testing.M) {
+	composeID, err := tc.StartContainers()
+	if err != nil {
+		logging.Error("Can't start containers %s", err.Error())
+		os.Exit(1)
+	}
+	defer tc.StopContainers(composeID)
+	m.Run()
+}
 
 func TestGetProviderAdminVersion(t *testing.T) {
 	versionInfo := fcrclient.GetVersion()

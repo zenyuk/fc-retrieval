@@ -1,4 +1,4 @@
-package integration
+package client_gateway
 
 /*
  * Copyright 2021 ConsenSys Software Inc.
@@ -16,18 +16,31 @@ package integration
  */
 
 import (
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
+
+	"github.com/ConsenSys/fc-retrieval-itest/config"
+	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 )
+
+func TestMain(m *testing.M) {
+	composeID, err := tc.StartContainers()
+	if err != nil {
+		logging.Error("Can't start containers %s", err.Error())
+		os.Exit(1)
+	}
+	defer tc.StopContainers(composeID)
+	m.Run()
+}
 
 func TestOneGateway(t *testing.T) {
 	gatewayConfig := config.NewConfig(".env.gateway")
@@ -92,14 +105,14 @@ func TestOneGateway(t *testing.T) {
 	clientConf := clientConfBuilder.Build()
 
 	client := fcrclient.NewFilecoinRetrievalClient(*clientConf)
-	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
-	newGatwaysToBeAdded = append(newGatwaysToBeAdded, gatewayID)
-	numAdded := client.AddGatewaysToUse(newGatwaysToBeAdded)
+	newGatewaysToBeAdded := make([]*nodeid.NodeID, 0)
+	newGatewaysToBeAdded = append(newGatewaysToBeAdded, gatewayID)
+	numAdded := client.AddGatewaysToUse(newGatewaysToBeAdded)
 	assert.Equal(t, 1, numAdded)
 	gws := client.GetGatewaysToUse()
 	assert.Equal(t, 1, len(gws))
 
-	numAdded = client.AddActiveGateways(newGatwaysToBeAdded)
+	numAdded = client.AddActiveGateways(newGatewaysToBeAdded)
 	assert.Equal(t, 1, numAdded)
 	ga := client.GetActiveGateways()
 	assert.Equal(t, 1, len(ga))

@@ -1,8 +1,11 @@
-package integration
+package poc1
 
 import (
+	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -11,9 +14,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
+	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ConsenSys/fc-retrieval-itest/config"
 )
 
 /*
@@ -40,11 +44,22 @@ var gwID *nodeid.NodeID
 var pID *nodeid.NodeID
 var testCIDs []cid.ContentID
 
+func TestMain(m *testing.M) {
+	composeID, err := tc.StartContainers()
+	if err != nil {
+		logging.Error("Can't start containers %s", err.Error())
+		os.Exit(1)
+	}
+	defer tc.StopContainers(composeID)
+	m.Run()
+}
+
 func TestInitialiseGateway(t *testing.T) {
 	logging.Info("/*******************************************************/")
 	logging.Info("/*             Start TestInitialiseGateway	         */")
 	logging.Info("/*******************************************************/")
 	logging.Error("Wait two seconds for the gateway to deploy and be ready for requests")
+
 	time.Sleep(2 * time.Second)
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
