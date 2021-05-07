@@ -17,9 +17,12 @@ package fcroffermgr
 
 import (
 	"errors"
+	"math/big"
+	"strconv"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 // FCROfferMgr manages offer storage
@@ -62,6 +65,55 @@ func (mgr *FCROfferMgr) GetGroupOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer,
 func (mgr *FCROfferMgr) GetDHTOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, bool) {
 	res := mgr.dhtOffers.get(cid)
 	return res, len(res) > 0
+}
+
+// GetDHTOffersWithinRange returns a list of dht offers contains a cid within the given range
+func (mgr *FCROfferMgr) GetDHTOffersWithinRange(cidMin, cidMax *cid.ContentID, maxOffers int) ([]cidoffer.CIDOffer, bool) {
+	// TODO: Have a more efficient implementation
+	offers := make([]cidoffer.CIDOffer, 0)
+
+	min, err := strconv.ParseInt(cidMin.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
+	if err != nil {
+		return offers, false
+	}
+	max, err := strconv.ParseInt(cidMax.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
+	if err != nil {
+		return offers, false
+	}
+	if max < min {
+		// TODO, Test boundary cases
+		cidNewMax, err := cid.NewContentIDFromHexString("0xFFFFFFFF")
+		if err != nil {
+			logging.Error("Error in getting maximum cid")
+			return offers, false
+		}
+		tempOffers, _ := mgr.GetDHTOffersWithinRange(cidMax, cidNewMax, maxOffers)
+		max = min
+		min = 0
+		offers = append(offers, tempOffers...)
+		maxOffers = maxOffers - len(tempOffers)
+	}
+
+	for i := min; i <= max; i++ {
+		id, err := cid.NewContentID(big.NewInt(i))
+		if err != nil {
+			return offers, false
+		}
+		offers, exists := mgr.GetDHTOffers(id)
+		if exists {
+			for _, offer := range offers {
+				offers = append(offers, offer)
+				if len(offers) >= maxOffers {
+					break
+				}
+			}
+		}
+		if len(offers) >= maxOffers {
+			break
+		}
+	}
+
+	return offers, len(offers) > 0
 }
 
 // GetOffers returns a list of all offers (group or dht) that contain the given cid
