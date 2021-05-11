@@ -17,33 +17,63 @@ package client_gateway
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	m.Run()
+	// Env is not set, we are calling from host
+	util.CleanContainers()
+	// We need a lotus
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start lotus
+	lotus := *util.StartLotus(ctx, network, true)
+	defer lotus.Terminate(ctx)
+	defer lotus.StopLogProducer() // Call when verbose is set to true
+
+	// Start itest
+	done := make(chan bool)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/lotus", done)
+	defer itest.Terminate(ctx)
+	defer itest.StopLogProducer()
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
 }
 
 func TestLotusConnectivity(t *testing.T) {
 
 	method := "Filecoin.ChainHead"
 	id := 1
-	lotusUrl := "http://127.0.0.1:1234/rpc/v0"
+	lotusUrl := "http://lotus:1234/rpc/v0"
 	requestBody := `{
 		"jsonrpc": "2.0",
 		"method": "` + method + `",
