@@ -44,10 +44,10 @@ func TestMain(m *testing.M) {
 		return
 	}
 	// Env is not set, we are calling from host
-	util.CleanContainers()
 	// We need a lotus
 	tag := util.GetCurrentBranch()
 	network := "itest-shared"
+	util.CleanContainers(network)
 
 	// Create shared net
 	ctx := context.Background()
@@ -57,10 +57,11 @@ func TestMain(m *testing.M) {
 	// Start lotus
 	lotus := *util.StartLotus(ctx, network, false)
 	defer lotus.Terminate(ctx)
+	// defer lotus.StopLogProducer()
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/lotus", done)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/lotus", done, true)
 	defer itest.Terminate(ctx)
 	defer itest.StopLogProducer()
 
@@ -71,7 +72,7 @@ func TestMain(m *testing.M) {
 		logging.Fatal("Tests failed, shutdown...")
 	}
 	// Clean containers to shutdown
-	util.CleanContainers()
+	util.CleanContainers(network)
 }
 
 func TestLotusConnectivityHttp(t *testing.T) {

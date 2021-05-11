@@ -59,7 +59,7 @@ func StopContainers(composeID string) error {
 }
 
 // CleanContainers clean the containers
-func CleanContainers() {
+func CleanContainers(network string) {
 	// Stop all running containers
 	cmd := exec.Command("docker", "ps", "-q")
 	stdout, err := cmd.Output()
@@ -83,6 +83,10 @@ func CleanContainers() {
 	cmd = exec.Command("docker", command...)
 	stdout, _ = cmd.Output()
 	fmt.Printf("Removed containers: \n%v\n", string(stdout))
+
+	// Remove network
+	cmd = exec.Command("docker", "network", "rm", network)
+	cmd.Output()
 }
 
 // GetCurrentBranch gets the current branch of this repo
@@ -167,7 +171,7 @@ func StartLotus(ctx context.Context, network string, verbose bool) *tc.Container
 }
 
 // Start redis used by register
-func StartRedis(ctx context.Context, network string) *tc.Container {
+func StartRedis(ctx context.Context, network string, verbose bool) *tc.Container {
 	// Start redis
 	req := tc.ContainerRequest{
 		Image:          "redis:alpine",
@@ -185,17 +189,19 @@ func StartRedis(ctx context.Context, network string) *tc.Container {
 	if err != nil {
 		panic(err)
 	}
-	g := &logConsumer{name: fmt.Sprintf("redis"), color: ColorWhite}
-	err = redisC.StartLogProducer(ctx)
-	if err != nil {
-		panic(err)
+	if verbose {
+		g := &logConsumer{name: fmt.Sprintf("redis"), color: ColorWhite}
+		err = redisC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		redisC.FollowOutput(g)
 	}
-	redisC.FollowOutput(g)
 	return &redisC
 }
 
 // Start the register
-func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string) *tc.Container {
+func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
 	// Start a register container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-register:develop-%s", tag),
@@ -213,17 +219,19 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 	if err != nil {
 		panic(err)
 	}
-	g := &logConsumer{name: fmt.Sprintf("register"), color: color}
-	err = registerC.StartLogProducer(ctx)
-	if err != nil {
-		panic(err)
+	if verbose {
+		g := &logConsumer{name: fmt.Sprintf("register"), color: color}
+		err = registerC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		registerC.FollowOutput(g)
 	}
-	registerC.FollowOutput(g)
 	return &registerC
 }
 
 // Start a gateway of specific id, tag, network, log color and env
-func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string) *tc.Container {
+func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
 	// Start a gateway container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-gateway:develop-%s", tag),
@@ -241,18 +249,19 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 	if err != nil {
 		panic(err)
 	}
-	g := &logConsumer{name: id, color: color}
-	err = gatewayC.StartLogProducer(ctx)
-	if err != nil {
-		panic(err)
+	if verbose {
+		g := &logConsumer{name: id, color: color}
+		err = gatewayC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		gatewayC.FollowOutput(g)
 	}
-	gatewayC.FollowOutput(g)
-
 	return &gatewayC
 }
 
 // Start a provider of specific id, tag, network, log color and env
-func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string) *tc.Container {
+func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
 	// Start a provider container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-provider:develop-%s", tag),
@@ -270,17 +279,19 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 	if err != nil {
 		panic(err)
 	}
-	g := &logConsumer{name: id, color: color}
-	err = providerC.StartLogProducer(ctx)
-	if err != nil {
-		panic(err)
+	if verbose {
+		g := &logConsumer{name: id, color: color}
+		err = providerC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		providerC.FollowOutput(g)
 	}
-	providerC.FollowOutput(g)
 	return &providerC
 }
 
 // Start the itest
-func StartItest(ctx context.Context, tag string, network string, color string, testDir string, done chan bool) *tc.Container {
+func StartItest(ctx context.Context, tag string, network string, color string, testDir string, done chan bool, verbose bool) *tc.Container {
 	// Start a itest container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-itest:develop-%s", tag),
@@ -298,12 +309,14 @@ func StartItest(ctx context.Context, tag string, network string, color string, t
 	if err != nil {
 		panic(err)
 	}
-	g := &logConsumer{name: fmt.Sprintf("itest"), color: color, done: done}
-	err = itestC.StartLogProducer(ctx)
-	if err != nil {
-		panic(err)
+	if verbose {
+		g := &logConsumer{name: fmt.Sprintf("itest"), color: color, done: done}
+		err = itestC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		itestC.FollowOutput(g)
 	}
-	itestC.FollowOutput(g)
 	return &itestC
 }
 
