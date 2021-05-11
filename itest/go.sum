@@ -1678,6 +1678,8 @@ github.com/warpfork/go-wish v0.0.0-20200122115046-b9ea61034e4a h1:G++j5e0OC488te
 github.com/warpfork/go-wish v0.0.0-20200122115046-b9ea61034e4a/go.mod h1:x6AKhvSSexNrVSrViXSHUEbICjmGXhtgABaHIySUSGw=
 github.com/wcgcyx/testcontainers-go v0.10.1-0.20210510182503-9d4f5d58bb48 h1:64VZz7gtok4xzYmGMl4KVWUTt67unsUTFyTV1enxzIc=
 github.com/wcgcyx/testcontainers-go v0.10.1-0.20210510182503-9d4f5d58bb48/go.mod h1:kNQBd6fa0yqpG3lUyUfAJ7YQBgEuV54dDu52JH1KfBc=
+github.com/wcgcyx/testcontainers-go v0.10.1-0.20210511154849-504eecefabe0 h1:7CrZznWbGRuKtmVJHmnVkSSa/QI2kgoDQ1w0f4h5Q0M=
+github.com/wcgcyx/testcontainers-go v0.10.1-0.20210511154849-504eecefabe0/go.mod h1:kNQBd6fa0yqpG3lUyUfAJ7YQBgEuV54dDu52JH1KfBc=
 github.com/weaveworks/common v0.0.0-20200512154658-384f10054ec5/go.mod h1:c98fKi5B9u8OsKGiWHLRKus6ToQ1Tubeow44ECO1uxY=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
 github.com/whyrusleeping/base32 v0.0.0-20170828182744-c30ac30633cc/go.mod h1:r45hJU7yEoA81k6MWNhpMj/kms0n14dkzkxYHoB96UM=
