@@ -45,10 +45,10 @@ func TestMain(m *testing.M) {
 		return
 	}
 	// Env is not set, we are calling from host
-	util.CleanContainers()
 	// We don't need any running instance
 	tag := util.GetCurrentBranch()
 	network := "itest-shared"
+	util.CleanContainers(network)
 
 	// Create shared net
 	ctx := context.Background()
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/client-init", done)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/client-init", done, true)
 	defer itest.Terminate(ctx)
 	defer itest.StopLogProducer()
 
@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 		logging.Fatal("Tests failed, shutdown...")
 	}
 	// Clean containers to shutdown
-	util.CleanContainers()
+	util.CleanContainers(network)
 }
 
 func TestGetClientVersion(t *testing.T) {

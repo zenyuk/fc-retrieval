@@ -55,10 +55,10 @@ func TestMain(m *testing.M) {
 		return
 	}
 	// Env is not set, we are calling from host
-	util.CleanContainers()
 	// We need a redis, a register, a gateway and a provider
 	tag := util.GetCurrentBranch()
 	network := "itest-shared"
+	util.CleanContainers(network)
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -71,28 +71,28 @@ func TestMain(m *testing.M) {
 	defer net.Remove(ctx)
 
 	// Start redis
-	redis := *util.StartRedis(ctx, network)
+	redis := *util.StartRedis(ctx, network, true)
 	defer redis.Terminate(ctx)
 	defer redis.StopLogProducer()
 
 	// Start register
-	register := *util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv)
+	register := *util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
 	defer register.Terminate(ctx)
 	defer register.StopLogProducer()
 
 	// Start gateway
-	gateway := *util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv)
+	gateway := *util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
 	defer gateway.Terminate(ctx)
 	defer gateway.StopLogProducer()
 
 	// Start provider
-	provider := *util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv)
+	provider := *util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv, true)
 	defer provider.Terminate(ctx)
 	defer provider.StopLogProducer()
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/poc1", done)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/poc1", done, true)
 	defer itest.Terminate(ctx)
 	defer itest.StopLogProducer()
 
@@ -103,7 +103,7 @@ func TestMain(m *testing.M) {
 		logging.Fatal("Tests failed, shutdown...")
 	}
 	// Clean containers to shutdown
-	util.CleanContainers()
+	util.CleanContainers(network)
 }
 
 func TestInitialiseGateway(t *testing.T) {
