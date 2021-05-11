@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
