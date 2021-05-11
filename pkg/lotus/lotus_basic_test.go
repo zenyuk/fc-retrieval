@@ -55,9 +55,8 @@ func TestMain(m *testing.M) {
 	defer net.Remove(ctx)
 
 	// Start lotus
-	lotus := *util.StartLotus(ctx, network, true)
+	lotus := *util.StartLotus(ctx, network, false)
 	defer lotus.Terminate(ctx)
-	defer lotus.StopLogProducer() // Call when verbose is set to true
 
 	// Start itest
 	done := make(chan bool)
@@ -71,6 +70,8 @@ func TestMain(m *testing.M) {
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
+	// Clean containers to shutdown
+	util.CleanContainers()
 }
 
 func TestLotusConnectivityHttp(t *testing.T) {

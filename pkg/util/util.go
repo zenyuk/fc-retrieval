@@ -142,6 +142,7 @@ func StartLotus(ctx context.Context, network string, verbose bool) *tc.Container
 	req := tc.ContainerRequest{
 		Image:          "consensys/lotus-full-node:latest",
 		Name:           "lotus",
+		Cmd:            []string{"./start-lotus-full-node.sh"},
 		Networks:       []string{network},
 		NetworkMode:    container.NetworkMode(network),
 		NetworkAliases: map[string][]string{network: {"lotus"}},

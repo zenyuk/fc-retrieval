@@ -15,5 +15,5 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/testcontainers/testcontainers-go v0.10.0
-	github.com/wcgcyx/testcontainers-go v0.10.1-0.20210510182503-9d4f5d58bb48
+	github.com/wcgcyx/testcontainers-go v0.10.1-0.20210511154849-504eecefabe0
 )

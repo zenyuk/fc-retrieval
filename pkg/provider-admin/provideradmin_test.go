@@ -98,6 +98,8 @@ func TestMain(m *testing.M) {
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
+	// Clean containers to shutdown
+	util.CleanContainers()
 }
 
 func TestGetProviderAdminVersion(t *testing.T) {
