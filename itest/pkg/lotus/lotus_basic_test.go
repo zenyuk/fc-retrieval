@@ -27,7 +27,12 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/filecoin-project/go-jsonrpc"
+	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 func TestMain(m *testing.M) {
@@ -69,7 +74,7 @@ func TestMain(m *testing.M) {
 	}
 }
 
-func TestLotusConnectivity(t *testing.T) {
+func TestLotusConnectivityHttp(t *testing.T) {
 
 	method := "Filecoin.ChainHead"
 	id := 1
@@ -99,4 +104,47 @@ func TestLotusConnectivity(t *testing.T) {
 	}
 
 	assert.Equal(t, float64(id), fields["id"])
+}
+
+func TestLotusConnectivityWs(t *testing.T) {
+	var lotusApi apistruct.FullNodeStruct
+	ctx := context.Background()
+
+	clientClose, err := jsonrpc.NewMergeClient(
+		ctx,
+		"ws://lotus/rpc/v0",
+		"Filecoin",
+		[]interface{}{
+			&lotusApi.CommonStruct.Internal,
+			&lotusApi.Internal,
+		},
+		http.Header{})
+	if err != nil {
+		t.Errorf("Can't construct a Lotus client, error: %s", err.Error())
+	}
+	defer clientClose()
+
+	head, err := lotusApi.ChainHead(context.Background())
+	if err != nil {
+		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
+	}
+	assert.Greater(t, len(head.Cids()), 0)
+	assert.NotEqualf(t, "", head.Cids()[0].KeyString(), "Head CID Key is empty")
+}
+
+func generateKeyPair() (privateKey []byte, publicKey []byte) {
+	// Generate Private-Public pairs. Public key will be used as address
+	var signer fcrpaymentmgr.SecpSigner
+	privateKey, err := signer.GenPrivate()
+	if err != nil {
+		logging.Error("Error generating private key, while creating address %s", err.Error())
+		os.Exit(1)
+	}
+
+	publicKey, err = signer.ToPublic(privateKey)
+	if err != nil {
+		logging.Error("Error generating public key, while creating address %s", err.Error())
+		os.Exit(1)
+	}
+	return
 }
