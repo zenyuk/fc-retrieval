@@ -33,13 +33,9 @@ type gatewayPingRequest struct {
 // EncodeGatewayPingRequest is used to get the FCRMessage of gatewayPingRequest
 func EncodeGatewayPingRequest(
 	gatewayID *nodeid.NodeID,
-	nonce int64,
-	ttl int64,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(gatewayPingRequest{
 		GatewayID: *gatewayID,
-		Nonce:     nonce,
-		TTL:       ttl,
 	})
 	if err != nil {
 		return nil, err
