@@ -1,11 +1,10 @@
 package poc1
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -14,10 +13,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-itest/config"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 /*
@@ -45,13 +45,63 @@ var pID *nodeid.NodeID
 var testCIDs []cid.ContentID
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		// This logging should be only called after all tests finished.
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	m.Run()
+	// Env is not set, we are calling from host
+	util.CleanContainers()
+	// We need a redis, a register, a gateway and a provider
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+
+	// Get env
+	rgEnv := util.GetEnvMap("../../.env.register")
+	gwEnv := util.GetEnvMap("../../.env.gateway")
+	pvEnv := util.GetEnvMap("../../.env.provider")
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start redis
+	redis := *util.StartRedis(ctx, network)
+	defer redis.Terminate(ctx)
+	defer redis.StopLogProducer()
+
+	// Start register
+	register := *util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv)
+	defer register.Terminate(ctx)
+	defer register.StopLogProducer()
+
+	// Start gateway
+	gateway := *util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv)
+	defer gateway.Terminate(ctx)
+	defer gateway.StopLogProducer()
+
+	// Start provider
+	provider := *util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv)
+	defer provider.Terminate(ctx)
+	defer provider.StopLogProducer()
+
+	// Start itest
+	done := make(chan bool)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/poc1", done)
+	defer itest.Terminate(ctx)
+	defer itest.StopLogProducer()
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
 }
 
 func TestInitialiseGateway(t *testing.T) {
