@@ -111,7 +111,7 @@ func TestLotusConnectivityWs(t *testing.T) {
 
 	clientClose, err := jsonrpc.NewMergeClient(
 		ctx,
-		"ws://lotus/rpc/v0",
+		"ws://lotus:1234/rpc/v0",
 		"Filecoin",
 		[]interface{}{
 			&lotusApi.CommonStruct.Internal,
