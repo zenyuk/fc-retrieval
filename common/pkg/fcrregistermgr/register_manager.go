@@ -237,7 +237,12 @@ func (mgr *FCRRegisterMgr) GetAllProviders() []register.ProviderRegister {
 }
 
 // GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
-func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int) ([]register.GatewayRegister, error) {
+func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cid *cid.ContentID, numDHT int, exclude *nodeid.NodeID) ([]register.GatewayRegister, error) {
+	// Maximum is 16
+	if numDHT > 16 {
+		numDHT = 16
+	}
+
 	// TODO: To implement.
 	// Note: needs to return a list of copies.
 	return nil, errors.New("Not yet implemented")
@@ -342,13 +347,13 @@ func (mgr *FCRRegisterMgr) updateProviders() {
 		select {
 		case <-mgr.providerRefreshCh:
 			// Need to refresh
-			logging.Error("Register manager force update internal provider map.")
+			logging.Info("Register manager force update internal provider map.")
 			refreshForce = true
 		case <-afterChan:
 			// Need to refresh
 		case <-mgr.providerShutdownCh:
 			// Need to shutdown
-			logging.Error("Register manager shutdown provider routine.")
+			logging.Info("Register manager shutdown provider routine.")
 			return
 		}
 	}
