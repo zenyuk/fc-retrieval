@@ -27,6 +27,15 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/api/adminapi"
 )
 
+// gatewayInfo stores the information of a remote gateway instance
+type gatewayInfo struct {
+	adminAP string
+
+	id      *nodeid.NodeID
+	privKey *fcrcrypto.KeyPair
+	pubKey  *fcrcrypto.KeyPair
+}
+
 // FilecoinRetrievalGatewayAdmin is an example implementation using the api,
 // which holds information about the interaction of the Filecoin
 // Retrieval Gateway Admin with Filecoin Retrieval Gateways.
@@ -34,7 +43,7 @@ type FilecoinRetrievalGatewayAdmin struct {
 	Settings GatewayAdminSettings
 
 	// List of gateways this admin is in use
-	ActiveGateways     map[string]register.GatewayRegister
+	ActiveGateways     map[string]*gatewayInfo
 	ActiveGatewaysLock sync.RWMutex
 }
 
@@ -42,30 +51,50 @@ type FilecoinRetrievalGatewayAdmin struct {
 func NewFilecoinRetrievalGatewayAdmin(settings GatewayAdminSettings) *FilecoinRetrievalGatewayAdmin {
 	return &FilecoinRetrievalGatewayAdmin{
 		Settings:           settings,
-		ActiveGateways:     make(map[string]register.GatewayRegister),
+		ActiveGateways:     make(map[string]*gatewayInfo),
 		ActiveGatewaysLock: sync.RWMutex{},
 	}
 }
 
 // InitialiseGateway initialise a given gateway
-func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
-	err := adminapi.RequestInitialiseKey(gatewayInfo, gatewayPrivKey, gatewayPrivKeyVer, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(adminAP string, nodeID *nodeid.NodeID, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := adminapi.RequestInitialiseKey(adminAP, nodeID, gatewayPrivKey, gatewayPrivKeyVer, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 	if err != nil {
 		return err
 	}
 
-	// Register this gateway
-	err = gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	// Get pub key
+	encoded, err := gatewayPrivKey.EncodePublicKey()
 	if err != nil {
-		logging.Error("Error in register the gateway.")
+		logging.Error("Error in encoding public key")
+		return err
+	}
+	pubKey, err := fcrcrypto.DecodePublicKey(encoded)
+	if err != nil {
+		logging.Error("Error in generating signing key.")
 		return err
 	}
 
 	// Add this provider to the active gateways list
 	c.ActiveGatewaysLock.Lock()
-	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGateways[nodeID.ToString()] = &gatewayInfo{
+		adminAP: adminAP,
+		id:      nodeID,
+		privKey: gatewayPrivKey,
+		pubKey:  pubKey,
+	}
 	c.ActiveGatewaysLock.Unlock()
 	return nil
+}
+
+// RegisterGateway registers the given gatewayInfo to the register
+func (c *FilecoinRetrievalGatewayAdmin) RegisterGateway(gatewayInfo *register.GatewayRegister) error {
+	// Register this gateway
+	err := gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	if err != nil {
+		logging.Error("Error in register the gateway.")
+	}
+	return err
 }
 
 // ResetClientReputation requests a Gateway to initialise a client's reputation to the default value.
@@ -91,5 +120,5 @@ func (c *FilecoinRetrievalGatewayAdmin) ForceUpdate(gatewayID *nodeid.NodeID) er
 	if !exists {
 		return errors.New("Unable to find the gateway in admin storage")
 	}
-	return adminapi.RequestForceRefresh(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+	return adminapi.RequestForceRefresh(gatewayInfo.adminAP, gatewayInfo.pubKey, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
