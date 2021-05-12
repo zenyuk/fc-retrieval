@@ -95,9 +95,6 @@ jobs:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-register"
           workdir: "/go/src/github.com/ConsenSys/fc-retrieval-register"
-      - run: echo 127.0.0.1 register | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 gateway | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 provider | sudo tee -a /etc/hosts
       - run:
           name: Register - Use remote config
           command: make useremote
@@ -167,9 +164,6 @@ jobs:
       - run:
           name: Log in to Docker registry
           command: echo $GITHUB_ACCESS_TOKEN | docker login https://docker.pkg.github.com -u $GITHUB_USER --password-stdin
-      - run: echo 127.0.0.1 register | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 gateway | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 provider | sudo tee -a /etc/hosts
       - run:
           name: Run Itegration Tests
           command: make itestdocker
