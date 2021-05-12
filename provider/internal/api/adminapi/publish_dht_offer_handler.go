@@ -80,7 +80,7 @@ func HandleProviderAdminPublishDHTOfferRequest(w rest.ResponseWriter, request *f
 	}
 
 	for _, cid := range cids {
-		gateways, err := c.RegisterMgr.GetGatewaysNearCID(&cid, 0)
+		gateways, err := c.RegisterMgr.GetGatewaysNearCID(&cid, 0, nil)
 		if err != nil {
 			s := "Internal error: Fail to get gateways near the given cid."
 			logging.Error(s + err.Error())
