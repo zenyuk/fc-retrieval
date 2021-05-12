@@ -23,13 +23,13 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestGetPublishedOffer checks the group offer stored in the provider for a given list of gateways.
 func RequestGetPublishedOffer(
-	providerInfo *register.ProviderRegister,
+	adminAP string,
+	providerPubKey *fcrcrypto.KeyPair,
 	gatewayIDs []nodeid.NodeID,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
@@ -38,27 +38,21 @@ func RequestGetPublishedOffer(
 	[]cidoffer.CIDOffer, // offers
 	error, // error
 ) {
-	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
-	if err != nil {
-		logging.Error("Error in obtaining signing key from register info.")
-		return false, nil, err
-	}
-
+	// Construct request
 	request, err := fcrmessages.EncodeProviderAdminGetPublishedOfferRequest(gatewayIDs)
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
 		return false, nil, errors.New("Error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage(adminAP, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return false, nil, err
 	}
 
 	// Verify the response
-	if response.Verify(pubKey) != nil {
+	if response.Verify(providerPubKey) != nil {
 		return false, nil, errors.New("Fail to verify the response")
 	}
 

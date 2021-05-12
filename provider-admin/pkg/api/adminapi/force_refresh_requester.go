@@ -21,23 +21,16 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestForceRefresh forces a given provider to refresh its internal register
 func RequestForceRefresh(
-	providerInfo *register.ProviderRegister,
+	adminAP string,
+	providerPubKey *fcrcrypto.KeyPair,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
-	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
-	if err != nil {
-		logging.Error("Error in obtaining signing key from register info.")
-		return err
-	}
-
-	// Second, send key exchange to activate the given provider
+	// Send key exchange to activate the given provider
 	request, err := fcrmessages.EncodeProviderAdminForceRefreshRequest(true)
 	if err != nil {
 		logging.Error("Error in encoding message.")
@@ -48,14 +41,14 @@ func RequestForceRefresh(
 		return errors.New("Error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage(adminAP, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
 	}
 
 	// Verify the response
-	if response.Verify(pubKey) != nil {
+	if response.Verify(providerPubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
