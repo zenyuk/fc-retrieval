@@ -22,28 +22,29 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestInitialiseKey initialise a given provider
 func RequestInitialiseKey(
-	providerInfo *register.ProviderRegister,
+	adminAP string,
+	nodeID *nodeid.NodeID,
 	providerPrivKey *fcrcrypto.KeyPair,
 	providerPrivKeyVer *fcrcrypto.KeyVersion,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
+	encoded, err := providerPrivKey.EncodePublicKey()
 	if err != nil {
-		logging.Error("Error in obtaining signing key from register info.")
+		logging.Error("Error in encoding public key")
 		return err
 	}
-	nodeID, err := nodeid.NewNodeIDFromHexString(providerInfo.NodeID)
+	pubKey, err := fcrcrypto.DecodePublicKey(encoded)
 	if err != nil {
-		logging.Error("Error in generating nodeID.")
+		logging.Error("Error in generating signing key.")
 		return err
 	}
+
 	// Second, send key exchange to activate the given provider
 	request, err := fcrmessages.EncodeProviderAdminInitialiseKeyRequest(nodeID, providerPrivKey, providerPrivKeyVer)
 	if err != nil {
@@ -55,7 +56,7 @@ func RequestInitialiseKey(
 		return errors.New("Error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := req.SendMessage(adminAP, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
