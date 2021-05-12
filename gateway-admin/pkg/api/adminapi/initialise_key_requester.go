@@ -22,29 +22,28 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestInitialiseKey initialise a given gateway
 func RequestInitialiseKey(
-	adminAP string,
-	nodeID *nodeid.NodeID,
+	gatewayInfo *register.GatewayRegister,
 	gatewayPrivKey *fcrcrypto.KeyPair,
 	gatewayPrivKeyVer *fcrcrypto.KeyVersion,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
-	encoded, err := gatewayPrivKey.EncodePublicKey()
+	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
-		logging.Error("Error in encoding public key")
+		logging.Error("Error in obtaining signing key from register info.")
 		return err
 	}
-	pubKey, err := fcrcrypto.DecodePublicKey(encoded)
+	nodeID, err := nodeid.NewNodeIDFromHexString(gatewayInfo.NodeID)
 	if err != nil {
-		logging.Error("Error in generating signing key.")
+		logging.Error("Error in generating nodeID.")
 		return err
 	}
-
 	// Second, send key exchange to activate the given gateway
 	request, err := fcrmessages.EncodeGatewayAdminInitialiseKeyRequest(nodeID, gatewayPrivKey, gatewayPrivKeyVer)
 	if err != nil {
@@ -56,7 +55,7 @@ func RequestInitialiseKey(
 		return errors.New("Error in signing the request")
 	}
 
-	response, err := req.SendMessage(adminAP, request)
+	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
