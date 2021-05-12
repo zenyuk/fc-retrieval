@@ -299,51 +299,62 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 }
 
 // FindOffersDHTDiscovery finds offer using dht discovery from given gateways
-func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) ([]nodeid.NodeID, []cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) (map[string]*[]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
+	res := make(map[string]*[]cidoffer.SubCIDOffer)
+
 	gw, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return make([]nodeid.NodeID, 0), make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+		return res, errors.New("Given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	uncontactable, offers, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	offersMap, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
 	if err != nil {
-		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return make([]nodeid.NodeID, 0), make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting dht discovery")
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return res, errors.New("Error in requesting dht discovery")
 	}
 	// Verify the offer one by one
-	for _, offer := range offers {
-		// Get provider's pubkey
-		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
-		if !validateProviderInfo(&providerInfo) {
-			logging.Error("Provider register info not valid.")
+	for id, offers := range offersMap {
+		if offers == nil {
+			// This is an uncontactable node, continue
 			continue
 		}
-		if err != nil {
-			logging.Error("Offer signature fail to verify.")
-			continue
+		entry := make([]cidoffer.SubCIDOffer, 0)
+		for _, offer := range *offers {
+			// Get provider's pubkey
+			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+			if !validateProviderInfo(&providerInfo) {
+				logging.Error("Provider register info not valid.")
+				continue
+			}
+			if err != nil {
+				logging.Error("Offer signature fail to verify.")
+				continue
+			}
+			pubKey, err := providerInfo.GetSigningKey()
+			if err != nil {
+				logging.Error("Fail to obtain public key.")
+				continue
+			}
+			// Verify the offer sig
+			if offer.Verify(pubKey) != nil {
+				logging.Error("Offer signature fail to verify.")
+				continue
+			}
+			// Now Verify the merkle proof
+			if offer.VerifyMerkleProof() != nil {
+				logging.Error("Merkle proof verification failed.")
+				continue
+			}
+			// Offer pass verification
+			entry = append(entry, offer)
+			logging.Info("Offer pass every verification, added to result")
 		}
-		pubKey, err := providerInfo.GetSigningKey()
-		if err != nil {
-			logging.Error("Fail to obtain public key.")
-			continue
-		}
-		// Verify the offer sig
-		if offer.Verify(pubKey) != nil {
-			logging.Error("Offer signature fail to verify.")
-			continue
-		}
-		// Now Verify the merkle proof
-		if offer.VerifyMerkleProof() != nil {
-			logging.Error("Merkle proof verification failed.")
-			continue
-		}
-		// Offer pass verification
-		logging.Info("Offer pass every verification, added to result")
+		res[id] = &entry
 	}
-	return uncontactable, offers, nil
+	return res, nil
 }
 
 // NOTE FOR ME: CLIENT IS DONE, WE NEED TO UPDATE CLIENT IN ITEST, AND ADD DHT TEST FROM THAT.
