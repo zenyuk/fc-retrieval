@@ -57,29 +57,7 @@ setup-env-localtesting:
 # tests locally. Dump the go.mod file so that the precise versions of 
 # Client and Gateway Admin library are recorded. 
 itestdocker:
-	docker network create shared || true
-	docker-compose down
-	for file in ./internal/integration/* ; do \
-		docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis; \
-		echo *********************************************; \
-		sleep 10; \
-		echo REDIS STARTUP *********************************************; \
-		docker container logs redis; \
-		echo REGISTER STARTUP *********************************************; \
-		docker container logs register; \
-		echo GATEWAY STARTUP *********************************************; \
-		docker container logs gateway; \
-		echo PROVIDER STARTUP *********************************************; \
-		docker container logs provider; \
-		echo *********************************************; \
-		docker-compose run itest go test -v $$file; \
-		echo *********************************************; \
-		echo PROVIDER LOGS *********************************************; \
-		docker container logs provider; \
-		echo GATEWAY LOGS *********************************************; \
-		docker container logs gateway; \
-		docker-compose down; \
-	done
+	go test -v -p=1 --count=1 ./...
 
 	
 # This is the previous methodology, where the integration tests were in 
