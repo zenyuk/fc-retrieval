@@ -142,7 +142,7 @@ func GetEnvMap(envFile string) map[string]string {
 }
 
 // Start lotus
-func StartLotus(ctx context.Context, network string, verbose bool) *tc.Container {
+func StartLotus(ctx context.Context, network string, verbose bool) {
 	// Start lotus
 	req := tc.ContainerRequest{
 		Image:          "consensys/lotus-full-node:latest",
@@ -168,11 +168,10 @@ func StartLotus(ctx context.Context, network string, verbose bool) *tc.Container
 		}
 		lotusC.FollowOutput(g)
 	}
-	return &lotusC
 }
 
 // Start redis used by register
-func StartRedis(ctx context.Context, network string, verbose bool) *tc.Container {
+func StartRedis(ctx context.Context, network string, verbose bool) {
 	// Start redis
 	req := tc.ContainerRequest{
 		Image:          "redis:alpine",
@@ -198,11 +197,10 @@ func StartRedis(ctx context.Context, network string, verbose bool) *tc.Container
 		}
 		redisC.FollowOutput(g)
 	}
-	return &redisC
 }
 
 // Start the register
-func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
+func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a register container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-register:develop-%s", tag),
@@ -228,11 +226,10 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 		}
 		registerC.FollowOutput(g)
 	}
-	return &registerC
 }
 
 // Start a gateway of specific id, tag, network, log color and env
-func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
+func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a gateway container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-gateway:develop-%s", tag),
@@ -258,11 +255,10 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 		}
 		gatewayC.FollowOutput(g)
 	}
-	return &gatewayC
 }
 
 // Start a provider of specific id, tag, network, log color and env
-func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) *tc.Container {
+func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a provider container
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-provider:develop-%s", tag),
@@ -288,11 +284,10 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 		}
 		providerC.FollowOutput(g)
 	}
-	return &providerC
 }
 
 // Start the itest, must only be called in host
-func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) *tc.Container {
+func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) {
 	// Start a itest container
 	// Mount testdir
 	absPath, err := filepath.Abs(".")
@@ -325,7 +320,6 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 		}
 		itestC.FollowOutput(g)
 	}
-	return &itestC
 }
 
 type logConsumer struct {

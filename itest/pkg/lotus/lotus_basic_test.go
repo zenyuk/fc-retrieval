@@ -55,15 +55,11 @@ func TestMain(m *testing.M) {
 	defer net.Remove(ctx)
 
 	// Start lotus
-	lotus := *util.StartLotus(ctx, network, false)
-	defer lotus.Terminate(ctx)
-	// defer lotus.StopLogProducer()
+	util.StartLotus(ctx, network, false)
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
-	defer itest.Terminate(ctx)
-	defer itest.StopLogProducer()
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
 
 	// Block until done.
 	if <-done {

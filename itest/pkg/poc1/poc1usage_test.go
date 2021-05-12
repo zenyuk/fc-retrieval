@@ -71,30 +71,20 @@ func TestMain(m *testing.M) {
 	defer net.Remove(ctx)
 
 	// Start redis
-	redis := *util.StartRedis(ctx, network, true)
-	defer redis.Terminate(ctx)
-	defer redis.StopLogProducer()
+	util.StartRedis(ctx, network, true)
 
 	// Start register
-	register := *util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
-	defer register.Terminate(ctx)
-	defer register.StopLogProducer()
+	util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
 
 	// Start gateway
-	gateway := *util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
-	defer gateway.Terminate(ctx)
-	defer gateway.StopLogProducer()
+	util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
 
 	// Start provider
-	provider := *util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv, true)
-	defer provider.Terminate(ctx)
-	defer provider.StopLogProducer()
+	util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv, true)
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
-	defer itest.Terminate(ctx)
-	defer itest.StopLogProducer()
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
 
 	// Block until done.
 	if <-done {
