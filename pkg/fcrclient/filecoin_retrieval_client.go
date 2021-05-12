@@ -16,12 +16,13 @@ package fcrclient
  */
 
 import (
+	"errors"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/api/gatewayapi"
+	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -189,7 +190,7 @@ func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) 
 		challenge := make([]byte, 32)
 		rand.Read(challenge)
 		ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-		err := gatewayapi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
+		err := clientapi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
 		if err != nil {
 			logging.Error("Error in initial establishment: %v", err.Error())
 			continue
@@ -249,52 +250,100 @@ func (c *FilecoinRetrievalClient) GetActiveGateways() []*nodeid.NodeID {
 	return res
 }
 
-// FindOffersStandardDiscovery finds offer using standard discovery
-func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *(cid.ContentID)) ([]cidoffer.SubCIDOffer, error) {
+// FindOffersStandardDiscovery finds offer using standard discovery from given gateways
+func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID) ([]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
-	aggregateOffers := make([]cidoffer.SubCIDOffer, 0)
-	for _, gw := range c.ActiveGateways {
-		// TODO need to do nonce management
-		// TODO need to do requests to all gateways in parallel, rather than serially
-		offers, err := gatewayapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
-		if err != nil {
-			logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	offers, err := clientapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
+	if err != nil {
+		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting standard discovery")
+	}
+	// Verify the offer one by one
+	for _, offer := range offers {
+		// Get provider's pubkey
+		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+		if !validateProviderInfo(&providerInfo) {
+			logging.Error("Provider register info not valid.")
 			continue
 		}
-		// Verify the offer one by one
-		for _, offer := range offers {
-			// Get provider's pubkey
-			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
-			if !validateProviderInfo(&providerInfo) {
-				logging.Error("Provider register info not valid.")
-				continue
-			}
-			if err != nil {
-				logging.Error("Offer signature fail to verify.")
-				continue
-			}
-			pubKey, err := providerInfo.GetSigningKey()
-			if err != nil {
-				logging.Error("Fail to obtain public key.")
-				continue
-			}
-			// Verify the offer sig
-			if offer.Verify(pubKey) != nil {
-				logging.Error("Offer signature fail to verify.")
-				continue
-			}
-			// Now Verify the merkle proof
-			if offer.VerifyMerkleProof() != nil {
-				logging.Error("Merkle proof verification failed.")
-				continue
-			}
-			// Offer pass verification
-			logging.Info("Offer pass every verification, added to result")
-			// TODO: probably should remove duplicate offers at this point
-			aggregateOffers = append(aggregateOffers, offer)
+		if err != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
 		}
+		pubKey, err := providerInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		// Verify the offer sig
+		if offer.Verify(pubKey) != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
+		}
+		// Now Verify the merkle proof
+		if offer.VerifyMerkleProof() != nil {
+			logging.Error("Merkle proof verification failed.")
+			continue
+		}
+		// Offer pass verification
+		logging.Info("Offer pass every verification, added to result")
 	}
-	return aggregateOffers, nil
+	return offers, nil
 }
+
+// FindOffersDHTDiscovery finds offer using dht discovery from given gateways
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) ([]nodeid.NodeID, []cidoffer.SubCIDOffer, error) {
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+
+	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return make([]nodeid.NodeID, 0), make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	uncontactable, offers, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	if err != nil {
+		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return make([]nodeid.NodeID, 0), make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting dht discovery")
+	}
+	// Verify the offer one by one
+	for _, offer := range offers {
+		// Get provider's pubkey
+		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+		if !validateProviderInfo(&providerInfo) {
+			logging.Error("Provider register info not valid.")
+			continue
+		}
+		if err != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
+		}
+		pubKey, err := providerInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		// Verify the offer sig
+		if offer.Verify(pubKey) != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
+		}
+		// Now Verify the merkle proof
+		if offer.VerifyMerkleProof() != nil {
+			logging.Error("Merkle proof verification failed.")
+			continue
+		}
+		// Offer pass verification
+		logging.Info("Offer pass every verification, added to result")
+	}
+	return uncontactable, offers, nil
+}
+
+// NOTE FOR ME: CLIENT IS DONE, WE NEED TO UPDATE CLIENT IN ITEST, AND ADD DHT TEST FROM THAT.
