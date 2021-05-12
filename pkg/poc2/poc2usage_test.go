@@ -206,3 +206,27 @@ func TestInitialiseGateways(t *testing.T) {
 	t.Log("/*               End TestInitialiseGateway            */")
 	t.Log("/*******************************************************/")
 }
+
+func TestForceUpdate(t *testing.T) {
+	t.Log("/*******************************************************/")
+	t.Log("/*                Start TestForceUpdate                */")
+	t.Log("/*******************************************************/")
+
+	for i := 0; i < 3; i++ {
+		err := pAdmin.ForceUpdate(pIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for i := 0; i < 16; i++ {
+		err := gwAdmin.ForceUpdate(gwIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	t.Log("/*******************************************************/")
+	t.Log("/*                  End TestForceUpdate                */")
+	t.Log("/*******************************************************/")
+}
