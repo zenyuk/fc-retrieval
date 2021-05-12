@@ -67,8 +67,8 @@ jobs:
 
   # Integration tests using source code
   itestsource:
-    machine:
-      image: ubuntu-2004:202104-01
+    docker:
+      - image: circleci/golang:1.15
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - getrepobranch:
@@ -150,8 +150,8 @@ jobs:
 
   # Integration tests using Docker. Build and run integration tests based on go.mod
   itestdocker:
-    machine:
-      image: ubuntu-2004:202104-01
+    docker:
+      - image: circleci/golang:1.15
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
