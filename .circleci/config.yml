@@ -185,6 +185,7 @@ jobs:
 
 workflows:
   version: 2
+  machine: true
   test_and_release:
     jobs:
       - localbuild
