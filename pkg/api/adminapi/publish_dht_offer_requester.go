@@ -22,13 +22,13 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestPublishDHTOffer publish a dht offer to a given provider
 func RequestPublishDHTOffer(
-	adminAP string,
-	providerPubKey *fcrcrypto.KeyPair,
+	providerInfo *register.ProviderRegister,
 	cids []cid.ContentID,
 	price []uint64,
 	expiry []int64,
@@ -36,21 +36,27 @@ func RequestPublishDHTOffer(
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
 ) error {
-	// Construct request
+	// First, Get pubkey
+	pubKey, err := providerInfo.GetSigningKey()
+	if err != nil {
+		logging.Error("Error in obtaining signing key from register info.")
+		return err
+	}
+
 	request, err := fcrmessages.EncodeProviderAdminPublishDHTOfferRequest(cids, price, expiry, qos)
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
 		return errors.New("Error in signing the request")
 	}
 
-	response, err := req.SendMessage(adminAP, request)
+	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
 	}
 
 	// Verify the response
-	if response.Verify(providerPubKey) != nil {
+	if response.Verify(pubKey) != nil {
 		return errors.New("Fail to verify the response")
 	}
 
