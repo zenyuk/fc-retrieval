@@ -61,7 +61,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, "./pkg/lotus", done, true)
+	itest := *util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
 	defer itest.Terminate(ctx)
 	defer itest.StopLogProducer()
 

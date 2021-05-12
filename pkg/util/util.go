@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
@@ -290,9 +291,15 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 	return &providerC
 }
 
-// Start the itest
-func StartItest(ctx context.Context, tag string, network string, color string, testDir string, done chan bool, verbose bool) *tc.Container {
+// Start the itest, must only be called in host
+func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) *tc.Container {
 	// Start a itest container
+	// Mount testdir
+	absPath, err := filepath.Abs(".")
+	if err != nil {
+		panic(err)
+	}
+
 	req := tc.ContainerRequest{
 		Image:          fmt.Sprintf("consensys/fc-retrieval-itest:develop-%s", tag),
 		Name:           "itest",
@@ -300,7 +307,8 @@ func StartItest(ctx context.Context, tag string, network string, color string, t
 		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes"},
 		NetworkMode:    container.NetworkMode(network),
 		NetworkAliases: map[string][]string{network: {"itest"}},
-		Cmd:            []string{"go", "test", "-v", "--count=1", testDir},
+		BindMounts:     map[string]string{absPath: "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
+		Cmd:            []string{"go", "test", "-v", "--count=1", "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
 	}
 	itestC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
