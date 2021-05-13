@@ -58,5 +58,5 @@ func RequestDHTOfferAck(
 
 	// TODO interpret the response.
 	logging.Info("Response from server: %s", response.DumpMessage())
-	return false, nil, nil, nil
+	return false, nil, nil, errors.New("Not implemented")
 }

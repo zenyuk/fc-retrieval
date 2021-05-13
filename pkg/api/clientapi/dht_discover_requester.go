@@ -63,5 +63,5 @@ func RequestDHTDiscover(
 
 	// TODO interpret the response.
 	logging.Info("Response from server: %s", response.DumpMessage())
-	return nil, nil
+	return nil, errors.New("Not implemented")
 }
