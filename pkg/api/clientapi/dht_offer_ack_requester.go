@@ -19,7 +19,6 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -32,32 +31,32 @@ func RequestDHTOfferAck(
 	providerInfo *register.ProviderRegister,
 	contentID *cid.ContentID,
 	gatewayID *nodeid.NodeID,
-) ([]nodeid.NodeID, []cidoffer.SubCIDOffer, error) {
+) (bool, *fcrmessages.FCRMessage, *fcrmessages.FCRMessage, error) {
 	// Construct request
 	request, err := fcrmessages.EncodeClientDHTOfferAckRequest(contentID, gatewayID)
 	if err != nil {
 		logging.Error("Error encoding Client DHT Offer Ack Request: %+v", err)
-		return nil, nil, err
+		return false, nil, nil, err
 	}
 
 	// Send request and get response
 	response, err := req.SendMessage(providerInfo.NetworkInfoClient, request)
 	if err != nil {
-		return nil, nil, err
+		return false, nil, nil, err
 	}
 
 	// Get the gateway's public key
 	pubKey, err := providerInfo.GetSigningKey()
 	if err != nil {
-		return nil, nil, err
+		return false, nil, nil, err
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, nil, errors.New("Verification failed")
+		return false, nil, nil, errors.New("Verification failed")
 	}
 
 	// TODO interpret the response.
 	logging.Info("Response from server: %s", response.DumpMessage())
-	return nil, nil, nil
+	return false, nil, nil, nil
 }
