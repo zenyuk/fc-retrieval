@@ -357,4 +357,32 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 	return res, nil
 }
 
-// NOTE FOR ME: CLIENT IS DONE, WE NEED TO UPDATE CLIENT IN ITEST, AND ADD DHT TEST FROM THAT.
+// FindDHTOfferAck finds offer ack for a cid, gateway pair
+func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gatewayID *nodeid.NodeID, providerID *nodeid.NodeID) (bool, error) {
+	provider, err := register.GetProviderByID(c.Settings.RegisterURL(), providerID)
+	if err != nil {
+		logging.Error("Error getting registered provider %v: %v", providerID, err.Error())
+		return false, errors.New("Provider not found inside register")
+	}
+	if !validateProviderInfo(&provider) {
+		logging.Error("Register info not valid.")
+		return false, errors.New("Invalid register info")
+	}
+
+	found, request, ack, err := clientapi.RequestDHTOfferAck(&provider, contentID, gatewayID)
+	if err != nil {
+		return false, err
+	}
+	if !found {
+		return false, nil
+	}
+
+	logging.Info(request.DumpMessage())
+	logging.Info(ack.DumpMessage())
+	// We need to verify	1, request is indeed a request, ack is indeed an ack.
+	//						2, request is signed by provider, ack is signed by gateway
+	//						3, ack and request has same nonce
+	// TODO: We will have to also include the hash of the request inside the ack, so the hash can be checked
+
+	return true, nil
+}
