@@ -340,7 +340,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	logging.Info("/*        Start TestClientStdContentDiscover     	     */")
 	logging.Info("/*******************************************************/")
 
-	offers, err := client.FindOffersStandardDiscovery(&(testCIDs[0]))
+	offers, err := client.FindOffersStandardDiscovery(&(testCIDs[0]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -348,7 +348,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		return
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[1]))
+	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[1]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -356,7 +356,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		return
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[2]))
+	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[2]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -365,7 +365,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	}
 
 	randomCID := cid.NewRandomContentID()
-	offers, err = client.FindOffersStandardDiscovery(randomCID)
+	offers, err = client.FindOffersStandardDiscovery(randomCID, gwID)
 	if err != nil {
 		panic(err)
 	}
