@@ -99,7 +99,7 @@ func (s *FCRP2PServer) Start() error {
 		if err != nil {
 			return err
 		}
-		go func(ln net.Listener) {
+		go func(ln net.Listener, listenAddr string) {
 			for {
 				conn, err := ln.Accept()
 				if err != nil {
@@ -109,7 +109,7 @@ func (s *FCRP2PServer) Start() error {
 				logging.Info("P2P server has incoming connection from :%s", conn.RemoteAddr())
 				go s.handleIncomingConnection(conn, s.handlers[listenAddr])
 			}
-		}(ln)
+		}(ln, listenAddr)
 		logging.Info("P2P server starts listening on %s for connections.", listenAddr)
 	}
 	s.start = true
