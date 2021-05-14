@@ -33,17 +33,17 @@ func TestGetNodeIDsClosestToContentID(t *testing.T) {
 	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
 
 	actual1, _ := GetNodeIDsClosestToContentID(
-		*contentID,
+		contentID.ToBytes(),
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		1,
 	)
 	actual2, _ := GetNodeIDsClosestToContentID(
-		*contentID,
+		contentID.ToBytes(),
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		2,
 	)
 	actual3, _ := GetNodeIDsClosestToContentID(
-		*contentID,
+		contentID.ToBytes(),
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
 		16,
 	)
@@ -62,20 +62,17 @@ func TestGetNodeIDsClosestToNodeID(t *testing.T) {
 	nodeID5A, _ := nodeid.NewNodeIDFromHexString("5A")
 	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
 
-	actual1, _ := GetNodeIDsClosestToNodeID(
-		*nodeID,
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		1,
+	actual1, _ := SortClosestNodesIDs(
+		nodeID.ToBytes(),
+		[]*nodeid.NodeID{nodeID01},
 	)
-	actual2, _ := GetNodeIDsClosestToNodeID(
-		*nodeID,
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		2,
+	actual2, _ := SortClosestNodesIDs(
+		nodeID.ToBytes(),
+		[]*nodeid.NodeID{nodeID00, nodeID01},
 	)
-	actual3, _ := GetNodeIDsClosestToNodeID(
-		*nodeID,
+	actual3, _ := SortClosestNodesIDs(
+		nodeID.ToBytes(),
 		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		16,
 	)
 
 	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01}, actual1)
