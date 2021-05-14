@@ -16,10 +16,12 @@ package nodeid
  */
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"sort"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 )
@@ -128,4 +130,35 @@ func (n *NodeID) UnmarshalJSON(p []byte) error {
 	n.id = make([]byte, WordSize)
 	copy(n.id, id)
 	return nil
+}
+
+func sortByteArrays(src []*NodeID) {
+	sort.Slice(src,
+		func(i, j int) bool {
+			return bytes.Compare(src[i].ToBytes(), src[j].ToBytes()) < 0
+		},
+	)
+}
+
+// SortClockwise sort nodeIDs in clockwise mode starting on nodeID
+func SortClockwise(nodeID *NodeID, nodeIDs []*NodeID) []*NodeID {
+	if len(nodeIDs) < 2 {
+		return nodeIDs
+	}
+
+	sortByteArrays(nodeIDs)
+
+	startIndx := 0
+	startBytes := nodeID.ToBytes()
+
+	for i, v := range nodeIDs {
+		if bytes.Compare(startBytes, v.ToBytes()) < 1 {
+			startIndx = i
+			break
+		}
+	}
+
+	nodeIDs = append(nodeIDs[startIndx:], nodeIDs[0:startIndx]...)
+
+	return nodeIDs
 }

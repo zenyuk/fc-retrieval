@@ -33,6 +33,8 @@ const (
 	GatewayListDHTOfferAckType      = 202
 	GatewayDHTDiscoverRequestType   = 203
 	GatewayDHTDiscoverResponseType  = 204
+	GatewayPingRequestType          = 205
+	GatewayPingResponseType         = 206
 
 	// Message originating from provider
 	ProviderPublishGroupOfferRequestType  = 300
