@@ -220,3 +220,57 @@ func testRoundTripFromString(t *testing.T, value string) {
 	assert.Equal(t, fmt.Sprintf("%064s", value), idStr, "NewNodeIDFromString failed")
 
 }
+
+// TestSortClockwiseNodeID
+func TestSortClockwiseNodeID(t *testing.T) {
+	nodeID, _ := NewNodeIDFromHexString("03")
+	nodeID00, _ := NewNodeIDFromHexString("00")
+	nodeID01, _ := NewNodeIDFromHexString("01")
+	nodeID02, _ := NewNodeIDFromHexString("02")
+	nodeID5A, _ := NewNodeIDFromHexString("5A")
+	nodeIDFFFF, _ := NewNodeIDFromHexString("FFFF")
+
+	ids := []*NodeID{nodeIDFFFF, nodeID5A, nodeID01, nodeID00, nodeID02}
+	ids = SortClockwise(nodeID, ids)
+
+	assert.Equal(t, nodeID5A, ids[0])
+	assert.Equal(t, nodeIDFFFF, ids[1])
+	assert.Equal(t, nodeID00, ids[2])
+	assert.Equal(t, nodeID01, ids[3])
+	assert.Equal(t, nodeID02, ids[4])
+}
+
+// TestSortClockwiseNodeID
+func TestSortClockwiseNodeIDOneElement(t *testing.T) {
+	nodeID, _ := NewNodeIDFromHexString("03")
+	nodeID00, _ := NewNodeIDFromHexString("00")
+
+	ids := []*NodeID{nodeID00}
+	ids = SortClockwise(nodeID, ids)
+
+	assert.Equal(t, nodeID00, ids[0])
+}
+
+func TestSortClockwiseNodeIDEmptyList(t *testing.T) {
+	nodeID, _ := NewNodeIDFromHexString("03")
+
+	ids := []*NodeID{}
+	ids = SortClockwise(nodeID, ids)
+
+	assert.Equal(t, 0, len(ids))
+}
+
+// TestSortNodeID
+func TestSortNodeID(t *testing.T) {
+	nodeID, _ := NewNodeIDFromHexString("01")
+	nodeID00, _ := NewNodeIDFromHexString("00")
+	nodeID01, _ := NewNodeIDFromHexString("01")
+	nodeID02, _ := NewNodeIDFromHexString("02")
+	nodeID5A, _ := NewNodeIDFromHexString("5A")
+	nodeIDFFFF, _ := NewNodeIDFromHexString("FFFF")
+
+	ids := []*NodeID{nodeIDFFFF, nodeID5A, nodeID01, nodeID00, nodeID02, nodeID}
+	sortByteArrays(ids)
+
+	assert.ElementsMatch(t, []*NodeID{nodeID00, nodeID, nodeID01, nodeID02, nodeID5A, nodeIDFFFF}, ids)
+}
