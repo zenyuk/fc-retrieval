@@ -18,64 +18,198 @@ package dhtring
 import (
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestGetNodeIDsClosestToContentID
-func TestGetNodeIDsClosestToContentID(t *testing.T) {
-	contentID, _ := cid.NewContentIDFromHexString("01")
-	nodeID00, _ := nodeid.NewNodeIDFromHexString("00")
-	nodeID01, _ := nodeid.NewNodeIDFromHexString("01")
-	nodeID02, _ := nodeid.NewNodeIDFromHexString("02")
-	nodeID5A, _ := nodeid.NewNodeIDFromHexString("5A")
-	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
+func TestInsertOne(t *testing.T) {
+	r := CreateRing()
+	r.Insert("0000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 1, r.Size())
 
-	actual1, _ := GetNodeIDsClosestToContentID(
-		contentID.ToBytes(),
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		1,
-	)
-	actual2, _ := GetNodeIDsClosestToContentID(
-		contentID.ToBytes(),
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		2,
-	)
-	actual3, _ := GetNodeIDsClosestToContentID(
-		contentID.ToBytes(),
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-		16,
-	)
+	r = CreateRing()
+	r.Insert("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+	assert.Equal(t, 1, r.Size())
 
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01}, actual1)
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00}, actual2)
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00, nodeID02, nodeID5A, nodeIDFFFF}, actual3)
+	r = CreateRing()
+	r.Insert("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F")
+	assert.Equal(t, 1, r.Size())
+
+	r = CreateRing()
+	r.Insert("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2")
+	assert.Equal(t, 0, r.Size())
+
+	r = CreateRing()
+	r.Insert("Invalid")
+	assert.Equal(t, 0, r.Size())
 }
 
-// TestGetNodeIDsClosestToNodeID
-func TestGetNodeIDsClosestToNodeID(t *testing.T) {
-	nodeID, _ := nodeid.NewNodeIDFromHexString("01")
-	nodeID00, _ := nodeid.NewNodeIDFromHexString("00")
-	nodeID01, _ := nodeid.NewNodeIDFromHexString("01")
-	nodeID02, _ := nodeid.NewNodeIDFromHexString("02")
-	nodeID5A, _ := nodeid.NewNodeIDFromHexString("5A")
-	nodeIDFFFF, _ := nodeid.NewNodeIDFromHexString("FFFF")
+func TestInsertTwo(t *testing.T) {
+	r := CreateRing()
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 2, r.Size())
 
-	actual1, _ := SortClosestNodesIDs(
-		nodeID.ToBytes(),
-		[]*nodeid.NodeID{nodeID01},
-	)
-	actual2, _ := SortClosestNodesIDs(
-		nodeID.ToBytes(),
-		[]*nodeid.NodeID{nodeID00, nodeID01},
-	)
-	actual3, _ := SortClosestNodesIDs(
-		nodeID.ToBytes(),
-		[]*nodeid.NodeID{nodeID5A, nodeID01, nodeID00, nodeIDFFFF, nodeID02},
-	)
+	r = CreateRing()
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 2, r.Size())
+}
 
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01}, actual1)
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00}, actual2)
-	assert.ElementsMatch(t, []*nodeid.NodeID{nodeID01, nodeID00, nodeID02, nodeID5A, nodeIDFFFF}, actual3)
+func TestInsertThree(t *testing.T) {
+	r := CreateRing()
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+
+	r = CreateRing()
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+
+	r = CreateRing()
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+
+	r = CreateRing()
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 2, r.Size())
+}
+
+func TestRemove(t *testing.T) {
+	r := CreateRing()
+	r.Insert("F000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("3000000000000000000000000000000000000000000000000000000000000000")
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 4, r.Size())
+
+	// Test remove not existed
+	r.Remove("2000000000000000000000000000000000000000000000000000000000000001")
+	assert.Equal(t, 4, r.Size())
+
+	// Test remove head
+	r.Remove("1000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+	r.Insert("1000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 4, r.Size())
+
+	// Test remove tail
+	r.Remove("F000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+	r.Insert("F000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 4, r.Size())
+
+	// Test remove middle
+	r.Remove("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+	r.Insert("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 4, r.Size())
+
+	r.Remove("F000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 3, r.Size())
+	r.Remove("1000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 2, r.Size())
+	r.Remove("2000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 1, r.Size())
+	r.Remove("3000000000000000000000000000000000000000000000000000000000000000")
+	assert.Equal(t, 0, r.Size())
+}
+
+func TestGetNodeIDsClosestToContentID(t *testing.T) {
+
+	cid1 := "7080000000000000000000000000000000000000000000000000000000000000"
+	cid2 := "1080000000000000000000000000000000000000000000000000000000000000"
+	cid3 := "F080000000000000000000000000000000000000000000000000000000000000"
+	cid4 := "5000000000000000000000000000000000000000000000000000000000000000"
+
+	node0 := "0000000000000000000000000000000000000000000000000000000000000000"
+	node1 := "1000000000000000000000000000000000000000000000000000000000000000"
+	node2 := "2000000000000000000000000000000000000000000000000000000000000000"
+	node3 := "3000000000000000000000000000000000000000000000000000000000000000"
+	node4 := "4000000000000000000000000000000000000000000000000000000000000000"
+	node5 := "5000000000000000000000000000000000000000000000000000000000000000"
+	node6 := "6000000000000000000000000000000000000000000000000000000000000000"
+	node7 := "6800000000000000000000000000000000000000000000000000000000000000"
+	node8 := "7000000000000000000000000000000000000000000000000000000000000000"
+	node9 := "8000000000000000000000000000000000000000000000000000000000000000"
+	node10 := "9000000000000000000000000000000000000000000000000000000000000000"
+	node11 := "A000000000000000000000000000000000000000000000000000000000000000"
+	node12 := "B000000000000000000000000000000000000000000000000000000000000000"
+	node13 := "C000000000000000000000000000000000000000000000000000000000000000"
+	node14 := "D000000000000000000000000000000000000000000000000000000000000000"
+	node15 := "E000000000000000000000000000000000000000000000000000000000000000"
+	node16 := "F000000000000000000000000000000000000000000000000000000000000000"
+	node17 := "F800000000000000000000000000000000000000000000000000000000000000"
+
+	r := CreateRing()
+	r.Insert(node0)
+	r.Insert(node1)
+	r.Insert(node2)
+	r.Insert(node3)
+	r.Insert(node4)
+	r.Insert(node5)
+	r.Insert(node6)
+	r.Insert(node7)
+	r.Insert(node8)
+	r.Insert(node9)
+	r.Insert(node10)
+	r.Insert(node11)
+	r.Insert(node12)
+	r.Insert(node13)
+	r.Insert(node14)
+	r.Insert(node15)
+	r.Insert(node16)
+	r.Insert(node17)
+	r.Dump()
+	assert.Equal(t, 18, r.Size())
+
+	res1, _ := r.GetClosest(cid1, 8, "")
+	res2, _ := r.GetClosest(cid2, 8, "")
+	res3, _ := r.GetClosest(cid3, 4, "")
+	res4, _ := r.GetClosest(cid4, 3, "")
+	res5, _ := r.GetClosest(node5, 3, node5)
+
+	assert.Equal(t, 18, r.Size())
+
+	assert.Equal(t, 8, len(res1))
+	assert.Equal(t, node4, res1[0])
+	assert.Equal(t, node5, res1[1])
+	assert.Equal(t, node6, res1[2])
+	assert.Equal(t, node7, res1[3])
+	assert.Equal(t, node8, res1[4])
+	assert.Equal(t, node9, res1[5])
+	assert.Equal(t, node10, res1[6])
+	assert.Equal(t, node11, res1[7])
+
+	assert.Equal(t, 8, len(res2))
+	assert.Equal(t, node15, res2[0])
+	assert.Equal(t, node16, res2[1])
+	assert.Equal(t, node17, res2[2])
+	assert.Equal(t, node0, res2[3])
+	assert.Equal(t, node1, res2[4])
+	assert.Equal(t, node2, res2[5])
+	assert.Equal(t, node3, res2[6])
+	assert.Equal(t, node4, res2[7])
+
+	assert.Equal(t, 4, len(res3))
+	assert.Equal(t, node15, res3[0])
+	assert.Equal(t, node16, res3[1])
+	assert.Equal(t, node17, res3[2])
+	assert.Equal(t, node0, res3[3])
+
+	assert.Equal(t, 3, len(res4))
+	assert.Equal(t, node4, res4[0])
+	assert.Equal(t, node5, res4[1])
+	assert.Equal(t, node6, res4[2])
+
+	assert.Equal(t, 3, len(res5))
+	assert.Equal(t, node4, res5[0])
+	assert.Equal(t, node6, res5[1])
+	assert.Equal(t, node7, res5[2])
 }
