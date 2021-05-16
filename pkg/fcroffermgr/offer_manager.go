@@ -69,7 +69,7 @@ func (mgr *FCROfferMgr) GetDHTOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, b
 
 // GetDHTOffersWithinRange returns a list of dht offers contains a cid within the given range
 func (mgr *FCROfferMgr) GetDHTOffersWithinRange(cidMin, cidMax *cid.ContentID, maxOffers int) ([]cidoffer.CIDOffer, bool) {
-	// TODO: Have a more efficient implementation
+	// TODO: Have a more efficient implementation, using Ring, but with the ability to remove expired entry
 	offers := make([]cidoffer.CIDOffer, 0)
 
 	min, err := strconv.ParseInt(cidMin.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
