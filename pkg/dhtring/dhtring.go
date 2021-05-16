@@ -313,8 +313,7 @@ func validateInput(hex string) bool {
 		return false
 	}
 	for _, char := range hex {
-		if (char < '0' || char > '9') && (char < 'A' || char > 'F') {
-			fmt.Println(char)
+		if (char < '0' || char > '9') && (char < 'A' || char > 'F') && (char < 'a' || char > 'f') {
 			return false
 		}
 	}
