@@ -104,3 +104,15 @@ func (c *FilecoinRetrievalGatewayAdmin) ListDHTOffer(gatewayID *nodeid.NodeID) e
 	}
 	return adminapi.RequestListDHTOffer(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
+
+func (c *FilecoinRetrievalGatewayAdmin) UpdateGatewaySupportedFeatures(gatewayInfo *register.GatewayRegister, providers []nodeid.NodeID) error {
+	c.ActiveGatewaysLock.Lock()
+	defer c.ActiveGatewaysLock.Unlock()
+	err := adminapi.SetGroupCIDOfferSupportedForProviders(gatewayInfo, providers, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+	if err != nil {
+		return err
+	}
+
+	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	return nil
+}
