@@ -16,51 +16,378 @@ package dhtring
  */
 
 import (
+	"errors"
+	"fmt"
 	"math/big"
-	"sort"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/math"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
-func getClosestNodeIDs(landmark []byte, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
-	var m = make(map[*big.Int][]*nodeid.NodeID)
-	cardinality := big.NewInt(0).Exp(big.NewInt(2), big.NewInt(cid.WordSize*8), nil) // 2**(32*8)
-	for _, nodeID := range nodeIDs {
-		dist, _ := math.GetDistance(nodeID.ToBytes(), landmark, cardinality)
-		a, ok := m[dist]
-		if !ok {
-			a = make([]*nodeid.NodeID, 0)
+// ringNode is a node inside the ring
+type ringNode struct {
+	prv     *ringNode
+	distPrv *big.Int
+
+	key *big.Int
+	val string
+
+	distNext *big.Int
+	next     *ringNode
+}
+
+// Ring is a struct to store the DHT Ring to store 32-bytes hex
+type Ring struct {
+	head *ringNode
+	size int
+}
+
+// NewRing creates a new ring data structure
+func CreateRing() *Ring {
+	return &Ring{
+		head: nil,
+		size: 0,
+	}
+}
+
+// Insert inserts a hex string into the ring
+func (r *Ring) Insert(hex string) {
+	if !validateInput(hex) {
+		logging.Error("Ring invalid hex: %v", hex)
+		return
+	}
+	hexKey, _ := new(big.Int).SetString(hex, 16)
+	newNode := &ringNode{
+		prv:      nil,
+		distPrv:  nil,
+		key:      hexKey,
+		val:      hex,
+		distNext: nil,
+		next:     nil,
+	}
+	if r.size == 0 {
+		r.head = newNode
+		r.size++
+	}
+	// If head is bigger than newNode
+	cmp := r.head.key.Cmp(newNode.key)
+	if cmp == 0 {
+		// Already existed
+		return
+	}
+	if cmp > 0 {
+		// Head is bigger than newNode, put between tail and head
+		tail := r.head.prv
+		if tail == nil {
+			tail = r.head
 		}
-		a = append(a, nodeID)
-		m[dist] = a
+		// Put newNode in front of head
+		r.head.prv = newNode
+		r.head.distPrv = getDist(newNode.key, r.head.key)
+		newNode.next = r.head
+		newNode.distNext = getDist(newNode.key, r.head.key)
+		// Put newNode behind tail
+		tail.next = newNode
+		tail.distNext = getDist(tail.key, newNode.key)
+		newNode.prv = tail
+		newNode.distPrv = getDist(tail.key, newNode.key)
+		// Update ring's head to the new node
+		r.head = newNode
+		r.size++
+		return
 	}
-	keys := make([]*big.Int, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
+	// Head is smaller than newNode, start search
+	prv := r.head
+	current := r.head.next
+	for current != nil && current.val != r.head.val {
+		cmp = current.key.Cmp(newNode.key)
+		if cmp == 0 {
+			// Already existed
+			return
+		}
+		if cmp > 0 {
+			// Current is bigger than newNode, put between previous and current
+			current.prv = newNode
+			current.distPrv = getDist(newNode.key, current.key)
+			newNode.next = current
+			newNode.distNext = getDist(newNode.key, current.key)
+			prv.next = newNode
+			prv.distNext = getDist(prv.key, newNode.key)
+			newNode.prv = prv
+			newNode.distPrv = getDist(prv.key, newNode.key)
+			r.size++
+			return
+		}
+		// current is smaller than newNode, next
+		prv = current
+		current = current.next
 	}
-	sort.SliceStable(keys, func(i, j int) bool {
-		return keys[i].Cmp(keys[j]) < 0
-	})
-	var r = make([]*nodeid.NodeID, 0)
-	for _, k := range keys {
-		a := m[k]
-		r = append(r, a...)
+	if current == nil {
+		// If current is nil, it means there is only one node now
+		// We update the tail to be the head too.
+		current = prv
 	}
-	if len(r) < maxResults {
-		return r, nil
+	// Update tail
+	current.prv = newNode
+	current.distPrv = getDist(newNode.key, current.key)
+	newNode.next = current
+	newNode.distNext = getDist(newNode.key, r.head.key)
+	prv.next = newNode
+	prv.distNext = getDist(prv.key, newNode.key)
+	newNode.prv = prv
+	newNode.distPrv = getDist(prv.key, newNode.key)
+	r.size++
+	return
+}
+
+// Remove inserts a given hex string out of the ring
+func (r *Ring) Remove(hex string) {
+	if !validateInput(hex) {
+		logging.Error("Ring invalid hex: %v", hex)
+		return
+	}
+	hexKey, _ := new(big.Int).SetString(hex, 16)
+	if r.size == 0 {
+		return
+	}
+	current := r.head
+	for ok := true; ok; ok = current != nil && current.val != r.head.val {
+		// Loop until we reach nil or we go back to head
+		if current.val == hex {
+			// We need to remove current
+			prv := current.prv
+			next := current.next
+			if prv != nil && next != nil {
+				if prv.val == next.val {
+					next.prv = nil
+					next.distPrv = nil
+					next.next = nil
+					next.distNext = nil
+				} else {
+					prv.next = next
+					prv.distNext = getDist(prv.key, next.key)
+					next.prv = prv
+					next.distPrv = getDist(prv.key, next.key)
+				}
+			}
+			if r.head.val == current.val {
+				r.head = next
+			}
+			r.size--
+			return
+		}
+		// Not equal
+		if current.key.Cmp(hexKey) > 0 {
+			// Return now
+			return
+		}
+		current = current.next
+	}
+}
+
+// GetClosest gets the closest hexes close to the given hex
+func (r *Ring) GetClosest(hex string, num int, exclude string) ([]string, error) {
+	if !validateInput(hex) || (exclude != "" && !validateInput(exclude)) {
+		logging.Error("Ring invalid hex: %v %v", hex, exclude)
+		return nil, errors.New("Invalid input")
+	}
+	res := make([]string, 0)
+	if num == 0 || r.size == 0 || (exclude != "" && r.size == 1) {
+		return res, nil
+	}
+	// Consider exclusion
+	if exclude != "" {
+		before := r.size
+		r.Remove(exclude)
+		if r.size != before {
+			defer r.Insert(exclude)
+		}
+	}
+	if num > r.size {
+		current := r.head
+		for ok := true; ok; ok = current != nil && current.val != r.head.val {
+			res = append(res, current.val)
+			current = current.next
+		}
+		return res, nil
+	}
+	// Insert & Search & Remove
+	before := r.size
+	r.Insert(hex)
+	if r.size == before {
+		// This already exists
+		res = append(res, hex)
+		if num == 1 {
+			// Return immediately if only requires one
+			return res, nil
+		}
 	} else {
-		return r[0:maxResults], nil
+		defer r.Remove(hex)
+	}
+	// Now search
+	current := r.head
+	for ok := true; ok; ok = current.val != r.head.val {
+		if current.val == hex {
+			// We found it
+			break
+		}
+		current = current.next
+	}
+	// Now current is the hex inserted
+	prv := current.prv
+	distToPrv := big.NewInt(0)
+	distToPrv.Add(distToPrv, current.distPrv)
+	next := current.next
+	distToNext := big.NewInt(0)
+	distToNext.Add(distToNext, current.distNext)
+	for {
+		// If prv and next is the same thing
+		// Add it and return
+		if prv.val == next.val {
+			res = append(res, prv.val)
+			break
+		}
+		// fmt.Printf("\n\nprv %v\ndist to prv %v\nnext %v\ndist to next %v\n\n", prv.val, distToPrv, next.val, distToNext)
+		cmp := distToPrv.Cmp(distToNext)
+		// If equal, we choose the previous one
+		if cmp <= 0 {
+			res = append([]string{prv.val}, res...)
+			distToPrv.Add(distToPrv, prv.distPrv)
+			prv = prv.prv
+		} else {
+			res = append(res, next.val)
+			distToNext.Add(distToNext, next.distNext)
+			next = next.next
+		}
+		if len(res) == num {
+			// We have enough
+			break
+		}
+	}
+	return res, nil
+}
+
+// GetWithinRange gets all entries within a range
+func (r *Ring) GetWithinRange(startHex string, endHex string) ([]string, error) {
+	if !validateInput(startHex) || !validateInput(endHex) {
+		logging.Error("Ring invalid hex: %v %v", startHex, endHex)
+		return nil, errors.New("Invalid input")
+	}
+	res := make([]string, 0)
+	var startNode *ringNode
+	var endNode *ringNode
+	addStart := false
+	addEnd := false
+	if temp := r.get(startHex); temp != nil {
+		startNode = temp
+		addStart = true
+	} else {
+		r.Insert(startHex)
+		startNode = r.get(startHex)
+		if startNode == nil {
+			return res, errors.New("Internal error")
+		}
+		defer r.Remove(startHex)
+	}
+
+	if temp := r.get(endHex); temp != nil {
+		endNode = temp
+		addEnd = true
+	} else {
+		r.Insert(endHex)
+		endNode = r.get(endHex)
+		if endNode == nil {
+			return res, errors.New("Internal error")
+		}
+		defer r.Remove(endHex)
+	}
+
+	if addStart {
+		res = append(res, startHex)
+	}
+
+	next := startNode.next
+	for next.val != endNode.val {
+		res = append(res, next.val)
+		next = next.next
+	}
+
+	if addEnd {
+		res = append(res, endHex)
+	}
+
+	return res, nil
+}
+
+// Size gets the size of the ring
+func (r *Ring) Size() int {
+	return r.size
+}
+
+// Dump is for debugging use ONLY
+func (r *Ring) Dump() {
+	fmt.Printf("\nSize: %v [\n", r.size)
+	if r.head == nil {
+		fmt.Println("]")
+		return
+	}
+	fmt.Println(r.head.val)
+	fmt.Printf("\t%v\n", r.head.distPrv)
+	fmt.Printf("\t%v\n", r.head.distNext)
+	current := r.head.next
+	for current != nil && current.val != r.head.val {
+		fmt.Println(current.val)
+		fmt.Printf("\t%v\n", current.distPrv)
+		fmt.Printf("\t%v\n", current.distNext)
+		current = current.next
+	}
+	fmt.Printf("]\n\n")
+}
+
+// get gets the ringNode inside this ring, nil if not found
+func (r *Ring) get(hex string) *ringNode {
+	if !validateInput(hex) {
+		logging.Error("Ring invalid hex: %v", hex)
+		return nil
+	}
+	if r.size == 0 {
+		return nil
+	}
+	current := r.head
+	for ok := true; ok; ok = current != nil && current.val != r.head.val {
+		// Loop until we reach nil or we go back to head
+		if current.val == hex {
+			return current
+		}
+		current = current.next
+	}
+	return nil
+}
+
+// getDist gets the distance from one to another, clockwise
+func getDist(from *big.Int, to *big.Int) *big.Int {
+	// So from is always smaller than to
+	if from.Cmp(to) < 0 {
+		return big.NewInt(0).Sub(to, from)
+	} else {
+		// It has across the max/min boundary
+		max, _ := new(big.Int).SetString("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)
+		min, _ := new(big.Int).SetString("0000000000000000000000000000000000000000000000000000000000000000", 16)
+		dist1 := big.NewInt(0).Sub(max, from)
+		dist2 := big.NewInt(0).Sub(to, min)
+		sum := big.NewInt(0).Add(dist1, dist2)
+		return sum.Add(sum, big.NewInt(1))
 	}
 }
 
-// GetNodeIDsClosestToContentID gets nodeIDs that are close to a contentID
-func GetNodeIDsClosestToContentID(landmark []byte, nodeIDs []*nodeid.NodeID, maxResults int) ([]*nodeid.NodeID, error) {
-	return getClosestNodeIDs(landmark, nodeIDs, maxResults)
-}
-
-// SortClosestNodesIDs sort nodeIDs that are close to a nodeID
-func SortClosestNodesIDs(landmark []byte, nodeIDs []*nodeid.NodeID) ([]*nodeid.NodeID, error) {
-	return getClosestNodeIDs(landmark, nodeIDs, len(nodeIDs))
+// validateInput makes sure the given hex string is 32 bytes hex string
+func validateInput(hex string) bool {
+	if len(hex) != 64 {
+		return false
+	}
+	for _, char := range hex {
+		if (char < '0' || char > '9') && (char < 'A' || char > 'F') && (char < 'a' || char > 'f') {
+			return false
+		}
+	}
+	return true
 }

@@ -39,7 +39,7 @@ type GatewayRegister struct {
 	NodeID              string `json:"nodeId"`
 	Address             string `json:"address"`
 	RootSigningKey      string `json:"rootSigningKey"`
-	SigningKey          string `json:"signingKey"`
+	SigningKey          string `json:"sigingKey"`
 	RegionCode          string `json:"regionCode"`
 	NetworkInfoGateway  string `json:"networkInfoGateway"`
 	NetworkInfoProvider string `json:"networkInfoProvider"`
@@ -52,7 +52,7 @@ type ProviderRegister struct {
 	NodeID             string `json:"nodeId"`
 	Address            string `json:"address"`
 	RootSigningKey     string `json:"rootSigningKey"`
-	SigningKey         string `json:"signingKey"`
+	SigningKey         string `json:"sigingKey"`
 	RegionCode         string `json:"regionCode"`
 	NetworkInfoGateway string `json:"networkInfoGateway"`
 	NetworkInfoClient  string `json:"networkInfoClient"`

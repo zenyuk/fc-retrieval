@@ -43,19 +43,18 @@ type FCRRegisterMgr struct {
 	providerDiscv bool
 
 	// Channels to control the threads
-	gatewayShutdownCh      chan bool
-	providerShutdownCh     chan bool
-	gatewayRefreshCh       chan bool
-	providerRefreshCh      chan bool
-	gatewayRefreshNotifyCh chan bool
+	gatewayShutdownCh  chan bool
+	providerShutdownCh chan bool
+	gatewayRefreshCh   chan bool
+	providerRefreshCh  chan bool
 
 	// registeredGatewaysMap stores mapping from gateway id (big int in string repr) to its registration info
 	registeredGatewaysMap     map[string]register.GatewayRegister
 	registeredGatewaysMapLock sync.RWMutex
 
-	// closestGatewaysIDs stores mapping from gateway closest for DHT network sorted clockwise
-	closestGatewaysIDs     [][]byte
-	closestGatewaysMapLock sync.RWMutex
+	// closestGateways stores the mapping from gateway closest for DHT network sorted clockwise
+	closestGatewaysIDs     *dhtring.Ring
+	closestGatewaysIDsLock sync.RWMutex
 
 	// registeredProvidersMap stores mapping from provider id (big int in string repr) to its registration info
 	registeredProvidersMap     map[string]register.ProviderRegister
@@ -76,7 +75,8 @@ func NewFCRRegisterMgr(registerAPI string, providerDiscv bool, gatewayDiscv bool
 		res.registeredGatewaysMapLock = sync.RWMutex{}
 		res.gatewayShutdownCh = make(chan bool)
 		res.gatewayRefreshCh = make(chan bool)
-		res.gatewayRefreshNotifyCh = make(chan bool)
+		res.closestGatewaysIDs = dhtring.CreateRing()
+		res.closestGatewaysIDsLock = sync.RWMutex{}
 	}
 	if providerDiscv {
 		res.registeredProvidersMap = make(map[string]register.ProviderRegister)
@@ -129,11 +129,6 @@ func (mgr *FCRRegisterMgr) Refresh() {
 		mgr.providerRefreshCh <- true
 		<-mgr.providerRefreshCh
 	}
-}
-
-// GatewayRefreshCh channel to notify every gateways update
-func (mgr *FCRRegisterMgr) GatewayRefreshCh() <-chan bool {
-	return mgr.gatewayRefreshNotifyCh
 }
 
 // GetGateway returns a gateway register if found.
@@ -253,35 +248,72 @@ func (mgr *FCRRegisterMgr) GetAllProviders() []register.ProviderRegister {
 	return res
 }
 
-// GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
-func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cID *cid.ContentID, numDHT int, notAllowedIDs []*nodeid.NodeID) ([]register.GatewayRegister, error) {
-	if len(mgr.closestGatewaysIDs) == 0 {
-		return []register.GatewayRegister{}, nil
-	}
+// GetGatewayCIDRange gets the cid max and cid min of this gateway at start up
+func (mgr *FCRRegisterMgr) GetGatewayCIDRange(gatewayID *nodeid.NodeID) (*cid.ContentID, *cid.ContentID, error) {
+	mgr.closestGatewaysIDsLock.RLock()
+	defer mgr.closestGatewaysIDsLock.RUnlock()
 
-	nodeIDs := mgr.getClosestGatewaysID()
-	closestGtwIDs, err := dhtring.GetNodeIDsClosestToContentID(cID.ToBytes(), nodeIDs, numDHT)
+	cID, err := cid.NewContentIDFromHexString(gatewayID.ToString())
 	if err != nil {
-		logging.Error("error getting GetNodeIDsClosestToContentID: %s", err.Error())
+		return nil, nil, err
+	}
+	temp, err := mgr.GetGatewaysNearCID(cID, 16, gatewayID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(temp) < 2 {
+		// TODO: What is the cid max and cid min if there is only 1 gw or 2.
+		return nil, nil, errors.New("Not enough gateways")
+	}
+	cidMin, err := cid.NewContentIDFromHexString(temp[0].NodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+	cidMax, err := cid.NewContentIDFromHexString(temp[len(temp)-1].NodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cidMin, cidMax, nil
+}
 
+// GetGatewaysNearCID returns a list of gatewayRegisters whose id is close to the given cid.
+func (mgr *FCRRegisterMgr) GetGatewaysNearCID(cID *cid.ContentID, numDHT int, notAllowed *nodeid.NodeID) ([]register.GatewayRegister, error) {
+	if numDHT > 16 {
+		numDHT = 16
+	}
+	mgr.closestGatewaysIDsLock.RLock()
+	defer mgr.closestGatewaysIDsLock.RUnlock()
+	mgr.registeredGatewaysMapLock.RLock()
+	defer mgr.registeredGatewaysMapLock.RUnlock()
+
+	var ids []string
+	var err error
+	if notAllowed == nil {
+		ids, err = mgr.closestGatewaysIDs.GetClosest(cID.ToString(), numDHT, "")
+	} else {
+		ids, err = mgr.closestGatewaysIDs.GetClosest(cID.ToString(), numDHT, notAllowed.ToString())
+	}
+	if err != nil {
 		return nil, err
 	}
-
-	id, err := nodeid.NewNodeIDFromBytes(cID.ToBytes())
-	gtwIDs := nodeid.SortClockwise(id, closestGtwIDs)
-	notAllowGtwIDs := mgr.mapNodeIDs(notAllowedIDs)
-
-	// return a copy of register.GatewayRegister
 	res := make([]register.GatewayRegister, 0)
-	for _, v := range gtwIDs {
-
-		g, found := mgr.registeredGatewaysMap[v.ToString()]
-		_, notAllowed := notAllowGtwIDs[v.ToString()]
-		if found && !notAllowed {
-			res = append(res, mgr.copyGatewayRegister(g))
+	for _, id := range ids {
+		gateway, exists := mgr.registeredGatewaysMap[id]
+		if !exists {
+			return nil, errors.New("Internal error, register map not match dht ring")
 		}
+		res = append(res, register.GatewayRegister{
+			NodeID:              gateway.NodeID,
+			Address:             gateway.Address,
+			RootSigningKey:      gateway.RootSigningKey,
+			SigningKey:          gateway.SigningKey,
+			RegionCode:          gateway.RegionCode,
+			NetworkInfoGateway:  gateway.NetworkInfoGateway,
+			NetworkInfoProvider: gateway.NetworkInfoProvider,
+			NetworkInfoClient:   gateway.NetworkInfoClient,
+			NetworkInfoAdmin:    gateway.NetworkInfoAdmin,
+		})
 	}
-
 	return res, nil
 }
 
@@ -293,22 +325,8 @@ func (mgr *FCRRegisterMgr) mapNodeIDs(nodsIDs []*nodeid.NodeID) map[string]strin
 	return mapNodeIDs
 }
 
-func (mgr *FCRRegisterMgr) getClosestGatewaysID() []*nodeid.NodeID {
-	nodeIDs := make([]*nodeid.NodeID, 0)
-	for _, v := range mgr.closestGatewaysIDs {
-		id, err := nodeid.NewNodeIDFromBytes(v)
-		if err != nil {
-			logging.Error("error getting gatewaysID: %s", err.Error())
-
-			continue
-		}
-
-		nodeIDs = append(nodeIDs, id)
-	}
-	return nodeIDs
-}
-
 // updateGateways updates gateways.
+// TODO: Support removal of gateways
 func (mgr *FCRRegisterMgr) updateGateways() {
 	refreshForce := false
 	for {
@@ -326,6 +344,9 @@ func (mgr *FCRRegisterMgr) updateGateways() {
 					mgr.registeredGatewaysMapLock.Lock()
 					mgr.registeredGatewaysMap[gateway.NodeID] = gateway
 					mgr.registeredGatewaysMapLock.Unlock()
+					mgr.closestGatewaysIDsLock.Lock()
+					mgr.closestGatewaysIDs.Insert(gateway.NodeID)
+					mgr.closestGatewaysIDsLock.Unlock()
 				} else {
 					// Exist, check if need update
 					if gateway.Address != storedInfo.Address ||
@@ -343,7 +364,6 @@ func (mgr *FCRRegisterMgr) updateGateways() {
 					}
 				}
 			}
-			mgr.gatewayRefreshNotifyCh <- true
 		}
 		if refreshForce {
 			mgr.gatewayRefreshCh <- true
@@ -408,20 +428,14 @@ func (mgr *FCRRegisterMgr) updateProviders() {
 		select {
 		case <-mgr.providerRefreshCh:
 			// Need to refresh
-			logging.Error("Register manager force update internal provider map.")
+			logging.Info("Register manager force update internal provider map.")
 			refreshForce = true
 		case <-afterChan:
 			// Need to refresh
 		case <-mgr.providerShutdownCh:
 			// Need to shutdown
-			logging.Error("Register manager shutdown provider routine.")
+			logging.Info("Register manager shutdown provider routine.")
 			return
 		}
 	}
-}
-
-func (mgr *FCRRegisterMgr) SetClosestGatewaysIDs(gatewaysIDs [][]byte) {
-	mgr.closestGatewaysMapLock.Lock()
-	mgr.closestGatewaysIDs = gatewaysIDs
-	mgr.closestGatewaysMapLock.Unlock()
 }
