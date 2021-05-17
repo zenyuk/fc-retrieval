@@ -2,18 +2,19 @@ package fcrmessages
 
 import (
 	"testing"
-	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestEncodeClientDHTDiscoverResponse success test
 func TestEncodeClientDHTDiscoverResponse(t *testing.T) {
 	mockContactedMsg := &FCRMessage{
-		messageType:105,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(``), 
-		signature:"",
+		messageType:       105,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(``),
+		signature:         "",
 	}
 	mockContactedMsgs := make([]FCRMessage, 0)
 	mockContactedMsgs = append(mockContactedMsgs, *mockContactedMsg)
@@ -25,14 +26,15 @@ func TestEncodeClientDHTDiscoverResponse(t *testing.T) {
 	mockNonce := int64(42)
 
 	validMsg := &FCRMessage{
-		messageType:105,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"contacted_gateways":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"nonce":42}`), 
-		signature:"",
+		messageType:       105,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"contacted_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"nonce":42}`),
+		signature:         "",
 	}
 
 	msg, err := EncodeClientDHTDiscoverResponse(
+		mockNodeIDs,
 		mockContactedMsgs,
 		mockNodeIDs,
 		mockNonce,
@@ -43,12 +45,13 @@ func TestEncodeClientDHTDiscoverResponse(t *testing.T) {
 
 // TestDecodeClientDHTDiscoverResponse success test
 func TestDecodeClientDHTDiscoverResponse(t *testing.T) {
+
 	mockContactedMsg := &FCRMessage{
-		messageType:105,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(``), 
-		signature:"",
+		messageType:       105,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(``),
+		signature:         "",
 	}
 	mockContactedMsgs := make([]FCRMessage, 0)
 	mockContactedMsgs = append(mockContactedMsgs, *mockContactedMsg)
@@ -60,15 +63,16 @@ func TestDecodeClientDHTDiscoverResponse(t *testing.T) {
 	mockNonce := int64(42)
 
 	validMsg := &FCRMessage{
-		messageType:105,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"contacted_gateways":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"nonce":42}`), 
-		signature:"",
+		messageType:       105,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"contacted_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI="],"nonce":42}`),
+		signature:         "",
 	}
 
-	contactedMsg, nodeIDs, nonce, err := DecodeClientDHTDiscoverResponse(validMsg)
+	contacted, contactedMsg, nodeIDs, nonce, err := DecodeClientDHTDiscoverResponse(validMsg)
 	assert.Empty(t, err)
+	assert.Equal(t, contacted, mockNodeIDs)
 	assert.Equal(t, contactedMsg, mockContactedMsgs)
 	assert.Equal(t, nodeIDs, mockNodeIDs)
 	assert.Equal(t, nonce, mockNonce)
