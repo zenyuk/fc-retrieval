@@ -1,4 +1,4 @@
-package gatewayapi
+package clientapi
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -19,57 +19,47 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
-// RequestStandardDiscover requests a standard discover to a given gateway for a given contentID, nonce and ttl.
-func RequestStandardDiscover(
-	gatewayInfo *register.GatewayRegister,
+// RequestDHTOfferAck requests a dht offer ack to a given provider for a pair of cid and gateway id
+func RequestDHTOfferAck(
+	providerInfo *register.ProviderRegister,
 	contentID *cid.ContentID,
-	nonce int64,
-	ttl int64,
-	paychAddr string,
-	voucher string,
-) ([]cidoffer.SubCIDOffer, error) {
+	gatewayID *nodeid.NodeID,
+) (bool, *fcrmessages.FCRMessage, *fcrmessages.FCRMessage, error) {
 	// Construct request
-	request, err := fcrmessages.EncodeClientStandardDiscoverRequest(contentID, nonce, ttl, paychAddr, voucher)
+	request, err := fcrmessages.EncodeClientDHTOfferAckRequest(contentID, gatewayID)
 	if err != nil {
-		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
-		return nil, err
+		logging.Error("Error encoding Client DHT Offer Ack Request: %+v", err)
+		return false, nil, nil, err
 	}
 
 	// Send request and get response
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := req.SendMessage(providerInfo.NetworkInfoClient, request)
 	if err != nil {
-		return nil, err
+		return false, nil, nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := providerInfo.GetSigningKey()
 	if err != nil {
-		return nil, err
+		return false, nil, nil, err
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, errors.New("Verification failed")
+		return false, nil, nil, errors.New("Verification failed")
 	}
 
-	// Decode the response, TODO deal with fundedpayment channels and found
-	cid, nonceRecv, _, offers, _, err := fcrmessages.DecodeClientStandardDiscoverResponse(response)
+	_, _, found, req, ack, err := fcrmessages.DecodeClientDHTOfferAckResponse(response)
 	if err != nil {
-		return nil, err
-	}
-	if cid.ToString() != contentID.ToString() {
-		return nil, errors.New("CID Mismatch")
-	}
-	if nonce != nonceRecv {
-		return nil, errors.New("Nonce mismatch")
+		return false, nil, nil, err
 	}
 
-	return offers, nil
+	return found, req, ack, nil
 }
