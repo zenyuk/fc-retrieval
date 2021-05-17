@@ -281,12 +281,9 @@ func (r *Ring) GetWithinRange(startHex string, endHex string) ([]string, error) 
 		startNode = temp
 		addStart = true
 	} else {
-		fmt.Printf("before size: %v\n", r.size)
 		r.Insert(startHex)
-		fmt.Printf("after size: %v\n", r.size)
 		startNode = r.get(startHex)
 		if startNode == nil {
-			fmt.Println("Here.")
 			return res, errors.New("Internal error")
 		}
 		defer r.Remove(startHex)
