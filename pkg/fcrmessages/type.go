@@ -55,6 +55,8 @@ const (
 	GatewayAdminForceRefreshResponseType                      = 407
 	GatewayAdminUpdateGatewayGroupCIDOfferSupportRequestType  = 408
 	GatewayAdminUpdateGatewayGroupCIDOfferSupportResponseType = 409
+	GatewayAdminListDHTOfferRequestType                       = 410
+	GatewayAdminListDHTOfferResponseType                      = 411
 
 	// Message originating from provider admin
 	ProviderAdminInitialiseKeyRequestType      = 500
