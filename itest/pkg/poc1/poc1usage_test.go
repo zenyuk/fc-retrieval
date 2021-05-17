@@ -1,11 +1,10 @@
 package poc1
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -14,10 +13,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-itest/config"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 /*
@@ -45,13 +45,55 @@ var pID *nodeid.NodeID
 var testCIDs []cid.ContentID
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		// This logging should be only called after all tests finished.
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	m.Run()
+	// Env is not set, we are calling from host
+	// We need a redis, a register, a gateway and a provider
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+	util.CleanContainers(network)
+
+	// Get env
+	rgEnv := util.GetEnvMap("../../.env.register")
+	gwEnv := util.GetEnvMap("../../.env.gateway")
+	pvEnv := util.GetEnvMap("../../.env.provider")
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start redis
+	util.StartRedis(ctx, network, true)
+
+	// Start register
+	util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
+
+	// Start gateway
+	util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
+
+	// Start provider
+	util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv, true)
+
+	// Start itest
+	done := make(chan bool)
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
+	// Clean containers to shutdown
+	util.CleanContainers(network)
 }
 
 func TestInitialiseGateway(t *testing.T) {
@@ -298,7 +340,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	logging.Info("/*        Start TestClientStdContentDiscover     	     */")
 	logging.Info("/*******************************************************/")
 
-	offers, err := client.FindOffersStandardDiscovery(&(testCIDs[0]))
+	offers, err := client.FindOffersStandardDiscovery(&(testCIDs[0]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -306,7 +348,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		return
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[1]))
+	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[1]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -314,7 +356,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		return
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[2]))
+	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[2]), gwID)
 	if err != nil {
 		panic(err)
 	}
@@ -323,7 +365,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	}
 
 	randomCID := cid.NewRandomContentID()
-	offers, err = client.FindOffersStandardDiscovery(randomCID)
+	offers, err = client.FindOffersStandardDiscovery(randomCID, gwID)
 	if err != nil {
 		panic(err)
 	}

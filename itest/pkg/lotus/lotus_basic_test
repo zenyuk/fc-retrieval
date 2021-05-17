@@ -1,4 +1,4 @@
-package client_gateway
+package lotus
 
 /*
  * Copyright 2021 ConsenSys Software Inc.
@@ -25,32 +25,57 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
 )
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	providerOnePrivateKey, providerOnePublicKey := generateKeyPair()
-	logging.Info("Sample keys: %s\n %s", providerOnePrivateKey, providerOnePublicKey)
-	m.Run()
+	// Env is not set, we are calling from host
+	// We need a lotus
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+	util.CleanContainers(network)
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start lotus
+	util.StartLotus(ctx, network, false)
+
+	// Start itest
+	done := make(chan bool)
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
+	// Clean containers to shutdown
+	util.CleanContainers(network)
 }
 
 func TestLotusConnectivityHttp(t *testing.T) {
 
 	method := "Filecoin.ChainHead"
 	id := 1
-	lotusUrl := "http://127.0.0.1:1234/rpc/v0"
+	lotusUrl := "http://lotus:1234/rpc/v0"
 	requestBody := `{
 		"jsonrpc": "2.0",
 		"method": "` + method + `",
@@ -84,7 +109,7 @@ func TestLotusConnectivityWs(t *testing.T) {
 
 	clientClose, err := jsonrpc.NewMergeClient(
 		ctx,
-		"ws://127.0.0.1:1234/rpc/v0",
+		"ws://lotus:1234/rpc/v0",
 		"Filecoin",
 		[]interface{}{
 			&lotusApi.CommonStruct.Internal,

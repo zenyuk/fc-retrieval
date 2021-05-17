@@ -8,4 +8,4 @@ COPY . .
 # Remove any cached dependancies. TODO is this really needed?
 RUN go clean -modcache
 
-CMD go test -v ./...
+RUN go mod download

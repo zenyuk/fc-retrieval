@@ -16,6 +16,7 @@ package provider_admin
  */
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"testing"
@@ -33,7 +34,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
 
 	"github.com/ConsenSys/fc-retrieval-itest/config"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 // Test the Provider Admin API.
@@ -41,13 +42,54 @@ var providerTest_providerConfig = config.NewConfig(".env.provider")
 var gatewayConfig_gatewayConfig = config.NewConfig(".env.gateway")
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	m.Run()
+	// Env is not set, we are calling from host
+	// We need a redis, a register, a gateway and a provider
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+	util.CleanContainers(network)
+
+	// Get env
+	rgEnv := util.GetEnvMap("../../.env.register")
+	gwEnv := util.GetEnvMap("../../.env.gateway")
+	pvEnv := util.GetEnvMap("../../.env.provider")
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start redis
+	util.StartRedis(ctx, network, true)
+
+	// Start register
+	util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
+
+	// Start gateway
+	util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
+
+	// Start provider
+	util.StartProvider(ctx, "provider", tag, network, util.ColorPurple, pvEnv, true)
+
+	// Start itest
+	done := make(chan bool)
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
+	// Clean containers to shutdown
+	util.CleanContainers(network)
 }
 
 func TestGetProviderAdminVersion(t *testing.T) {
