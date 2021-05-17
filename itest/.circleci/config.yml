@@ -69,77 +69,77 @@ jobs:
   itestsource:
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+    working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-itest"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-client"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-client"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-client"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-common"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-common"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-common"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-gateway"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway-admin"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-provider"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider-admin"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-register"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-register"
+          workdir: "~/go/src/github.com/ConsenSys/fc-retrieval-register"
       - run:
           name: Register - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Provider - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Client - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Gateway Admin - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
       - run:
           name: Gateway - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: ITest - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Make Integration Tests
           command: make clean build tag
       - run:
           name: Make Gateway
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: Make Provider
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Make Register
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Run Itegration Tests
           command: make itestlocal
@@ -149,7 +149,7 @@ jobs:
   itestdocker:
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+    working_directory: ~/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
       - run:
