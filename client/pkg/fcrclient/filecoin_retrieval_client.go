@@ -16,14 +16,17 @@ package fcrclient
  */
 
 import (
+	"errors"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/api/gatewayapi"
+	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
@@ -189,7 +192,7 @@ func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) 
 		challenge := make([]byte, 32)
 		rand.Read(challenge)
 		ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-		err := gatewayapi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
+		err := clientapi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
 		if err != nil {
 			logging.Error("Error in initial establishment: %v", err.Error())
 			continue
@@ -249,30 +252,113 @@ func (c *FilecoinRetrievalClient) GetActiveGateways() []*nodeid.NodeID {
 	return res
 }
 
-// FindOffersStandardDiscovery finds offer using standard discovery
-func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *(cid.ContentID)) ([]cidoffer.SubCIDOffer, error) {
+// FindOffersStandardDiscovery finds offer using standard discovery from given gateways
+func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID) ([]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
-	aggregateOffers := make([]cidoffer.SubCIDOffer, 0)
-	for _, gw := range c.ActiveGateways {
-		// TODO need to do nonce management
-		// TODO need to do requests to all gateways in parallel, rather than serially
-		offers, err := gatewayapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
-		if err != nil {
-			logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	offers, err := clientapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
+	if err != nil {
+		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting standard discovery")
+	}
+	// Verify the offer one by one
+	for _, offer := range offers {
+		// Get provider's pubkey
+		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+		if !validateProviderInfo(&providerInfo) {
+			logging.Error("Provider register info not valid.")
 			continue
 		}
-		// Verify the offer one by one
+		if err != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
+		}
+		pubKey, err := providerInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		// Verify the offer sig
+		if offer.Verify(pubKey) != nil {
+			logging.Error("Offer signature fail to verify.")
+			continue
+		}
+		// Now Verify the merkle proof
+		if offer.VerifyMerkleProof() != nil {
+			logging.Error("Merkle proof verification failed.")
+			continue
+		}
+		// Offer pass verification
+		logging.Info("Offer pass every verification, added to result")
+	}
+	return offers, nil
+}
+
+// FindOffersDHTDiscovery finds offer using dht discovery from given gateways
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) (map[string]*[]cidoffer.SubCIDOffer, error) {
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+
+	offersMap := make(map[string]*[]cidoffer.SubCIDOffer)
+
+	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return offersMap, errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	contacted, contactedResp, uncontactable, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	if err != nil {
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return offersMap, errors.New("Error in requesting dht discovery")
+	}
+	for i := 0; i < len(uncontactable); i++ {
+		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
+	}
+
+	for i := 0; i < len(contacted); i++ {
+		id := contacted[i]
+		resp := contactedResp[i]
+		// Verify the sub response
+		// Get gateway's pubkey
+		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &id)
+		if err != nil {
+			logging.Error("Error in getting gateway info.")
+			continue
+		}
+		if !validateGatewayInfo(&gatewayInfo) {
+			logging.Error("Gateway register info not valid.")
+			continue
+		}
+		pubKey, err := gatewayInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		if resp.Verify(pubKey) != nil {
+			logging.Error("Fail to verify sub response.")
+			continue
+		}
+		_, _, _, offers, _, err := fcrmessages.DecodeGatewayDHTDiscoverResponse(&resp)
+		if err != nil {
+			logging.Error("Fail to decode response")
+			continue
+		}
+		entry := make([]cidoffer.SubCIDOffer, 0)
 		for _, offer := range offers {
 			// Get provider's pubkey
 			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
-			if !validateProviderInfo(&providerInfo) {
-				logging.Error("Provider register info not valid.")
+			if err != nil {
+				logging.Error("Error in getting provider info.")
 				continue
 			}
-			if err != nil {
-				logging.Error("Offer signature fail to verify.")
+			if !validateProviderInfo(&providerInfo) {
+				logging.Error("Provider register info not valid.")
 				continue
 			}
 			pubKey, err := providerInfo.GetSigningKey()
@@ -291,10 +377,92 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *(cid.Co
 				continue
 			}
 			// Offer pass verification
+			entry = append(entry, offer)
 			logging.Info("Offer pass every verification, added to result")
-			// TODO: probably should remove duplicate offers at this point
-			aggregateOffers = append(aggregateOffers, offer)
+		}
+		offersMap[id.ToString()] = &entry
+	}
+
+	return offersMap, nil
+}
+
+// FindDHTOfferAck finds offer ack for a cid, gateway pair
+func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gatewayID *nodeid.NodeID, providerID *nodeid.NodeID) (bool, error) {
+	provider, err := register.GetProviderByID(c.Settings.RegisterURL(), providerID)
+	if err != nil {
+		logging.Error("Error getting registered provider %v: %v", providerID, err.Error())
+		return false, errors.New("Provider not found inside register")
+	}
+	if !validateProviderInfo(&provider) {
+		logging.Error("Register info not valid.")
+		return false, errors.New("Invalid register info")
+	}
+
+	found, request, ack, err := clientapi.RequestDHTOfferAck(&provider, contentID, gatewayID)
+	if err != nil {
+		return false, err
+	}
+	if !found {
+		return false, nil
+	}
+	// We need to verify	1, request is indeed a request, ack is indeed an ack.
+	//						2, request is signed by provider, ack is signed by gateway
+	//						3, ack and request has same nonce
+	// TODO: We will have to also include the hash of the request inside the ack, so the hash can be checked
+
+	// Get provider pub key and gw pub key
+	// Get gateway's pubkey
+	gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), gatewayID)
+	if err != nil {
+		logging.Error("Error in getting gateway info.")
+		return false, errors.New("Error in getting gateway info")
+	}
+	if !validateGatewayInfo(&gatewayInfo) {
+		logging.Error("Gateway register info not valid.")
+		return false, errors.New("Gateway register info not valid")
+	}
+	gwPubKey, err := gatewayInfo.GetSigningKey()
+	if err != nil {
+		logging.Error("Fail to obtain public key.")
+		return false, errors.New("Fail to obtain public key")
+	}
+	// Get provider's pubkey
+	pvdPubKey, err := provider.GetSigningKey()
+	if err != nil {
+		logging.Error("Fail to obtain public key.")
+		return false, errors.New("Fail to obtain public key")
+	}
+	// Verify the request.
+	if request.Verify(pvdPubKey) != nil {
+		return false, errors.New("Error in verifying request")
+	}
+	// Verify the offer indeed contains the given cid
+	_, _, offers, err := fcrmessages.DecodeProviderPublishDHTOfferRequest(request)
+	if err != nil {
+		return false, err
+	}
+	found = false
+	for _, offer := range offers {
+		if offer.GetCIDs()[0].ToString() == contentID.ToString() {
+			found = true
+			break
 		}
 	}
-	return aggregateOffers, nil
+	if !found {
+		return false, errors.New("Initial request does not contain the given cid")
+	}
+	// Verify the ack
+	if ack.Verify(gwPubKey) != nil {
+		return false, errors.New("Error in verifying the ack")
+	}
+	_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(ack)
+	if err != nil {
+		return false, err
+	}
+	// Verify ack against request
+	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request)
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }

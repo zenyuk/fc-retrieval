@@ -1,4 +1,4 @@
-package gatewayapi
+package clientapi
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -16,9 +16,9 @@ package gatewayapi
  */
 
 import (
-	"encoding/base64"
 	"errors"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -26,47 +26,51 @@ import (
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
-// RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
-func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
-	if len(challenge) != 32 {
-		return errors.New("Challenge is not 32 bytes")
-	}
-	b := make([]byte, base64.StdEncoding.EncodedLen(len(challenge)))
-	base64.StdEncoding.Encode(b, challenge[:])
-
-	request, err := fcrmessages.EncodeClientEstablishmentRequest(clientID, string(b), ttl)
+// RequestDHTDiscover requests a dht discover to a given gateway for a given contentID, nonce and ttl.
+func RequestDHTDiscover(
+	gatewayInfo *register.GatewayRegister,
+	contentID *cid.ContentID,
+	nonce int64,
+	ttl int64,
+	numDHT int64,
+	incrementalResult bool,
+	paychAddr string,
+	voucher string,
+) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error) {
+	// Construct request
+	request, err := fcrmessages.EncodeClientDHTDiscoverRequest(contentID, nonce, ttl, numDHT, incrementalResult, paychAddr, voucher)
 	if err != nil {
-		logging.Error("Error encoding Client Establishment Request: %+v", err)
-		return err
+		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
+		return nil, nil, nil, err
 	}
 
+	// Send request and get response
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
 	// Get the gateway's public key
 	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify response")
+		return nil, nil, nil, errors.New("Verification failed")
 	}
-	// Finally check if gatewayID and received challenge matches.
-	gatewayID, recvChallenge, err := fcrmessages.DecodeClientEstablishmentResponse(response)
+
+	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponse(response)
 	if err != nil {
-		return err
+		return nil, nil, nil, err
+	}
+	if recvNonce != nonce {
+		return nil, nil, nil, errors.New("Nonce not matching")
+	}
+	if len(contacted) != len(contactedResp) {
+		return nil, nil, nil, errors.New("Length mismtach")
 	}
 
-	if gatewayInfo.NodeID != gatewayID.ToString() {
-		return errors.New("Gateway ID not match")
-	}
-	if recvChallenge != string(b) {
-		return errors.New("Challenge mismatch")
-	}
-
-	return nil
+	return contacted, contactedResp, uncontactable, nil
 }
