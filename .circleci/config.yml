@@ -21,7 +21,7 @@ commands:
           name: "Git clone repo << parameters.repo >>"
           command: |
             git clone << parameters.repo >>
-          working_directory: /go/src/github.com/ConsenSys/
+          working_directory: /home/go/src/github.com/ConsenSys/
       - run:
           name: "Git get correct branch for << parameters.repo >>"
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
