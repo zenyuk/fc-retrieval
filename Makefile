@@ -70,8 +70,10 @@ lbuild:
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-gateway
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-init
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
+	
+# go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 
 itestlocal: setup-env-localtesting itestdocker
 
