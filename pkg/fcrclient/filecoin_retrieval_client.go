@@ -25,6 +25,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
@@ -303,34 +304,60 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
-	res := make(map[string]*[]cidoffer.SubCIDOffer)
+	offersMap := make(map[string]*[]cidoffer.SubCIDOffer)
 
 	gw, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return res, errors.New("Given gatewayID is not in active nodes map")
+		return offersMap, errors.New("Given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	offersMap, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	contacted, contactedResp, uncontactable, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return res, errors.New("Error in requesting dht discovery")
+		return offersMap, errors.New("Error in requesting dht discovery")
 	}
-	// Verify the offer one by one
-	for id, offers := range offersMap {
-		if offers == nil {
-			// This is an uncontactable node, continue
+	for i := 0; i < len(uncontactable); i++ {
+		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
+	}
+
+	for i := 0; i < len(contacted); i++ {
+		id := contacted[i]
+		resp := contactedResp[i]
+		// Verify the sub response
+		// Get gateway's pubkey
+		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &id)
+		if err != nil {
+			logging.Error("Error in getting gateway info.")
+			continue
+		}
+		if !validateGatewayInfo(&gatewayInfo) {
+			logging.Error("Gateway register info not valid.")
+			continue
+		}
+		pubKey, err := gatewayInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		if resp.Verify(pubKey) != nil {
+			logging.Error("Fail to verify sub response.")
+			continue
+		}
+		_, _, _, offers, _, err := fcrmessages.DecodeGatewayDHTDiscoverResponse(&resp)
+		if err != nil {
+			logging.Error("Fail to decode response")
 			continue
 		}
 		entry := make([]cidoffer.SubCIDOffer, 0)
-		for _, offer := range *offers {
+		for _, offer := range offers {
 			// Get provider's pubkey
 			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
-			if !validateProviderInfo(&providerInfo) {
-				logging.Error("Provider register info not valid.")
+			if err != nil {
+				logging.Error("Error in getting provider info.")
 				continue
 			}
-			if err != nil {
-				logging.Error("Offer signature fail to verify.")
+			if !validateProviderInfo(&providerInfo) {
+				logging.Error("Provider register info not valid.")
 				continue
 			}
 			pubKey, err := providerInfo.GetSigningKey()
@@ -352,9 +379,10 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 			entry = append(entry, offer)
 			logging.Info("Offer pass every verification, added to result")
 		}
-		res[id] = &entry
+		offersMap[id.ToString()] = &entry
 	}
-	return res, nil
+
+	return offersMap, nil
 }
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair

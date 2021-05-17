@@ -19,9 +19,9 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
@@ -36,32 +36,41 @@ func RequestDHTDiscover(
 	incrementalResult bool,
 	paychAddr string,
 	voucher string,
-) (map[string]*[]cidoffer.SubCIDOffer, error) {
+) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error) {
 	// Construct request
 	request, err := fcrmessages.EncodeClientDHTDiscoverRequest(contentID, nonce, ttl, numDHT, incrementalResult, paychAddr, voucher)
 	if err != nil {
 		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	// Send request and get response
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	// Get the gateway's public key
 	pubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, errors.New("Verification failed")
+		return nil, nil, nil, errors.New("Verification failed")
 	}
 
-	// TODO interpret the response.
-	logging.Info("Response from server: %s", response.DumpMessage())
-	return nil, errors.New("Not implemented")
+	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponse(response)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if recvNonce != nonce {
+		return nil, nil, nil, errors.New("Nonce not matching")
+	}
+	if len(contacted) != len(contactedResp) {
+		return nil, nil, nil, errors.New("Length mismtach")
+	}
+
+	return contacted, contactedResp, uncontactable, nil
 }
