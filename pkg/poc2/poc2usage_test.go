@@ -178,11 +178,12 @@ func TestInitialiseGateways(t *testing.T) {
 			panic(err)
 		}
 		var idStr string
-		if i%2 == 1 {
+		if i%2 == 0 {
 			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
 		} else {
 			idStr = fmt.Sprintf("%X800000000000000000000000000000000000000000000000000000000000000", i/2)
 		}
+		t.Log(idStr)
 
 		gatewayID, err := nodeid.NewNodeIDFromHexString(idStr)
 		if err != nil {
@@ -260,6 +261,14 @@ func TestForceUpdate(t *testing.T) {
 
 	for i := 0; i < 32; i++ {
 		err := gwAdmin.ForceUpdate(gwIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Now List DHT Offers
+	for i := 0; i < 32; i++ {
+		err := gwAdmin.ListDHTOffer(gwIDs[i])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -502,15 +511,15 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 
 	// Try DHT Search for content 0
-	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[15])
+	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 15, outside of published ring.") {
+	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 0, outside of published ring.") {
 		return
 	}
 
-	offersMap, err := client.FindOffersDHTDiscovery(contentID0, gwIDs[15], 4)
+	offersMap, err := client.FindOffersDHTDiscovery(contentID0, gwIDs[0], 4)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -564,11 +573,11 @@ func TestPublishDHTOffer(t *testing.T) {
 		return
 	}
 
-	offersMap, err = client.FindOffersDHTDiscovery(contentID0, gwIDs[20], 3)
+	offersMap, err = client.FindOffersDHTDiscovery(contentID1, gwIDs[15], 3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 2, len(offersMap), "Should have a map of 2 entries.") {
+	if !assert.Equal(t, 3, len(offersMap), "Should have a map of 3 entries.") {
 		return
 	}
 
@@ -597,15 +606,6 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 	offers = *(offersMap[gwIDs[31].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 31.") {
-		return
-	}
-
-	_, exists = offersMap[gwIDs[15].ToString()]
-	if !assert.True(t, exists, "Should query gateway 15.") {
-		return
-	}
-	offers = *(offersMap[gwIDs[15].ToString()])
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 15.") {
 		return
 	}
 
@@ -670,8 +670,36 @@ func TestNewGateway(t *testing.T) {
 		panic(err)
 	}
 
-	// TO ADD, Need to subscribe to list cid offer from pvd0
-	// TO ADD, Need to subscribe to list cid offer from pvd1
+	// Force update
+	for i := 0; i < 3; i++ {
+		err := pAdmin.ForceUpdate(pIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for i := 0; i < 33; i++ {
+		err := gwAdmin.ForceUpdate(gwIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = gwAdmin.ListDHTOffer(gwIDs[32])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	added := client.AddGatewaysToUse([]*nodeid.NodeID{gwIDs[32]})
+	if !assert.Equal(t, 1, added, "1 gateway should be added") {
+		return
+	}
+
+	added = client.AddActiveGateways([]*nodeid.NodeID{gwIDs[32]})
+	if !assert.Equal(t, 1, added, "1 gateway should be active") {
+		return
+	}
+
 	// This new gateway should have used list cid offer to get both cid0 and cid1
 	contentID0, err := cid.NewContentIDFromHexString("6880000000000000000000000000000000000000000000000000000000000000")
 	if err != nil {
@@ -694,7 +722,7 @@ func TestNewGateway(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 32.") {
+	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 1 from gateway 32.") {
 		return
 	}
 
@@ -727,23 +755,23 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 	}
 
 	// Publish DHT Offer from pvd3
-	// It used to be published to gateway 7 - gateway 22, but now, it should be published to gateway 8 - 22 and gateway 32
+	// It used to be published to gateway 7 - gateway 22, but now, it should be published to gateway 7 - 21 and gateway 32
 	contentID0, err := cid.NewContentIDFromHexString("7080000000000000000000000000000000000000000000000000000000000000")
 	if err != nil {
 		t.Fatal(err)
 	}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishDHTCID(pIDs[0], []cid.ContentID{*contentID0}, []uint64{42}, []int64{expiryDate}, []uint64{42})
+	err = pAdmin.PublishDHTCID(pIDs[2], []cid.ContentID{*contentID0}, []uint64{42}, []int64{expiryDate}, []uint64{42})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Try Standard Discovery for contentID0
-	offers, err := client.FindOffersStandardDiscovery(contentID0, gwIDs[7])
+	offers, err := client.FindOffersStandardDiscovery(contentID0, gwIDs[6])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 7, outside of published ring.") {
+	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 6, outside of published ring.") {
 		return
 	}
 
@@ -763,19 +791,19 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 		return
 	}
 
+	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[21])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 21, boundary of published ring.") {
+		return
+	}
+
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[22])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 22, boundary of published ring.") {
-		return
-	}
-
-	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[23])
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 23, outside of published ring.") {
+	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 22, outside of published ring.") {
 		return
 	}
 
@@ -787,7 +815,7 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 // To this point, we have
 // At this point, we have gw 6-21 storing 688... and gw25-31&gw0-8 storing 008
 // Plus the gw33 storing both 688 and 008
-// Also, gw8-22 and gw32 storing 708
+// Also, gw7-21 and gw32 storing 708
 
 func TestDHTOfferAck(t *testing.T) {
 	t.Log("/*******************************************************/")
@@ -816,21 +844,21 @@ func TestDHTOfferAck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, exists, "Offer shouldn't exist for gateway 10 and invalid cid")
+	assert.False(t, exists, "Offer shouldn't exist for gateway 10 and invalid cid")
 
 	// Test a valid cid, invalid gateway pair
 	exists, err = client.FindDHTOfferAck(cidValid, gwIDs[30], pIDs[2])
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, exists, "Offer shouldn't exist for gateway 30 and valid cid")
+	assert.False(t, exists, "Offer shouldn't exist for gateway 30 and valid cid")
 
 	// Test an invalid cid, invalid gateway pair
 	exists, err = client.FindDHTOfferAck(cidInValid, gwIDs[30], pIDs[2])
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, exists, "Offer should exist for gateway 30 and invalid cid")
+	assert.False(t, exists, "Offer shouldn't exist for gateway 30 and invalid cid")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*                 End TestDHTOfferAck                 */")
