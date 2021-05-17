@@ -25,6 +25,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
@@ -404,13 +405,64 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 	if !found {
 		return false, nil
 	}
-
-	logging.Info(request.DumpMessage())
-	logging.Info(ack.DumpMessage())
 	// We need to verify	1, request is indeed a request, ack is indeed an ack.
 	//						2, request is signed by provider, ack is signed by gateway
 	//						3, ack and request has same nonce
 	// TODO: We will have to also include the hash of the request inside the ack, so the hash can be checked
 
-	return true, nil
+	// Get provider pub key and gw pub key
+	// Get gateway's pubkey
+	gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), gatewayID)
+	if err != nil {
+		logging.Error("Error in getting gateway info.")
+		return false, errors.New("Error in getting gateway info")
+	}
+	if !validateGatewayInfo(&gatewayInfo) {
+		logging.Error("Gateway register info not valid.")
+		return false, errors.New("Gateway register info not valid")
+	}
+	gwPubKey, err := gatewayInfo.GetSigningKey()
+	if err != nil {
+		logging.Error("Fail to obtain public key.")
+		return false, errors.New("Fail to obtain public key")
+	}
+	// Get provider's pubkey
+	pvdPubKey, err := provider.GetSigningKey()
+	if err != nil {
+		logging.Error("Fail to obtain public key.")
+		return false, errors.New("Fail to obtain public key")
+	}
+	// Verify the request.
+	if request.Verify(pvdPubKey) != nil {
+		return false, errors.New("Error in verifying request")
+	}
+	// Verify the offer indeed contains the given cid
+	_, _, offers, err := fcrmessages.DecodeProviderPublishDHTOfferRequest(request)
+	if err != nil {
+		return false, err
+	}
+	found = false
+	for _, offer := range offers {
+		if offer.GetCIDs()[0].ToString() == contentID.ToString() {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return false, errors.New("Initial request does not contain the given cid")
+	}
+	// Verify the ack
+	if ack.Verify(gwPubKey) != nil {
+		return false, errors.New("Error in verifying the ack")
+	}
+	_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(ack)
+	if err != nil {
+		return false, err
+	}
+	// Verify ack against request
+	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request)
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }

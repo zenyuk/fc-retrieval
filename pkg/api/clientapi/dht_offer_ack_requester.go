@@ -56,7 +56,10 @@ func RequestDHTOfferAck(
 		return false, nil, nil, errors.New("Verification failed")
 	}
 
-	// TODO interpret the response.
-	logging.Info("Response from server: %s", response.DumpMessage())
-	return false, nil, nil, errors.New("Not implemented")
+	_, _, found, req, ack, err := fcrmessages.DecodeClientDHTOfferAckResponse(response)
+	if err != nil {
+		return false, nil, nil, err
+	}
+
+	return found, req, ack, nil
 }
