@@ -94,6 +94,17 @@ func (c *FilecoinRetrievalGatewayAdmin) ForceUpdate(gatewayID *nodeid.NodeID) er
 	return adminapi.RequestForceRefresh(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
 
+// ListDHTOffer asks the gateway to list dht offer from providers
+func (c *FilecoinRetrievalGatewayAdmin) ListDHTOffer(gatewayID *nodeid.NodeID) error {
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return errors.New("Unable to find the gateway in admin storage")
+	}
+	return adminapi.RequestListDHTOffer(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+}
+
 func (c *FilecoinRetrievalGatewayAdmin) UpdateGatewaySupportedFeatures(gatewayInfo *register.GatewayRegister, providers []nodeid.NodeID) error {
 	c.ActiveGatewaysLock.Lock()
 	defer c.ActiveGatewaysLock.Unlock()
