@@ -62,8 +62,10 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 	maxOffersPerMsg := 50 //TODO, max offer per message?
 	msgs := make([]fcrmessages.FCRMessage, 0)
 	offers, exists := c.OffersMgr.GetDHTOffersWithinRange(cidMin, cidMax, maxOffers)
+
 	if exists {
-		for {
+		exit := false
+		for !exit {
 			var msg *fcrmessages.FCRMessage
 			if len(offers) > maxOffersPerMsg {
 				msg, err = fcrmessages.EncodeProviderPublishDHTOfferRequest(c.ProviderID, 1, offers[:50]) //TODO: Add nonce
@@ -76,7 +78,7 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 				if err != nil {
 					return err
 				}
-				break
+				exit = true
 			}
 			// Sign the sub message
 			if msg.Sign(c.ProviderPrivateKey, c.ProviderPrivateKeyVersion) != nil {
@@ -114,7 +116,7 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 	}
 
 	acknowledgements, err := fcrmessages.DecodeGatewayListDHTOfferAck(acks)
-	if len(acknowledgements) != len(offers) {
+	if len(acknowledgements) != len(msgs) {
 		return errors.New("Invalid response")
 	}
 	for i, acknowledgement := range acknowledgements {
@@ -131,10 +133,16 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 			return errors.New("Verification failed")
 		}
 		// It's okay, add to acknowledgements map
+		_, _, sentOffers, err := fcrmessages.DecodeProviderPublishDHTOfferRequest(&msgs[i])
+		if err != nil {
+			return err
+		}
 		c.AcknowledgementMapLock.Lock()
-		c.AcknowledgementMap[offers[i].GetCIDs()[0].ToString()][gatewayID.ToString()] = core.DHTAcknowledgement{
-			Msg:    msgs[i],
-			MsgAck: acknowledgement,
+		for _, sentOffer := range sentOffers {
+			c.AcknowledgementMap[sentOffer.GetCIDs()[0].ToString()][gatewayID.ToString()] = core.DHTAcknowledgement{
+				Msg:    msgs[i],
+				MsgAck: acknowledgement,
+			}
 		}
 		c.AcknowledgementMapLock.Unlock()
 	}

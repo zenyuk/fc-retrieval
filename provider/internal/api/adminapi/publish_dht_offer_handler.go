@@ -80,7 +80,7 @@ func HandleProviderAdminPublishDHTOfferRequest(w rest.ResponseWriter, request *f
 	}
 
 	for _, cid := range cids {
-		gateways, err := c.RegisterMgr.GetGatewaysNearCID(&cid, 0, nil)
+		gateways, err := c.RegisterMgr.GetGatewaysNearCID(&cid, 16, nil)
 		if err != nil {
 			s := "Internal error: Fail to get gateways near the given cid."
 			logging.Error(s + err.Error())
@@ -88,6 +88,7 @@ func HandleProviderAdminPublishDHTOfferRequest(w rest.ResponseWriter, request *f
 			return
 		}
 		for _, gw := range gateways {
+			logging.Info("Published to: %v", gw.NodeID)
 			gatewayID, err := nodeid.NewNodeIDFromHexString(gw.NodeID)
 			if err != nil {
 				s := "Fail to generate node id."
