@@ -3,7 +3,7 @@ module github.com/ConsenSys/fc-retrieval-register
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210517111340-0b8d3f9325c2
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210517141427-376f0f645171
 	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.24
