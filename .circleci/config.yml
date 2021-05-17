@@ -21,7 +21,7 @@ commands:
           name: "Git clone repo << parameters.repo >>"
           command: |
             git clone << parameters.repo >>
-          working_directory: /home/go/src/github.com/ConsenSys/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/
       - run:
           name: "Git get correct branch for << parameters.repo >>"
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
@@ -69,77 +69,77 @@ jobs:
   itestsource:
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-itest/
+    working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-client"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-client"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-common"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-common"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-common"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-gateway"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway-admin"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-provider"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider-admin"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-register"
-          workdir: "/home/go/src/github.com/ConsenSys/fc-retrieval-register"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register"
       - run:
           name: Register - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Provider - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Client - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Gateway Admin - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
       - run:
           name: Gateway - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: ITest - Use remote config
           command: make useremote
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-itest/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-itest/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Make Integration Tests
           command: make clean build tag
       - run:
           name: Make Gateway
           command: make clean build tag
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: Make Provider
           command: make clean build tag
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Make Register
           command: make clean build tag
-          working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Run Itegration Tests
           command: make itestlocal
@@ -149,7 +149,7 @@ jobs:
   itestdocker:
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /home/go/src/github.com/ConsenSys/fc-retrieval-itest/
+    working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
       - run:
