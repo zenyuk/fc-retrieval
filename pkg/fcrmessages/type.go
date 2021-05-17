@@ -51,6 +51,8 @@ const (
 	GatewayAdminSetReputationResponseType = 405
 	GatewayAdminForceRefreshRequestType   = 406
 	GatewayAdminForceRefreshResponseType  = 407
+	GatewayAdminListDHTOfferRequestType   = 410
+	GatewayAdminListDHTOfferResponseType  = 411
 
 	// Message originating from provider admin
 	ProviderAdminInitialiseKeyRequestType      = 500
