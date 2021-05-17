@@ -24,19 +24,22 @@ import (
 
 // clientDHTDiscoverResponse is the response to clientDHTDiscoverRequest
 type clientDHTDiscoverResponse struct {
-	Contacted     []FCRMessage `json:"contacted_gateways"`
-	UnContactable []nodeid.NodeID          `json:"uncontactable_gateways"`
-	Nonce         int64                    `json:"nonce"`
+	Contacted     []nodeid.NodeID `json:"contacted_gateways"`
+	Response      []FCRMessage    `json:"response"`
+	UnContactable []nodeid.NodeID `json:"uncontactable_gateways"`
+	Nonce         int64           `json:"nonce"`
 }
 
 // EncodeClientDHTDiscoverResponse is used to get the FCRMessage of ClientDHTDiscoverResponse
 func EncodeClientDHTDiscoverResponse(
-	contacted []FCRMessage,
+	contacted []nodeid.NodeID,
+	response []FCRMessage,
 	unContactable []nodeid.NodeID,
 	nonce int64,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientDHTDiscoverResponse{
 		Contacted:     contacted,
+		Response:      response,
 		UnContactable: unContactable,
 		Nonce:         nonce,
 	})
@@ -48,18 +51,19 @@ func EncodeClientDHTDiscoverResponse(
 
 // DecodeClientDHTDiscoverResponse is used to get the fields from FCRMessage of ClientDHTDiscoverResponse
 func DecodeClientDHTDiscoverResponse(fcrMsg *FCRMessage) (
-	[]FCRMessage, // contacted
+	[]nodeid.NodeID, // contacted
+	[]FCRMessage, // response
 	[]nodeid.NodeID, // uncontactable
 	int64, // nonce
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != ClientDHTDiscoverResponseType {
-		return nil, nil, 0, errors.New("Message type mismatch")
+		return nil, nil, nil, 0, errors.New("Message type mismatch")
 	}
 	msg := clientDHTDiscoverResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, nil, 0, err
+		return nil, nil, nil, 0, err
 	}
-	return msg.Contacted, msg.UnContactable, msg.Nonce, nil
+	return msg.Contacted, msg.Response, msg.UnContactable, msg.Nonce, nil
 }
