@@ -18,13 +18,14 @@ package adminapi
 import (
 	"net/http"
 
+	"github.com/ant0ine/go-json-rest/rest"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HandleProviderAdminPublishDHTOfferRequest handles provider admin publish dht offer request
