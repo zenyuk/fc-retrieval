@@ -19,8 +19,9 @@ default: clean utest build tag
 # builds a docker image that builds the app and packages it into a minimal docker image
 build:
 	docker build -t ${IMAGE}:${VERSION} .
-	docker build -t consensys/lotus-base lotus/lotus-base
-	docker build -t consensys/lotus-full-node lotus/lotus-full-node
+
+# docker build -t consensys/lotus-base lotus/lotus-base
+# docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
 build-local:
 	cat go.mod >> temp
