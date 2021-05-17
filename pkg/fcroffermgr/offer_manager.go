@@ -17,25 +17,26 @@ package fcroffermgr
 
 import (
 	"errors"
-	"math/big"
-	"strconv"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/dhtring"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 // FCROfferMgr manages offer storage
 type FCROfferMgr struct {
-	dhtOffers   *offerStorage
-	groupOffers *offerStorage
+	dhtOffers    *offerStorage
+	dhtOfferRing *dhtring.Ring
+	groupOffers  *offerStorage
 }
 
 // NewFCROfferMgr returns
 func NewFCROfferMgr() *FCROfferMgr {
 	return &FCROfferMgr{
-		dhtOffers:   newOfferStorage(),
-		groupOffers: newOfferStorage(),
+		dhtOffers:    newOfferStorage(),
+		dhtOfferRing: dhtring.CreateRing(),
+		groupOffers:  newOfferStorage(),
 	}
 }
 
@@ -52,6 +53,7 @@ func (mgr *FCROfferMgr) AddDHTOffer(offer *cidoffer.CIDOffer) error {
 	if len(offer.GetCIDs()) != 1 {
 		return errors.New("Not a DHT offer")
 	}
+	mgr.dhtOfferRing.Insert(offer.GetCIDs()[0].ToString())
 	return mgr.dhtOffers.add(offer)
 }
 
@@ -69,47 +71,25 @@ func (mgr *FCROfferMgr) GetDHTOffers(cid *cid.ContentID) ([]cidoffer.CIDOffer, b
 
 // GetDHTOffersWithinRange returns a list of dht offers contains a cid within the given range
 func (mgr *FCROfferMgr) GetDHTOffersWithinRange(cidMin, cidMax *cid.ContentID, maxOffers int) ([]cidoffer.CIDOffer, bool) {
-	// TODO: Have a more efficient implementation, using Ring, but with the ability to remove expired entry
 	offers := make([]cidoffer.CIDOffer, 0)
 
-	min, err := strconv.ParseInt(cidMin.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
+	entries, err := mgr.dhtOfferRing.GetWithinRange(cidMin.ToString(), cidMax.ToString())
 	if err != nil {
 		return offers, false
-	}
-	max, err := strconv.ParseInt(cidMax.ToString(), 16, 32) // TODO, CHECK IF THIS IS CORRECT
-	if err != nil {
-		return offers, false
-	}
-	if max < min {
-		// TODO, Test boundary cases
-		cidNewMax, err := cid.NewContentIDFromHexString("0xFFFFFFFF")
-		if err != nil {
-			logging.Error("Error in getting maximum cid")
-			return offers, false
-		}
-		tempOffers, _ := mgr.GetDHTOffersWithinRange(cidMax, cidNewMax, maxOffers)
-		max = min
-		min = 0
-		offers = append(offers, tempOffers...)
-		maxOffers = maxOffers - len(tempOffers)
 	}
 
-	for i := min; i <= max; i++ {
-		id, err := cid.NewContentID(big.NewInt(i))
+	for _, entry := range entries {
+		cid, err := cid.NewContentIDFromHexString(entry)
 		if err != nil {
+			logging.Error("Internal error")
 			return offers, false
 		}
-		offers, exists := mgr.GetDHTOffers(id)
-		if exists {
-			for _, offer := range offers {
-				offers = append(offers, offer)
-				if len(offers) >= maxOffers {
-					break
-				}
+		offersTemp := mgr.dhtOffers.get(cid)
+		for _, offer := range offersTemp {
+			offers = append(offers, offer)
+			if len(offers) >= maxOffers {
+				return offers, len(offers) > 0
 			}
-		}
-		if len(offers) >= maxOffers {
-			break
 		}
 	}
 

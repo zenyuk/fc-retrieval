@@ -266,6 +266,61 @@ func (r *Ring) GetClosest(hex string, num int, exclude string) ([]string, error)
 	return res, nil
 }
 
+// GetWithinRange gets all entries within a range
+func (r *Ring) GetWithinRange(startHex string, endHex string) ([]string, error) {
+	if !validateInput(startHex) || !validateInput(endHex) {
+		logging.Error("Ring invalid hex: %v %v", startHex, endHex)
+		return nil, errors.New("Invalid input")
+	}
+	res := make([]string, 0)
+	var startNode *ringNode
+	var endNode *ringNode
+	addStart := false
+	addEnd := false
+	if temp := r.get(startHex); temp != nil {
+		startNode = temp
+		addStart = true
+	} else {
+		fmt.Printf("before size: %v\n", r.size)
+		r.Insert(startHex)
+		fmt.Printf("after size: %v\n", r.size)
+		startNode = r.get(startHex)
+		if startNode == nil {
+			fmt.Println("Here.")
+			return res, errors.New("Internal error")
+		}
+		defer r.Remove(startHex)
+	}
+
+	if temp := r.get(endHex); temp != nil {
+		endNode = temp
+		addEnd = true
+	} else {
+		r.Insert(endHex)
+		endNode = r.get(endHex)
+		if endNode == nil {
+			return res, errors.New("Internal error")
+		}
+		defer r.Remove(endHex)
+	}
+
+	if addStart {
+		res = append(res, startHex)
+	}
+
+	next := startNode.next
+	for next.val != endNode.val {
+		res = append(res, next.val)
+		next = next.next
+	}
+
+	if addEnd {
+		res = append(res, endHex)
+	}
+
+	return res, nil
+}
+
 // Size gets the size of the ring
 func (r *Ring) Size() int {
 	return r.size
@@ -289,6 +344,26 @@ func (r *Ring) Dump() {
 		current = current.next
 	}
 	fmt.Printf("]\n\n")
+}
+
+// get gets the ringNode inside this ring, nil if not found
+func (r *Ring) get(hex string) *ringNode {
+	if !validateInput(hex) {
+		logging.Error("Ring invalid hex: %v", hex)
+		return nil
+	}
+	if r.size == 0 {
+		return nil
+	}
+	current := r.head
+	for ok := true; ok; ok = current != nil && current.val != r.head.val {
+		// Loop until we reach nil or we go back to head
+		if current.val == hex {
+			return current
+		}
+		current = current.next
+	}
+	return nil
 }
 
 // getDist gets the distance from one to another, clockwise
