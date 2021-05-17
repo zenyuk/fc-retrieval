@@ -16,6 +16,7 @@ package client_init
  */
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"testing"
@@ -27,7 +28,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	tc "github.com/ConsenSys/fc-retrieval-itest/pkg/test-containers"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 // Tests in this file use the Client API, but don't need the rest of the system to be
@@ -35,13 +36,37 @@ import (
 var fClient *fcrclient.FilecoinRetrievalClient
 
 func TestMain(m *testing.M) {
-	composeID, err := tc.StartContainers()
-	if err != nil {
-		logging.Error("Can't start containers %s", err.Error())
-		os.Exit(1)
+	// Need to make sure this env is not set in host machine
+	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
+
+	if itestEnv != "" {
+		// Env is set, we are calling from docker container
+		m.Run()
+		return
 	}
-	defer tc.StopContainers(composeID)
-	m.Run()
+	// Env is not set, we are calling from host
+	// We don't need any running instance
+	tag := util.GetCurrentBranch()
+	network := "itest-shared"
+	util.CleanContainers(network)
+
+	// Create shared net
+	ctx := context.Background()
+	net := *util.CreateNetwork(ctx, network)
+	defer net.Remove(ctx)
+
+	// Start itest
+	done := make(chan bool)
+	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+
+	// Block until done.
+	if <-done {
+		logging.Info("Tests passed, shutdown...")
+	} else {
+		logging.Fatal("Tests failed, shutdown...")
+	}
+	// Clean containers to shutdown
+	util.CleanContainers(network)
 }
 
 func TestGetClientVersion(t *testing.T) {

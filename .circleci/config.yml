@@ -21,7 +21,7 @@ commands:
           name: "Git clone repo << parameters.repo >>"
           command: |
             git clone << parameters.repo >>
-          working_directory: /go/src/github.com/ConsenSys/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/
       - run:
           name: "Git get correct branch for << parameters.repo >>"
           #head=$(git --git-dir=fc-retrieval-gateway/.git rev-parse HEAD)
@@ -67,113 +67,103 @@ jobs:
 
   # Integration tests using source code
   itestsource:
-    docker:
-      - image: circleci/golang:1.15
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+    machine:
+      image: ubuntu-1604:202007-01
+      docker_layer_caching: true
+    working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-itest"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-client"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-client"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-common"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-common"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-common"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-gateway-admin"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-provider-admin"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider-admin"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-register"
-          workdir: "/go/src/github.com/ConsenSys/fc-retrieval-register"
-      - run: echo 127.0.0.1 register | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 gateway | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 provider | sudo tee -a /etc/hosts
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register"
       - run:
           name: Register - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Provider - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Client - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Gateway Admin - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/
       - run:
           name: Gateway - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: ITest - Use remote config
           command: make useremote
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
-      - setup_remote_docker:
-          version: 19.03.13
-          docker_layer_caching: true
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
       - run:
           command: cat go.mod
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           name: Make Integration Tests
           command: make clean build tag
       - run:
           name: Make Gateway
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-gateway/
       - run:
           name: Make Provider
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-provider/
       - run:
           name: Make Register
           command: make clean build tag
-          working_directory: /go/src/github.com/ConsenSys/fc-retrieval-register/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
           name: Run Itegration Tests
           command: make itestlocal
-          no_output_timeout: 60s
+          no_output_timeout: 120s
 
   # Integration tests using Docker. Build and run integration tests based on go.mod
   itestdocker:
-    docker:
-      - image: circleci/golang:1.15
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
+    machine:
+      image: ubuntu-1604:202007-01
+      docker_layer_caching: true
+    working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 19.03.13
-          docker_layer_caching: true
       - run:
           name: Make Integration Tests
           command: make clean build
       - run:
           name: Log in to Docker registry
           command: echo $GITHUB_ACCESS_TOKEN | docker login https://docker.pkg.github.com -u $GITHUB_USER --password-stdin
-      - run: echo 127.0.0.1 register | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 gateway | sudo tee -a /etc/hosts
-      - run: echo 127.0.0.1 provider | sudo tee -a /etc/hosts
       - run:
           name: Run Itegration Tests
           command: make itestdocker
-          no_output_timeout: 60s
+          no_output_timeout: 120s
 
   # check parameter passing
   checkparam:
@@ -204,4 +194,4 @@ workflows:
           requires:
             - localbuild
             - itestsource
-            - itestdocker
+            # - itestdocker

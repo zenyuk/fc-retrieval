@@ -19,8 +19,35 @@ default: clean utest build tag
 # builds a docker image that builds the app and packages it into a minimal docker image
 build:
 	docker build -t ${IMAGE}:${VERSION} .
+
+# docker build -t consensys/lotus-base lotus/lotus-base
+# docker build -t consensys/lotus-full-node lotus/lotus-full-node
+
+build-local:
+	cat go.mod >> temp
+	echo "replace github.com/ConsenSys/fc-retrieval-common => ./local/fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ./local/fc-retrieval-gateway-admin" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ./local/fc-retrieval-provider-admin" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-client => ./local/fc-retrieval-client" >> go.mod
+	rm -rf ./local/
+	mkdir -p ./local/fc-retrieval-common/pkg
+	mkdir -p ./local/fc-retrieval-gateway-admin/pkg
+	mkdir -p ./local/fc-retrieval-provider-admin/pkg
+	mkdir -p ./local/fc-retrieval-client/pkg
+	cp -r ../fc-retrieval-common/pkg/ ./local/fc-retrieval-common/pkg/
+	cp ../fc-retrieval-common/go.mod ./local/fc-retrieval-common/go.mod
+	cp -r ../fc-retrieval-gateway-admin/pkg/ ./local/fc-retrieval-gateway-admin/pkg/
+	cp ../fc-retrieval-gateway-admin/go.mod ./local/fc-retrieval-gateway-admin/go.mod
+	cp -r ../fc-retrieval-provider-admin/pkg/ ./local/fc-retrieval-provider-admin/pkg/
+	cp ../fc-retrieval-provider-admin/go.mod ./local/fc-retrieval-provider-admin/go.mod
+	cp -r ../fc-retrieval-client/pkg/ ./local/fc-retrieval-client/pkg/
+	cp ../fc-retrieval-client/go.mod ./local/fc-retrieval-client/go.mod
+	docker build -t $(IMAGE):$(VERSION) .
 	docker build -t consensys/lotus-base lotus/lotus-base
 	docker build -t consensys/lotus-full-node lotus/lotus-full-node
+	rm -rf ./local/
+	mv temp go.mod
+
 
 # push the image to an registry
 push:
@@ -43,8 +70,10 @@ lbuild:
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-gateway
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-init
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
+	
+# go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 
 itestlocal: setup-env-localtesting itestdocker
 
@@ -57,29 +86,7 @@ setup-env-localtesting:
 # tests locally. Dump the go.mod file so that the precise versions of 
 # Client and Gateway Admin library are recorded. 
 itestdocker:
-	docker network create shared || true
-	docker-compose down
-	for file in ./internal/integration/* ; do \
-		docker-compose -f $(COMPOSE_FILE) up -d gateway provider register redis; \
-		echo *********************************************; \
-		sleep 10; \
-		echo REDIS STARTUP *********************************************; \
-		docker container logs redis; \
-		echo REGISTER STARTUP *********************************************; \
-		docker container logs register; \
-		echo GATEWAY STARTUP *********************************************; \
-		docker container logs gateway; \
-		echo PROVIDER STARTUP *********************************************; \
-		docker container logs provider; \
-		echo *********************************************; \
-		docker-compose run itest go test -v $$file; \
-		echo *********************************************; \
-		echo PROVIDER LOGS *********************************************; \
-		docker container logs provider; \
-		echo GATEWAY LOGS *********************************************; \
-		docker container logs gateway; \
-		docker-compose down; \
-	done
+	go test -v -p=1 --count=1 ./...
 
 	
 # This is the previous methodology, where the integration tests were in 
