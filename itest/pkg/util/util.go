@@ -112,7 +112,7 @@ func GetEnvMap(envFile string) map[string]string {
 	return env
 }
 
-// StartLotus start Lotus local development network, two services: miner and daemon in one container
+// StartLotus starts Lotus local development network, two services: miner and daemon in one container
 func StartLotus(ctx context.Context, network string, verbose bool) {
 	// Start lotus
 	req := tc.ContainerRequest{
