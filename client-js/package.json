@@ -1,7 +1,7 @@
 {
   "name": "fc-retrieval-client-js",
   "version": "0.0.1",
-  "description": "A nice greeter",
+  "description": "Filecoin Secondary Retrieval Market Javascript client library.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {

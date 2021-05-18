@@ -1,5 +1,5 @@
 export class Client {
   hello(): string {
-    return 'Hello World';
+    return 'Hello World'
   }
 }
