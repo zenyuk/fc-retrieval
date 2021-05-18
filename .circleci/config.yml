@@ -190,6 +190,7 @@ workflows:
       - itestdocker:
           requires:
             - localbuild
+            - itestsource
       - checkmainmodules:
           requires:
             - localbuild
