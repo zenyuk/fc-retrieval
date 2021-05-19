@@ -86,8 +86,7 @@ setup-env-localtesting:
 # tests locally. Dump the go.mod file so that the precise versions of 
 # Client and Gateway Admin library are recorded. 
 itestdocker:
-	go test -v -p=1 --count=1 ./...
-
+	bash ./scripts/itestdocker.sh
 	
 # This is the previous methodology, where the integration tests were in 
 # a Docker container.

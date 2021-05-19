@@ -194,4 +194,4 @@ workflows:
           requires:
             - localbuild
             - itestsource
-            # - itestdocker
+            - itestdocker
