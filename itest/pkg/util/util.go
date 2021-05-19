@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/google/uuid"
 	"github.com/testcontainers/testcontainers-go/wait"
 	tc "github.com/wcgcyx/testcontainers-go"
 )
@@ -30,34 +29,6 @@ const ColorBrightBlue = "\033[91m"
 const ColorBrightPurple = "\033[91m"
 const ColorBrightCyan = "\033[91m"
 const ColorBrightWhite = "\033[91m"
-
-func StartContainers() (string, error) {
-	composeFilePaths := []string{"../../docker-compose.yml"}
-	identifier := strings.ToLower(uuid.New().String())
-
-	compose := tc.NewLocalDockerCompose(composeFilePaths, identifier)
-	execError := compose.
-		WithCommand([]string{"up", "-d"}).
-		Invoke()
-
-	err := execError.Error
-	if err != nil {
-		return "", fmt.Errorf("could not run compose file: %v - %v", composeFilePaths, err)
-	}
-	return compose.Identifier, nil
-}
-
-func StopContainers(composeID string) error {
-	composeFilePaths := []string{"../../docker-compose.yml"}
-
-	compose := tc.NewLocalDockerCompose(composeFilePaths, composeID)
-	execError := compose.Down()
-	err := execError.Error
-	if err != nil {
-		return fmt.Errorf("could not stop compose file: %v - %v", composeFilePaths, err)
-	}
-	return nil
-}
 
 // CleanContainers clean the containers
 func CleanContainers(network string) {
@@ -101,6 +72,27 @@ func GetCurrentBranch() string {
 	return tag
 }
 
+// GetImageTag gets the image tag of a given repo and tag
+func GetImageTag(repo, tag string) string {
+	localImageTag := fmt.Sprintf("%v:develop-%v", repo, tag)
+	localImageMain := fmt.Sprintf("%v:develop-main", repo)
+	remoteImage := fmt.Sprintf("%v:dev", repo)
+
+	cmd := exec.Command("docker", "image", "inspect", localImageTag)
+	_, err := cmd.Output()
+	if err == nil {
+		return localImageTag
+	}
+
+	cmd = exec.Command("docker", "image", "inspect", localImageMain)
+	_, err = cmd.Output()
+	if err == nil {
+		return localImageMain
+	}
+
+	return remoteImage
+}
+
 // CreateNetwork creates a network
 func CreateNetwork(ctx context.Context, network string) *tc.Network {
 	// First remove the network if existed
@@ -141,7 +133,7 @@ func GetEnvMap(envFile string) map[string]string {
 	return env
 }
 
-// Start lotus
+// StartLotus starts Lotus local development network, two services: miner and daemon in one container
 func StartLotus(ctx context.Context, network string, verbose bool) {
 	// Start lotus
 	req := tc.ContainerRequest{
@@ -203,7 +195,7 @@ func StartRedis(ctx context.Context, network string, verbose bool) {
 func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a register container
 	req := tc.ContainerRequest{
-		Image:          fmt.Sprintf("consensys/fc-retrieval-register:develop-%s", tag),
+		Image:          GetImageTag("consensys/fc-retrieval-register", tag),
 		Name:           "register",
 		Networks:       []string{network},
 		Env:            env,
@@ -232,7 +224,7 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a gateway container
 	req := tc.ContainerRequest{
-		Image:          fmt.Sprintf("consensys/fc-retrieval-gateway:develop-%s", tag),
+		Image:          GetImageTag("consensys/fc-retrieval-gateway", tag),
 		Name:           id,
 		Networks:       []string{network},
 		Env:            env,
@@ -261,7 +253,7 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
 	// Start a provider container
 	req := tc.ContainerRequest{
-		Image:          fmt.Sprintf("consensys/fc-retrieval-provider:develop-%s", tag),
+		Image:          GetImageTag("consensys/fc-retrieval-provider", tag),
 		Name:           id,
 		Networks:       []string{network},
 		Env:            env,
