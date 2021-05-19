@@ -288,7 +288,7 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 	}
 
 	req := tc.ContainerRequest{
-		Image:          fmt.Sprintf("consensys/fc-retrieval-itest:develop-%s", tag),
+		Image:          GetImageTag("consensys/fc-retrieval-itest", tag),
 		Name:           "itest",
 		Networks:       []string{network},
 		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes"},
