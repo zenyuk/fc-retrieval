@@ -42,5 +42,8 @@
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "dependencies": {
+    "fetch": "^1.1.0"
+  }
 }
