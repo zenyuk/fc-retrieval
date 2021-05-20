@@ -64,6 +64,13 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 	offers, exists := c.OffersMgr.GetDHTOffersWithinRange(cidMin, cidMax, maxOffers)
 
 	if exists {
+		logging.Info("Found offers: ")
+		for _, offer := range offers {
+			logging.Info(offer.GetCIDs()[0].ToString())
+		}
+	}
+
+	if exists {
 		exit := false
 		for !exit {
 			var msg *fcrmessages.FCRMessage
