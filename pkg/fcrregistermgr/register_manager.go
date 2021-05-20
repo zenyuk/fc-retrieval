@@ -138,17 +138,17 @@ func (mgr *FCRRegisterMgr) GetGateway(id *nodeid.NodeID) *register.GatewayRegist
 	}
 	mgr.registeredGatewaysMapLock.RLock()
 	gateway, ok := mgr.registeredGatewaysMap[id.ToString()]
+	mgr.registeredGatewaysMapLock.RUnlock()
 	if !ok {
-		mgr.registeredGatewaysMapLock.RUnlock()
-		// TODO: Do we call refresh here, if can't find a gateway?
-		// mgr.Refresh()
+		mgr.Refresh()
 		mgr.registeredGatewaysMapLock.RLock()
+		defer mgr.registeredGatewaysMapLock.RUnlock()
 		gateway, ok = mgr.registeredGatewaysMap[id.ToString()]
 		if !ok {
 			return nil
 		}
 	}
-	defer mgr.registeredGatewaysMapLock.RUnlock()
+
 	res := mgr.copyGatewayRegister(gateway)
 	return &res
 }
