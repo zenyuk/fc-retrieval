@@ -52,5 +52,4 @@ check_repo() {
     fi
 }
 
-check_repo register ../fc-retrieval-register
 go mod tidy
