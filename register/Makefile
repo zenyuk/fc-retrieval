@@ -19,8 +19,8 @@ dev-local:
 build:
 	docker build -f Dockerfile -t ${IMAGE}:${VERSION} .
 
-build-local:
-	docker build -f Dockerfile.dev -t ${IMAGE}:${VERSION} .
+buildlocal:
+	cd ..; docker build -f ./fc-retrieval-register/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 build-dev:
 	go build -v cmd/register-server/main.go
