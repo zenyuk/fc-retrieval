@@ -75,7 +75,8 @@ lbuild:
 	
 # go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 
-itestlocal: setup-env-localtesting itestdocker
+itestlocal: 
+	go test -v -p=1 --count=1 ./...
 
 setup-env-localtesting:
 	cd scripts; bash setup-env.sh
