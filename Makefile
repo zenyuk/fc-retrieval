@@ -23,9 +23,8 @@ build:
 # docker build -t consensys/lotus-base lotus/lotus-base
 # docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
-build-local:
+buildlocal:
 	cd ..; docker build -f ./fc-retrieval-itest/Dockerfile.local -t ${IMAGE}:${VERSION} .
-
 
 # push the image to an registry
 push:
