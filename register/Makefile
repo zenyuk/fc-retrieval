@@ -32,7 +32,8 @@ tag:
 	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
-	cd scripts; bash use-local-repos.sh
+	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	go mod tidy
 
 useremote:
 	cd scripts; bash use-remote-repos.sh
