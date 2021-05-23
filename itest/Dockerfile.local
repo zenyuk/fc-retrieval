@@ -12,8 +12,11 @@ COPY ./fc-retrieval-provider-admin ../fc-retrieval-provider-admin
 # Replace go mod
 RUN go clean -modcache &&\
     go mod download &&\ 
-    cd ../fc-retrieval-common/ &&\
-    rm -rf ./pkg &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod &&\
+    go mod tidy &&\
     cd ../fc-retrieval-client/ &&\
     echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
     go mod tidy &&\
@@ -26,9 +29,5 @@ RUN go clean -modcache &&\
     echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
     go mod tidy &&\
     rm -rf ./pkg &&\
-    cd ../fc-retrieval-itest/ &&\
-    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
-    echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod &&\
-    echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod &&\
-    echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod &&\
-    go mod tidy
+    cd ../fc-retrieval-common/ &&\
+    rm -rf ./pkg
