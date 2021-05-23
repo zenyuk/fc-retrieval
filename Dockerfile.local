@@ -10,7 +10,9 @@ COPY ./fc-retrieval-gateway-admin ../fc-retrieval-gateway-admin
 COPY ./fc-retrieval-provider-admin ../fc-retrieval-provider-admin
 
 # Replace go mod
-RUN cd ../fc-retrieval-common/ &&\
+RUN go clean -modcache &&\
+    go mod download &&\ 
+    cd ../fc-retrieval-common/ &&\
     rm -rf ./pkg &&\
     cd ../fc-retrieval-client/ &&\
     echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
@@ -29,6 +31,4 @@ RUN cd ../fc-retrieval-common/ &&\
     echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod &&\
     echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod &&\
     echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod &&\
-    go mod tidy &&\
-    go clean -modcache &&\
-    go mod download
+    go mod tidy
