@@ -12,16 +12,8 @@ release: clean build tag
 build:
 	docker build -t ${IMAGE}:${VERSION} .
 
-build-local:
-	cat go.mod >> temp
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ./local/fc-retrieval-common" >> go.mod
-	rm -rf ./local/
-	mkdir -p ./local/fc-retrieval-common/pkg
-	cp -r ../fc-retrieval-common/pkg/ ./local/fc-retrieval-common/pkg/
-	cp ../fc-retrieval-common/go.mod ./local/fc-retrieval-common/go.mod
-	docker build -t $(IMAGE):$(VERSION) .
-	rm -rf ./local/
-	mv temp go.mod
+buildlocal:
+	cd ..; docker build -f ./fc-retrieval-gateway/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 # push the image to an registry
 push:
@@ -33,6 +25,9 @@ tag:
 useremote:
 	cd scripts; bash use-remote-repos.sh
 
+uselocal:
+	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	go mod tidy
 
 utest:
 	go test ./...
