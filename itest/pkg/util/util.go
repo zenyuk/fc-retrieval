@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/google/uuid"
 	"github.com/testcontainers/testcontainers-go/wait"
 	tc "github.com/wcgcyx/testcontainers-go"
 )
@@ -30,36 +31,12 @@ const ColorBrightPurple = "\033[91m"
 const ColorBrightCyan = "\033[91m"
 const ColorBrightWhite = "\033[91m"
 
-// CleanContainers clean the containers
-func CleanContainers(network string) {
-	// Stop all running containers
-	cmd := exec.Command("docker", "ps", "-q")
-	stdout, err := cmd.Output()
-	if err != nil {
-		panic(err)
-	}
-	containers := strings.Split(string(stdout), "\n")
-	command := append([]string{"stop"}, containers...)
-	cmd = exec.Command("docker", command...)
-	stdout, _ = cmd.Output()
-	fmt.Printf("Stopped containers: \n%v\n", string(stdout))
+const lotusDaemonWaitFor = "retrieval client"
 
-	// Remove all stopped containers
-	cmd = exec.Command("docker", "ps", "-a", "-q")
-	stdout, err = cmd.Output()
-	if err != nil {
-		panic(err)
-	}
-	containers = strings.Split(string(stdout), "\n")
-	command = append([]string{"rm"}, containers...)
-	cmd = exec.Command("docker", command...)
-	stdout, _ = cmd.Output()
-	fmt.Printf("Removed containers: \n%v\n", string(stdout))
+//const lotusFullNodeWaitFor = "GenerateWinningPoSt"
+const lotusFullNodeWaitFor = "starting winning PoSt warmup"
 
-	// Remove network
-	cmd = exec.Command("docker", "network", "rm", network)
-	cmd.Output()
-}
+const networkMode = "default"
 
 // GetCurrentBranch gets the current branch of this repo
 func GetCurrentBranch() string {
@@ -94,21 +71,19 @@ func GetImageTag(repo, tag string) string {
 }
 
 // CreateNetwork creates a network
-func CreateNetwork(ctx context.Context, network string) *tc.Network {
-	// First remove the network if existed
-	cmd := exec.Command("docker", "network", "rm", network)
-	cmd.Output()
-
+func CreateNetwork(ctx context.Context) (*tc.Network, string) {
+	randomUuid, _ := uuid.NewRandom()
+	networkName := randomUuid.String()
 	net, err := tc.GenericNetwork(ctx, tc.GenericNetworkRequest{
 		NetworkRequest: tc.NetworkRequest{
-			Name:           network,
+			Name:           networkName,
 			CheckDuplicate: true,
 		},
 	})
 	if err != nil {
 		panic(err)
 	}
-	return &net
+	return &net, networkName
 }
 
 // GetEnvMap gets the env map from a given env file
@@ -133,17 +108,17 @@ func GetEnvMap(envFile string) map[string]string {
 	return env
 }
 
-// StartLotus starts Lotus local development network, two services: miner and daemon in one container
-func StartLotus(ctx context.Context, network string, verbose bool) {
+// StartLotusDaemon starts Lotus local development network, daemon only (miner is missing)
+func StartLotusDaemon(ctx context.Context, network string, verbose bool) tc.Container {
 	// Start lotus
 	req := tc.ContainerRequest{
-		Image:          "consensys/lotus-full-node:latest",
-		Name:           "lotus",
-		Cmd:            []string{"./start-lotus-full-node.sh"},
+		Image:          "consensys/lotus-daemon:latest",
 		Networks:       []string{network},
-		NetworkMode:    container.NetworkMode(network),
-		NetworkAliases: map[string][]string{network: {"lotus"}},
-		WaitingFor:     wait.ForLog("mined new block"),
+		NetworkMode:    container.NetworkMode(networkMode),
+		NetworkAliases: map[string][]string{network: {"lotus-daemon"}},
+		WaitingFor:     wait.ForLog(lotusDaemonWaitFor),
+		ExposedPorts:   []string{"1234"},
+		AutoRemove:     true,
 	}
 	lotusC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -153,26 +128,58 @@ func StartLotus(ctx context.Context, network string, verbose bool) {
 		panic(err)
 	}
 	if verbose {
-		g := &logConsumer{name: fmt.Sprintf("lotus"), color: ColorGray}
+		g := &logConsumer{name: fmt.Sprintf("lotus-daemon"), color: ColorGray}
 		err = lotusC.StartLogProducer(ctx)
 		if err != nil {
 			panic(err)
 		}
 		lotusC.FollowOutput(g)
 	}
+	return lotusC
+}
+
+// StartLotusFullNode starts Lotus local development network, two services: miner and daemon in one container
+func StartLotusFullNode(ctx context.Context, network string, verbose bool) tc.Container {
+	// Start lotus
+	req := tc.ContainerRequest{
+		Image:          "consensys/lotus-full-node:latest",
+		Networks:       []string{network},
+		NetworkMode:    container.NetworkMode(networkMode),
+		NetworkAliases: map[string][]string{network: {"lotus-full-node"}},
+		WaitingFor:     wait.ForLog(lotusFullNodeWaitFor),
+		ExposedPorts:   []string{"1234", "2345"},
+		AutoRemove:     true,
+		// --cpus=<value>
+	}
+	lotusC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	if verbose {
+		g := &logConsumer{name: fmt.Sprintf("lotus-full-node"), color: ColorGray}
+		err = lotusC.StartLogProducer(ctx)
+		if err != nil {
+			panic(err)
+		}
+		lotusC.FollowOutput(g)
+	}
+	return lotusC
 }
 
 // Start redis used by register
-func StartRedis(ctx context.Context, network string, verbose bool) {
+func StartRedis(ctx context.Context, network string, verbose bool) tc.Container {
 	// Start redis
 	req := tc.ContainerRequest{
 		Image:          "redis:alpine",
-		Name:           "redis",
 		Cmd:            []string{"redis-server", "--requirepass", "xxxx"},
 		Networks:       []string{network},
-		NetworkMode:    container.NetworkMode(network),
+		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"redis"}},
 		WaitingFor:     wait.ForLog("Ready to accept connections"),
+		AutoRemove:     true,
 	}
 	redisC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -189,19 +196,20 @@ func StartRedis(ctx context.Context, network string, verbose bool) {
 		}
 		redisC.FollowOutput(g)
 	}
+	return redisC
 }
 
 // Start the register
-func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) {
+func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a register container
 	req := tc.ContainerRequest{
 		Image:          GetImageTag("consensys/fc-retrieval-register", tag),
-		Name:           "register",
 		Networks:       []string{network},
 		Env:            env,
-		NetworkMode:    container.NetworkMode(network),
+		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"register"}},
 		WaitingFor:     wait.ForLog("Serving register at"),
+		AutoRemove:     true,
 	}
 	registerC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -218,19 +226,20 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 		}
 		registerC.FollowOutput(g)
 	}
+	return registerC
 }
 
 // Start a gateway of specific id, tag, network, log color and env
-func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
+func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a gateway container
 	req := tc.ContainerRequest{
 		Image:          GetImageTag("consensys/fc-retrieval-gateway", tag),
-		Name:           id,
 		Networks:       []string{network},
 		Env:            env,
-		NetworkMode:    container.NetworkMode(network),
+		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {id}},
 		WaitingFor:     wait.ForLog("Filecoin Gateway Start-up Complete"),
+		AutoRemove:     true,
 	}
 	gatewayC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -247,19 +256,20 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 		}
 		gatewayC.FollowOutput(g)
 	}
+	return gatewayC
 }
 
 // Start a provider of specific id, tag, network, log color and env
-func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) {
+func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a provider container
 	req := tc.ContainerRequest{
 		Image:          GetImageTag("consensys/fc-retrieval-provider", tag),
-		Name:           id,
 		Networks:       []string{network},
 		Env:            env,
-		NetworkMode:    container.NetworkMode(network),
+		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {id}},
 		WaitingFor:     wait.ForLog("Filecoin Provider Start-up Complete"),
+		AutoRemove:     true,
 	}
 	providerC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -276,10 +286,11 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 		}
 		providerC.FollowOutput(g)
 	}
+	return providerC
 }
 
 // Start the itest, must only be called in host
-func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) {
+func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) tc.Container {
 	// Start a itest container
 	// Mount testdir
 	absPath, err := filepath.Abs(".")
@@ -292,10 +303,11 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 		Name:           "itest",
 		Networks:       []string{network},
 		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes"},
-		NetworkMode:    container.NetworkMode(network),
+		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"itest"}},
 		BindMounts:     map[string]string{absPath: "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
 		Cmd:            []string{"go", "test", "-v", "--count=1", "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
+		AutoRemove:     true,
 	}
 	itestC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
@@ -312,6 +324,7 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 		}
 		itestC.FollowOutput(g)
 	}
+	return itestC
 }
 
 type logConsumer struct {

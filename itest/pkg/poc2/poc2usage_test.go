@@ -14,10 +14,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
 	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
+
+	"github.com/ConsenSys/fc-retrieval-itest/config"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 var gatewayConfig = config.NewConfig(".env.gateway")
@@ -41,8 +43,6 @@ func TestMain(m *testing.M) {
 	// Env is not set, we are calling from host
 	// We need a redis, a register, 17 gateways and 3 providers
 	tag := util.GetCurrentBranch()
-	network := "itest-shared"
-	util.CleanContainers(network)
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -51,28 +51,45 @@ func TestMain(m *testing.M) {
 
 	// Create shared net
 	ctx := context.Background()
-	net := *util.CreateNetwork(ctx, network)
-	defer net.Remove(ctx)
+	network, networkName := util.CreateNetwork(ctx)
+	defer (*network).Remove(ctx)
 
 	// Start redis
-	util.StartRedis(ctx, network, true)
+	redisContainer := util.StartRedis(ctx, networkName, true)
+	defer redisContainer.Terminate(ctx)
 
 	// Start register
-	util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
+	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
+	defer registerContainer.Terminate(ctx)
 
 	// Start 3 providers
+	var providerContainers []*tc.Container
 	for i := 0; i < 3; i++ {
-		util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), tag, network, util.ColorBlue, pvEnv, true)
+		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), tag, networkName, util.ColorBlue, pvEnv, true)
+		providerContainers = append(providerContainers, &c)
 	}
+	defer func() {
+		for _, c := range providerContainers {
+			(*c).Terminate(ctx)
+		}
+	}()
 
 	// Start 33 gateways
+	var gatewayContainers []*tc.Container
 	for i := 0; i < 33; i++ {
-		util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), tag, network, util.ColorCyan, gwEnv, true)
+		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), tag, networkName, util.ColorCyan, gwEnv, true)
+		gatewayContainers = append(gatewayContainers, &c)
 	}
+	defer func() {
+		for _, c := range gatewayContainers {
+			(*c).Terminate(ctx)
+		}
+	}()
 
 	// Start itest
 	done := make(chan bool)
-	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
@@ -80,8 +97,6 @@ func TestMain(m *testing.M) {
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
-	// Clean containers to shutdown
-	util.CleanContainers(network)
 }
 
 func TestInitialiseProviders(t *testing.T) {
