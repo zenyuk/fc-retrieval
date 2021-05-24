@@ -1,0 +1,33 @@
+FROM golang:1.15-alpine as builder
+
+RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-itest
+
+COPY ./fc-retrieval-itest .
+COPY ./fc-retrieval-common ../fc-retrieval-common
+COPY ./fc-retrieval-client ../fc-retrieval-client
+COPY ./fc-retrieval-gateway-admin ../fc-retrieval-gateway-admin
+COPY ./fc-retrieval-provider-admin ../fc-retrieval-provider-admin
+
+# Replace go mod
+RUN go clean -modcache &&\
+    go mod download &&\ 
+    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod &&\
+    go mod tidy &&\
+    cd ../fc-retrieval-client/ &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
+    go mod tidy &&\
+    rm -rf ./pkg &&\
+    cd ../fc-retrieval-gateway-admin/ &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
+    go mod tidy &&\
+    rm -rf ./pkg &&\
+    cd ../fc-retrieval-provider-admin/ &&\
+    echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod &&\
+    go mod tidy &&\
+    rm -rf ./pkg &&\
+    cd ../fc-retrieval-common/ &&\
+    rm -rf ./pkg

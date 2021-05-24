@@ -27,31 +27,8 @@ lotusdaemon:
 lotusfullnode:
 	docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
-build-local:
-	cat go.mod >> temp
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ./local/fc-retrieval-common" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ./local/fc-retrieval-gateway-admin" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ./local/fc-retrieval-provider-admin" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-client => ./local/fc-retrieval-client" >> go.mod
-	rm -rf ./local/
-	mkdir -p ./local/fc-retrieval-common/pkg
-	mkdir -p ./local/fc-retrieval-gateway-admin/pkg
-	mkdir -p ./local/fc-retrieval-provider-admin/pkg
-	mkdir -p ./local/fc-retrieval-client/pkg
-	cp -r ../fc-retrieval-common/pkg/ ./local/fc-retrieval-common/pkg/
-	cp ../fc-retrieval-common/go.mod ./local/fc-retrieval-common/go.mod
-	cp -r ../fc-retrieval-gateway-admin/pkg/ ./local/fc-retrieval-gateway-admin/pkg/
-	cp ../fc-retrieval-gateway-admin/go.mod ./local/fc-retrieval-gateway-admin/go.mod
-	cp -r ../fc-retrieval-provider-admin/pkg/ ./local/fc-retrieval-provider-admin/pkg/
-	cp ../fc-retrieval-provider-admin/go.mod ./local/fc-retrieval-provider-admin/go.mod
-	cp -r ../fc-retrieval-client/pkg/ ./local/fc-retrieval-client/pkg/
-	cp ../fc-retrieval-client/go.mod ./local/fc-retrieval-client/go.mod
-	docker build -t $(IMAGE):$(VERSION) .
-	docker build -t consensys/lotus-base lotus/lotus-base
-	docker build -t consensys/lotus-full-node lotus/lotus-full-node
-	rm -rf ./local/
-	mv temp go.mod
-
+buildlocal:
+	cd ..; docker build -f ./fc-retrieval-itest/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 # push the image to an registry
 push:
@@ -61,7 +38,11 @@ tag:
 	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
-	cd scripts; bash use-local-repos.sh
+	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod
+	go mod tidy
 
 useremote:
 	cd scripts; bash use-remote-repos.sh
