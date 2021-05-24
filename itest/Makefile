@@ -20,8 +20,12 @@ default: clean utest build tag
 build:
 	docker build -t ${IMAGE}:${VERSION} .
 
-# docker build -t consensys/lotus-base lotus/lotus-base
-# docker build -t consensys/lotus-full-node lotus/lotus-full-node
+lotusbase:
+	docker build -t consensys/lotus-base lotus/lotus-base
+lotusdaemon:
+	docker build -t consensys/lotus-daemon lotus/lotus-daemon
+lotusfullnode:
+	docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
 buildlocal:
 	cd ..; docker build -f ./fc-retrieval-itest/Dockerfile.local -t ${IMAGE}:${VERSION} .
@@ -53,11 +57,12 @@ lbuild:
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 	
-# go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
 
+# Test all packages, skipping lotus-full-node on CircleCI
 itestlocal: 
-	go test -v -p=1 --count=1 ./...
+	go test -v -p=1 --count=1 `go list ./... | grep -v lotus-full-node`
 
 setup-env-localtesting:
 	cd scripts; bash setup-env.sh

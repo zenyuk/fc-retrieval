@@ -3,8 +3,7 @@ FROM consensys/lotus-base
 COPY daemon/config.toml /root/.lotus/
 COPY miner/config.toml /root/.lotusminer/
 WORKDIR /app/lotus
-ADD config-lotus-full-node.sh .
 ADD start-lotus-full-node.sh .
-RUN chmod +x config-lotus-full-node.sh
 RUN chmod +x start-lotus-full-node.sh
-RUN ./config-lotus-full-node.sh
+ENTRYPOINT ./start-lotus-full-node.sh
+EXPOSE 1234 2345
