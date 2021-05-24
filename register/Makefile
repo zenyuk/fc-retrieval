@@ -19,8 +19,8 @@ dev-local:
 build:
 	docker build -f Dockerfile -t ${IMAGE}:${VERSION} .
 
-build-local:
-	docker build -f Dockerfile.dev -t ${IMAGE}:${VERSION} .
+buildlocal:
+	cd ..; docker build -f ./fc-retrieval-register/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 build-dev:
 	go build -v cmd/register-server/main.go
@@ -32,7 +32,8 @@ tag:
 	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
-	cd scripts; bash use-local-repos.sh
+	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	go mod tidy
 
 useremote:
 	cd scripts; bash use-remote-repos.sh
