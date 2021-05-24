@@ -142,6 +142,19 @@ jobs:
           command: make clean build tag
           working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register/
       - run:
+          name: Make Lotus Base Image
+          command: make lotusbase
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
+      - run:
+          name: Make Lotus Daemon
+          command: make lotusdaemon
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
+#      - run:
+#          name: Make Lotus Full Node
+#          command: make lotusfullnode
+#          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-itest/
+#          no_output_timeout: 120s
+      - run:
           name: Run Itegration Tests
           command: make itestlocal
           no_output_timeout: 120s
@@ -189,8 +202,8 @@ workflows:
       # - itestdocker:
       #     requires:
       #       - localbuild
-      - checkmainmodules:
-          requires:
-            - localbuild
-            - itestsource
-            # - itestdocker
+      # - checkmainmodules:
+      #     requires:
+      #       - localbuild
+      #       - itestsource
+      #       # - itestdocker

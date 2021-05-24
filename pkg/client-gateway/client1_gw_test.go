@@ -45,8 +45,6 @@ func TestMain(m *testing.M) {
 	// Env is not set, we are calling from host
 	// We need a redis, a register and a gateway
 	tag := util.GetCurrentBranch()
-	network := "itest-shared"
-	util.CleanContainers(network)
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -54,21 +52,25 @@ func TestMain(m *testing.M) {
 
 	// Create shared net
 	ctx := context.Background()
-	net := *util.CreateNetwork(ctx, network)
-	defer net.Remove(ctx)
+	network, networkName := util.CreateNetwork(ctx)
+	defer (*network).Remove(ctx)
 
 	// Start redis
-	util.StartRedis(ctx, network, true)
+	redisContainer := util.StartRedis(ctx, networkName, true)
+	defer redisContainer.Terminate(ctx)
 
 	// Start register
-	util.StartRegister(ctx, tag, network, util.ColorYellow, rgEnv, true)
+	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
+	defer registerContainer.Terminate(ctx)
 
 	// Start gateway
-	util.StartGateway(ctx, "gateway", tag, network, util.ColorBlue, gwEnv, true)
+	gatewayContainer := util.StartGateway(ctx, "gateway", tag, networkName, util.ColorBlue, gwEnv, true)
+	defer gatewayContainer.Terminate(ctx)
 
 	// Start itest
 	done := make(chan bool)
-	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
@@ -76,8 +78,6 @@ func TestMain(m *testing.M) {
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
-	// Clean containers to shutdown
-	util.CleanContainers(network)
 }
 
 func TestOneGateway(t *testing.T) {

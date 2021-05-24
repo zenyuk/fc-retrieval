@@ -1,6 +1,6 @@
 # Default config:
 [API]
-ListenAddress = "/ip4/0.0.0.0/tcp/2345/http"
+  ListenAddress = "/ip4/0.0.0.0/tcp/2345/http"
 #  RemoteListenAddress = "127.0.0.1:2345"
 #  Timeout = "30s"
 #
@@ -39,7 +39,7 @@ ListenAddress = "/ip4/0.0.0.0/tcp/2345/http"
 #  MaxSealingSectors = 0
 #  MaxSealingSectorsForDeals = 0
 #  WaitDealsDelay = "6h0m0s"
-#  AlwaysKeepUnsealedCopy = false
+  AlwaysKeepUnsealedCopy = true
 #
 [Storage]
 #  ParallelFetchLimit = 10

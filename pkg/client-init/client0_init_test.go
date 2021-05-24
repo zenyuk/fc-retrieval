@@ -28,6 +28,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
@@ -47,17 +48,16 @@ func TestMain(m *testing.M) {
 	// Env is not set, we are calling from host
 	// We don't need any running instance
 	tag := util.GetCurrentBranch()
-	network := "itest-shared"
-	util.CleanContainers(network)
 
 	// Create shared net
 	ctx := context.Background()
-	net := *util.CreateNetwork(ctx, network)
-	defer net.Remove(ctx)
+	network, networkName := util.CreateNetwork(ctx)
+	defer (*network).Remove(ctx)
 
 	// Start itest
 	done := make(chan bool)
-	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
@@ -65,8 +65,6 @@ func TestMain(m *testing.M) {
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
-	// Clean containers to shutdown
-	util.CleanContainers(network)
 }
 
 func TestGetClientVersion(t *testing.T) {
