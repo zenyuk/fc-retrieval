@@ -53,9 +53,5 @@ check_repo() {
     fi
 }
 
-
-check_repo client ../fc-retrieval-client
 check_repo common ../fc-retrieval-common
-check_repo provider ../fc-retrieval-provider
-check_repo register ../fc-retrieval-register
 go mod tidy
