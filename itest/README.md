@@ -9,15 +9,20 @@ See also Filecoin Secondary Retrieval Market
 
 ## Run tests on a local Devnet
 
-Build images
+###Build images
 
 ```
-make lotusfullnode lotusdaemon build tag
+make lotusbase lotusfullnode lotusdaemon build tag
 ```
 
-Execute tests:
+### Execute tests
 
+#### Clean mode:
 ```
-go test -p 1 -v github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
-go test -p 1 -v github.com/ConsenSys/fc-retrieval-itest/pkg/lotus-full-node
+go test -p 1 ./...
+```
+
+#### Debug mode:
+```
+go test -p 1 -v ./...
 ```
