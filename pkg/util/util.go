@@ -297,6 +297,23 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 	if err != nil {
 		panic(err)
 	}
+	// Mount common, client, gw-admin, pvd-admin
+	commonPath, err := filepath.Abs("../../../fc-retrieval-common/pkg")
+	if err != nil {
+		panic(err)
+	}
+	clientPath, err := filepath.Abs("../../../fc-retrieval-client/pkg")
+	if err != nil {
+		panic(err)
+	}
+	gwAdminPath, err := filepath.Abs("../../../fc-retrieval-gateway-admin/pkg")
+	if err != nil {
+		panic(err)
+	}
+	pvdAdminPath, err := filepath.Abs("../../../fc-retrieval-provider-admin/pkg")
+	if err != nil {
+		panic(err)
+	}
 
 	req := tc.ContainerRequest{
 		Image:          GetImageTag("consensys/fc-retrieval-itest", tag),
@@ -305,9 +322,14 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes"},
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"itest"}},
-		BindMounts:     map[string]string{absPath: "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
-		Cmd:            []string{"go", "test", "-v", "--count=1", "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
-		AutoRemove:     true,
+		BindMounts: map[string]string{
+			absPath:      "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/",
+			commonPath:   "/go/src/github.com/ConsenSys/fc-retrieval-common/pkg/",
+			clientPath:   "/go/src/github.com/ConsenSys/fc-retrieval-client/pkg/",
+			gwAdminPath:  "/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/",
+			pvdAdminPath: "/go/src/github.com/ConsenSys/fc-retrieval-provider-admin/pkg/"},
+		Cmd:        []string{"go", "test", "-v", "--count=1", "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
+		AutoRemove: true,
 	}
 	itestC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
