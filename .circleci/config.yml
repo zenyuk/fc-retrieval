@@ -202,8 +202,8 @@ workflows:
       # - itestdocker:
       #     requires:
       #       - localbuild
-      # - checkmainmodules:
-      #     requires:
-      #       - localbuild
-      #       - itestsource
-      #       # - itestdocker
+      - checkmainmodules:
+          requires:
+            - localbuild
+            - itestsource
+            # - itestdocker
