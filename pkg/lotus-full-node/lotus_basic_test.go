@@ -24,14 +24,14 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 func TestMain(m *testing.M) {
@@ -46,36 +46,34 @@ func TestMain(m *testing.M) {
 	// Env is not set, we are calling from host
 	// We need a lotus
 	tag := util.GetCurrentBranch()
-	network := "itest-shared"
-	util.CleanContainers(network)
 
 	// Create shared net
-	ctx := context.Background()
-	net := *util.CreateNetwork(ctx, network)
-	defer net.Remove(ctx)
+	bgCtx := context.Background()
+	ctx, _ := context.WithTimeout(bgCtx, time.Minute*2)
+	network, networkName := util.CreateNetwork(ctx)
+	defer (*network).Remove(ctx)
 
 	// Start lotus
-	util.StartLotus(ctx, network, false)
+	lotusContainer := util.StartLotusFullNode(ctx, networkName, true)
+	defer lotusContainer.Terminate(ctx)
 
 	// Start itest
 	done := make(chan bool)
-	util.StartItest(ctx, tag, network, util.ColorGreen, done, true)
-
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	defer itestContainer.Terminate(ctx)
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
 		logging.Fatal("Tests failed, shutdown...")
 	}
-	// Clean containers to shutdown
-	util.CleanContainers(network)
 }
 
-func TestLotusConnectivityHttp(t *testing.T) {
+func TestLotusFullNodeConnectivityHttp(t *testing.T) {
 
 	method := "Filecoin.ChainHead"
 	id := 1
-	lotusUrl := "http://lotus:1234/rpc/v0"
+	lotusUrl := "http://lotus-full-node:1234/rpc/v0"
 	requestBody := `{
 		"jsonrpc": "2.0",
 		"method": "` + method + `",
@@ -103,13 +101,14 @@ func TestLotusConnectivityHttp(t *testing.T) {
 	assert.Equal(t, float64(id), fields["id"])
 }
 
-func TestLotusConnectivityWs(t *testing.T) {
+func TestLotusFullNodeConnectivityWs(t *testing.T) {
 	var lotusApi apistruct.FullNodeStruct
-	ctx := context.Background()
+	bgCtx := context.Background()
+	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
 
 	clientClose, err := jsonrpc.NewMergeClient(
 		ctx,
-		"ws://lotus:1234/rpc/v0",
+		"ws://lotus-full-node:1234/rpc/v0",
 		"Filecoin",
 		[]interface{}{
 			&lotusApi.CommonStruct.Internal,
@@ -129,19 +128,29 @@ func TestLotusConnectivityWs(t *testing.T) {
 	assert.NotEqualf(t, "", head.Cids()[0].KeyString(), "Head CID Key is empty")
 }
 
-func generateKeyPair() (privateKey []byte, publicKey []byte) {
-	// Generate Private-Public pairs. Public key will be used as address
-	var signer fcrpaymentmgr.SecpSigner
-	privateKey, err := signer.GenPrivate()
-	if err != nil {
-		logging.Error("Error generating private key, while creating address %s", err.Error())
-		os.Exit(1)
-	}
-
-	publicKey, err = signer.ToPublic(privateKey)
-	if err != nil {
-		logging.Error("Error generating public key, while creating address %s", err.Error())
-		os.Exit(1)
-	}
-	return
-}
+//todo: failing
+//func TestLotusMineConnectivityWs(t *testing.T) {
+//	var lotusApi apistruct.StorageMinerStruct
+//	bgCtx := context.Background()
+//	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
+//
+//	clientClose, err := jsonrpc.NewMergeClient(
+//		ctx,
+//		"ws://lotus-full-node:2345/rpc/v0",
+//		"Filecoin",
+//		[]interface{}{
+//			&lotusApi.CommonStruct.Internal,
+//			&lotusApi.Internal,
+//		},
+//		http.Header{})
+//	if err != nil {
+//		t.Errorf("Can't construct a Lotus client, error: %s", err.Error())
+//	}
+//	defer clientClose()
+//
+//	id, err := lotusApi.ID(context.Background())
+//	if err != nil {
+//		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
+//	}
+//	assert.NotNil(t, id)
+//}
