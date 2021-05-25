@@ -25,11 +25,11 @@ import (
 
 // gatewayDHTDiscoverResponseV2 is the response to gatewayDHTDiscoverRequest
 type gatewayDHTDiscoverResponseV2 struct {
-	PieceCID             cid.ContentID          `json:"piece_cid"`
-	Nonce                int64                  `json:"nonce"`
-	Found                bool                   `json:"found"`
-	SubCIDOffers         []cidoffer.SubCIDOffer `json:"sub_cid_offers"`
-	FundedPaymentChannel []bool                 `json:"funded_payment_channel"`
+	PieceCID             cid.ContentID                       `json:"piece_cid"`
+	Nonce                int64                               `json:"nonce"`
+	Found                bool                                `json:"found"`
+	SubCIDOfferDigests   [][cidoffer.CIDOfferDigestSize]byte `json:"sub_cid_offer_digest"`
+	FundedPaymentChannel []bool                              `json:"funded_payment_channel"`
 }
 
 // EncodeGatewayDHTDiscoverResponseV2 is used to get the FCRMessage of gatewayDHTDiscoverResponseV2
@@ -37,14 +37,14 @@ func EncodeGatewayDHTDiscoverResponseV2(
 	pieceCID *cid.ContentID,
 	nonce int64,
 	found bool,
-	offers []cidoffer.SubCIDOffer,
+	offers [][cidoffer.CIDOfferDigestSize]byte,
 	fundedPaymentChannel []bool,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(gatewayDHTDiscoverResponseV2{
 		PieceCID:             *pieceCID,
 		Nonce:                nonce,
 		Found:                found,
-		SubCIDOffers:         offers,
+		SubCIDOfferDigests:   offers,
 		FundedPaymentChannel: fundedPaymentChannel,
 	})
 	if err != nil {
@@ -58,17 +58,17 @@ func DecodeGatewayDHTDiscoverResponseV2(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
 	bool, // found
-	[]cidoffer.SubCIDOffer, // sub cid offers
+	[][cidoffer.CIDOfferDigestSize]byte, // sub cid offers digest
 	[]bool, // fundedPaymentChannel
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != GatewayDHTDiscoverResponseV2Type {
-		return nil, 0, false, nil, nil, errors.New("Message type mismatch")
+		return nil, 0, false, nil, nil, errors.New("message type mismatch")
 	}
 	msg := gatewayDHTDiscoverResponseV2{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return nil, 0, false, nil, nil, err
 	}
-	return &msg.PieceCID, msg.Nonce, msg.Found, msg.SubCIDOffers, msg.FundedPaymentChannel, nil
+	return &msg.PieceCID, msg.Nonce, msg.Found, msg.SubCIDOfferDigests, msg.FundedPaymentChannel, nil
 }
