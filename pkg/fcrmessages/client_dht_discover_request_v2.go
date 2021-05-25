@@ -22,6 +22,17 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 )
 
+// clientDHTDiscoverRequestV2 is the request from client to gateway to ask for cid offer using DHT
+type clientDHTDiscoverRequestV2 struct {
+	PieceCID           cid.ContentID `json:"piece_cid"`
+	Nonce              int64         `json:"nonce"`
+	TTL                int64         `json:"ttl"`
+	NumDHT             int64         `json:"num_dht"`
+	IncrementalResults bool          `json:"incremental_results"`
+	PaychAddr          string        `json:"payment_channel_address"`
+	Voucher            string        `json:"voucher"`
+}
+
 // EncodeClientDHTDiscoverRequest is used to get the FCRMessage of clientDHTDiscoverRequest
 func EncodeClientDHTDiscoverRequestV2(
 	pieceCID *cid.ContentID,
@@ -32,7 +43,7 @@ func EncodeClientDHTDiscoverRequestV2(
 	paychAddr string,
 	voucher string,
 ) (*FCRMessage, error) {
-	body, err := json.Marshal(clientDHTDiscoverRequest{
+	body, err := json.Marshal(clientDHTDiscoverRequestV2{
 		PieceCID:           *pieceCID,
 		Nonce:              nonce,
 		TTL:                ttl,
@@ -44,10 +55,10 @@ func EncodeClientDHTDiscoverRequestV2(
 	if err != nil {
 		return nil, err
 	}
-	return CreateFCRMessage(ClientDHTDiscoverRequestTypeV2, body), nil
+	return CreateFCRMessage(ClientDHTDiscoverRequestV2Type, body), nil
 }
 
-// DecodeClientDHTDiscoverRequest is used to get the fields from FCRMessage of clientDHTDiscoverRequest
+// DecodeClientDHTDiscoverRequest is used to get the fields from FCRMessage of clientDHTDiscoverRequestV2
 func DecodeClientDHTDiscoverRequestV2(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
@@ -58,10 +69,10 @@ func DecodeClientDHTDiscoverRequestV2(fcrMsg *FCRMessage) (
 	string, // voucher
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != ClientDHTDiscoverRequestTypeV2 {
+	if fcrMsg.GetMessageType() != ClientDHTDiscoverRequestV2Type {
 		return nil, 0, 0, 0, false, "", "", errors.New("Message type mismatch")
 	}
-	msg := clientDHTDiscoverRequest{}
+	msg := clientDHTDiscoverRequestV2{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
 		return nil, 0, 0, 0, false, "", "", err
