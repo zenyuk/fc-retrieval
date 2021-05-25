@@ -17,7 +17,7 @@ func TestEncodeClientDHTDiscoverRequestV2(t *testing.T) {
 	mockPaychAddr := "0x42"
 	mockVoucher := "1"
 	validMsg := &FCRMessage{
-		messageType:       104,
+		messageType:       112,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":100,"num_dht":42,"incremental_results":true,"payment_channel_address":"0x42","voucher":"1"}`),
@@ -47,7 +47,7 @@ func TestDecodeClientDHTDiscoverRequestV2(t *testing.T) {
 	mockVoucher := "1"
 
 	validMsg := &FCRMessage{
-		messageType:       104,
+		messageType:       112,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":100,"num_dht":42,"incremental_results":true,"payment_channel_address":"0x42","voucher":"1"}`),
