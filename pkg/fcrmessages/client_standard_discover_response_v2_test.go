@@ -24,7 +24,7 @@ func TestEncodeClientStandardDiscoverResponseV2(t *testing.T) {
 	mockSubCidOffers := [][32]byte{{1, 2}}
 	mockFPCs := []bool{true}
 	validMsg := &FCRMessage{
-		messageType:       108,
+		messageType:       109,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"found":true,"sub_cid_offer_digests":[[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true]}`),
@@ -58,7 +58,7 @@ func TestDecodeClientStandardDiscoverResponseV2(t *testing.T) {
 	mockSubCidOffers := [][32]byte{{1, 2}}
 	mockFPCs := []bool{true}
 	validMsg := &FCRMessage{
-		messageType:       108,
+		messageType:       109,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"found":true,"sub_cid_offer_digests":[[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true]}`),
