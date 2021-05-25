@@ -69,6 +69,7 @@ const (
 	ProviderAdminGetPublishedOfferResponseType = 507
 	ProviderAdminForceRefreshRequestType       = 508
 	ProviderAdminForceRefreshResponseType      = 509
+	ProviderAdminInitialiseKeyRequestV2Type    = 510
 
 	// Messages for basic protocol
 	ProtocolChangeRequestType     = 900
