@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestEncodeClientDHTDiscoverRequest success test
+// TestEncodeClientDHTDiscoverRequestV2 success test
 func TestEncodeClientDHTDiscoverRequestV2(t *testing.T) {
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockNonce := int64(42)
@@ -36,7 +36,7 @@ func TestEncodeClientDHTDiscoverRequestV2(t *testing.T) {
 	assert.Equal(t, msg, validMsg)
 }
 
-// TestDecodeClientDHTDiscoverRequest success test
+// TestDecodeClientDHTDiscoverRequestV2 success test
 func TestDecodeClientDHTDiscoverRequestV2(t *testing.T) {
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockNonce := int64(42)

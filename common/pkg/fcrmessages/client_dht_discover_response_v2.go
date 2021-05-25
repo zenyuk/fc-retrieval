@@ -38,7 +38,7 @@ func EncodeClientDHTDiscoverResponseV2(
 	if err != nil {
 		return nil, err
 	}
-	return CreateFCRMessage(ClientDHTDiscoverResponseTypeV2, body), nil
+	return CreateFCRMessage(ClientDHTDiscoverResponseV2Type, body), nil
 }
 
 // DecodeClientDHTDiscoverResponse is used to get the fields from FCRMessage of ClientDHTDiscoverResponse
@@ -49,7 +49,7 @@ func DecodeClientDHTDiscoverResponseV2(fcrMsg *FCRMessage) (
 	int64, // nonce
 	error, // error
 ) {
-	if fcrMsg.GetMessageType() != ClientDHTDiscoverResponseTypeV2 {
+	if fcrMsg.GetMessageType() != ClientDHTDiscoverResponseV2Type {
 		return nil, nil, nil, 0, errors.New("Message type mismatch")
 	}
 	msg := clientDHTDiscoverResponse{}

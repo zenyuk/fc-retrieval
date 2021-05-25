@@ -26,8 +26,8 @@ const (
 	ClientDHTDiscoverResponseType      = 105
 	ClientDHTOfferAckRequestType       = 106
 	ClientDHTOfferAckResponseType      = 107
-	ClientDHTDiscoverRequestTypeV2     = 112
-	ClientDHTDiscoverResponseTypeV2    = 113
+	ClientDHTDiscoverRequestV2Type     = 112
+	ClientDHTDiscoverResponseV2Type    = 113
 
 	// Message originating from gateway
 	GatewayListDHTOfferRequestType                          = 200
