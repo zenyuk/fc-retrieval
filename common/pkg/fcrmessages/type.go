@@ -18,19 +18,22 @@ package fcrmessages
 // Message types
 const (
 	// Message originating from client
-	ClientEstablishmentRequestType       = 100
-	ClientEstablishmentResponseType      = 101
-	ClientStandardDiscoverRequestType    = 102
-	ClientStandardDiscoverResponseType   = 103
-	ClientDHTDiscoverRequestType         = 104
-	ClientDHTDiscoverResponseType        = 105
-	ClientDHTOfferAckRequestType         = 106
-	ClientDHTOfferAckResponseType        = 107
-	ClientStandardDiscoverRequestV2Type  = 108
-	ClientStandardDiscoverResponseV2Type = 109
-	ClientDHTDiscoverOfferRequestType    = 114
-	ClientDHTDiscoverOfferResponseType   = 115
+	ClientEstablishmentRequestType          = 100
+	ClientEstablishmentResponseType         = 101
+	ClientStandardDiscoverRequestType       = 102
+	ClientStandardDiscoverResponseType      = 103
+	ClientDHTDiscoverRequestType            = 104
+	ClientDHTDiscoverResponseType           = 105
+	ClientDHTOfferAckRequestType            = 106
+	ClientDHTOfferAckResponseType           = 107
+	ClientStandardDiscoverRequestV2Type     = 108
+	ClientStandardDiscoverResponseV2Type    = 109
+	ClientStandardDiscoverOfferRequestType  = 110
+	ClientStandardDiscoverOfferResponseType = 111
+	ClientDHTDiscoverOfferRequestType       = 114
+	ClientDHTDiscoverOfferResponseType      = 115
 
+  
 	// Message originating from gateway
 	GatewayListDHTOfferRequestType                          = 200
 	GatewayListDHTOfferResponseType                         = 201
@@ -43,6 +46,9 @@ const (
 	GatewayNotifyProviderGroupCIDOfferSupportedResponseType = 206
 	GatewayDHTDiscoverRequestV2Type                         = 207
 	GatewayDHTDiscoverResponseV2Type                        = 208
+	GatewayDHTDiscoverOfferRequestType                      = 209
+	GatewayDHTDiscoverOfferResponseType                     = 210
+
 
 	// Message originating from provider
 	ProviderPublishGroupOfferRequestType  = 300
