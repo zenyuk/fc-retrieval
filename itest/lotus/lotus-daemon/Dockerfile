@@ -2,7 +2,5 @@
 FROM consensys/lotus-base
 COPY daemon/config.toml /root/.lotus/
 WORKDIR /app/lotus
-ADD start-lotus-daemon.sh .
-RUN chmod +x start-lotus-daemon.sh
-ENTRYPOINT ./start-lotus-daemon.sh
+ENTRYPOINT ./lotus daemon --lotus-make-genesis=devgen.car --genesis-template=localnet.json --bootstrap=false
 EXPOSE 1234
