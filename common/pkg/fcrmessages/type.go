@@ -39,6 +39,8 @@ const (
 	GatewayPingResponseType                                 = 206
 	GatewayNotifyProviderGroupCIDOfferSupportedRequestType  = 205
 	GatewayNotifyProviderGroupCIDOfferSupportedResponseType = 206
+	GatewayDHTDiscoverRequestV2Type                         = 207
+	GatewayDHTDiscoverResponseV2Type                        = 208
 
 	// Message originating from provider
 	ProviderPublishGroupOfferRequestType  = 300
