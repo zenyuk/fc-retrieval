@@ -128,29 +128,28 @@ func TestLotusFullNodeConnectivityWs(t *testing.T) {
 	assert.NotEqualf(t, "", head.Cids()[0].KeyString(), "Head CID Key is empty")
 }
 
-//todo: failing
-//func TestLotusMineConnectivityWs(t *testing.T) {
-//	var lotusApi apistruct.StorageMinerStruct
-//	bgCtx := context.Background()
-//	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
-//
-//	clientClose, err := jsonrpc.NewMergeClient(
-//		ctx,
-//		"ws://lotus-full-node:2345/rpc/v0",
-//		"Filecoin",
-//		[]interface{}{
-//			&lotusApi.CommonStruct.Internal,
-//			&lotusApi.Internal,
-//		},
-//		http.Header{})
-//	if err != nil {
-//		t.Errorf("Can't construct a Lotus client, error: %s", err.Error())
-//	}
-//	defer clientClose()
-//
-//	id, err := lotusApi.ID(context.Background())
-//	if err != nil {
-//		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
-//	}
-//	assert.NotNil(t, id)
-//}
+func TestLotusMinerConnectivityWs(t *testing.T) {
+	var lotusApi apistruct.StorageMinerStruct
+	bgCtx := context.Background()
+	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
+
+	clientClose, err := jsonrpc.NewMergeClient(
+		ctx,
+		"ws://lotus-full-node:2345/rpc/v0",
+		"Filecoin",
+		[]interface{}{
+			&lotusApi.CommonStruct.Internal,
+			&lotusApi.Internal,
+		},
+		http.Header{})
+	if err != nil {
+		t.Errorf("Can't construct a Lotus client, error: %s", err.Error())
+	}
+	defer clientClose()
+
+	id, err := lotusApi.ID(context.Background())
+	if err != nil {
+		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
+	}
+	assert.NotNil(t, id)
+}
