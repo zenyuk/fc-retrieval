@@ -1,27 +1,18 @@
 package fcrmessages
 
 import (
+	"testing"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	// "github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	// "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 )
 
 // TestEncodeClientStandardDiscoverResponseV2 success test
 func TestEncodeClientStandardDiscoverResponseV2(t *testing.T) {
-	// mockNodeID, _ := nodeid.NewNodeIDFromHexString("42")
 	mockNonce := int64(42)
 	mockFound := true
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
-	// mockCids := []cid.ContentID{*mockContentID}
-	// var mockPrice uint64 = 41
-	// var mockExpiry int64 = 42
-	// var mockQos uint64 = 43
-	// offer, _ := cidoffer.NewCIDOffer(mockNodeID, mockCids, mockPrice, mockExpiry, mockQos)
-	// subOffer, _ := offer.GenerateSubCIDOffer(mockContentID)
-	// mockSubCidOffers := []cidoffer.SubCIDOffer{*subOffer}
-	mockSubCidOffers := [][32]byte{{1, 2}}
+	mockSubCIDOfferDigests := [][32]byte{{1, 2}}
 	mockFPCs := []bool{true}
 	validMsg := &FCRMessage{
 		messageType:       109,
@@ -35,7 +26,7 @@ func TestEncodeClientStandardDiscoverResponseV2(t *testing.T) {
 		mockContentID,
 		mockNonce,
 		mockFound,
-		mockSubCidOffers,
+		mockSubCIDOfferDigests,
 		mockFPCs,
 	)
 	assert.Empty(t, err)
@@ -44,18 +35,10 @@ func TestEncodeClientStandardDiscoverResponseV2(t *testing.T) {
 
 // TestDecodeClientStandardDiscoverResponseV2 success test
 func TestDecodeClientStandardDiscoverResponseV2(t *testing.T) {
-	// mockNodeID, _ := nodeid.NewNodeIDFromHexString("42")
 	mockNonce := int64(42)
 	mockFound := true
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
-	// mockCids := []cid.ContentID{*mockContentID}
-	// var mockPrice uint64 = 41
-	// var mockExpiry int64 = 42
-	// var mockQos uint64 = 43
-	// offer, _ := cidoffer.NewCIDOffer(mockNodeID, mockCids, mockPrice, mockExpiry, mockQos)
-	// subOffer, _ := offer.GenerateSubCIDOffer(mockContentID)
-	// mockSubCidOffers := []cidoffer.SubCIDOffer{*subOffer}
-	mockSubCidOffers := [][32]byte{{1, 2}}
+	mockSubCIDOfferDigests := [][32]byte{{1, 2}}
 	mockFPCs := []bool{true}
 	validMsg := &FCRMessage{
 		messageType:       109,
@@ -65,11 +48,11 @@ func TestDecodeClientStandardDiscoverResponseV2(t *testing.T) {
 		signature:         "",
 	}
 
-	contentID, nonce, found, subOffers, FPCs, err := DecodeClientStandardDiscoverResponseV2(validMsg)
+	contentID, nonce, found, subCIDOfferDigests, FPCs, err := DecodeClientStandardDiscoverResponseV2(validMsg)
 	assert.Empty(t, err)
 	assert.Equal(t, contentID, mockContentID)
 	assert.Equal(t, nonce, mockNonce)
 	assert.Equal(t, found, mockFound)
-	assert.Equal(t, subOffers, mockSubCidOffers)
+	assert.Equal(t, subCIDOfferDigests, mockSubCIDOfferDigests)
 	assert.Equal(t, FPCs, mockFPCs)
 }

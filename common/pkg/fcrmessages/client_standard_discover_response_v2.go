@@ -23,7 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 )
 
-// clientStandardDiscoverResponseV2 is the response to clientStandardDiscoverRequest
+// clientStandardDiscoverResponseV2 is the response to clientStandardDiscoverRequest with sub cid offer digests
 type clientStandardDiscoverResponseV2 struct {
 	PieceCID             cid.ContentID                       `json:"piece_cid"`
 	Nonce                int64                               `json:"nonce"`
@@ -31,8 +31,6 @@ type clientStandardDiscoverResponseV2 struct {
 	SubCIDOfferDigests   [][cidoffer.CIDOfferDigestSize]byte `json:"sub_cid_offer_digests"`
 	FundedPaymentChannel []bool                              `json:"funded_payment_channel"`
 }
-
-// type = 108
 
 // EncodeClientStandardDiscoverResponseV2 is used to get the FCRMessage of clientStandardDiscoverResponseV2
 func EncodeClientStandardDiscoverResponseV2(
