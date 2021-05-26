@@ -30,10 +30,11 @@ const (
 	ClientStandardDiscoverResponseV2Type    = 109
 	ClientStandardDiscoverOfferRequestType  = 110
 	ClientStandardDiscoverOfferResponseType = 111
+	ClientDHTDiscoverRequestV2Type          = 112
+	ClientDHTDiscoverResponseV2Type         = 113
 	ClientDHTDiscoverOfferRequestType       = 114
 	ClientDHTDiscoverOfferResponseType      = 115
 
-  
 	// Message originating from gateway
 	GatewayListDHTOfferRequestType                          = 200
 	GatewayListDHTOfferResponseType                         = 201
@@ -48,7 +49,6 @@ const (
 	GatewayDHTDiscoverResponseV2Type                        = 208
 	GatewayDHTDiscoverOfferRequestType                      = 209
 	GatewayDHTDiscoverOfferResponseType                     = 210
-
 
 	// Message originating from provider
 	ProviderPublishGroupOfferRequestType  = 300
