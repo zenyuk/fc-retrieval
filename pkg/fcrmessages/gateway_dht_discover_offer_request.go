@@ -27,7 +27,7 @@ import (
 type gatewayDHTDiscoverOfferRequest struct {
 	PieceCID     cid.ContentID                       `json:"piece_cid"`
 	Nonce        int64                               `json:"nonce"`
-	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offer_digest"`
+	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offers_digest"`
 	PaychAddr    string                              `json:"payment_channel_address"`
 	Voucher      string                              `json:"voucher"`
 }
