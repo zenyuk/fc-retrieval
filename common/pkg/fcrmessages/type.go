@@ -26,6 +26,7 @@ const (
 	ClientDHTDiscoverResponseType        = 105
 	ClientDHTOfferAckRequestType         = 106
 	ClientDHTOfferAckResponseType        = 107
+	ClientStandardDiscoverRequestV2Type  = 108
 	ClientStandardDiscoverResponseV2Type = 109
 	ClientDHTDiscoverOfferRequestType    = 114
 
