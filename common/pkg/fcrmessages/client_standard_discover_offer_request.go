@@ -25,12 +25,12 @@ import (
 
 // clientStandardDiscoverOfferRequest is the requset from client to gateway to ask for cid offer
 type clientStandardDiscoverOfferRequest struct {
-	PieceCID      cid.ContentID                       `json:"piece_cid"`
-	Nonce         int64                               `json:"nonce"`
-	TTL           int64                               `json:"ttl"`
-	OffersDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offers_digest"`
-	PaychAddr     string                              `json:"payment_channel_address"`
-	Voucher       string                              `json:"voucher"`
+	PieceCID     cid.ContentID                       `json:"piece_cid"`
+	Nonce        int64                               `json:"nonce"`
+	TTL          int64                               `json:"ttl"`
+	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offer_digests"`
+	PaychAddr    string                              `json:"payment_channel_address"`
+	Voucher      string                              `json:"voucher"`
 }
 
 // EncodeClientStandardDiscoverOfferRequest is used to get the FCRMessage of clientStandardDiscoverOfferRequest
@@ -43,12 +43,12 @@ func EncodeClientStandardDiscoverOfferRequest(
 	voucher string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientStandardDiscoverOfferRequest{
-		PieceCID:      *pieceCID,
-		Nonce:         nonce,
-		TTL:           ttl,
-		OffersDigests: offerDigests,
-		PaychAddr:     paychAddr,
-		Voucher:       voucher,
+		PieceCID:     *pieceCID,
+		Nonce:        nonce,
+		TTL:          ttl,
+		OfferDigests: offerDigests,
+		PaychAddr:    paychAddr,
+		Voucher:      voucher,
 	})
 	if err != nil {
 		return nil, err
@@ -74,5 +74,5 @@ func DecodeClientStandardDiscoverOfferRequest(fcrMsg *FCRMessage) (
 	if err != nil {
 		return nil, 0, 0, [][cidoffer.CIDOfferDigestSize]byte{}, "", "", err
 	}
-	return &msg.PieceCID, msg.Nonce, msg.TTL, msg.OffersDigests, msg.PaychAddr, msg.Voucher, nil
+	return &msg.PieceCID, msg.Nonce, msg.TTL, msg.OfferDigests, msg.PaychAddr, msg.Voucher, nil
 }

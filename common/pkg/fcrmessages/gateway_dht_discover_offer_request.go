@@ -27,7 +27,7 @@ import (
 type gatewayDHTDiscoverOfferRequest struct {
 	PieceCID     cid.ContentID                       `json:"piece_cid"`
 	Nonce        int64                               `json:"nonce"`
-	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offers_digest"`
+	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offer_digests"`
 	PaychAddr    string                              `json:"payment_channel_address"`
 	Voucher      string                              `json:"voucher"`
 }
@@ -36,14 +36,14 @@ type gatewayDHTDiscoverOfferRequest struct {
 func EncodeGatewayDHTDiscoverOfferRequest(
 	pieceCID *cid.ContentID,
 	nonce int64,
-	offerDigest [][cidoffer.CIDOfferDigestSize]byte,
+	offerDigests [][cidoffer.CIDOfferDigestSize]byte,
 	paychAddr string,
 	voucher string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(gatewayDHTDiscoverOfferRequest{
 		PieceCID:     *pieceCID,
 		Nonce:        nonce,
-		OfferDigests: offerDigest,
+		OfferDigests: offerDigests,
 		PaychAddr:    paychAddr,
 		Voucher:      voucher,
 	})
