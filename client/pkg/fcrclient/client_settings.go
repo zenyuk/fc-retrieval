@@ -30,6 +30,43 @@ type ClientSettings struct {
 
 	retrievalPrivateKey    *fcrcrypto.KeyPair
 	retrievalPrivateKeyVer *fcrcrypto.KeyVersion
+
+	walletPrivateKey string
+	lotusAP          string
+	lotusAuthToken   string
+	searchPrice      string
+	offerPrice       string
+	topUpAmount      string
+}
+
+// WalletPrivateKey returns the wallet private key
+func (c ClientSettings) WalletPrivateKey() string {
+	return c.walletPrivateKey
+}
+
+// LotusAP returns the lotusAP
+func (c ClientSettings) LotusAP() string {
+	return c.lotusAP
+}
+
+// LotusAuthToken returns the lotus authorization token
+func (c ClientSettings) LotusAuthToken() string {
+	return c.lotusAuthToken
+}
+
+// SearchPrice returns the search price
+func (c ClientSettings) SearchPrice() string {
+	return c.searchPrice
+}
+
+// OfferPrice returns offer price
+func (c ClientSettings) OfferPrice() string {
+	return c.offerPrice
+}
+
+// TopUpAmount returns the  top up amount
+func (c ClientSettings) TopUpAmount() string {
+	return c.topUpAmount
 }
 
 // EstablishmentTTL returns the establishmentTTL

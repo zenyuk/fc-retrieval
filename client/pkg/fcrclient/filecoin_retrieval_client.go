@@ -27,6 +27,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
@@ -56,6 +57,11 @@ func NewFilecoinRetrievalClient(settings ClientSettings) *FilecoinRetrievalClien
 		ActiveGateways:     make(map[string]register.GatewayRegister),
 		ActiveGatewaysLock: sync.RWMutex{},
 	}
+}
+
+// CreatePaymentMgr Create and returns the payment manger
+func (c *FilecoinRetrievalClient) CreatePaymentMgr() (*fcrpaymentmgr.FCRPaymentMgr, error) {
+	return fcrpaymentmgr.NewFCRPaymentMgr(c.Settings.walletPrivateKey, c.Settings.lotusAP, c.Settings.lotusAuthToken)
 }
 
 // FindGateways find gateways located near to the specified location. Use AddGateways
