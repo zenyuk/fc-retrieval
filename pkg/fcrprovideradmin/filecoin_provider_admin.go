@@ -69,6 +69,43 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerInfo *regist
 	return nil
 }
 
+// InitialiseProviderV2 initialise a given v2 provider
+func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
+	providerInfo *register.ProviderRegister,
+	providerPrivKey *fcrcrypto.KeyPair,
+	providerPrivKeyVer *fcrcrypto.KeyVersion,
+	lotusWalletPrivateKey string,
+	lotusAP string,
+	lotusAuthToken string,
+) error {
+	err := adminapi.RequestInitialiseKeyV2(
+		providerInfo,
+		providerPrivKey,
+		providerPrivKeyVer,
+		c.Settings.providerAdminPrivateKey,
+		c.Settings.providerAdminPrivateKeyVer,
+		lotusWalletPrivateKey,
+		lotusAP,
+		lotusAuthToken,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Register this provider
+	err = providerInfo.RegisterProvider(c.Settings.RegisterURL())
+	if err != nil {
+		logging.Error("Error in register the provider.")
+		return err
+	}
+
+	// Add this provider to the active providers list
+	c.ActiveProvidersLock.Lock()
+	c.ActiveProviders[providerInfo.NodeID] = *providerInfo
+	c.ActiveProvidersLock.Unlock()
+	return nil
+}
+
 // PublishGroupCID publish a group cid offer to a given provider
 func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
 	c.ActiveProvidersLock.RLock()
