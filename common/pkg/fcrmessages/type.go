@@ -18,15 +18,16 @@ package fcrmessages
 // Message types
 const (
 	// Message originating from client
-	ClientEstablishmentRequestType     = 100
-	ClientEstablishmentResponseType    = 101
-	ClientStandardDiscoverRequestType  = 102
-	ClientStandardDiscoverResponseType = 103
-	ClientDHTDiscoverRequestType       = 104
-	ClientDHTDiscoverResponseType      = 105
-	ClientDHTOfferAckRequestType       = 106
-	ClientDHTOfferAckResponseType      = 107
-	ClientDHTDiscoverOfferRequestType  = 114
+	ClientEstablishmentRequestType       = 100
+	ClientEstablishmentResponseType      = 101
+	ClientStandardDiscoverRequestType    = 102
+	ClientStandardDiscoverResponseType   = 103
+	ClientDHTDiscoverRequestType         = 104
+	ClientDHTDiscoverResponseType        = 105
+	ClientDHTOfferAckRequestType         = 106
+	ClientDHTOfferAckResponseType        = 107
+	ClientStandardDiscoverResponseV2Type = 109
+	ClientDHTDiscoverOfferRequestType    = 114
 
 	// Message originating from gateway
 	GatewayListDHTOfferRequestType                          = 200
