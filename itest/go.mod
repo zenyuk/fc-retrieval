@@ -4,9 +4,9 @@ go 1.15
 
 require (
 	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210523153744-f0f7e5e96c0c
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210521043252-32cdd55f84f4
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210527035253-7901d2f7f7a2
 	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210523153835-5a920a326fd7
-	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210523153839-9c9b5b955e35
+	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210527042906-62a2fbb92536
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/filecoin-project/go-jsonrpc v0.1.4-0.20210217175800-45ea43ac2bec
 	github.com/filecoin-project/lotus v1.6.0
