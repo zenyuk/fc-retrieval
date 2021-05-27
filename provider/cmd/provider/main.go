@@ -62,6 +62,7 @@ func main() {
 		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientDHTOfferAckRequestType, clientapi.HandleClientDHTOfferAckRequest).
 		// admin api
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminInitialiseKeyRequestType, adminapi.HandleProviderAdminInitialiseKeyRequest).
+		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminInitialiseKeyRequestV2Type, adminapi.HandleProviderAdminInitialiseKeyRequestV2).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminGetPublishedOfferRequestType, adminapi.HandleProviderAdminGetPublishedOfferRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminPublishDHTOfferRequestType, adminapi.HandleProviderAdminPublishDHTOfferRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.ProviderAdminPublishGroupOfferRequestType, adminapi.HandleProviderAdminPublishGroupOfferRequest).
