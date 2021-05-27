@@ -31,4 +31,13 @@ const (
 	// DefaultRegisterURL is the default location of the Register service.
 	// register:9020 is the value that will work for the integration test system.
 	defaultRegisterURL = "http://register:9020"
+
+	// defaultSearchPrice is the default search price.
+	defaultSearchPrice = "0.001"
+
+	// defaultOfferPrice is the default offer price.
+	defaultOfferPrice = "0.001"
+
+	// defaultTopUpAmount is the default top up amount.
+	defaultTopUpAmount = "0.1"
 )
