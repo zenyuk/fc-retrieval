@@ -114,6 +114,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 			AcknowledgementMap:        make(map[string](map[string]DHTAcknowledgement)),
 			AcknowledgementMapLock:    sync.RWMutex{},
 			GroupOfferGatewayIDs:      []nodeid.NodeID{},
+			PaymentMgr:                nil,
 		}
 	})
 	return instance
