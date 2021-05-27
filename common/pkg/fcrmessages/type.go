@@ -33,6 +33,7 @@ const (
 	ClientDHTDiscoverRequestV2Type          = 112
 	ClientDHTDiscoverResponseV2Type         = 113
 	ClientDHTDiscoverOfferRequestType       = 114
+	ClientDHTDiscoverOfferResponseType      = 115
 
 	// Message originating from gateway
 	GatewayListDHTOfferRequestType                          = 200
