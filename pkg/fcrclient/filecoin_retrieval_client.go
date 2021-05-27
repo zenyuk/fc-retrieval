@@ -46,22 +46,30 @@ type FilecoinRetrievalClient struct {
 	// List of gateway in use. A client may request a node be added to this list
 	ActiveGateways     map[string]register.GatewayRegister
 	ActiveGatewaysLock sync.RWMutex
+
+	// PaymentMgr payment manager
+	PaymentMgr *fcrpaymentmgr.FCRPaymentMgr
 }
 
-// NewFilecoinRetrievalClient initialise the Filecoin Retreival Client library
-func NewFilecoinRetrievalClient(settings ClientSettings) *FilecoinRetrievalClient {
-	return &FilecoinRetrievalClient{
+// NewFilecoinRetrievalClient initialise the Filecoin Retrieval Client library
+func NewFilecoinRetrievalClient(settings ClientSettings) (*FilecoinRetrievalClient, error) {
+	f := &FilecoinRetrievalClient{
 		Settings:           settings,
 		GatewaysToUse:      make(map[string]register.GatewayRegister),
 		GatewaysToUseLock:  sync.RWMutex{},
 		ActiveGateways:     make(map[string]register.GatewayRegister),
 		ActiveGatewaysLock: sync.RWMutex{},
 	}
-}
 
-// CreatePaymentMgr Create and returns the payment manger
-func (c *FilecoinRetrievalClient) CreatePaymentMgr() (*fcrpaymentmgr.FCRPaymentMgr, error) {
-	return fcrpaymentmgr.NewFCRPaymentMgr(c.Settings.walletPrivateKey, c.Settings.lotusAP, c.Settings.lotusAuthToken)
+	mgr, err := fcrpaymentmgr.NewFCRPaymentMgr(settings.walletPrivateKey, settings.lotusAP, settings.lotusAuthToken)
+	if err != nil {
+		logging.Error("Error initializing payment manager.")
+		return nil, err
+	}
+
+	f.PaymentMgr = mgr
+
+	return f, nil
 }
 
 // FindGateways find gateways located near to the specified location. Use AddGateways
