@@ -34,6 +34,13 @@ type SettingsBuilder struct {
 
 	retrievalPrivateKey    *fcrcrypto.KeyPair
 	retrievalPrivateKeyVer *fcrcrypto.KeyVersion
+
+	walletPrivateKey string
+	lotusAP          string
+	lotusAuthToken   string
+	searchPrice      string
+	offerPrice       string
+	topUpAmount      string
 }
 
 // CreateSettings creates an object with the default settings.
@@ -44,6 +51,9 @@ func CreateSettings() *SettingsBuilder {
 	f.logServiceName = defaultLogServiceName
 	f.establishmentTTL = defaultEstablishmentTTL
 	f.registerURL = defaultRegisterURL
+	f.searchPrice = defaultSearchPrice
+	f.offerPrice = defaultOfferPrice
+	f.topUpAmount = defaultTopUpAmount
 	return &f
 }
 
@@ -73,6 +83,30 @@ func (f *SettingsBuilder) SetBlockchainPrivateKey(bcPkey *fcrcrypto.KeyPair) {
 func (f *SettingsBuilder) SetRetrievalPrivateKey(rPkey *fcrcrypto.KeyPair, ver *fcrcrypto.KeyVersion) {
 	f.retrievalPrivateKey = rPkey
 	f.retrievalPrivateKeyVer = ver
+}
+
+func (f *SettingsBuilder) SetWalletPrivateKey(walletPrivateKey string) {
+	f.walletPrivateKey = walletPrivateKey
+}
+
+func (f *SettingsBuilder) SetLotusAP(lotusAP string) {
+	f.lotusAP = lotusAP
+}
+
+func (f *SettingsBuilder) SetLotusAuthToken(lotusAuthToken string) {
+	f.lotusAuthToken = lotusAuthToken
+}
+
+func (f *SettingsBuilder) SetSearchPrice(searchPrice string) {
+	f.searchPrice = searchPrice
+}
+
+func (f *SettingsBuilder) SetOfferPrice(offerPrice string) {
+	f.offerPrice = offerPrice
+}
+
+func (f *SettingsBuilder) SetTopUpAmount(topUpAmount string) {
+	f.topUpAmount = topUpAmount
 }
 
 // Build creates a settings object and initialises the logging system.
@@ -108,6 +142,14 @@ func (f *SettingsBuilder) Build() *ClientSettings {
 		g.retrievalPrivateKey = f.retrievalPrivateKey
 		g.retrievalPrivateKeyVer = f.retrievalPrivateKeyVer
 	}
+
+	// TODO add validations
+	g.walletPrivateKey = f.walletPrivateKey
+	g.lotusAP = f.lotusAP
+	g.lotusAuthToken = f.lotusAuthToken
+	g.searchPrice = f.searchPrice
+	g.offerPrice = f.offerPrice
+	g.topUpAmount = f.topUpAmount
 
 	return &g
 }
