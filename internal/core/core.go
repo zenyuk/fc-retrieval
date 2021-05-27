@@ -23,6 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcroffermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -49,6 +50,9 @@ type Core struct {
 
 	// Settings
 	Settings *settings.AppSettings
+
+	// PaymentMgr manages all payment related activities
+	PaymentMgr *fcrpaymentmgr.FCRPaymentMgr
 
 	// ProviderID of this provider
 	ProviderID *nodeid.NodeID
@@ -110,6 +114,7 @@ func GetSingleInstance(confs ...*settings.AppSettings) *Core {
 			AcknowledgementMap:        make(map[string](map[string]DHTAcknowledgement)),
 			AcknowledgementMapLock:    sync.RWMutex{},
 			GroupOfferGatewayIDs:      []nodeid.NodeID{},
+			PaymentMgr:                nil,
 		}
 	})
 	return instance
