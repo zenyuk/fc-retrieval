@@ -31,6 +31,10 @@ type SettingsBuilder struct {
 
 	providerAdminPrivateKey    *fcrcrypto.KeyPair
 	providerAdminPrivateKeyVer *fcrcrypto.KeyVersion
+
+	lotusWalletPrivateKey string
+	lotusAP               string
+	lotusAuthToken        string
 }
 
 // CreateSettings creates an object with the default settings
