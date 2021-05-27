@@ -49,7 +49,14 @@ func RequestInitialiseKeyV2(
 		return err
 	}
 	// Second, send key exchange to activate the given provider
-	request, err := fcrmessages.EncodeProviderAdminInitialiseKeyRequest(nodeID, providerPrivKey, providerPrivKeyVer)
+	request, err := fcrmessages.EncodeProviderAdminInitialiseKeyRequestV2(
+		nodeID,
+		providerPrivKey,
+		providerPrivKeyVer,
+		lotusWalletPrivateKey,
+		lotusAP,
+		lotusAuthToken,
+	)
 	if err != nil {
 		logging.Error("Error in encoding message.")
 		return err
