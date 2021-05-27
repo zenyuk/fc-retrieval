@@ -23,6 +23,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcroffermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -68,6 +69,9 @@ type Core struct {
 
 	// Reputation Manager
 	ReputationMgr *reputation.Reputation
+
+	// PaymentMgr manages all payment related activities
+	PaymentMgr *fcrpaymentmgr.FCRPaymentMgr
 
 	// RegistrationBlockHash is the hash of the block that registers this gateway
 	// RegistrationTransactionReceipt is the transaction receipt containing the registration event

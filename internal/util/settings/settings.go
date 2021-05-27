@@ -58,4 +58,8 @@ type AppSettings struct {
 
 	TCPInactivityTimeout     time.Duration `mapstructure:"TCP_INACTIVITY_TIMEOUT"`      // TCP inactivity timeout
 	TCPLongInactivityTimeout time.Duration `mapstructure:"TCP_LONG_INACTIVITY_TIMEOUT"` // TCP long inactivity timeout
+
+	SearchPrice string `mapstructure:SEARCH_PRICE`
+	OfferPrice  string `mapstructure:OFFER_PRICE`
+	TopupAmount string `mapstructure:TOPUP_AMOUNT`
 }
