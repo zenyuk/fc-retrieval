@@ -29,6 +29,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/reputation"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 )
 
 const (
@@ -68,6 +69,9 @@ type Core struct {
 
 	// Reputation Manager
 	ReputationMgr *reputation.Reputation
+
+	// PaymentMgr manages all payment related activities
+	PaymentMgr *fcrpaymentmgr.FCRPaymentMgr
 
 	// RegistrationBlockHash is the hash of the block that registers this gateway
 	// RegistrationTransactionReceipt is the transaction receipt containing the registration event
