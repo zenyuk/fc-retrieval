@@ -65,6 +65,7 @@ func main() {
 		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientStandardDiscoverRequestType, clientapi.HandleClientStandardCIDDiscoverRequest).
 		// admin api
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminInitialiseKeyRequestType, adminapi.HandleGatewayAdminInitialiseKeyRequest).
+		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminInitialiseKeyRequestV2Type, adminapi.HandleGatewayAdminInitialiseKeyRequestV2).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminGetReputationRequestType, adminapi.HandleGatewayAdminGetReputationRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminSetReputationRequestType, adminapi.HandleGatewayAdminSetReputationRequest).
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminForceRefreshRequestType, adminapi.HandleGatewayAdminForceRefreshRequest).
