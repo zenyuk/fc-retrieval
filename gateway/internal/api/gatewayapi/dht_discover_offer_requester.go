@@ -75,7 +75,5 @@ func RequestGatewayDHTDiscoverOffer(reader *fcrp2pserver.FCRServerReader, writer
 		return nil, err
 	}
 
-	// Verify the response
-
 	return response, nil
 }
