@@ -38,7 +38,7 @@ import (
 	"github.com/filecoin-project/lotus/chain/actors/builtin/paych"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/lib/sigs"
-	init3 "github.com/filecoin-project/specs-actors/v3/actors/builtin/init"
+	init2 "github.com/filecoin-project/specs-actors/v2/actors/builtin/init"
 	"github.com/ipfs/go-cid"
 	"github.com/minio/blake2b-simd"
 )
@@ -152,7 +152,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount string) error {
 		if receipt.ExitCode != 0 {
 			return errors.New("Transaction fail to execute")
 		}
-		var decodedReturn init3.ExecReturn
+		var decodedReturn init2.ExecReturn
 		err = decodedReturn.UnmarshalCBOR(bytes.NewReader(receipt.Return))
 		if err != nil {
 			logging.Error("Payment manager has error unmarshal receipt: %v", receipt)
@@ -329,6 +329,12 @@ func (mgr *FCRPaymentMgr) Receive(channel string, voucher string) (*big.Int, err
 			// Update local channel balance
 			cs.balance = *state.Balance.Int
 		}
+	}
+
+	// Verify recipient
+	recipientAddr := paychState["To"].(string)
+	if recipientAddr != mgr.address.String() {
+		return nil, errors.New("Wrong recipient address")
 	}
 
 	// Verify signature
