@@ -332,9 +332,16 @@ func (mgr *FCRPaymentMgr) Receive(channel string, voucher string) (*big.Int, err
 	}
 
 	// Verify recipient
-	recipientAddr := paychState["To"].(string)
-	if recipientAddr != mgr.address.String() {
-		return nil, errors.New("Wrong recipient address")
+	to, err := address.NewFromString(paychState["To"].(string))
+	if err != nil {
+		return nil, err
+	}
+	recipient, err := api.StateAccountKey(context.Background(), to, types.EmptyTSK)
+	if err != nil {
+		return nil, err
+	}
+	if recipient != *mgr.address {
+		return nil, errors.New("Wrong recipient")
 	}
 
 	// Verify signature
