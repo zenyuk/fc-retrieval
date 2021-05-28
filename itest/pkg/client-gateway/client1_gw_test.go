@@ -142,7 +142,8 @@ func TestOneGateway(t *testing.T) {
 	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	clientConf := clientConfBuilder.Build()
 
-	client := fcrclient.NewFilecoinRetrievalClient(*clientConf)
+	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf)
+	assert.Nil(t, err)
 	newGatewaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatewaysToBeAdded = append(newGatewaysToBeAdded, gatewayID)
 	numAdded := client.AddGatewaysToUse(newGatewaysToBeAdded)
