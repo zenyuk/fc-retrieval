@@ -93,7 +93,8 @@ func TestInitClientNoRetrievalKey(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	conf := confBuilder.Build()
 
-	fClient = fcrclient.NewFilecoinRetrievalClient(*conf)
+	fClient, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	assert.Nil(t, err)
 }
 
 func TestNoConfiguredGateways(t *testing.T) {

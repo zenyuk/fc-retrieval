@@ -245,7 +245,10 @@ func TestInitialiseClient(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
-	client = fcrclient.NewFilecoinRetrievalClient(*conf)
+	client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	if !assert.Nil(t, err, "Error should be nil") {
+		return
+	}
 
 	added := client.AddGatewaysToUse(gwIDs)
 	if !assert.Equal(t, 32, added, "32 gateways should be added") {

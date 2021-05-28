@@ -307,7 +307,10 @@ func TestInitClient(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
-	client = fcrclient.NewFilecoinRetrievalClient(*conf)
+	client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*                 End TestInitClient      	         */")
