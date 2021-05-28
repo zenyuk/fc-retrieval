@@ -68,6 +68,43 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayInfo *register.
 	return nil
 }
 
+// InitialiseGatewayV2 initialise a given v2 gateway
+func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
+	gatewayInfo *register.GatewayRegister,
+	gatewayPrivKey *fcrcrypto.KeyPair,
+	gatewayPrivKeyVer *fcrcrypto.KeyVersion,
+	lotusWalletPrivateKey string,
+	lotusAP string,
+	lotusAuthToken string,
+) error {
+	err := adminapi.RequestInitialiseKeyV2(
+		gatewayInfo,
+		gatewayPrivKey,
+		gatewayPrivKeyVer,
+		c.Settings.gatewayAdminPrivateKey,
+		c.Settings.gatewayAdminPrivateKeyVer,
+		lotusWalletPrivateKey,
+		lotusAP,
+		lotusAuthToken,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Register this gateway
+	err = gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	if err != nil {
+		logging.Error("Error in register the gateway.")
+		return err
+	}
+
+	// Add this gateway to the active gateways list
+	c.ActiveGatewaysLock.Lock()
+	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGatewaysLock.Unlock()
+	return nil
+}
+
 // ResetClientReputation requests a Gateway to initialise a client's reputation to the default value.
 func (c *FilecoinRetrievalGatewayAdmin) ResetClientReputation(clientID *nodeid.NodeID) error {
 	return errors.New("Not implemented yet")
