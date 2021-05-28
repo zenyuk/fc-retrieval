@@ -73,6 +73,10 @@ func Map(conf *viper.Viper) settings.AppSettings {
 
 		TCPInactivityTimeout:     tcpInactivityTimeout,
 		TCPLongInactivityTimeout: tcpLongInactivityTimeout,
+
+		SearchPrice: conf.GetString("SEARCH_PRICE"),
+		OfferPrice:  conf.GetString("OFFER_PRICE"),
+		TopupAmount: conf.GetString("TOPUP_AMOUNT"),
 	}
 }
 
