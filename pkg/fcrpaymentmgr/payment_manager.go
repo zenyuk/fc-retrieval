@@ -134,7 +134,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount string) error {
 		mgr.outboundChsLock.RUnlock()
 		mgr.outboundChsLock.Lock()
 		defer mgr.outboundChsLock.Unlock()
-		builder := paych.Message(actors.Version3, *mgr.address)
+		builder := paych.Message(actors.Version2, *mgr.address)
 		msg, err := builder.Create(recipientAddr, types.BigInt(amt))
 		if err != nil {
 			return err
