@@ -17,19 +17,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ConsenSys/fc-retrieval-client-js.git"
+    "url": "git+https://github.com/consensys/fc-retrieval-client-js.git"
   },
   "keywords": [
     "Filecoin",
     "Retrieval",
     "Client"
   ],
-  "author": "C-J",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/consensys/fc-retrieval-client-js/issues"
   },
   "homepage": "https://github.com/consensys/fc-retrieval-client-js#readme",
+  "files": [
+    "lib/**/*"
+  ],
+  "dependencies": {
+    "axios": "^0.21.1",
+    "axios-mock-adapter": "^1.19.0"
+  },
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "codecov": "^3.1.0",
@@ -39,11 +44,5 @@
     "tslint": "^5.10.0",
     "tslint-config-prettier": "^1.13.0",
     "typescript": "^2.8.3"
-  },
-  "files": [
-    "lib/**/*"
-  ],
-  "dependencies": {
-    "fetch": "^1.1.0"
   }
 }
