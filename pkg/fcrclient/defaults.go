@@ -33,11 +33,11 @@ const (
 	defaultRegisterURL = "http://register:9020"
 
 	// defaultSearchPrice is the default search price.
-	defaultSearchPrice = "0.001"
+	defaultSearchPrice = 1_000_000_000_000_000
 
 	// defaultOfferPrice is the default offer price.
-	defaultOfferPrice = "0.001"
+	defaultOfferPrice = 1_000_000_000_000_000
 
 	// defaultTopUpAmount is the default top up amount.
-	defaultTopUpAmount = "0.1"
+	defaultTopUpAmount = 100_000_000_000_000_000
 )
