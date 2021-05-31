@@ -533,7 +533,7 @@ func (SecpSigner) GenPrivate() ([]byte, error) {
 func (SecpSigner) ToPublic(pk []byte) ([]byte, error) {
 	// Check empty key to avoid segment fault
 	if len(pk) == 0 {
-		return nil, fmt.Errorf("Key is Empty")
+		return nil, fmt.Errorf("Unable to get public key, private key is empty")
 	}
 	return crypto.PublicKey(pk), nil
 }
