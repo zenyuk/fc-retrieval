@@ -36,7 +36,7 @@ func RequestDHTOfferDiscover(
 	offersDigests [][][cidoffer.CIDOfferDigestSize]byte,
 	paymentChannelAddr string,
 	voucher string,
-) (*cidoffer.SubCIDOffer, error) {
+) ([][]cidoffer.SubCIDOffer, error) {
 	request, err := fcrmessages.EncodeClientDHTDiscoverOfferRequest(contentID, nonce, offersDigests, gatewayIDs, paymentChannelAddr, voucher)
 	if err != nil {
 		logging.Error("error encoding Client DHT Discover Request: %+v", err)
@@ -60,21 +60,21 @@ func RequestDHTOfferDiscover(
 		return nil, errors.New("Verification failed")
 	}
 
-	// TODO: currently getting the first subCIDOffer
 	_, _, _, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding client DHT discover offer response %s", err.Error())
 	}
+	var result [][]cidoffer.SubCIDOffer
 	for _, fcrMessage := range fcrMessages {
+		//result = append(result, )
 		_, _, found, subCIDOffers, _, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
 		if decodeErr != nil {
 			logging.Error("error decoding gateway DHT discover offer response %s", decodeErr.Error())
 		}
 		// return first good one
 		if found && len(subCIDOffers) > 0 {
-			return &subCIDOffers[0], nil
+			result = append(result, subCIDOffers)
 		}
 	}
-
-	return nil, nil
+	return result, nil
 }
