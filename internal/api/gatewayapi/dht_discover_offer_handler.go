@@ -1,6 +1,7 @@
 package gatewayapi
 
 import (
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
@@ -23,52 +24,41 @@ import (
  */
 
 // HandleGatewayDHTOfferRequest handles the gateway dht discover request
-func HandleGatewayDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writer *fcrp2pserver.FCRServerWriter, request *fcrmessages.FCRMessage) error {
+func HandleGatewayDHTOfferRequest(_ *fcrp2pserver.FCRServerReader, writer *fcrp2pserver.FCRServerWriter, request *fcrmessages.FCRMessage) error {
 	// Get the core structure
 	c := core.GetSingleInstance()
-
-	pieceCID, nonce, _, suboffers, fundedPaymentChannel, err := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(request)
+	pieceCID, nonce, offerDigests, paymentChannelAddress, voucher, err := fcrmessages.DecodeGatewayDHTDiscoverOfferRequest(request)
 	if err != nil {
 		// Reply with invalid message
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
 
-	// Respond to the request
-	_, exists := c.OffersMgr.GetOffers(pieceCID)
-	if exists {
-		for i, offer := range suboffers {
+	_, err = c.PaymentMgr.Receive(paymentChannelAddress, voucher)
+	if err != nil {
+		logging.Error("Internal error in payment manager Receive.")
 
-			// what means fundedPaymentChannel true or false
-			if fundedPaymentChannel[i] { // this or not this
-				continue
-			}
+		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
+	}
 
-			// should validate ??
-			offer.HasExpired()
-			offer.GetSignature()
+	subOffers := make([]cidoffer.SubCIDOffer, len(offerDigests))
+	fundedPaymentChannel := make([]bool, len(offerDigests))
+	found := true
 
-			// Now Verify the merkle proof
-			if offer.VerifyMerkleProof() != nil {
-				logging.Error("Merkle proof verification failed.")
-				continue
-			}
+	for i, digest := range offerDigests {
+		offer, exist := c.OffersMgr.GetOfferByDigest(digest)
+		fundedPaymentChannel[i] = exist
 
-			// how can I get chn and voucher?
-			var chanAddr string
-			var voucher string
-
-			received, err := c.PaymentMgr.Receive(chanAddr, voucher)
-			if err != nil {
-				// return writer.Write ????
-				continue
-			}
-			// is this condition right?
-			fundedPaymentChannel[i] = received.Uint64() >= offer.GetPrice()
+		cidOffer, err := offer.GenerateSubCIDOffer(pieceCID)
+		if err != nil {
+			continue
 		}
+
+		subOffers[i] = *cidOffer
 	}
 
 	// Construct response
-	response, err := fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, exists, suboffers, fundedPaymentChannel)
+	response, err := fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, found, subOffers, fundedPaymentChannel)
+
 	if err != nil {
 		// TODO: Do we need a response of internal error?
 		// There are three possible errors, 1. Protocol errors (request is not correct) 2. Communication errors (lost connection) and 3. Internal errors.
