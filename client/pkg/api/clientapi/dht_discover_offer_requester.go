@@ -22,23 +22,21 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 func RequestDHTOfferDiscover(
 	gatewayInfo *register.GatewayRegister,
+	gatewayIDs []nodeid.NodeID,
 	contentID *cid.ContentID,
 	nonce int64,
-	ttl int64,
-	numDHT int64,
-	offerDigest [cidoffer.CIDOfferDigestSize]byte,
+	offersDigests [][][cidoffer.CIDOfferDigestSize]byte,
 	paymentChannelAddr string,
 	voucher string,
 ) (*cidoffer.SubCIDOffer, error) {
-	//todo: ? what to do with offerDigest
-
-	request, err := fcrmessages.EncodeClientDHTDiscoverRequestV2(contentID, nonce, ttl, numDHT, false, paymentChannelAddr, voucher)
+	request, err := fcrmessages.EncodeClientDHTDiscoverOfferRequest(contentID, nonce, offersDigests, gatewayIDs, paymentChannelAddr, voucher)
 	if err != nil {
 		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
 		return nil, err
@@ -61,19 +59,18 @@ func RequestDHTOfferDiscover(
 		return nil, errors.New("Verification failed")
 	}
 
-	contacted, contactedResp, _, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
-	var result *cidoffer.SubCIDOffer
-	//todo: ? how to convert response to SubCIDOffer
+	// TODO: currently getting the first subCIDOffer
+	_, _, _, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
+	for _, fcrMessage := range fcrMessages {
+		_, _, found, subCIDOffers, _, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
+		if decodeErr != nil {
+			logging.Error("Error decoding gateway DHT discover offer response %s", decodeErr.Error())
+		}
+		// return first good one
+		if found && len(subCIDOffers) > 0 {
+			return &subCIDOffers[0], nil
+		}
+	}
 
-	if err != nil {
-		return nil, err
-	}
-	if recvNonce != nonce {
-		return nil, errors.New("Nonce not matching")
-	}
-	if len(contacted) != len(contactedResp) {
-		return nil, errors.New("Length mismtach")
-	}
-
-	return result, nil
+	return nil, nil
 }

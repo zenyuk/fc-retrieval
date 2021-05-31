@@ -38,7 +38,7 @@ func RequestDHTDiscoverV2(
 	voucher string,
 ) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error) {
 	// Construct request
-	request, err := fcrmessages.EncodeClientDHTDiscoverRequest(contentID, nonce, ttl, numDHT, incrementalResult, paychAddr, voucher)
+	request, err := fcrmessages.EncodeClientDHTDiscoverRequestV2(contentID, nonce, ttl, numDHT, incrementalResult, paychAddr, voucher)
 	if err != nil {
 		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
 		return nil, nil, nil, err
@@ -61,7 +61,7 @@ func RequestDHTDiscoverV2(
 		return nil, nil, nil, errors.New("Verification failed")
 	}
 
-	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponse(response)
+	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
 	if err != nil {
 		return nil, nil, nil, err
 	}
