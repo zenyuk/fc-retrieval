@@ -17,12 +17,13 @@ package fcrclient
 
 import (
 	"errors"
+	"fmt"
+	"math/big"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -31,6 +32,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+
+	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 )
 
 // FilecoinRetrievalClient is an example implementation using the api,
@@ -397,6 +400,117 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 		offersMap[id.ToString()] = &entry
 	}
 
+	return offersMap, nil
+}
+
+// FindOffersDHTDiscoveryV2 finds offer using dht discovery from given gateway with maximum number of offers
+// offersNumberLimit - maximum number of offers the client asking to have
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) (map[string]*[]cidoffer.SubCIDOffer, error) {
+	defaultPaymentLane := uint64(0)
+	initialRequestPaymentAmount := new(big.Int).Mul(big.NewInt(numDHT), big.NewInt(defaultOfferPrice))
+	paymentChannel, voucher, needTopup, paymentErr := c.PaymentMgr.Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
+	if needTopup && paymentErr != nil {
+		if err := c.PaymentMgr.Topup(gatewayID.ToString(), initialRequestPaymentAmount); err != nil {
+			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
+		}
+	}
+	if paymentErr != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", paymentErr.Error())
+	}
+	// retrying the initial payment after topup
+	paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr.Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
+	if paymentErr != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
+	}
+	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
+
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+
+	offersMap := make(map[string]*[]cidoffer.SubCIDOffer)
+
+	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return offersMap, errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	contacted, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	if err != nil {
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
+		return offersMap, errors.New("Error in requesting dht discovery")
+	}
+	for i := 0; i < len(uncontactable); i++ {
+		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
+	}
+
+	var addedSubOffersCount int
+	for i := 0; i < len(contacted); i++ {
+		id := contacted[i]
+		resp := contactedResp[i]
+		// Verify the sub response
+		// Get gateway's pubkey
+		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &id)
+		if err != nil {
+			logging.Error("Error in getting gateway info.")
+			continue
+		}
+		if !validateGatewayInfo(&gatewayInfo) {
+			logging.Error("Gateway register info not valid.")
+			continue
+		}
+		pubKey, err := gatewayInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		if resp.Verify(pubKey) != nil {
+			logging.Error("Fail to verify sub response.")
+			continue
+		}
+		_, _, _, offers, _, err := fcrmessages.DecodeGatewayDHTDiscoverResponse(&resp)
+		if err != nil {
+			logging.Error("Fail to decode response")
+			continue
+		}
+		entry := make([]cidoffer.SubCIDOffer, 0)
+		for _, offer := range offers {
+			// Get provider's pubkey
+			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+			if err != nil {
+				logging.Error("Error in getting provider info.")
+				continue
+			}
+			if !validateProviderInfo(&providerInfo) {
+				logging.Error("Provider register info not valid.")
+				continue
+			}
+			pubKey, err := providerInfo.GetSigningKey()
+			if err != nil {
+				logging.Error("Fail to obtain public key.")
+				continue
+			}
+			// Verify the offer sig
+			if offer.Verify(pubKey) != nil {
+				logging.Error("Offer signature fail to verify.")
+				continue
+			}
+			// Now Verify the merkle proof
+			if offer.VerifyMerkleProof() != nil {
+				logging.Error("Merkle proof verification failed.")
+				continue
+			}
+			// Offer pass verification
+			entry = append(entry, offer)
+			addedSubOffersCount++
+			logging.Info("Offer pass every verification, added to result")
+			// early return to comply with given offers number limit
+			if addedSubOffersCount >= offersNumberLimit {
+				offersMap[id.ToString()] = &entry
+				return offersMap, nil
+			}
+		}
+		offersMap[id.ToString()] = &entry
+	}
 	return offersMap, nil
 }
 
