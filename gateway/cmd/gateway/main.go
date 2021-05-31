@@ -18,14 +18,11 @@ package main
 import (
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
-
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-
 	"github.com/ConsenSys/fc-retrieval-gateway/config"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/adminapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
@@ -33,6 +30,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/providerapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 // Start Gateway service
@@ -92,6 +90,7 @@ func main() {
 		AddRequester(fcrmessages.GatewayDHTDiscoverRequestType, gatewayapi.RequestGatewayDHTDiscover).
 		AddRequester(fcrmessages.GatewayListDHTOfferRequestType, gatewayapi.RequestListCIDOffer).
 		AddRequester(fcrmessages.GatewayNotifyProviderGroupCIDOfferSupportedRequestType, gatewayapi.NotifyProviderGroupCIDOfferSupported).
+		AddRequester(fcrmessages.GatewayDHTDiscoverOfferRequestType, gatewayapi.RequestGatewayDHTDiscoverOffer).
 		// provider api
 		AddHandler(appSettings.BindProviderAPI, fcrmessages.ProviderPublishGroupOfferRequestType, providerapi.HandleProviderPublishGroupOfferRequest).
 		AddHandler(appSettings.BindProviderAPI, fcrmessages.ProviderPublishDHTOfferRequestType, providerapi.HandleProviderPublishDHTOfferRequest)
