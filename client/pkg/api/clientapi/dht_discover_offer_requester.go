@@ -17,6 +17,7 @@ package clientapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -38,7 +39,7 @@ func RequestDHTOfferDiscover(
 ) (*cidoffer.SubCIDOffer, error) {
 	request, err := fcrmessages.EncodeClientDHTDiscoverOfferRequest(contentID, nonce, offersDigests, gatewayIDs, paymentChannelAddr, voucher)
 	if err != nil {
-		logging.Error("Error encoding Client DHT Discover Request: %+v", err)
+		logging.Error("error encoding Client DHT Discover Request: %+v", err)
 		return nil, err
 	}
 
@@ -61,10 +62,13 @@ func RequestDHTOfferDiscover(
 
 	// TODO: currently getting the first subCIDOffer
 	_, _, _, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding client DHT discover offer response %s", err.Error())
+	}
 	for _, fcrMessage := range fcrMessages {
 		_, _, found, subCIDOffers, _, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
 		if decodeErr != nil {
-			logging.Error("Error decoding gateway DHT discover offer response %s", decodeErr.Error())
+			logging.Error("error decoding gateway DHT discover offer response %s", decodeErr.Error())
 		}
 		// return first good one
 		if found && len(subCIDOffers) > 0 {
