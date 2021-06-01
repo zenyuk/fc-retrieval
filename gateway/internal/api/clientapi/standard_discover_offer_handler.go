@@ -49,7 +49,7 @@ func HandleClientStandardDiscoverOfferRequest(writer rest.ResponseWriter, reques
 
 	receive, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
 	if err == nil && receive.Cmp(c.Settings.SearchPrice) >= 0 {
-		// Success - Search for offesr.
+		// Success - Search for offers
 		subOffers := make([]cidoffer.SubCIDOffer, len(offerDigests))
 		fundedPaymentChannel := make([]bool, len(offerDigests))
 		found := false
