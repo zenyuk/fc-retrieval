@@ -16,6 +16,7 @@ package gatewayapi
  */
 
 import (
+	big2 "math/big"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -23,6 +24,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
+	"github.com/filecoin-project/lotus/chain/types"
 )
 
 // HandleGatewayDHTDiscoverRequestV2 handles the gateway dht discover request
@@ -59,13 +61,27 @@ func HandleGatewayDHTDiscoverRequestV2(_ *fcrp2pserver.FCRServerReader, writer *
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
 
-	_, err = c.PaymentMgr.Receive(paymentChannelAddress, voucher)
+	offerPrice, err := types.ParseFIL(c.Settings.OfferPrice)
+	if err != nil {
+		s := "Fail to get default OfferPrice."
+		logging.Error(s + err.Error())
+		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
+	}
+
+	amount, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
 	if err != nil {
 		return err
 	}
 
 	// Respond to the request
 	offers, exists := c.OffersMgr.GetOffers(pieceCID)
+
+	lenOffers := new(big2.Int).SetInt64(int64(len(offers)))
+	expectedAmount := offerPrice.Mul(offerPrice.Int, lenOffers)
+	if amount.Cmp(expectedAmount) < 0 {
+		// TODO update paymentChannelID
+		return writer.WriteInsufficientFunds(c.Settings.TCPInactivityTimeout, 42)
+	}
 
 	subCIDOfferDigests := make([][cidoffer.CIDOfferDigestSize]byte, 0)
 	fundedPaymentChannel := make([]bool, 0)
