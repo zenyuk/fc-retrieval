@@ -17,12 +17,13 @@ package fcrclient
 
 import (
 	"errors"
+	"fmt"
+	"math/big"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -31,6 +32,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+
+	"github.com/ConsenSys/fc-retrieval-client/pkg/api/clientapi"
 )
 
 // FilecoinRetrievalClient is an example implementation using the api,
@@ -407,6 +410,95 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 	}
 
 	return offersMap, nil
+}
+
+// FindOffersDHTDiscoveryV2 finds offer using dht discovery from given gateway with maximum number of offers
+// offersNumberLimit - maximum number of offers the client asking to have
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) ([]clientapi.GatewaySubOffers, error) {
+	defaultPaymentLane := uint64(0)
+	initialRequestPaymentAmount := new(big.Int).Mul(big.NewInt(numDHT), big.NewInt(defaultOfferPrice))
+	paymentChannel, voucher, needTopup, paymentErr := c.PaymentMgr().Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
+	if needTopup && paymentErr != nil {
+		if err := c.PaymentMgr().Topup(gatewayID.ToString(), initialRequestPaymentAmount); err != nil {
+			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
+		}
+	}
+	if paymentErr != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", paymentErr.Error())
+	}
+	// retrying the initial payment after topup
+	paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
+	if paymentErr != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
+	}
+	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
+
+	c.ActiveGatewaysLock.RLock()
+	defer c.ActiveGatewaysLock.RUnlock()
+
+	// entryGatewayInfo - a Gateway which will be an entry point for us to get to other Gateways
+	entryGatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
+	if !exists {
+		return nil, errors.New("Given gatewayID is not in active nodes map")
+	}
+	// TODO need to do nonce management
+	nonce := rand.Int63()
+	ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
+	contactedGateways, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&entryGatewayInfo, contentID, nonce, ttl, numDHT, false, "", "")
+	if err != nil {
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGatewayInfo.NodeID, err)
+		return nil, errors.New("Error in requesting dht discovery")
+	}
+	for i := 0; i < len(uncontactable); i++ {
+		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
+	}
+
+	var addedSubOffersCount int
+	var offersDigestsFromAllGateways [][][cidoffer.CIDOfferDigestSize]byte
+	for i := 0; i < len(contactedGateways); i++ {
+		contactedGatewayID := contactedGateways[i]
+		resp := contactedResp[i]
+		// Verify the sub response
+		// Get gateway's pubkey
+		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &contactedGatewayID)
+		if err != nil {
+			logging.Error("Error in getting gateway info.")
+			continue
+		}
+		if !validateGatewayInfo(&gatewayInfo) {
+			logging.Error("Gateway register info not valid.")
+			continue
+		}
+		pubKey, err := gatewayInfo.GetSigningKey()
+		if err != nil {
+			logging.Error("Fail to obtain public key.")
+			continue
+		}
+		if resp.Verify(pubKey) != nil {
+			logging.Error("Fail to verify sub response.")
+			continue
+		}
+		_, _, found, offerDigests, _, err := fcrmessages.DecodeGatewayDHTDiscoverResponseV2(&resp)
+		if err != nil {
+			logging.Error("Fail to decode response")
+			continue
+		}
+		if !found {
+			return []clientapi.GatewaySubOffers{}, nil
+		}
+		offersDigestsFromAllGateways = append(offersDigestsFromAllGateways, offerDigests)
+		addedSubOffersCount += len(offerDigests)
+		// comply with given offers number limit
+		if addedSubOffersCount >= offersNumberLimit {
+			offersDigestsFromAllGateways = offersDigestsFromAllGateways[:offersNumberLimit]
+			break
+		}
+	}
+	allGatewaysOffers, discoverError := clientapi.RequestDHTOfferDiscover(&entryGatewayInfo, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
+	if discoverError != nil {
+		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
+	}
+	return allGatewaysOffers, nil
 }
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair
