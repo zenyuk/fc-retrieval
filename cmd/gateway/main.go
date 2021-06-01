@@ -60,6 +60,7 @@ func main() {
 		// client api
 		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientEstablishmentRequestType, clientapi.HandleClientEstablishmentRequest).
 		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientDHTDiscoverRequestType, clientapi.HandleClientDHTCIDDiscoverRequest).
+		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientDHTDiscoverRequestV2Type, clientapi.HandleClientDHTCIDDiscoverRequestV2).
 		AddHandler(appSettings.BindRestAPI, fcrmessages.ClientStandardDiscoverRequestType, clientapi.HandleClientStandardCIDDiscoverRequest).
 		// admin api
 		AddHandler(appSettings.BindAdminAPI, fcrmessages.GatewayAdminInitialiseKeyRequestType, adminapi.HandleGatewayAdminInitialiseKeyRequest).
