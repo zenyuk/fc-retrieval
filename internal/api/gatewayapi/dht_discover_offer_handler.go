@@ -7,6 +7,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
 	big2 "github.com/filecoin-project/go-state-types/big"
+	"github.com/filecoin-project/lotus/chain/types"
 )
 
 /*
