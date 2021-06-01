@@ -49,8 +49,8 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 	// Search for offesr.
 	offers, exists := c.OffersMgr.GetOffers(pieceCID)
 
-	// TODO change offerPrice configuration to big.int
-	offerPrice, err := types.ParseFIL(c.Settings.OfferPrice)
+	// TODO change searchPrice configuration to big.int
+	searchPrice, err := types.ParseFIL(c.Settings.SearchPrice)
 	if err != nil {
 		s := "Fail to get default OfferPrice."
 		logging.Error(s + err.Error())
@@ -61,7 +61,7 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 	var response *fcrmessages.FCRMessage
 
 	receive, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
-	if err == nil && receive.Cmp(offerPrice.Int) >= 0 {
+	if err == nil && receive.Cmp(searchPrice.Int) >= 0 {
 		// success
 		subOfferDigests := make([][cidoffer.CIDOfferDigestSize]byte, 0)
 		fundedPaymentChannel := make([]bool, 0)
@@ -78,7 +78,7 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 		if err != nil {
 			logging.Error("PaymentMgr receive " + err.Error())
 		} else {
-			logging.Error("PaymentMgr insufficient funds received " + receive.String() + " (default: " + offerPrice.Int.String() + ")")
+			logging.Error("PaymentMgr insufficient funds received " + receive.String() + " (default: " + searchPrice.Int.String() + ")")
 		}
 		// TODO get real payment channel ID
 		response, err = fcrmessages.EncodeInsufficientFundsResponse(42)
