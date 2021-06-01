@@ -24,7 +24,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/util"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/filecoin-project/lotus/chain/types"
 )
 
 // HandleClientStandardCIDDiscoverRequestV2 is used to handle client request for cid offer
@@ -49,19 +48,10 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 	// Search for offesr.
 	offers, exists := c.OffersMgr.GetOffers(pieceCID)
 
-	// TODO change searchPrice configuration to big.int
-	searchPrice, err := types.ParseFIL(c.Settings.SearchPrice)
-	if err != nil {
-		s := "Fail to get default OfferPrice."
-		logging.Error(s + err.Error())
-		rest.Error(writer, s, http.StatusInternalServerError)
-		return
-	}
-
 	var response *fcrmessages.FCRMessage
 
 	receive, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
-	if err == nil && receive.Cmp(searchPrice.Int) >= 0 {
+	if err == nil && receive.Cmp(c.Settings.SearchPrice) >= 0 {
 		// success
 		subOfferDigests := make([][cidoffer.CIDOfferDigestSize]byte, 0)
 		fundedPaymentChannel := make([]bool, 0)
@@ -78,7 +68,7 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 		if err != nil {
 			logging.Error("PaymentMgr receive " + err.Error())
 		} else {
-			logging.Error("PaymentMgr insufficient funds received " + receive.String() + " (default: " + searchPrice.Int.String() + ")")
+			logging.Error("PaymentMgr insufficient funds received " + receive.String() + " (default: " + c.Settings.SearchPrice.String() + ")")
 		}
 		// TODO get real payment channel ID
 		response, err = fcrmessages.EncodeInsufficientFundsResponse(42)
