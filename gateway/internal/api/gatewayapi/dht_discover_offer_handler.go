@@ -6,8 +6,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
-	big2 "github.com/filecoin-project/go-state-types/big"
-	"github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/go-state-types/big"
 )
 
 /*
@@ -42,7 +41,7 @@ func HandleGatewayDHTOfferRequest(_ *fcrp2pserver.FCRServerReader, writer *fcrp2
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
 
-	lenOffers := new(big2.Int).SetInt64(int64(len(offerDigests)))
+	lenOffers := new(big.Int).SetInt64(int64(len(offerDigests)))
 	expectedAmount := c.Settings.OfferPrice.Mul(c.Settings.OfferPrice, lenOffers)
 	if amount.Cmp(expectedAmount) < 0 {
 		logging.Error("Insufficient Funds, received " + amount.String() + ", expected: " + expectedAmount.String())
