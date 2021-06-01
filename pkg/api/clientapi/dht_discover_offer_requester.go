@@ -28,6 +28,12 @@ import (
 	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
+// GatewaySubOffers - relation between a Gateway and the Sub-Offers received through the Gateway
+type GatewaySubOffers struct {
+	GatewayID *nodeid.NodeID         `json:"gateway_id"`
+	SubOffers []cidoffer.SubCIDOffer `json:"sub_cid_offers"`
+}
+
 func RequestDHTOfferDiscover(
 	gatewayInfo *register.GatewayRegister,
 	gatewayIDs []nodeid.NodeID,
@@ -36,7 +42,7 @@ func RequestDHTOfferDiscover(
 	offersDigests [][][cidoffer.CIDOfferDigestSize]byte,
 	paymentChannelAddr string,
 	voucher string,
-) ([][]cidoffer.SubCIDOffer, error) {
+) ([]GatewaySubOffers, error) {
 	request, err := fcrmessages.EncodeClientDHTDiscoverOfferRequest(contentID, nonce, offersDigests, gatewayIDs, paymentChannelAddr, voucher)
 	if err != nil {
 		logging.Error("error encoding Client DHT Discover Request: %+v", err)
@@ -60,20 +66,26 @@ func RequestDHTOfferDiscover(
 		return nil, errors.New("Verification failed")
 	}
 
-	_, _, _, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
+	_, _, gatewayIDs, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding client DHT discover offer response %s", err.Error())
 	}
-	var result [][]cidoffer.SubCIDOffer
-	for _, fcrMessage := range fcrMessages {
-		//result = append(result, )
+	if len(gatewayIDs) != len(fcrMessages) {
+		return nil, fmt.Errorf("error decoding client DHT discover offer response, lengths of gateway IDs = %d and FCR messages = %d do not match", len(gatewayIDs), len(fcrMessages))
+	}
+	var result []GatewaySubOffers
+	for idx, fcrMessage := range fcrMessages {
 		_, _, found, subCIDOffers, _, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
 		if decodeErr != nil {
 			logging.Error("error decoding gateway DHT discover offer response %s", decodeErr.Error())
 		}
 		// return first good one
 		if found && len(subCIDOffers) > 0 {
-			result = append(result, subCIDOffers)
+			gatewaysSubOffers := GatewaySubOffers{
+				GatewayID: &gatewayIDs[idx],
+				SubOffers: subCIDOffers,
+			}
+			result = append(result, gatewaysSubOffers)
 		}
 	}
 	return result, nil
