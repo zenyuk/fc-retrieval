@@ -70,7 +70,8 @@ func HandleGatewayDHTDiscoverRequestV2(_ *fcrp2pserver.FCRServerReader, writer *
 
 	amount, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
 	if err != nil {
-		return err
+		logging.Error("Payment manager receive error " + err.Error())
+		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
 
 	// Respond to the request
@@ -79,6 +80,7 @@ func HandleGatewayDHTDiscoverRequestV2(_ *fcrp2pserver.FCRServerReader, writer *
 	lenOffers := new(big2.Int).SetInt64(int64(len(offers)))
 	expectedAmount := offerPrice.Mul(offerPrice.Int, lenOffers)
 	if amount.Cmp(expectedAmount) < 0 {
+		logging.Error("Insufficient Funds, received " + amount.String() + ", expected: " + expectedAmount.String())
 		// TODO update paymentChannelID
 		return writer.WriteInsufficientFunds(c.Settings.TCPInactivityTimeout, 42)
 	}
