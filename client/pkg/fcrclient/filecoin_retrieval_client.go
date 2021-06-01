@@ -414,7 +414,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 
 // FindOffersDHTDiscoveryV2 finds offer using dht discovery from given gateway with maximum number of offers
 // offersNumberLimit - maximum number of offers the client asking to have
-func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) (map[string][]cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) ([]clientapi.GatewaySubOffers, error) {
 	defaultPaymentLane := uint64(0)
 	initialRequestPaymentAmount := new(big.Int).Mul(big.NewInt(numDHT), big.NewInt(defaultOfferPrice))
 	paymentChannel, voucher, needTopup, paymentErr := c.PaymentMgr().Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
@@ -436,29 +436,31 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
-	offersMap := make(map[string][]cidoffer.SubCIDOffer)
-
-	gw, exists := c.ActiveGateways[gatewayID.ToString()]
+	// entryGatewayInfo - a Gateway which will be an entry point for us to get to other Gateways
+	entryGatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return offersMap, errors.New("Given gatewayID is not in active nodes map")
+		return nil, errors.New("Given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	contactedGateways, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	nonce := rand.Int63()
+	ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
+	contactedGateways, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&entryGatewayInfo, contentID, nonce, ttl, numDHT, false, "", "")
 	if err != nil {
-		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return offersMap, errors.New("Error in requesting dht discovery")
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGatewayInfo.NodeID, err)
+		return nil, errors.New("Error in requesting dht discovery")
 	}
 	for i := 0; i < len(uncontactable); i++ {
 		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
 	}
 
 	var addedSubOffersCount int
+	var offersDigestsFromAllGateways [][][cidoffer.CIDOfferDigestSize]byte
 	for i := 0; i < len(contactedGateways); i++ {
-		gatewayID := contactedGateways[i]
+		contactedGatewayID := contactedGateways[i]
 		resp := contactedResp[i]
 		// Verify the sub response
 		// Get gateway's pubkey
-		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &gatewayID)
+		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &contactedGatewayID)
 		if err != nil {
 			logging.Error("Error in getting gateway info.")
 			continue
@@ -482,56 +484,21 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			continue
 		}
 		if !found {
-			return offersMap, nil
+			return []clientapi.GatewaySubOffers{}, nil
 		}
-		entry := make([]cidoffer.SubCIDOffer, 0)
-		for _, digest := range offerDigests {
-			// Get gateway's pubkey for verification
-			gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &gatewayID)
-			if err != nil {
-				logging.Error("Error in getting provider info.")
-				continue
-			}
-			if !validateGatewayInfo(&gatewayInfo) {
-				logging.Error("Provider register info not valid.")
-				continue
-			}
-			pubKey, err := gatewayInfo.GetSigningKey()
-			if err != nil {
-				logging.Error("Fail to obtain public key.")
-				continue
-			}
-
-			// TODO: should we call GetOfferByDigest?
-			// if yes - it doesn't return  SubCIDOffer, but CIDOffer
-			// func (mgr *FCROfferMgr) GetOfferByDigest(digest [cidoffer.CIDOfferDigestSize]byte) (result *cidoffer.CIDOffer, exist bool)
-			//offer := offerMgr.GetOfferByDigest(digest)
-			var offer *cidoffer.SubCIDOffer
-			logging.Debug("digest %v", digest)
-
-			// Verify the offer sig
-			if offer.Verify(pubKey) != nil {
-				logging.Error("Offer signature fail to verify.")
-				continue
-			}
-			// Now Verify the merkle proof
-			if offer.VerifyMerkleProof() != nil {
-				logging.Error("Merkle proof verification failed.")
-				continue
-			}
-			// Offer pass verification
-			entry = append(entry, *offer)
-			addedSubOffersCount++
-			logging.Info("Offer pass every verification, added to result")
-			// early return to comply with given offers number limit
-			if addedSubOffersCount >= offersNumberLimit {
-				offersMap[gatewayID.ToString()] = entry
-				return offersMap, nil
-			}
+		offersDigestsFromAllGateways = append(offersDigestsFromAllGateways, offerDigests)
+		addedSubOffersCount += len(offerDigests)
+		// comply with given offers number limit
+		if addedSubOffersCount >= offersNumberLimit {
+			offersDigestsFromAllGateways = offersDigestsFromAllGateways[:offersNumberLimit]
+			break
 		}
-		offersMap[gatewayID.ToString()] = entry
 	}
-	return offersMap, nil
+	allGatewaysOffers, discoverError := clientapi.RequestDHTOfferDiscover(&entryGatewayInfo, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
+	if discoverError != nil {
+		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
+	}
+	return allGatewaysOffers, nil
 }
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair
