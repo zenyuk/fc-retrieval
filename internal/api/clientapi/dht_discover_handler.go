@@ -19,12 +19,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ant0ine/go-json-rest/rest"
-
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HandleClientDHTCIDDiscoverRequest is used to handle client request for cid offer
@@ -91,7 +90,8 @@ func HandleClientDHTCIDDiscoverRequest(w rest.ResponseWriter, request *fcrmessag
 	}
 
 	// Sign message
-	if response.Sign(c.GatewayPrivateKey, c.GatewayPrivateKeyVersion) != nil {
+	err = response.Sign(c.GatewayPrivateKey, c.GatewayPrivateKeyVersion)
+	if err != nil {
 		s := "Internal error: Fail to sign message."
 		logging.Error(s + err.Error())
 		rest.Error(w, s, http.StatusInternalServerError)
