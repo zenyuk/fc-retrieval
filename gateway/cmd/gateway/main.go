@@ -88,6 +88,7 @@ func main() {
 		// gateway api
 		AddHandler(appSettings.BindGatewayAPI, fcrmessages.GatewayDHTDiscoverRequestType, gatewayapi.HandleGatewayDHTDiscoverRequest).
 		AddRequester(fcrmessages.GatewayDHTDiscoverRequestType, gatewayapi.RequestGatewayDHTDiscover).
+		AddRequester(fcrmessages.GatewayDHTDiscoverRequestV2Type, gatewayapi.RequestGatewayDHTDiscoverV2).
 		AddRequester(fcrmessages.GatewayListDHTOfferRequestType, gatewayapi.RequestListCIDOffer).
 		AddRequester(fcrmessages.GatewayNotifyProviderGroupCIDOfferSupportedRequestType, gatewayapi.NotifyProviderGroupCIDOfferSupported).
 		AddRequester(fcrmessages.GatewayDHTDiscoverOfferRequestType, gatewayapi.RequestGatewayDHTDiscoverOffer).
