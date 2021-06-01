@@ -6,6 +6,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
+	big2 "github.com/filecoin-project/go-state-types/big"
+	"github.com/filecoin-project/lotus/chain/types"
 )
 
 /*
@@ -33,11 +35,26 @@ func HandleGatewayDHTOfferRequest(_ *fcrp2pserver.FCRServerReader, writer *fcrp2
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
 	}
 
-	_, err = c.PaymentMgr.Receive(paymentChannelAddress, voucher)
+	offerPrice, err := types.ParseFIL(c.Settings.OfferPrice)
+	if err != nil {
+		s := "Fail to get default OfferPrice."
+		logging.Error(s + err.Error())
+		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
+	}
+
+	amount, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
 	if err != nil {
 		logging.Error("Internal error in payment manager Receive.")
 
 		return writer.WriteInvalidMessage(c.Settings.TCPInactivityTimeout)
+	}
+
+	lenOffers := new(big2.Int).SetInt64(int64(len(offerDigests)))
+	expectedAmount := offerPrice.Mul(offerPrice.Int, lenOffers)
+	if amount.Cmp(expectedAmount) < 0 {
+		logging.Error("Insufficient Funds, received " + amount.String() + ", expected: " + expectedAmount.String())
+		// TODO update paymentChannelID
+		return writer.WriteInsufficientFunds(c.Settings.TCPInactivityTimeout, 42)
 	}
 
 	subOffers := make([]cidoffer.SubCIDOffer, len(offerDigests))
