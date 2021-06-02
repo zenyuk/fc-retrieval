@@ -81,6 +81,23 @@ func GetImageTag(repo, tag string) string {
 	return remoteImage
 }
 
+// GetLotusToken gets the lotus token from the lotus image
+func GetLotusToken() string {
+	cmd := exec.Command("docker", "ps", "--filter", "ancestor=consensys/lotus-full-node:latest", "--format", "{{.ID}}")
+	stdout, err := cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+	id := string(stdout[:len(stdout)-1])
+	cmd = exec.Command("docker", "exec", id, "bash", "-c", "cd ~/.lotus; cat token")
+	stdout, err = cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+	token := string(stdout)
+	return token
+}
+
 // CreateNetwork creates a network
 func CreateNetwork(ctx context.Context) (*tc.Network, string) {
 	randomUuid, _ := uuid.NewRandom()

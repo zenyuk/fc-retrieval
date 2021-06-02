@@ -50,8 +50,8 @@ github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBp
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/ConsenSys/fc-retrieval-client v0.0.0-20210602014611-fe15abb47938 h1:BVSKD7pMBhUDz97lyosZ1x7UVVdNlgQc267ZfDrVitA=
-github.com/ConsenSys/fc-retrieval-client v0.0.0-20210602014611-fe15abb47938/go.mod h1:rjeo8v/MWijL+4U6GSnz0JI3LHLTTd/xsLVMPWCeSbw=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210602034218-578c7e2a41cc h1:llkufuaX4OvfS2zzbGFES0WtNYWCNCdp3VBdaKj12kY=
+github.com/ConsenSys/fc-retrieval-client v0.0.0-20210602034218-578c7e2a41cc/go.mod h1:rjeo8v/MWijL+4U6GSnz0JI3LHLTTd/xsLVMPWCeSbw=
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210531085459-8faba6d948aa h1:PUnumEoAI3K4z61cos8ltvAfKQ4A+myjd1rGl3Oz7+g=
 github.com/ConsenSys/fc-retrieval-common v0.0.0-20210531085459-8faba6d948aa/go.mod h1:FcTZiMqtqI1Oj5nGLMekMNxHogC/0ZxV6po7iskauy8=
 github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210602014823-62942f8653d1 h1:pJMpfscGwu+0x+SsQovSWBEq61Mtwye1qi3z1lAhU8Q=
