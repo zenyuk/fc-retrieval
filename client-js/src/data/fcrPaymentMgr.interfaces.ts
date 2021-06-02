@@ -1,5 +1,5 @@
 // Payment manager manages all payment related functions
-export type FCRPaymentMgrInterface = {
+export interface FCRPaymentMgr {
   privKey: string
   address: string
   authToken: string
