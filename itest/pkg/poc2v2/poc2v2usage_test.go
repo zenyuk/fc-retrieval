@@ -6,11 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
-
-	"github.com/stretchr/testify/assert"
 )
 
 //83003f298382e3211b441438b610da078166b162972f0e2f024c6663671c3fb6
@@ -55,39 +52,48 @@ func TestNewAccounts(t *testing.T) {
 	ap := "http://lotus-full-node:1234/rpc/v0"
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.nuS2Ueb0llOeX3q4K53AZXZNJkh8thYk3MXFGg4VSXA"
 
-	privateKeys, accounts, err := util.GenerateAccount(ap, token, 2)
+	t.Log("Start" + time.Now().String())
+	_, accounts, err := util.GenerateAccount(ap, token, 40)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	account1 := accounts[0]
-	account2 := accounts[1]
-	t.Log(account1)
-	t.Log(account2)
-
-	mgr1, err := fcrpaymentmgr.NewFCRPaymentMgr(privateKeys[0], ap, token)
-	if err != nil {
-		t.Fatal(err)
+	for _, acc := range accounts {
+		t.Log(acc)
 	}
 
-	mgr2, err := fcrpaymentmgr.NewFCRPaymentMgr(privateKeys[1], ap, token)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Log("End" + time.Now().String())
 
-	_, _, topup, err := mgr1.Pay(account2, 0, "0.001")
-	assert.Nil(t, err)
-	assert.True(t, topup)
+	time.Sleep(120 * time.Second)
 
-	err = mgr1.Topup(account2, "0.1")
-	assert.Nil(t, err)
+	// account1 := accounts[0]
+	// account2 := accounts[1]
+	// t.Log(account1)
+	// t.Log(account2)
 
-	chanAddr, voucher, topup, err := mgr1.Pay(account2, 0, "0.001")
-	assert.Nil(t, err)
-	assert.False(t, topup)
+	// mgr1, err := fcrpaymentmgr.NewFCRPaymentMgr(privateKeys[0], ap, token)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	received, err := mgr2.Receive(chanAddr, voucher)
-	assert.Nil(t, err)
+	// mgr2, err := fcrpaymentmgr.NewFCRPaymentMgr(privateKeys[1], ap, token)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	t.Log(received)
+	// _, _, topup, err := mgr1.Pay(account2, 0, "0.001")
+	// assert.Nil(t, err)
+	// assert.True(t, topup)
+
+	// err = mgr1.Topup(account2, "0.1")
+	// assert.Nil(t, err)
+
+	// chanAddr, voucher, topup, err := mgr1.Pay(account2, 0, "0.001")
+	// assert.Nil(t, err)
+	// assert.False(t, topup)
+
+	// received, err := mgr2.Receive(chanAddr, voucher)
+	// assert.Nil(t, err)
+
+	// t.Log(received)
 }

@@ -399,8 +399,9 @@ func GenerateAccount(lotusAP string, token string, num int) ([]string, []string,
 
 	privateKeys := make([]string, 0)
 	addresses := make([]string, 0)
+	cids := make([]cid.Cid, 0)
 
-	// Send message
+	// Send messages
 	for i := 0; i < num; i++ {
 		privKey, pubKey, err := generateKeyPair()
 		if err != nil {
@@ -435,15 +436,19 @@ func GenerateAccount(lotusAP string, token string, num int) ([]string, []string,
 		if err != nil {
 			return nil, nil, err
 		}
-
-		receipt := waitReceipt(&cid, &api)
-		if receipt.ExitCode != 0 {
-			return nil, nil, errors.New("Transaction fail to execute")
-		}
+		cids = append(cids, cid)
 
 		// Add to result
 		privateKeys = append(privateKeys, privKeyStr)
 		addresses = append(addresses, address1.String())
+	}
+
+	// Finally check receipts
+	for _, cid := range cids {
+		receipt := waitReceipt(&cid, &api)
+		if receipt.ExitCode != 0 {
+			return nil, nil, errors.New("Transaction fail to execute")
+		}
 	}
 
 	return privateKeys, addresses, nil
