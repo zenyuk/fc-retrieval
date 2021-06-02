@@ -1,6 +1,6 @@
 import { defaults, Settings } from './constants/defaults'
-import { FCRPaymentMgrInterface } from './data/fcrPaymentMgr.interfaces'
-import { GatewaysToUseInterface } from './data/gateway.interface'
+import { FCRPaymentMgr } from './data/fcrPaymentMgr.interfaces'
+import { GatewaysToUse } from './data/gateway.interface'
 
 export class CreateSettings {
   settings: Settings
@@ -36,13 +36,13 @@ export class CreateSettings {
 
 export class FilecoinRetrievalClient {
   settings: Settings
-  gatewaysToUse: GatewaysToUseInterface
-  paymentMgrs: FCRPaymentMgrInterface[]
+  gatewaysToUse: GatewaysToUse
+  paymentMgrs: FCRPaymentMgr[]
 
   constructor(settings: Settings) {
     this.settings = settings
-    this.gatewaysToUse = {} as GatewaysToUseInterface
-    this.paymentMgrs = [] as FCRPaymentMgrInterface[]
+    this.gatewaysToUse = {} as GatewaysToUse
+    this.paymentMgrs = [] as FCRPaymentMgr[]
   }
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways

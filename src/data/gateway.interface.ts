@@ -1,4 +1,4 @@
-export interface GatewayRegisterInterface {
+export interface GatewayRegister {
   nodeID: string
   address: string
   rootSigningKey: string
@@ -10,6 +10,6 @@ export interface GatewayRegisterInterface {
   networkInfoAdmin: string
 }
 
-export interface GatewaysToUseInterface {
-  [index: string]: GatewayRegisterInterface
+export interface GatewaysToUse {
+  [index: string]: GatewayRegister
 }
