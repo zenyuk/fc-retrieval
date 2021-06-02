@@ -18,12 +18,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
 	"github.com/stretchr/testify/assert"
-
 	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 var lotusAP = "http://lotus-full-node:1234/rpc/v0"
 var lotusToken string
+var superAcct string
 var gatewayConfig = config.NewConfig(".env.gateway")
 var providerConfig = config.NewConfig(".env.provider")
 var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdmin
@@ -39,6 +39,8 @@ func TestMain(m *testing.M) {
 	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
 
 	if itestEnv != "" {
+		lotusToken = os.Getenv("LOTUS_TOKEN")
+		superAcct = os.Getenv("SUPER_ACCT")
 		// Env is set, we are calling from docker container
 		// This logging should be only called after all tests finished.
 		m.Run()
@@ -95,11 +97,13 @@ func TestMain(m *testing.M) {
 	defer lotusContainer.Terminate(ctx)
 
 	// Get lotus token
-	lotusToken = util.GetLotusToken()
+	lotusToken, superAcct = util.GetLotusToken()
+	logging.Info("Lotus token is: %s", lotusToken)
+	logging.Info("Super Acct is %s", superAcct)
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true)
 	defer itestContainer.Terminate(ctx)
 	// Block until done.
 	if <-done {
@@ -115,7 +119,7 @@ func TestNewAccounts(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	var err error
-	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, 37)
+	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
