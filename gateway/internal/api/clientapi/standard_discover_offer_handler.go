@@ -57,7 +57,7 @@ func HandleClientStandardDiscoverOfferRequest(writer rest.ResponseWriter, reques
 		for i, digest := range offerDigests {
 			offer, exist := c.OffersMgr.GetOfferByDigest(digest)
 			fundedPaymentChannel[i] = exist
-			found = true
+			found = exist
 
 			cidOffer, err := offer.GenerateSubCIDOffer(pieceCID)
 			if err != nil {
