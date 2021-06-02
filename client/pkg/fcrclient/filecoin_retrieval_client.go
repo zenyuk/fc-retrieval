@@ -414,7 +414,9 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 
 // FindOffersDHTDiscoveryV2 finds offer using dht discovery from given gateway with maximum number of offers
 // offersNumberLimit - maximum number of offers the client asking to have
-func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) ([]clientapi.GatewaySubOffers, error) {
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) (map[string]*[]cidoffer.SubCIDOffer, error) {
+	offersMap := make(map[string]*[]cidoffer.SubCIDOffer)
+
 	defaultPaymentLane := uint64(0)
 	initialRequestPaymentAmount := new(big.Int).Mul(big.NewInt(numDHT), big.NewInt(defaultOfferPrice))
 	paymentChannel, voucher, needTopup, paymentErr := c.PaymentMgr().Pay(gatewayID.ToString(), defaultPaymentLane, initialRequestPaymentAmount)
@@ -484,7 +486,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			continue
 		}
 		if !found {
-			return []clientapi.GatewaySubOffers{}, nil
+			return offersMap, nil
 		}
 		offersDigestsFromAllGateways = append(offersDigestsFromAllGateways, offerDigests)
 		addedSubOffersCount += len(offerDigests)
@@ -498,7 +500,11 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	if discoverError != nil {
 		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
 	}
-	return allGatewaysOffers, nil
+	for _, entry := range allGatewaysOffers {
+		offersMap[entry.GatewayID.ToString()] = &entry.SubOffers
+	}
+
+	return offersMap, nil
 }
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair
