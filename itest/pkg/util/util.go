@@ -81,8 +81,8 @@ func GetImageTag(repo, tag string) string {
 	return remoteImage
 }
 
-// GetLotusToken gets the lotus token from the lotus image
-func GetLotusToken() string {
+// GetLotusToken gets the lotus token and the super account from the lotus container
+func GetLotusToken() (string, string) {
 	cmd := exec.Command("docker", "ps", "--filter", "ancestor=consensys/lotus-full-node:latest", "--format", "{{.ID}}")
 	stdout, err := cmd.Output()
 	if err != nil {
@@ -95,7 +95,14 @@ func GetLotusToken() string {
 		panic(err)
 	}
 	token := string(stdout)
-	return token
+
+	cmd = exec.Command("docker", "exec", id, "bash", "-c", "./lotus wallet default")
+	stdout, err = cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+	acct := string(stdout[:len(stdout)-1])
+	return token, acct
 }
 
 // CreateNetwork creates a network
@@ -318,7 +325,7 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 }
 
 // Start the itest, must only be called in host
-func StartItest(ctx context.Context, tag string, network string, color string, done chan bool, verbose bool) tc.Container {
+func StartItest(ctx context.Context, tag string, network string, color string, lotusToken string, superAcct string, done chan bool, verbose bool) tc.Container {
 	// Start a itest container
 	// Mount testdir
 	absPath, err := filepath.Abs(".")
@@ -347,7 +354,7 @@ func StartItest(ctx context.Context, tag string, network string, color string, d
 		Image:          GetImageTag("consensys/fc-retrieval-itest", tag),
 		Name:           "itest",
 		Networks:       []string{network},
-		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes"},
+		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes", "LOTUS_TOKEN": lotusToken, "SUPER_ACCT": superAcct},
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"itest"}},
 		BindMounts: map[string]string{
@@ -399,7 +406,7 @@ func (g *logConsumer) Accept(l tc.Log) {
 }
 
 // The following helper method is used to generate a new filecoin account with 10 filecoins of balance
-func GenerateAccount(lotusAP string, token string, num int) ([]string, []string, error) {
+func GenerateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
 	headers := http.Header{"Authorization": []string{"Bearer " + token}}
@@ -409,7 +416,7 @@ func GenerateAccount(lotusAP string, token string, num int) ([]string, []string,
 	}
 	defer closer()
 
-	mainAddress, err := address.NewFromString("t3usz3ebddk4cgocjid2m256bnhvrnnp4kiq22a64c3o6e6ij5nyfmdj5intarnmq7kuhkmgczxzcu7wfel2oa")
+	mainAddress, err := address.NewFromString(superAcct)
 	if err != nil {
 		return nil, nil, err
 	}

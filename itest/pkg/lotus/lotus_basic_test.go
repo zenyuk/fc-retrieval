@@ -61,7 +61,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
 	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
