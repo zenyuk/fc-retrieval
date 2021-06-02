@@ -1,5 +1,5 @@
 // GatewayRegister stores information of a registered gateway
-export type GatewayRegister = {
+export type GatewayRegisterType = {
   nodeID: string
   address: string
   rootSigningKey: string
