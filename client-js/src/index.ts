@@ -1,3 +1,3 @@
-import { CreateSettings, Client } from './Client'
+import { CreateSettings, FilecoinRetrievalClient } from './FilecoinRetrievalClient'
 
-export { CreateSettings, Client }
+export { CreateSettings, FilecoinRetrievalClient }
