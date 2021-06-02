@@ -16,6 +16,7 @@ package clientapi
  */
 
 import (
+	"math/big"
 	"net/http"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -48,7 +49,8 @@ func HandleClientStandardDiscoverOfferRequest(writer rest.ResponseWriter, reques
 	var response *fcrmessages.FCRMessage
 
 	receive, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
-	if err == nil && receive.Cmp(c.Settings.OfferPrice*len(offerDigests)) >= 0 {
+	totalPrice := big.NewInt(int64(len(offerDigests))).Mul(big.NewInt(1), c.Settings.OfferPrice)
+	if err == nil && receive.Cmp(totalPrice) >= 0 {
 		// Success - Search for offers
 		subOffers := make([]cidoffer.SubCIDOffer, len(offerDigests))
 		fundedPaymentChannel := make([]bool, len(offerDigests))
