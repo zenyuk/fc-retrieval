@@ -61,8 +61,8 @@ lbuild:
 	
 
 # Test all packages, skipping lotus-full-node on CircleCI
-itestlocal: 
-	go test -v -p=1 --count=1 `go list ./... | grep -v lotus-full-node | grep -v poc2v2`
+itestlocal:
+	go test -v -p=1 --count=1 `go list ./... | grep -v poc2v2`
 
 setup-env-localtesting:
 	cd scripts; bash setup-env.sh
