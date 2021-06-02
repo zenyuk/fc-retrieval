@@ -63,7 +63,7 @@ export class Client {
     this.paymentMgrLock = [] as FCRPaymentMgr[]
   }
 
-  paymentMgr() {}
+  // paymentMgr() {}
 
   // FindGateways find gateways located near to the specified location. Use AddGateways
   // to use these gateways.
@@ -123,7 +123,9 @@ export class Client {
   findDHTOfferAck() {}
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
-  findOffersStandardDiscoveryV2() {}
+  findOffersStandardDiscoveryV2() {
+    // TO REFACTOR
+  }
 
-  private pay() {}
+  // private pay() {}
 }

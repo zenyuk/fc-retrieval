@@ -39,6 +39,6 @@ describe('Client', () => {
 
     await client.addGatewaysToUse(['9876543210'])
     const gateways = await client.getGatewaysToUse()
-    expect(gateways.nodeID).toEqual({ '9876543210': mockedResponse.data[0].nodeID })
+    expect(gateways).toEqual({ '9876543210': mockedResponse.data[0] })
   })
 })
