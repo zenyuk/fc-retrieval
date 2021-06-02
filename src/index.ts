@@ -1,3 +1,3 @@
-import { CreateSettings, Client, Gateway } from './Client'
+import { CreateSettings, Client } from './Client'
 
-export { CreateSettings, Client, Gateway }
+export { CreateSettings, Client }
