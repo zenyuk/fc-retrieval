@@ -1,6 +1,6 @@
 import { defaults, Settings } from './constants/defaults'
-import { FCRPaymentMgr } from './data/fcrPaymentMgr.interfaces'
-import { GatewaysToUse } from './data/gateway.interface'
+import { FCRPaymentMgr } from './interfaces/fcrPaymentMgr.interfaces'
+import { GatewaysToUse } from './interfaces/gateway.interface'
 
 export class CreateSettings {
   settings: Settings
