@@ -89,6 +89,7 @@ func main() {
 	c.P2PServer.
 		// gateway api
 		AddHandler(appSettings.BindGatewayAPI, fcrmessages.GatewayDHTDiscoverRequestType, gatewayapi.HandleGatewayDHTDiscoverRequest).
+		AddHandler(appSettings.BindGatewayAPI, fcrmessages.GatewayDHTDiscoverOfferResponseType, gatewayapi.HandleGatewayDHTOfferRequest).
 		AddRequester(fcrmessages.GatewayDHTDiscoverRequestType, gatewayapi.RequestGatewayDHTDiscover).
 		AddRequester(fcrmessages.GatewayDHTDiscoverRequestV2Type, gatewayapi.RequestGatewayDHTDiscoverV2).
 		AddRequester(fcrmessages.GatewayListDHTOfferRequestType, gatewayapi.RequestListCIDOffer).
