@@ -1,4 +1,4 @@
-import { Content } from './content.type'
+import { Content } from './types'
 
 export class FCRMerkleProof {
   path: string[] = []
