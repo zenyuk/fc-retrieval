@@ -1,17 +1,17 @@
-import {Content} from './content.type'
+import { Content } from './content.type'
 
 export class FCRMerkleProof {
-	path:  string[] = []
-	index: number[] = []
+  path: string[] = []
+  index: number[] = []
 
   verifyContent(content: Content, root: string): boolean {
     // TODO
-    return true;
+    return true
   }
 
   marshalJSON(): string {
     // TODO
-    return '';
+    return ''
   }
 
   unmarshalJSON(p: string) {

@@ -1,4 +1,4 @@
-export interface Settings {
+export interface DefaultSettings {
   defaultEstablishmentTTL: number
   defaultLogLevel: string
   defaultLogTarget: string
@@ -6,7 +6,7 @@ export interface Settings {
   defaultRegisterURL: string
 }
 
-export const defaults: Settings = {
+export const defaults: DefaultSettings = {
   // DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
   defaultEstablishmentTTL: 100,
 
