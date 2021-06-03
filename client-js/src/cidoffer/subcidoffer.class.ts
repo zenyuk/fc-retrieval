@@ -5,8 +5,8 @@ import { NodeID } from '../nodeid/nodeid.interface'
 
 export class SubCIDOffer {
   // GetProviderID returns the provider ID of this offer.
-  getProviderID(): NodeID {
-    return {} as NodeID
+  getProviderID(): string {
+    return ''
   }
 
   // GetSubCID returns the sub cid of this offer.
@@ -45,7 +45,7 @@ export class SubCIDOffer {
   }
 
   // Verify is used to verify the offer with a given public key.
-  verify(pubKey: KeyPair) {}
+  verify(pubKey: string) {}
 
   // VerifyMerkleProof is used to verify the sub cid is part of the merkle trie
   verifyMerkleProof() {}

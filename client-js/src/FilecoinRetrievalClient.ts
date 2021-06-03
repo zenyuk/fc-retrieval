@@ -1,12 +1,13 @@
 import { Settings } from './config/settings.interface'
 import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class'
-import { GatewayRegister, GatewaysToUse } from './gateway/gateway.interface'
+import { GatewaysToUse } from './gateway/gateway.interface'
 import { ContentID } from './cid/cid.interface'
 import { NodeID } from './nodeid/nodeid.interface'
 import { SubCIDOffer } from './cidoffer/subcidoffer.class'
-import { getProviderByID } from './clientapi/clientapi.class'
+import { getProviderByID } from './register/register.class'
 import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester'
 import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2'
+import { GatewayRegister } from './register/register.class'
 
 export interface payResponse {
   paychAddrs: string
@@ -75,7 +76,7 @@ export class FilecoinRetrievalClient {
     const validOffers = [] as SubCIDOffer[]
     for (const offer of offers) {
       const providerInfo = getProviderByID(this.settings.registerURL, offer.getProviderID())
-      const pubKey = providerInfo.getSigningKey
+      const pubKey = providerInfo.signingKey
       if (offer.verify(pubKey) != null) {
         // console.log('Offer signature fail to verify.')
         continue
