@@ -1,5 +1,5 @@
 import { Settings } from './constants/defaults'
-import { FCRPaymentMgr } from './fcrPaymentMgr/fcrPaymentMgr.interfaces'
+import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class'
 import { GatewaysToUse } from './gateway/gateway.interface'
 import { ContentID } from './cid/cid.interface'
 import { NodeID } from './nodeid/nodeid.interface'
