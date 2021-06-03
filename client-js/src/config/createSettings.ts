@@ -9,23 +9,27 @@ export class CreateSettings {
   }
 
   setDefaultEstablishmentTTL(ttl: number) {
-    this.settings.defaultEstablishmentTTL = ttl
+    this.settings.establishmentTTL = ttl
   }
 
   setDefaultLogLevel(logLevel: string) {
-    this.settings.defaultLogLevel = logLevel
+    // this.settings.defaultLogLevel = logLevel
+    this.settings.logLevel = logLevel
   }
 
   setDefaultLogTarget(logTarget: string) {
-    this.settings.defaultLogTarget = logTarget
+    // this.settings.defaultLogTarget = logTarget
+    this.settings.logTarget = logTarget
   }
 
   setDefaultLogServiceName(serviceName: string) {
-    this.settings.defaultLogServiceName = serviceName
+    // this.settings.defaultLogServiceName = serviceName
+    this.settings.logServiceName = serviceName
   }
 
   setDefaultRegisterURL(url: string) {
-    this.settings.defaultRegisterURL = url
+    // this.settings.defaultRegisterURL = url
+    this.settings.registerURL = url
   }
 
   build(): Settings {
