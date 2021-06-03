@@ -4,6 +4,13 @@ import { GatewaysToUse } from './gateway/gateway.interface'
 import { ContentID } from './cid/cid.interface'
 import { NodeID } from './nodeid/nodeid.interface'
 
+export interface payResponse {
+  paychAddrs: string, 
+  voucher: string, 
+  topup: boolean, 
+  subCIDOffers: 
+}
+
 export class FilecoinRetrievalClient {
   settings: Settings
   activeGateways: GatewaysToUse
@@ -19,7 +26,15 @@ export class FilecoinRetrievalClient {
 
   // AddActiveGateways adds one or more gateways to active gateway map.
   // Returns the number of gateways added.
-  addActiveGateways() {}
+  AddGatewaysToUse(): number {
+    return 42
+  }
+
+  // AddActiveGateways adds one or more gateways to active gateway map.
+  // Returns the number of gateways added.
+  AddActiveGateways(gatewayIDs: NodeID[]): number {
+    return 42
+  }
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
   findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
@@ -27,4 +42,6 @@ export class FilecoinRetrievalClient {
 
     return ['hello']
   }
+
+  pay(gateway: GatewaysToUse) {}
 }
