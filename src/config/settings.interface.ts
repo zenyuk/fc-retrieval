@@ -4,6 +4,9 @@ export interface Settings {
   establishmentTTL: number
   registerURL: string
   client: NodeID
+  logLevel: string
+  logTarget: string
+  logServiceName: string
   blockchainPrivateKey: any
   retrievalPrivateKey: any
   retrievalPrivateKeyVer: any
