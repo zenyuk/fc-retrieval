@@ -136,3 +136,20 @@ func (o *offerStorage) get(cid *cid.ContentID) []cidoffer.CIDOffer {
 	o.lock.RUnlock()
 	return res
 }
+
+// func (o *offerStorage) print() {
+// 	fmt.Println("")
+// 	fmt.Println("")
+// 	fmt.Println("")
+// 	fmt.Println("====================Print offer storage=====================")
+// 	for key, val := range o.cidMap {
+// 		fmt.Printf("CID %v -> \n", key)
+// 		for digest, offer := range val.dMap {
+// 			fmt.Printf("\t\tDigest: %v -> Offer: %v\n", digest, offer.GetCIDs())
+// 		}
+// 	}
+// 	fmt.Println("============================================================")
+// 	fmt.Println("")
+// 	fmt.Println("")
+// 	fmt.Println("")
+// }
