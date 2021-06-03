@@ -24,6 +24,12 @@ export class FCRPaymentMgr {
 
   constructor(privateKey: string, lotusAPIAddr: string, authToken: string) {
     // TODO
+    this.privKey = ''
+    this.address = {} as Address
+    this.authToken = ''
+    this.lotusAPIAddr = ''
+    this.outboundChs = {} as Map<string, ChannelState>
+    this.inboundChs = {} as Map<string, ChannelState>
   }
 
   topup(recipient: string, amount: string) {
