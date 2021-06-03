@@ -1,5 +1,5 @@
 import { ContentID } from '../cid/cid.interface'
-import { SubCIDOffer } from '../cidoffer/cidoffer.interface'
+import { SubCIDOffer } from '../cidoffer/subcidoffer.class'
 import { GatewayRegister } from '../register/register.class'
 
 export const requestStandardDiscoverOffer = (
