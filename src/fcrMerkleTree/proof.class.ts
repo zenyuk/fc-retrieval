@@ -1,8 +1,8 @@
-import {Content} from './content.type'
+import {Content} from './types';
 
 export class FCRMerkleProof {
-	path:  string[] = []
-	index: number[] = []
+	path:  string[] = [];
+	index: number[] = [];
 
   verifyContent(content: Content, root: string): boolean {
     // TODO
