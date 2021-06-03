@@ -61,6 +61,9 @@ func CreateFCRMessage(msgType int32, msgBody []byte) *FCRMessage {
 
 // GetMessageType is used to get the message type of the message.
 func (fcrMsg *FCRMessage) GetMessageType() int32 {
+	if fcrMsg == nil {
+		return int32(0)
+	}
 	return fcrMsg.messageType
 }
 
