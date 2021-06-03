@@ -67,6 +67,7 @@ func (r *Ring) Insert(hex string) {
 	if r.size == 0 {
 		r.head = newNode
 		r.size++
+		return
 	}
 	// If head is bigger than newNode
 	cmp := r.head.key.Cmp(newNode.key)
