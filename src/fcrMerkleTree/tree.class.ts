@@ -1,21 +1,21 @@
-import {Content, MerkleTree} from './types';
-import { FCRMerkleProof } from './proof.class';
+import { Content, MerkleTree } from './types'
+import { FCRMerkleProof } from './proof.class'
 
 export class FCRMerkleTree {
-	tree: MerkleTree;
+  tree: MerkleTree
 
   getMerkleRoot(): string {
     // TODO
-    return '';
+    return ''
   }
 
   generateMerkleProof(content: Content): FCRMerkleProof {
     // TODO
-    return undefined;
+    return undefined
   }
 }
 
 export const createMerkleTree = (contents: Content[]): FCRMerkleTree => {
-	// TODO
-	return undefined;
+  // TODO
+  return undefined
 }
