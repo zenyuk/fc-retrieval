@@ -487,11 +487,15 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 		if !found {
 			return offersMap, nil
 		}
+		// comply with given offers number limit
+		if addedSubOffersCount+len(offerDigests) > offersNumberLimit {
+			offerDigests = offerDigests[:(offersNumberLimit - addedSubOffersCount)]
+		}
+
 		offersDigestsFromAllGateways = append(offersDigestsFromAllGateways, offerDigests)
 		addedSubOffersCount += len(offerDigests)
-		// comply with given offers number limit
+
 		if addedSubOffersCount >= offersNumberLimit {
-			offersDigestsFromAllGateways = offersDigestsFromAllGateways[:offersNumberLimit]
 			break
 		}
 	}
