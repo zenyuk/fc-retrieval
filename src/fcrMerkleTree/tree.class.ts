@@ -15,6 +15,6 @@ export class FCRMerkleTree {
 
   generateMerkleProof(content: Content): FCRMerkleProof {
     // TODO
-    return undefined
+    return {} as FCRMerkleProof
   }
 }
