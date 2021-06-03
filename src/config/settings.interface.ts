@@ -12,5 +12,5 @@ export interface Settings {
   lotusAuthToken: string
   searchPrice: number
   offerPrice: number
-  topUpAmount: number
+  topUpAmount: string
 }

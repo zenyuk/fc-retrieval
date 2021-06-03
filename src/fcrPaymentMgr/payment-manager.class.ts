@@ -1,16 +1,16 @@
-import { Address } from "./types"
+import { Address } from './types'
 
 export interface LaneState {
-	nonce: number
-	redeemed: bigint
-	vouchers: string[]
+  nonce: number
+  redeemed: BigInt
+  vouchers: string[]
 }
 
 export interface ChannelState {
-	addr: Address
-	balance:  bigint
-	redeemed: bigint
-	laneStates: Map<number, LaneState>
+  addr: Address
+  balance: BigInt
+  redeemed: BigInt
+  laneStates: Map<number, LaneState>
 }
 
 export class FCRPaymentMgr {
