@@ -298,6 +298,10 @@ func TestInitialiseClient(t *testing.T) {
 	if !assert.Nil(t, err, "Error should be nil") {
 		return
 	}
+	res := client.PaymentMgr()
+	if !assert.NotNil(t, res, "Fail to initialise a payment manager") {
+		return
+	}
 
 	added := client.AddGatewaysToUse(gwIDs)
 	if !assert.Equal(t, 32, added, "32 gateways should be added") {
