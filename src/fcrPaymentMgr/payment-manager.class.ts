@@ -1,16 +1,15 @@
 import { Address } from './types'
-import BN from 'bn.js'
 
 export interface LaneState {
   nonce: number
-  redeemed: BN
+  redeemed: string
   vouchers: string[]
 }
 
 export interface ChannelState {
   addr: Address
-  balance: BN
-  redeemed: BN
+  balance: string
+  redeemed: string
   laneStates: Map<number, LaneState>
 }
 
