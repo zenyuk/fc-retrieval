@@ -1,4 +1,5 @@
-import { defaults, Settings } from '../constants/defaults'
+import { Settings } from './settings.interface'
+import { defaults } from '../constants/defaults'
 
 export class CreateSettings {
   settings: Settings
