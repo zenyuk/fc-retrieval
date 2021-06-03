@@ -1,8 +1,8 @@
-import {Content, MerkleTree} from './types'
+import { Content, MerkleTree } from './types'
 import { FCRMerkleProof } from './proof.class'
 
 export class FCRMerkleTree {
-	tree: MerkleTree
+  tree: MerkleTree
 
   constructor(contents: Content[]) {
     // TODO
