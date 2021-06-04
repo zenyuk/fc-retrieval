@@ -15,6 +15,7 @@ import {
   decodeProviderPublishDHTOfferResponse,
 } from './fcrMessages/provider_publish_dht_offer'
 import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
+import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
 
 export interface payResponse {
   paychAddrs: string
@@ -55,20 +56,22 @@ export class FilecoinRetrievalClient {
     gatewayID: NodeID,
     numDHT: number,
     offersNumberLimit: number,
-  ): SubCIDOffer[] {
+  ): Map<string, SubCIDOffer[]> {
+    const offersMap = new Map<string, SubCIDOffer[]>()
+
     const gw = this.activeGateways[gatewayID.id]
 
     const defaultPaymentLane = 0
     const initialRequestPaymentAmount = numDHT * this.settings.searchPrice
-    let payResult = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+    let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
 
-    if (payResult.topup) {
+    if (payResponse.topup) {
       this.paymentMgr.topup(gw.address, this.settings.topUpAmount)
 
-      payResult = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
-      if (payResult.topup) {
+      payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+      if (payResponse.topup) {
         // Unable to make payment for initial DHT offers discovery
-        return [] as SubCIDOffer[]
+        return offersMap
       }
     }
 
@@ -81,11 +84,11 @@ export class FilecoinRetrievalClient {
       ttl,
       numDHT,
       false,
-      payResult.paychAddrs,
-      payResult.voucher,
+      payResponse.paychAddrs,
+      payResponse.voucher,
     )
     let addedSubOffersCount = 0
-    let offersDigestsFromAllGateways: string[][]
+    let offersDigestsFromAllGateways: string[][] = [[]]
 
     for (let i = 0; i < request.contactedResp.length; i++) {
       const contactedGatewayID = request.contactedGateways[i]
@@ -111,13 +114,53 @@ export class FilecoinRetrievalClient {
         continue
       }
       if (!decoded.found) {
-        return [] as SubCIDOffer[]
+        return offersMap
+      }
+      // comply with given offers number limit
+      if (addedSubOffersCount + decoded.subCidOffersDigest.length > offersNumberLimit) {
+        offersDigestsFromAllGateways.push(decoded.subCidOffersDigest.slice(0, offersNumberLimit - addedSubOffersCount))
+      } else {
+        offersDigestsFromAllGateways.push(decoded.subCidOffersDigest)
+      }
+      addedSubOffersCount += decoded.subCidOffersDigest.length
+      if (addedSubOffersCount >= offersNumberLimit) {
+        break
       }
     }
 
-    const offers = [] as SubCIDOffer[]
+    let unit = 0
+    for (let entry in offersDigestsFromAllGateways) {
+      unit += entry.length
+    }
+    const offerRequestPaymentAmount = this.settings.offerPrice * unit
 
-    return offers
+    payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+
+    if (payResponse.topup) {
+      this.paymentMgr.topup(gw.address, this.settings.topUpAmount)
+
+      payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+      if (payResponse.topup) {
+        // Unable to make payment for initial DHT offers discovery
+        return offersMap
+      }
+    }
+
+    const gatewaySubOffers = requestDHTOfferDiscover(
+      gw,
+      request.contactedGateways,
+      contentID,
+      nonce,
+      offersDigestsFromAllGateways,
+      payResponse.paychAddrs,
+      payResponse.voucher,
+    )
+
+    for (let entry of gatewaySubOffers) {
+      offersMap.set(entry.gatewayID.id, entry.subOffers)
+    }
+
+    return offersMap
   }
 
   validateGatewayInfo = (gatewayInfo: GatewayRegister): boolean => {
