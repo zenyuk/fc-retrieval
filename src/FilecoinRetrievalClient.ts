@@ -7,8 +7,13 @@ import { SubCIDOffer } from './cidoffer/subcidoffer.class'
 import { getGatewayByID, getProviderByID } from './register/register.class'
 import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester'
 import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2'
-import { GatewayRegister } from './register/register.class'
-import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
+import { GatewayRegister, validateProviderInfo, validateGatewayInfo } from './register/register.class'
+import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester'
+import { verifyMessage } from './fcrcrypto/msg_signing'
+import {
+  decodeProviderPublishDHTOfferRequest,
+  decodeProviderPublishDHTOfferResponse,
+} from './fcrMessages/provider_publish_dht_offer'
 
 export interface payResponse {
   paychAddrs: string
@@ -118,15 +123,60 @@ export class FilecoinRetrievalClient {
     return false
   }
 
+  FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): boolean {
+    const provider = getProviderByID(this.settings.registerURL, providerID)
+
+    const pvalidation = validateProviderInfo(provider)
+    if (!pvalidation) {
+      throw new Error('Invalid register info')
+    }
+
+    const dhtOfferAckResponse = requestDHTOfferAck(provider, contentID, gatewayID)
+    if (!dhtOfferAckResponse.found) {
+      return false
+    }
+
+    const gateway = getGatewayByID(this.settings.registerURL, gatewayID)
+
+    const gvalidation = validateGatewayInfo(gateway)
+    if (!gvalidation) {
+      throw new Error('Invalid register info')
+    }
+
+    const gwPubKey = gateway.getSigningKey()
+    const pvdPubKey = provider.getSigningKey()
+
+    dhtOfferAckResponse.offerRequest.verify(pvdPubKey)
+
+    const offers = decodeProviderPublishDHTOfferRequest(dhtOfferAckResponse.offerRequest)
+    const found = false
+    for (const offer in offers) {
+      // ?
+    }
+    if (!found) {
+      throw new Error('Initial request does not contain the given cid')
+    }
+
+    const verified = dhtOfferAckResponse.offerResponse.verify(pvdPubKey)
+    if (!verified) {
+      throw new Error('Error in verifying the ack')
+    }
+
+    const dhtOfferResponse = decodeProviderPublishDHTOfferResponse(dhtOfferAckResponse.offerResponse)
+    verifyMessage(gwPubKey, dhtOfferResponse.signature, dhtOfferAckResponse.offerRequest)
+
+    return true
+  }
+
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
   findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
     const gw = this.activeGateways[gatewayID.id]
 
-    const payResponse = this.pay(gw)
+    const payResponse = this.paymentMgr.pay(gw)
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeID, this.settings.topUpAmount)
-      const payResponse = this.pay(gw)
+      const payResponse = this.paymentMgr.pay(gw)
     }
 
     const offerDigests = requestStandardDiscoverV2(
@@ -167,10 +217,5 @@ export class FilecoinRetrievalClient {
       }
     }
     return validOffers
-  }
-
-  pay(gateway: GatewayRegister): payResponse {
-    //
-    return {} as payResponse
   }
 }
