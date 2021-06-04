@@ -27,7 +27,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
-var httpClient = &http.Client{Timeout: 10 * time.Second}
+var httpClient = &http.Client{Timeout: 180 * time.Second}
 
 // GetJSON request Get JSON
 func GetJSON(url string, target interface{}) error {
