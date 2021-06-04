@@ -1,9 +1,17 @@
 import { ContentID } from '../cid/cid.interface'
-import { KeyPair } from '../fcrcrypto/types'
 import { FCRMerkleProof } from '../fcrMerkleTree/proof.class'
 import { NodeID } from '../nodeid/nodeid.interface'
 
 export class SubCIDOffer {
+  providerID: NodeID
+  subCID: ContentID
+  merkleRoot: string
+  merkleProof: FCRMerkleProof
+  price: number
+  expiry: number
+  qos: number
+  signature: string
+  
   // GetProviderID returns the provider ID of this offer.
   getProviderID(): string {
     return ''
