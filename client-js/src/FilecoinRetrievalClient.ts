@@ -10,6 +10,10 @@ import { requestStandardDiscoverV2 } from './clientapi/standard_discover_request
 import { GatewayRegister, validateProviderInfo, validateGatewayInfo } from './register/register.class'
 import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester'
 import { verifyMessage } from './fcrcrypto/msg_signing'
+import {
+  decodeProviderPublishDHTOfferRequest,
+  decodeProviderPublishDHTOfferResponse,
+} from './fcrMessages/provider_publish_dht_offer'
 
 export interface payResponse {
   paychAddrs: string
@@ -72,7 +76,7 @@ export class FilecoinRetrievalClient {
 
     const offers = decodeProviderPublishDHTOfferRequest(dhtOfferAckResponse.offerRequest)
     const found = false
-    for (const offer of offers) {
+    for (const offer in offers) {
       // ?
     }
     if (!found) {
@@ -84,8 +88,8 @@ export class FilecoinRetrievalClient {
       throw new Error('Error in verifying the ack')
     }
 
-    const signature = decodeProviderPublishDHTOfferResponse(dhtOfferAckResponse.offerResponse)
-    verifyMessage(gwPubKey, signature, dhtOfferAckResponse.offerRequest)
+    const dhtOfferResponse = decodeProviderPublishDHTOfferResponse(dhtOfferAckResponse.offerResponse)
+    verifyMessage(gwPubKey, dhtOfferResponse.signature, dhtOfferAckResponse.offerRequest)
 
     return true
   }
