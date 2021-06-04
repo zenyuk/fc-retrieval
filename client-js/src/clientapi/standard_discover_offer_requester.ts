@@ -12,5 +12,8 @@ export const requestStandardDiscoverOffer = (
   voucher: string,
 ): SubCIDOffer[] => {
   const offers = [] as SubCIDOffer[]
+
+  const response = sendMessage(gatewayInfo.networkInfoClient, request)
+
   return offers
 }
