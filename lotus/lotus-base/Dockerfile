@@ -2,7 +2,7 @@
 FROM golang:1.15.6 as builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates make gcc musl-dev git mesa-opencl-icd ocl-icd-opencl-dev bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev tmux
-RUN git clone https://github.com/filecoin-project/lotus.git && cd lotus && git checkout v1.9.0
+RUN git clone https://github.com/filecoin-project/lotus.git && cd lotus && git checkout v1.6.0
 RUN cd /app/lotus/extern && git clone https://github.com/filecoin-project/filecoin-ffi.git && cd filecoin-ffi && git checkout 58ef68d06a44cf9c
 WORKDIR /app/lotus
 RUN make 2k

@@ -286,12 +286,12 @@ func TestForceUpdate(t *testing.T) {
 	}
 
 	// Now List DHT Offers
-	for i := 0; i < 32; i++ {
-		err := gwAdmin.ListDHTOffer(gwIDs[i])
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
+	// for i := 0; i < 32; i++ {
+	// 	err := gwAdmin.ListDHTOffer(gwIDs[i])
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+	// }
 
 	t.Log("/*******************************************************/")
 	t.Log("/*                  End TestForceUpdate                */")
