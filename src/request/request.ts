@@ -1,4 +1,4 @@
-import { FCRMessage } from '../fcrMessages/fcrMessage.interface'
+import { FCRMessage } from '../fcrMessages/fcrMessage.class'
 
 // GetJSON request Get JSON
 export const getJSON = (url: string): any => {

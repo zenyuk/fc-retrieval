@@ -1,4 +1,4 @@
-export class FcrMessage {
+export class FCRMessage {
   messageType: number = 0
   protocolVersion: number = 0
   protocolSupported: number[] = []
@@ -10,6 +10,6 @@ export class FcrMessage {
   }
 }
 
-export const createFCRMessage = (messageType: number, body: string): FcrMessage => {
-  return {} as FcrMessage
+export const createFCRMessage = (messageType: number, body: string): FCRMessage => {
+  return {} as FCRMessage
 }
