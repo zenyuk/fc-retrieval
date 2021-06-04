@@ -499,6 +499,29 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			break
 		}
 	}
+
+	// Need to pay again
+	unit := 0
+	for _, entry := range offersDigestsFromAllGateways {
+		unit += len(entry)
+	}
+	offerRequestPaymentAmount := new(big.Int).Mul(big.NewInt(int64(unit)), c.Settings.offerPrice)
+
+	paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGatewayInfo.Address, defaultPaymentLane, offerRequestPaymentAmount)
+	if paymentErr != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", paymentErr.Error())
+	}
+	if needTopup {
+		if err := c.PaymentMgr().Topup(entryGatewayInfo.Address, c.Settings.topUpAmount); err != nil {
+			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
+		}
+		paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGatewayInfo.Address, defaultPaymentLane, offerRequestPaymentAmount)
+		if needTopup || paymentErr != nil {
+			return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
+		}
+	}
+	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
+
 	allGatewaysOffers, discoverError := clientapi.RequestDHTOfferDiscover(&entryGatewayInfo, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
 	if discoverError != nil {
 		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
