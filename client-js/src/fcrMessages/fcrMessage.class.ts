@@ -1,15 +1,23 @@
+const defaultProtocolVersion = 1
+const defaultAlternativeProtocolVersion = 1
+const protocolSupported = [defaultProtocolVersion, defaultAlternativeProtocolVersion]
+
 export class FCRMessage {
-  messageType: number = 0
-  protocolVersion: number = 0
-  protocolSupported: number[] = []
-  messageBody: string = ''
-  signature: string = ''
+  messageType: number
+  protocolVersion: number
+  protocolSupported: number[]
+  messageBody: string
+  signature: string
+
+  constructor(msgType: number, msgBody: string) {
+    this.messageType = msgType
+    this.messageBody = msgBody
+    this.protocolVersion = defaultProtocolVersion
+    this.protocolSupported = protocolSupported
+    this.signature = ''
+  }
 
   verify(pubKey: string): boolean {
     return true
   }
-}
-
-export const createFCRMessage = (messageType: number, body: string): FCRMessage => {
-  return {} as FCRMessage
 }
