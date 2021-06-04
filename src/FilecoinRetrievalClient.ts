@@ -4,10 +4,11 @@ import { GatewaysToUse } from './gateway/gateway.interface'
 import { ContentID } from './cid/cid.interface'
 import { NodeID } from './nodeid/nodeid.interface'
 import { SubCIDOffer } from './cidoffer/subcidoffer.class'
-import { getProviderByID } from './register/register.class'
+import { getGatewayByID, getProviderByID } from './register/register.class'
 import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester'
 import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2'
 import { GatewayRegister } from './register/register.class'
+import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
 
 export interface payResponse {
   paychAddrs: string
@@ -41,6 +42,80 @@ export class FilecoinRetrievalClient {
   AddActiveGateways(gatewayIDs: NodeID[]): number {
     //
     return 42
+  }
+
+  findOffersDHTDiscoveryV2(
+    contentID: ContentID,
+    gatewayID: NodeID,
+    numDHT: number,
+    offersNumberLimit: number,
+  ): SubCIDOffer[] {
+    const gw = this.activeGateways[gatewayID.id]
+
+    const defaultPaymentLane = 0
+    const initialRequestPaymentAmount = numDHT * this.settings.searchPrice
+    let payResult = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+
+    if (payResult.topup) {
+      this.paymentMgr.topup(gw.address, this.settings.topUpAmount)
+
+      payResult = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+      if (payResult.topup) {
+        // Unable to make payment for initial DHT offers discovery
+        return [] as SubCIDOffer[]
+      }
+    }
+
+    const nonce = 0
+    const ttl = 0
+    const request = requestDHTDiscoverV2(
+      gw,
+      contentID,
+      nonce,
+      ttl,
+      numDHT,
+      false,
+      payResult.paychAddrs,
+      payResult.voucher,
+    )
+    let addedSubOffersCount = 0
+    let offersDigestsFromAllGateways: string[][]
+
+    for (let i = 0; i < request.contactedResp.length; i++) {
+      const contactedGatewayID = request.contactedGateways[i]
+      const resp = request.contactedResp[i]
+      const gatewayInfo = getGatewayByID(this.settings.registerURL, contactedGatewayID.id)
+      if (!this.validateGatewayInfo(gatewayInfo)) {
+        // logging.Error("Gateway register info not valid.")
+        continue
+      }
+      const pubKey = gatewayInfo.getSigningKey()
+      if (pubKey == undefined) {
+        //logging.Error('Fail to obtain public key.')
+        continue
+      }
+      if (!resp.verify(pubKey)) {
+        //logging.Error('Fail to verify sub response.')
+        continue
+      }
+
+      const decoded = decodeGatewayDHTDiscoverResponseV2(resp)
+      if (decoded === undefined) {
+        // logging.Error('Fail to decode response')
+        continue
+      }
+      if (!decoded.found) {
+        return [] as SubCIDOffer[]
+      }
+    }
+
+    const offers = [] as SubCIDOffer[]
+
+    return offers
+  }
+
+  validateGatewayInfo = (gatewayInfo: GatewayRegister): boolean => {
+    return false
   }
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
