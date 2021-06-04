@@ -129,6 +129,10 @@ func (s *FCRP2PServer) handleIncomingConnection(conn net.Conn, handlers map[int3
 			logging.Error("P2P Server has error reading message from %s: %s", conn.RemoteAddr(), err.Error())
 			return
 		}
+		// TODO: discard a connection if it doesn’t give a valid response for a really long time
+		if err != nil && isTimeoutError(err) {
+			continue
+		}
 		handler := handlers[message.GetMessageType()]
 		if handler != nil {
 			// Call handler to handle the request
