@@ -1,15 +1,19 @@
 export class Register {}
 
-export interface GatewayRegister {
-  nodeID: string
-  address: string
-  rootSigningKey: string
-  signingKey: string
-  regionCode: string
-  networkInfoGateway: string
-  networkInfoProvider: string
-  networkInfoClient: string
-  networkInfoAdmin: string
+export class GatewayRegister {
+  nodeID: string = ''
+  address: string = ''
+  rootSigningKey: string = ''
+  signingKey: string = ''
+  regionCode: string = ''
+  networkInfoGateway: string = ''
+  networkInfoProvider: string = ''
+  networkInfoClient: string = ''
+  networkInfoAdmin: string = ''
+
+  getSigningKey(): string {
+    return ''
+  }
 }
 
 export interface ProviderRegister {
