@@ -1,7 +1,8 @@
 import { ContentID } from '../cid/cid.interface'
+import { FCRMessage } from '../fcrMessages/fcrMessage.class'
+import { FCRMessageType } from '../fcrMessages/type.enum';
 import { GatewayRegister } from '../register/register.class'
 import { sendMessage } from '../request/request'
-import { createFCRMessage, FCRMessage } from '../fcrMessages/fcrMessage.class'
 
 // RequestStandardDiscoverV2 requests a standard discover to a given gateway for a given contentID, nonce and ttl.
 export const requestStandardDiscoverV2 = (
@@ -16,7 +17,7 @@ export const requestStandardDiscoverV2 = (
 
   const response = sendMessage(gatewayInfo.networkInfoClient, request)
 
-  const pubKey = gatewayInfo.getSigningKey()
+  const pubKey = gatewayInfo.signingKey
 
   response.verify(pubKey)
 
@@ -46,8 +47,7 @@ export const encodeClientStandardDiscoverRequestV2 = (
   paychAddr: string,
   voucher: string,
 ): FCRMessage => {
-  let ClientStandardDiscoverRequestV2Type = 0
   let body = ''
 
-  return createFCRMessage(ClientStandardDiscoverRequestV2Type, body)
+  return new FCRMessage(FCRMessageType.ClientStandardDiscoverRequestV2Type, body)
 }
