@@ -38,7 +38,7 @@ import (
 	"github.com/filecoin-project/lotus/chain/actors/builtin/paych"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/lib/sigs"
-	init2 "github.com/filecoin-project/specs-actors/v2/actors/builtin/init"
+	init3 "github.com/filecoin-project/specs-actors/v3/actors/builtin/init"
 	"github.com/ipfs/go-cid"
 	"github.com/minio/blake2b-simd"
 
@@ -131,7 +131,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 		mgr.outboundChsLock.RUnlock()
 		mgr.outboundChsLock.Lock()
 		defer mgr.outboundChsLock.Unlock()
-		builder := paych.Message(actors.Version2, *mgr.address)
+		builder := paych.Message(actors.Version3, *mgr.address)
 		msg, err := builder.Create(recipientAddr, lotusbig.NewFromGo(amount))
 		if err != nil {
 			return err
@@ -147,9 +147,10 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 		}
 		receipt := waitReceipt(&cid, api)
 		if receipt.ExitCode != 0 {
-			return errors.New("Transaction fail to execute")
+			logging.Error("Transaction fails to execute: %v", receipt.ExitCode.Error())
+			return errors.New("Transaction fails to execute")
 		}
-		var decodedReturn init2.ExecReturn
+		var decodedReturn init3.ExecReturn
 		err = decodedReturn.UnmarshalCBOR(bytes.NewReader(receipt.Return))
 		if err != nil {
 			logging.Error("Payment manager has error unmarshal receipt: %v", receipt)

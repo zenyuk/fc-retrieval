@@ -353,7 +353,7 @@ func (r *Ring) get(hex string) *ringNode {
 		return nil
 	}
 	current := r.head
-	for ok := true; ok; ok = current != nil && current.val != r.head.val {
+	for ok := true; ok; ok = ((current != nil) && (current.val != r.head.val)) {
 		// Loop until we reach nil or we go back to head
 		if current.val == hex {
 			return current
