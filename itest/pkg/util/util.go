@@ -439,7 +439,7 @@ func GenerateAccount(lotusAP string, token string, superAcct string, num int) ([
 		}
 
 		// Get amount
-		amt, err := types.ParseFIL("10")
+		amt, err := types.ParseFIL("100")
 		if err != nil {
 			return nil, nil, err
 		}
