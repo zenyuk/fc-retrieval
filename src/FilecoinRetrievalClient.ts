@@ -14,6 +14,7 @@ import {
   decodeProviderPublishDHTOfferRequest,
   decodeProviderPublishDHTOfferResponse,
 } from './fcrMessages/provider_publish_dht_offer'
+import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
 
 export interface payResponse {
   paychAddrs: string
@@ -89,7 +90,7 @@ export class FilecoinRetrievalClient {
     for (let i = 0; i < request.contactedResp.length; i++) {
       const contactedGatewayID = request.contactedGateways[i]
       const resp = request.contactedResp[i]
-      const gatewayInfo = getGatewayByID(this.settings.registerURL, contactedGatewayID.id)
+      const gatewayInfo = getGatewayByID(this.settings.registerURL, contactedGatewayID)
       if (!this.validateGatewayInfo(gatewayInfo)) {
         // logging.Error("Gateway register info not valid.")
         continue
@@ -124,7 +125,7 @@ export class FilecoinRetrievalClient {
   }
 
   FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): boolean {
-    const provider = getProviderByID(this.settings.registerURL, providerID)
+    const provider = getProviderByID(this.settings.registerURL, providerID.id)
 
     const pvalidation = validateProviderInfo(provider)
     if (!pvalidation) {
@@ -172,11 +173,11 @@ export class FilecoinRetrievalClient {
   findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
     const gw = this.activeGateways[gatewayID.id]
 
-    const payResponse = this.paymentMgr.pay(gw)
+    let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeID, this.settings.topUpAmount)
-      const payResponse = this.paymentMgr.pay(gw)
+      payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
     }
 
     const offerDigests = requestStandardDiscoverV2(

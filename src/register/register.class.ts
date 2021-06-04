@@ -34,13 +34,12 @@ export class ProviderRegister {
   }
 }
 
-
 export const getGatewayByID = (registerURL: string, nodeID: NodeID): GatewayRegister => {
   //
   return {} as GatewayRegister
 }
 
-export const getProviderByID = (registerURL: string, nodeID: NodeID): ProviderRegister => {
+export const getProviderByID = (registerURL: string, nodeID: string): ProviderRegister => {
   //
   return {} as ProviderRegister
 }
