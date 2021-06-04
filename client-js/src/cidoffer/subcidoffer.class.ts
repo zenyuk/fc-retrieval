@@ -11,7 +11,27 @@ export class SubCIDOffer {
   expiry: number
   qos: number
   signature: string
-  
+
+  constructor(
+    providerID: NodeID,
+    subCID: ContentID,
+    merkleRoot: string,
+    merkleProof: FCRMerkleProof,
+    price: number,
+    expiry: number,
+    qos: number,
+    signature: string,
+  ) {
+    this.providerID = providerID
+    this.subCID = subCID
+    this.merkleRoot = merkleRoot
+    this.merkleProof = merkleProof
+    this.price = price
+    this.expiry = expiry
+    this.qos = qos
+    this.signature = signature
+  }
+
   // GetProviderID returns the provider ID of this offer.
   getProviderID(): string {
     return ''
