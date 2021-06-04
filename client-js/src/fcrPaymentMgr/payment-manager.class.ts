@@ -1,4 +1,5 @@
 import { Address } from './types'
+import { payResponse } from '../FilecoinRetrievalClient'
 
 export interface LaneState {
   nonce: number
@@ -33,5 +34,9 @@ export class FCRPaymentMgr {
 
   topup(recipient: string, amount: string) {
     // TODO
+  }
+
+  pay(address: string, defaultPaymentLane: number, initialRequestPaymentAmount: number) {
+    return { paychAddrs: '', voucher: '', topup: false } as payResponse
   }
 }
