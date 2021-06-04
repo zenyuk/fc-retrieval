@@ -1,14 +1,4 @@
-export interface GatewayRegister {
-  nodeID: string
-  address: string
-  rootSigningKey: string
-  signingKey: string
-  regionCode: string
-  networkInfoGateway: string
-  networkInfoProvider: string
-  networkInfoClient: string
-  networkInfoAdmin: string
-}
+import { GatewayRegister } from '../register/register.class'
 
 export interface GatewaysToUse {
   [index: string]: GatewayRegister
