@@ -19,8 +19,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -c .commitlintrc.json -E HUSKY_GIT_PARAMS"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
@@ -42,14 +41,13 @@
   },
   "homepage": "https://github.com/consensys/fc-retrieval-client-js#readme",
   "files": [
-    "lib/**/*"
+    "src/**/*"
   ],
   "dependencies": {
     "acorn": "^8.3.0",
     "axios": "^0.21.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.1.4",
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
