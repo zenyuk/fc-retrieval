@@ -1,3 +1,9 @@
+/*
+Package fcrgatewayadmin - is a Gateway Admin library for FileCoin Secondary Retrieval.
+
+It's designed to be imported by an application which requires to communicate with and administer Retrieval Gateways
+in FileCoin blockchain network.
+*/
 package fcrgatewayadmin
 
 /*
