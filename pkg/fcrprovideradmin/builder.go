@@ -1,3 +1,9 @@
+/*
+Package fcrprovideradmin - is a Provider Admin library for FileCoin Secondary Retrieval.
+
+It's designed to be imported by an application which requires to communicate with and administer Retrieval Providers
+in FileCoin blockchain network.
+*/
 package fcrprovideradmin
 
 /*
