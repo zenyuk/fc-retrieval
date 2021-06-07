@@ -1,3 +1,9 @@
+/*
+Package fcrclient - reference implementation in Go (Golang) language of a Retrieval Client used in FileCoin Secondary Retrieval network.
+This package contains methods and structures required for the Retrieval Client to operate: find Retrieval Gateways,
+find Retrieval Offers, set Retrieval Offer prices and etc.
+The main structure is FilecoinRetrievalClient
+*/
 package fcrclient
 
 /*
