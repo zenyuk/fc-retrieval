@@ -29,6 +29,15 @@ func TestNewContent(t *testing.T) {
 	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000005", cid.ToString())
 }
 
+func TestNewContentIDTooBigErr(t *testing.T) {
+	cidBytes := make([]byte, 33)
+	for i := 0; i < 33; i++ {
+		cidBytes[i] = 0xff
+	}
+	_, err := NewContentID(big.NewInt(0).SetBytes(cidBytes))
+	assert.NotEmpty(t, err)
+}
+
 func TestNewContentIDFromBytes(t *testing.T) {
 	cid, err := NewContentIDFromBytes([]byte{1})
 	assert.Empty(t, err)
@@ -103,6 +112,12 @@ func TestToString(t *testing.T) {
 	cid, err := NewContentIDFromHexString("10")
 	assert.Empty(t, err)
 	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000010", cid.ToString())
+}
+
+func TestToString00(t *testing.T) {
+	cid := ContentID{}
+	// assert.Empty(t, err)
+	assert.Equal(t, "00", cid.ToString())
 }
 
 func TestToStringEmpty(t *testing.T) {
