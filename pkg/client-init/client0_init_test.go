@@ -1,3 +1,6 @@
+/*
+Package client_init - integration and end-to-end tests, specific to Retrieval Client
+*/
 package client_init
 
 /*

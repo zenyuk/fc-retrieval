@@ -3,8 +3,8 @@ module github.com/ConsenSys/fc-retrieval-itest
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210604035856-31e16ead7a88
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210604035751-b4921d2f7d4e
+	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210604064146-9e753b0254e1
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210607033157-d60cadd1b4df
 	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210604035941-72299d3b11a3
 	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210604040015-dd824366fd46
 	github.com/docker/docker v20.10.5+incompatible

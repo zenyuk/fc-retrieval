@@ -1,3 +1,8 @@
+/*
+Package lotus - end-to-end tests, calling private, locally hosted Lotus network without running Lotus Miner.
+
+Avoiding running Lotus Miner for tests, that don't need miner functionality significantly reduces CPU load.
+*/
 package lotus
 
 /*

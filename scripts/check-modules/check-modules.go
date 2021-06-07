@@ -1,3 +1,6 @@
+/*
+Package main - performs a verification if all dependencies of go modules are up to date or required updating.
+*/
 package main
 
 import (
@@ -154,7 +157,7 @@ func findInBranches(branches []BranchData, version string, repo string) (BranchD
 }
 
 // findInBranch finds a commit in a branch
-func findInBranch( branch BranchData, commits []Commit, version string) (bool, Commit) {
+func findInBranch(branch BranchData, commits []Commit, version string) (bool, Commit) {
 	for _, commit := range commits {
 		re := regexp.MustCompile(version)
 		match := re.FindStringSubmatch(commit.Sha)

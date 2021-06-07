@@ -1,4 +1,8 @@
-package lotus
+/*
+Package lotus_full_node - end-to-end tests, calling private, locally hosted Lotus network running Lotus Full Node
+(with Daemon and Miner).
+*/
+package lotus_full_node
 
 /*
  * Copyright 2021 ConsenSys Software Inc.
@@ -26,10 +30,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
