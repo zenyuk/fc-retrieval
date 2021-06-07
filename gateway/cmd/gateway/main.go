@@ -1,3 +1,10 @@
+/*
+Package main - program entry point for a Retrieval Gateway node.
+
+Retrieval Gateway is a type of nodes in FileCoin blockchain network, which serves purpose of being first point of contact
+for a client, who is trying to find and retrieve their files.
+Retrieval Gateway is responsible for providing the best way for the client to get their files back from the network.
+*/
 package main
 
 /*
@@ -25,6 +32,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+
 	"github.com/ConsenSys/fc-retrieval-gateway/config"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/adminapi"
 	"github.com/ConsenSys/fc-retrieval-gateway/internal/api/clientapi"
