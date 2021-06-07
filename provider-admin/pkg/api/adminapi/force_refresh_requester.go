@@ -1,3 +1,6 @@
+/*
+Package adminapi - remote API for FileCoin Secondary Retrieval - Provider Admin library
+*/
 package adminapi
 
 /*
