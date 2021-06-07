@@ -1,3 +1,8 @@
+/*
+Package clientapi - a collection of Retrieval Client requests methods used to call FileCoin Secondary Retrieval network.
+These functions are playing a role of intermediate facade to call the FileCoin Secondary Retrieval network and
+hiding away network transport details
+*/
 package clientapi
 
 /*
