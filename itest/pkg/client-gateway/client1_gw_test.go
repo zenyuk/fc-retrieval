@@ -1,3 +1,6 @@
+/*
+Package client_gateway - integration tests, specific to Retrieval Gateways
+*/
 package client_gateway
 
 /*

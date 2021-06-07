@@ -1,3 +1,6 @@
+/*
+Package poc2v2 - set of end-to-end tests, designed to demonstrate functionality required for Proof of Concept stage 2.
+*/
 package poc2v2
 
 import (
@@ -6,6 +9,9 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -17,8 +23,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 var lotusAP = "http://lotus-full-node:1234/rpc/v0"

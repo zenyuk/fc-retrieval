@@ -1,3 +1,6 @@
+/*
+Package provider_admin - set of integration tests, specific to Retrieval Providers
+*/
 package provider_admin
 
 /*

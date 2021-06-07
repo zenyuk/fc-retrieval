@@ -1,3 +1,6 @@
+/*
+Package poc2 - set of end-to-end tests, designed to demonstrate functionality required for Proof of Concept stage 2.
+*/
 package poc2
 
 import (

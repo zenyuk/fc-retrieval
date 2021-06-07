@@ -1,6 +1,6 @@
 # fc-retrieval-itest
 
-Filecoin Secondary Retrieval Market Integration Tests
+Filecoin Secondary Retrieval Market Integration and End-To-End Tests
 
 See also Filecoin Secondary Retrieval Market
 [client library](https://github.com/ConsenSys/fc-retrieval-client)

@@ -1,3 +1,7 @@
+/*
+Package util - common functions used in end-to-end and integration testing. Allowing to start different types of
+Retrieval network nodes for testing.
+*/
 package util
 
 import (
@@ -13,8 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/docker/docker/api/types/container"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -24,6 +26,9 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/testcontainers/testcontainers-go/wait"
 	tc "github.com/wcgcyx/testcontainers-go"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 const ColorRed = "\033[31m"

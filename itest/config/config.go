@@ -1,3 +1,6 @@
+/*
+Package config - a helper package, used to create a configuration
+*/
 package config
 
 import (

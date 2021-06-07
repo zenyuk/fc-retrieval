@@ -1,3 +1,6 @@
+/*
+Package poc1 - set of end-to-end tests, designed to demonstrate functionality required for Proof of Concept stage 1.
+*/
 package poc1
 
 import (
@@ -5,6 +8,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
@@ -14,7 +19,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
