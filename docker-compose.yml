@@ -6,7 +6,6 @@ services:
     container_name: client-js
     networks:
       - shared
-    restart: unless-stopped
 
 networks:
   shared:

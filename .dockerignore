@@ -1,6 +1,7 @@
 # IDEs
 .editorconfig
 .jsbeautifyrc
+.prettierrc
 .vscode/
 
 # Git
@@ -11,16 +12,18 @@
 .env*
 
 # DevOps
+.circleci
 .dockerignore
 *docker-compose*
 *Dockerfile*
 
 # Node
+lib
 node_modules
 
 # Others
-.circleci
+coverage
 logs
-main
 Makefile
 README.md
+scripts
