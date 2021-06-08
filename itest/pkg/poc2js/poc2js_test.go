@@ -125,7 +125,7 @@ func TestNewAccounts(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	var err error
-	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, superAcct, nGateways+nProviderContainers+3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestInitialiseProviders(t *testing.T) {
 	conf := confBuilder.Build()
 	pAdmin = fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
 
-	for i := 0; i < nProviderContainers-1; i++ {
+	for i := 0; i < nProviderContainers; i++ {
 
 		walletKey := privateKeys[0]
 		walletAddress := accountAddrs[0]
@@ -218,7 +218,7 @@ func TestInitialiseGateways(t *testing.T) {
 	gwAdmin = fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
 	// Only initialise 32 gateways, with one extra to initialise later to test list single cid offer
-	for i := 0; i < nGateways-1; i++ {
+	for i := 0; i < nGateways; i++ {
 		walletKey := privateKeys[0]
 		walletAddress := accountAddrs[0]
 		privateKeys = privateKeys[1:]
@@ -296,6 +296,7 @@ func TestInitialiseClient(t *testing.T) {
 	assert.Nil(t, err)
 
 	cmd = exec.Command("npm", "run", "test-e2e")
+	//cmd = exec.Command("npm", "run", "test-e2e-watch")
 	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
@@ -306,11 +307,15 @@ func TestInitialiseClient(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	walletKey := privateKeys[0]
+	privateKeys = privateKeys[1:]
+	accountAddrs = accountAddrs[1:]
+
 	cmd.Env = append(os.Environ(),
 		"ESTABLISHMENT_TTL=101",
 		fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
 		fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
-		fmt.Sprintf("WALLET_PRIVATE_KEY=%s", privateKeys[0]),
+		fmt.Sprintf("WALLET_PRIVATE_KEY=%s", walletKey),
 		fmt.Sprintf("LOTUS_AP=%s", lotusAP),
 		fmt.Sprintf("LOTUS_AUTH_TOKEN=%s", lotusToken),
 	)
