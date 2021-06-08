@@ -10,8 +10,8 @@ require (
 	github.com/filecoin-project/go-crypto v0.0.0-20191218222705-effae4ea9f03
 	github.com/filecoin-project/go-jsonrpc v0.1.4-0.20210217175800-45ea43ac2bec
 	github.com/filecoin-project/go-state-types v0.1.0
-	github.com/filecoin-project/lotus v1.6.0
-	github.com/filecoin-project/specs-actors/v3 v3.1.0
+	github.com/filecoin-project/lotus v1.8.0
+	github.com/filecoin-project/specs-actors/v4 v4.0.1
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52
