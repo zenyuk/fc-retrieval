@@ -15,6 +15,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/stretchr/testify/assert"
 	tc "github.com/wcgcyx/testcontainers-go"
 )
 
@@ -117,8 +118,8 @@ func TestMain(m *testing.M) {
 		logging.Fatal("Tests failed, shutdown...")
 	}
 }
-func TestNewAccounts(t *testing.T) {
 
+func TestNewAccounts(t *testing.T) {
 	t.Log("/*******************************************************/")
 	t.Log("/*                 Start TestNewAccounts               */")
 	t.Log("/*******************************************************/")
@@ -135,7 +136,7 @@ func TestNewAccounts(t *testing.T) {
 }
 
 func TestInitialiseProviders(t *testing.T) {
-
+	t.Skip(true)
 	t.Log("/*******************************************************/")
 	t.Log("/*             Start TestInitialiseProviders           */")
 	t.Log("/*******************************************************/")
@@ -201,7 +202,6 @@ func TestInitialiseProviders(t *testing.T) {
 }
 
 func TestInitialiseGateways(t *testing.T) {
-
 	t.Log("/*******************************************************/")
 	t.Log("/*             Start TestInitialiseGateways            */")
 	t.Log("/*******************************************************/")
@@ -282,30 +282,43 @@ func TestInitialiseClient(t *testing.T) {
 	t.Log("/*******************************************************/")
 	t.Log("/*             Start TestInitialiseClient              */")
 	t.Log("/*******************************************************/")
-	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	// blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// key, err := blockchainPrivateKey.EncodePublicKey()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	cmd := exec.Command("npm", "install")
+	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
+	stdout, err := cmd.Output()
+	t.Log("os.call npm install  ", string(stdout))
 	if err != nil {
-		panic(err)
+		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
+		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
 	}
-	key, err := blockchainPrivateKey.EncodePublicKey()
+	assert.Nil(t, err)
+
+	cmd = exec.Command("npm", "run", "test-e2e")
+	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
+
+	// cmd.Env = append(os.Environ(),
+	// 	"ESTABLISHMENT_TTL=101",
+	// 	fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
+	// 	fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
+	// 	fmt.Sprintf("WALLET_PRIVATE_KEY=%s", privateKeys[0]),
+	// 	fmt.Sprintf("LOTUS_AP=%s", lotusAP),
+	// 	fmt.Sprintf("LOTUS_AUTH_TOKEN=%s", lotusToken),
+	// )
+
+	stdout, err = cmd.Output()
+	t.Log("os.call output ", string(stdout))
 	if err != nil {
-		panic(err)
+		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
+		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
 	}
-
-	// clientConf["BLOCKCHAIN_PUBLIC_KEY"] = key
-	// clientConf[
-	// clientConf["WALLET_PRIVATE_KEY"] = privateKeys[0]
-	// clientConf["LOTUS_AP"] = lotusAP
-	// clientConf["LOTUS_AUTH_TOKEN"] = lotusToken
-
-	cmd := exec.Command("npm", "version")
-	cmd.Env = append(os.Environ(),
-		"ESTABLISHMENT_TTL=101",
-		fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
-		fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
-	)
-	t.Log("Running command and waiting for it to finish...")
-	err = cmd.Run()
-	t.Log("Command finished with error: %v", err)
+	assert.Nil(t, err)
 
 	t.Log("/*******************************************************/")
 	t.Log("/*               End TestInitialiseClient              */")
