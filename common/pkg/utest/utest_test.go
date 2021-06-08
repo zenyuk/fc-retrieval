@@ -6,6 +6,12 @@ import (
 	"net/http"
 )
 
+func ExampleGetFreePort_01() {
+	port, err := GetFreePort()
+	fmt.Println(port != 0, err)
+	// Output: true <nil>
+}
+
 func ExampleNewTestClientString() {
 	c := NewTestClientString("OK")
 	fmt.Printf("%T\n", c)
