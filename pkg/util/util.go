@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/docker/docker/api/types/container"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -26,9 +28,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/testcontainers/testcontainers-go/wait"
 	tc "github.com/wcgcyx/testcontainers-go"
-
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 const ColorRed = "\033[31m"
@@ -354,6 +353,10 @@ func StartItest(ctx context.Context, tag string, network string, color string, l
 	if err != nil {
 		panic(err)
 	}
+	clientJsPath, err := filepath.Abs("../../../fc-retrieval-client-js")
+	if err != nil {
+		panic(err)
+	}
 
 	req := tc.ContainerRequest{
 		Image:          GetImageTag("consensys/fc-retrieval-itest", tag),
@@ -363,6 +366,7 @@ func StartItest(ctx context.Context, tag string, network string, color string, l
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"itest"}},
 		BindMounts: map[string]string{
+			clientJsPath: "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/",
 			absPath:      "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/",
 			commonPath:   "/go/src/github.com/ConsenSys/fc-retrieval-common/pkg/",
 			clientPath:   "/go/src/github.com/ConsenSys/fc-retrieval-client/pkg/",
