@@ -282,18 +282,13 @@ func TestInitialiseClient(t *testing.T) {
 	t.Log("/*******************************************************/")
 	t.Log("/*             Start TestInitialiseClient              */")
 	t.Log("/*******************************************************/")
-	// blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// key, err := blockchainPrivateKey.EncodePublicKey()
-	// if err != nil {
-	// 	panic(err)
-	// }
+
 	cmd := exec.Command("npm", "install")
 	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
-	stdout, err := cmd.Output()
-	t.Log("os.call npm install  ", string(stdout))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+
 	if err != nil {
 		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
 		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
@@ -303,17 +298,25 @@ func TestInitialiseClient(t *testing.T) {
 	cmd = exec.Command("npm", "run", "test-e2e")
 	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
 
-	// cmd.Env = append(os.Environ(),
-	// 	"ESTABLISHMENT_TTL=101",
-	// 	fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
-	// 	fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
-	// 	fmt.Sprintf("WALLET_PRIVATE_KEY=%s", privateKeys[0]),
-	// 	fmt.Sprintf("LOTUS_AP=%s", lotusAP),
-	// 	fmt.Sprintf("LOTUS_AUTH_TOKEN=%s", lotusToken),
-	// )
-
-	stdout, err = cmd.Output()
-	t.Log("os.call output ", string(stdout))
+	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		panic(err)
+	}
+	key, err := blockchainPrivateKey.EncodePublicKey()
+	if err != nil {
+		panic(err)
+	}
+	cmd.Env = append(os.Environ(),
+		"ESTABLISHMENT_TTL=101",
+		fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
+		fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
+		fmt.Sprintf("WALLET_PRIVATE_KEY=%s", privateKeys[0]),
+		fmt.Sprintf("LOTUS_AP=%s", lotusAP),
+		fmt.Sprintf("LOTUS_AUTH_TOKEN=%s", lotusToken),
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
 	if err != nil {
 		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
 		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
