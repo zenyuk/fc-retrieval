@@ -42,7 +42,7 @@ func TestGenerateLotusAccount(t *testing.T) {
 	lotusToken := fileToString("LOTUS_TOKEN.out")
 	superAcct := fileToString("LOTUS_SUPER_ACCT.out")
 	if lotusAP == "" || lotusToken == "" || superAcct == "" {
-		t.Skip("lotusToken or superAcct is empty string")
+		t.Skip("lotusAP or lotusToken or superAcct is empty string")
 	}
 	logging.Info("Lotus token is: %s", lotusToken)
 	logging.Info("Super Acct is %s", superAcct)
