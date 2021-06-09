@@ -48,6 +48,7 @@ const ColorBrightCyan = "\033[91m"
 const ColorBrightWhite = "\033[91m"
 
 const lotusDaemonWaitFor = "retrieval client"
+const lotusFullNodeWaitFor = "starting winning PoSt warmup"
 const networkMode = "default"
 
 // GetCurrentBranch gets the current branch of this repo
@@ -182,6 +183,7 @@ func StartLotusFullNode(ctx context.Context, network string, verbose bool) tc.Co
 		Networks:       []string{network},
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"lotus-full-node"}},
+		WaitingFor:     wait.ForLog(lotusFullNodeWaitFor),
 		ExposedPorts:   []string{"1234", "2345"},
 		AutoRemove:     true,
 		// --cpus=<value>
