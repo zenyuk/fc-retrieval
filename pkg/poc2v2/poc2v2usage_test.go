@@ -64,6 +64,10 @@ func TestMain(m *testing.M) {
 	network, networkName := util.CreateNetwork(ctx)
 	defer (*network).Remove(ctx)
 
+	// Start lotus
+	lotusContainer := util.StartLotusFullNode(ctx, networkName, false)
+	defer lotusContainer.Terminate(ctx)
+
 	// Start redis
 	redisContainer := util.StartRedis(ctx, networkName, true)
 	defer redisContainer.Terminate(ctx)
@@ -95,10 +99,6 @@ func TestMain(m *testing.M) {
 			(*c).Terminate(ctx)
 		}
 	}()
-
-	// Start lotus
-	lotusContainer := util.StartLotusFullNode(ctx, networkName, false)
-	defer lotusContainer.Terminate(ctx)
 
 	// Get lotus token
 	lotusToken, superAcct = util.GetLotusToken()
