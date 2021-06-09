@@ -30,5 +30,5 @@ go test -p 1 -v ./...
 #### POC2 v2 ClientJS watch(hot reload e2e tests) mode:
 ```
 # minimal network
-RELOAD_JS_TESTS=yes go test -p 1 -v ./pkg/poc2v2/poc2v2usage_test.go
+RELOAD_JS_TESTS=yes go test -p 1 -v ./pkg/poc2js/poc2js_test.go
 ```
