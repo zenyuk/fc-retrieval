@@ -21,14 +21,7 @@ describe('Client', () => {
     expect(process.env.FCR_LOTUS_AUTH_TOKEN).toBeDefined()
   })
 
-  it('check FCR_LOTUS_AUTH_TOKEN value', async () => {
-    expect(process.env.FCR_LOTUS_AUTH_TOKEN).toBeDefined()
-  })
-
   it('check FCR_WALLET_PRIVATE_KEY value', async () => {
     expect(process.env.FCR_WALLET_PRIVATE_KEY).toBeDefined()
-  })
-  it('check FCR_LOTUS_AUTH_TOKEN value', async () => {
-    expect(process.env.FCR_LOTUS_AUTH_TOKEN).toBeDefined()
   })
 })
