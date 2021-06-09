@@ -10,9 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
-
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -23,6 +20,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 var lotusAP = "http://lotus-full-node:1234/rpc/v0"
@@ -107,7 +106,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true, "")
 	defer itestContainer.Terminate(ctx)
 	// Block until done.
 	if <-done {

@@ -31,14 +31,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
-
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 func TestMain(m *testing.M) {
@@ -66,7 +64,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
 	defer itestContainer.Terminate(ctx)
 
 	// Block until done.

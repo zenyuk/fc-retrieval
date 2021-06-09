@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -22,13 +21,11 @@ import (
 var lotusAP = "http://lotus-full-node:1234/rpc/v0"
 var lotusToken string
 var superAcct string
+
 var gatewayConfig = config.NewConfig(".env.gateway")
 var providerConfig = config.NewConfig(".env.provider")
 var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdmin
 var pAdmin *fcrprovideradmin.FilecoinRetrievalProviderAdmin
-
-var ctx context.Context
-var tag string
 
 var gwIDs []*nodeid.NodeID
 var pIDs []*nodeid.NodeID
@@ -55,7 +52,7 @@ func TestMain(m *testing.M) {
 	}
 	// Env is not set, we are calling from host
 	// We need a redis, a register, 17 gateways and 3 providers
-	tag = util.GetCurrentBranch()
+	tag := util.GetCurrentBranch()
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -63,7 +60,7 @@ func TestMain(m *testing.M) {
 	pvEnv := util.GetEnvMap("../../.env.provider")
 
 	// Create shared net
-	ctx = context.Background()
+	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
 	defer (*network).Remove(ctx)
 
@@ -102,6 +99,7 @@ func TestMain(m *testing.M) {
 	lotusContainer := util.StartLotusFullNode(ctx, networkName, false)
 	defer lotusContainer.Terminate(ctx)
 
+	reloadJsTests := os.Getenv("RELOAD_JS_TESTS")
 	// Get lotus token
 	lotusToken, superAcct = util.GetLotusToken()
 	logging.Info("Lotus token is: %s", lotusToken)
@@ -109,7 +107,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true, reloadJsTests)
 	defer itestContainer.Terminate(ctx)
 	// Block until done.
 	if <-done {
@@ -278,26 +276,13 @@ func TestInitialiseGateways(t *testing.T) {
 	t.Log("/*******************************************************/")
 }
 
-func TestInitialiseClient(t *testing.T) {
+// Test client JS
+func TestInitialiseClientJS(t *testing.T) {
 	t.Log("/*******************************************************/")
 	t.Log("/*             Start TestInitialiseClient              */")
 	t.Log("/*******************************************************/")
 
-	cmd := exec.Command("npm", "install")
-	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-
-	if err != nil {
-		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
-		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
-	}
-	assert.Nil(t, err)
-
-	cmd = exec.Command("npm", "run", "test-e2e")
-	//cmd = exec.Command("npm", "run", "test-e2e-watch")
-	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js/"
+	assert.Nil(t, util.CallClientJsInstall())
 
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
@@ -311,21 +296,7 @@ func TestInitialiseClient(t *testing.T) {
 	privateKeys = privateKeys[1:]
 	accountAddrs = accountAddrs[1:]
 
-	cmd.Env = append(os.Environ(),
-		"ESTABLISHMENT_TTL=101",
-		fmt.Sprintf("BLOCKCHAIN_PUBLIC_KEY=%s", key),
-		fmt.Sprintf("REGISTER_API_URL=%s", gatewayConfig.GetString("REGISTER_API_URL")),
-		fmt.Sprintf("WALLET_PRIVATE_KEY=%s", walletKey),
-		fmt.Sprintf("LOTUS_AP=%s", lotusAP),
-		fmt.Sprintf("LOTUS_AUTH_TOKEN=%s", lotusToken),
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		t.Log("os.call ExitError ", err.(*exec.ExitError).String())
-		t.Log("os.call error ", string(err.(*exec.ExitError).Stderr))
-	}
+	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken)
 	assert.Nil(t, err)
 
 	t.Log("/*******************************************************/")
