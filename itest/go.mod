@@ -3,10 +3,10 @@ module github.com/ConsenSys/fc-retrieval-itest
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210609034953-c9773c56e01d
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210609034742-0abda690f72c
-	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210609035159-b27100b23017
-	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210609035425-45f4ec55aae6
+	github.com/ConsenSys/fc-retrieval-client v0.0.0-20210610103108-0b32e87bebbf
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210609064250-37b1e2457a94
+	github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210610103130-47a026894757
+	github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210610103136-abc19a5130b5
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/filecoin-project/go-address v0.0.5
 	github.com/filecoin-project/go-jsonrpc v0.1.4-0.20210217175800-45ea43ac2bec
