@@ -68,7 +68,7 @@ func RequestDHTOfferDiscover(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, errors.New("Verification failed")
+		return nil, errors.New("verification failed")
 	}
 
 	_, _, gatewayIDs, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)

@@ -58,7 +58,7 @@ func RequestDHTDiscoverV2(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, nil, nil, errors.New("Verification failed")
+		return nil, nil, nil, errors.New("verification failed")
 	}
 
 	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
@@ -66,10 +66,10 @@ func RequestDHTDiscoverV2(
 		return nil, nil, nil, err
 	}
 	if recvNonce != nonce {
-		return nil, nil, nil, errors.New("Nonce not matching")
+		return nil, nil, nil, errors.New("nonce not matching")
 	}
 	if len(contacted) != len(contactedResp) {
-		return nil, nil, nil, errors.New("Length mismtach")
+		return nil, nil, nil, errors.New("length mismatch")
 	}
 
 	return contacted, contactedResp, uncontactable, nil
