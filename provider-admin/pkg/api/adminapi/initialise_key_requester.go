@@ -52,7 +52,7 @@ func RequestInitialiseKey(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
@@ -63,7 +63,7 @@ func RequestInitialiseKey(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	ok, err := fcrmessages.DecodeProviderAdminInitialiseKeyResponse(response)
@@ -73,7 +73,7 @@ func RequestInitialiseKey(
 	}
 	if !ok {
 		logging.Error("Initialise provider failed.")
-		return errors.New("Fail to initialise provider")
+		return errors.New("fail to initialise provider")
 	}
 
 	return nil

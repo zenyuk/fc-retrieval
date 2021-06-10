@@ -112,7 +112,7 @@ func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(providerID *nodeid.Node
 	defer c.ActiveProvidersLock.RUnlock()
 	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
-		return errors.New("Unable to find the provider in admin storage")
+		return errors.New("unable to find the provider in admin storage")
 	}
 	return adminapi.RequestPublishGroupOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
@@ -123,7 +123,7 @@ func (c *FilecoinRetrievalProviderAdmin) PublishDHTCID(providerID *nodeid.NodeID
 	defer c.ActiveProvidersLock.RUnlock()
 	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
-		return errors.New("Unable to find the provider in admin storage")
+		return errors.New("unable to find the provider in admin storage")
 	}
 	return adminapi.RequestPublishDHTOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
@@ -134,7 +134,7 @@ func (c *FilecoinRetrievalProviderAdmin) GetGroupCIDOffer(providerID *nodeid.Nod
 	defer c.ActiveProvidersLock.RUnlock()
 	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
-		return false, nil, errors.New("Unable to find the provider in admin storage")
+		return false, nil, errors.New("unable to find the provider in admin storage")
 	}
 	return adminapi.RequestGetPublishedOffer(&providerInfo, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
@@ -145,7 +145,7 @@ func (c *FilecoinRetrievalProviderAdmin) ForceUpdate(providerID *nodeid.NodeID) 
 	defer c.ActiveProvidersLock.RUnlock()
 	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
-		return errors.New("Unable to find the provider in admin storage")
+		return errors.New("unable to find the provider in admin storage")
 	}
 	return adminapi.RequestForceRefresh(&providerInfo, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
