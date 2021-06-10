@@ -49,7 +49,7 @@ func RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID 
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, errors.New("Verification failed")
+		return nil, errors.New("verification failed")
 	}
 
 	// Decode the response, TODO deal with funded payment channels and found
@@ -61,7 +61,7 @@ func RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID 
 		return nil, errors.New("CID Mismatch")
 	}
 	if nonce != nonceRecv {
-		return nil, errors.New("Nonce mismatch")
+		return nil, errors.New("nonce mismatch")
 	}
 
 	return offerDigests, nil

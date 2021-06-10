@@ -53,13 +53,13 @@ func RequestDHTOfferAck(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return false, nil, nil, errors.New("Verification failed")
+		return false, nil, nil, errors.New("verification failed")
 	}
 
-	_, _, found, req, ack, err := fcrmessages.DecodeClientDHTOfferAckResponse(response)
+	_, _, found, publishDhtOfferReq, publishDhtOfferRes, err := fcrmessages.DecodeClientDHTOfferAckResponse(response)
 	if err != nil {
 		return false, nil, nil, err
 	}
 
-	return found, req, ack, nil
+	return found, publishDhtOfferReq, publishDhtOfferRes, nil
 }

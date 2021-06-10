@@ -29,7 +29,7 @@ import (
 // RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
 func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
 	if len(challenge) != 32 {
-		return errors.New("Challenge is not 32 bytes")
+		return errors.New("challenge is not 32 bytes")
 	}
 	b := make([]byte, base64.StdEncoding.EncodedLen(len(challenge)))
 	base64.StdEncoding.Encode(b, challenge[:])
@@ -53,7 +53,7 @@ func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byt
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify response")
+		return errors.New("fail to verify response")
 	}
 	// Finally check if gatewayID and received challenge matches.
 	gatewayID, recvChallenge, err := fcrmessages.DecodeClientEstablishmentResponse(response)
@@ -62,10 +62,10 @@ func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byt
 	}
 
 	if gatewayInfo.NodeID != gatewayID.ToString() {
-		return errors.New("Gateway ID not match")
+		return errors.New("gateway ID not match")
 	}
 	if recvChallenge != string(b) {
-		return errors.New("Challenge mismatch")
+		return errors.New("challenge mismatch")
 	}
 
 	return nil
