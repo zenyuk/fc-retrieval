@@ -6,19 +6,21 @@ package utest
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 )
 
 // GetFreePort asks the kernel for a free open port that is ready to use.
-func GetFreePort() (port int, err error) {
+func GetFreePort() (port string) {
 	var a *net.TCPAddr
+	var err error
 	if a, err = net.ResolveTCPAddr("tcp", ":0"); err == nil {
 		var l *net.TCPListener
 		if l, err = net.ListenTCP("tcp", a); err == nil {
 			defer l.Close()
-			return l.Addr().(*net.TCPAddr).Port, nil
+			return fmt.Sprintf("%d", l.Addr().(*net.TCPAddr).Port)
 		}
 	}
 	return

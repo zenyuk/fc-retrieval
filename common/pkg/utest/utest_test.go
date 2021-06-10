@@ -7,9 +7,9 @@ import (
 )
 
 func ExampleGetFreePort_01() {
-	port, err := GetFreePort()
-	fmt.Println(port != 0, err)
-	// Output: true <nil>
+	port := GetFreePort()
+	fmt.Println(port != "")
+	// Output: true
 }
 
 func ExampleNewTestClientString() {
