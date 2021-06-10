@@ -48,10 +48,7 @@ const ColorBrightCyan = "\033[91m"
 const ColorBrightWhite = "\033[91m"
 
 const lotusDaemonWaitFor = "retrieval client"
-
-//const lotusFullNodeWaitFor = "GenerateWinningPoSt"
 const lotusFullNodeWaitFor = "starting winning PoSt warmup"
-
 const networkMode = "default"
 
 // GetCurrentBranch gets the current branch of this repo
