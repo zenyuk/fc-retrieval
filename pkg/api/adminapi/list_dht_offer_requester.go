@@ -45,7 +45,7 @@ func RequestListDHTOffer(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -56,7 +56,7 @@ func RequestListDHTOffer(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	refreshed, err := fcrmessages.DecodeGatewayAdminListDHTOfferResponse(response)
@@ -66,7 +66,7 @@ func RequestListDHTOffer(
 	}
 	if !refreshed {
 		logging.Error("Force refresh failed.")
-		return errors.New("Fail to force the gateway to refresh")
+		return errors.New("fail to force the gateway to refresh")
 	}
 
 	return nil

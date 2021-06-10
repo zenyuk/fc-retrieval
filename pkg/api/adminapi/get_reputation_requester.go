@@ -48,7 +48,7 @@ func RequestGetReputation(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return 0, errors.New("Error in signing the request")
+		return 0, errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -59,7 +59,7 @@ func RequestGetReputation(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return 0, errors.New("Fail to verify the response")
+		return 0, errors.New("fail to verify the response")
 	}
 
 	targetID, reputation, exists, err := fcrmessages.DecodeGatewayAdminGetReputationResponse(response)
@@ -67,10 +67,10 @@ func RequestGetReputation(
 		return 0, err
 	}
 	if targetID.ToString() != clientID.ToString() {
-		return 0, errors.New("Wrong client id")
+		return 0, errors.New("wrong client id")
 	}
 	if !exists {
-		return 0, errors.New("Client id not existed")
+		return 0, errors.New("client id not existed")
 	}
 
 	return reputation, nil

@@ -48,7 +48,7 @@ func RequestForceRefresh(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -59,7 +59,7 @@ func RequestForceRefresh(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	refreshed, err := fcrmessages.DecodeGatewayAdminForceRefreshResponse(response)
@@ -69,7 +69,7 @@ func RequestForceRefresh(
 	}
 	if !refreshed {
 		logging.Error("Force refresh failed.")
-		return errors.New("Fail to force the gateway to refresh")
+		return errors.New("fail to force the gateway to refresh")
 	}
 
 	return nil

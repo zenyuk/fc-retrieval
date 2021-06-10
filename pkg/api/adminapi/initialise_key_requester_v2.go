@@ -63,7 +63,7 @@ func RequestInitialiseKeyV2(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -74,7 +74,7 @@ func RequestInitialiseKeyV2(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	ok, err := fcrmessages.DecodeGatewayAdminInitialiseKeyResponse(response)
@@ -84,7 +84,7 @@ func RequestInitialiseKeyV2(
 	}
 	if !ok {
 		logging.Error("Initialise gateway failed.")
-		return errors.New("Fail to initialise gateway")
+		return errors.New("fail to initialise gateway")
 	}
 
 	return nil

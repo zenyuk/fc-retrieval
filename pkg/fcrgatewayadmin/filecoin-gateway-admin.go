@@ -106,18 +106,18 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
 }
 
 // ResetClientReputation requests a Gateway to initialise a client's reputation to the default value.
-func (c *FilecoinRetrievalGatewayAdmin) ResetClientReputation(clientID *nodeid.NodeID) error {
-	return errors.New("Not implemented yet")
+func (c *FilecoinRetrievalGatewayAdmin) ResetClientReputation(_ *nodeid.NodeID) error {
+	return errors.New("not implemented yet")
 }
 
 // SetClientReputation requests a Gateway to set a client's reputation to a specified value.
-func (c *FilecoinRetrievalGatewayAdmin) SetClientReputation(clientID *nodeid.NodeID, rep int64) error {
-	return errors.New("Not implemented yet")
+func (c *FilecoinRetrievalGatewayAdmin) SetClientReputation(_ *nodeid.NodeID, _ int64) error {
+	return errors.New("not implemented yet")
 }
 
 // GetCIDOffersList requests a Gateway's current list of CID Offers.
 func (c *FilecoinRetrievalGatewayAdmin) GetCIDOffersList() ([]cidoffer.CIDOffer, error) {
-	return nil, errors.New("Not implemented yet")
+	return nil, errors.New("not implemented yet")
 }
 
 // ForceUpdate forces the provider to update its internal register
@@ -126,7 +126,7 @@ func (c *FilecoinRetrievalGatewayAdmin) ForceUpdate(gatewayID *nodeid.NodeID) er
 	defer c.ActiveGatewaysLock.RUnlock()
 	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return errors.New("Unable to find the gateway in admin storage")
+		return errors.New("unable to find the gateway in admin storage")
 	}
 	return adminapi.RequestForceRefresh(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
@@ -137,7 +137,7 @@ func (c *FilecoinRetrievalGatewayAdmin) ListDHTOffer(gatewayID *nodeid.NodeID) e
 	defer c.ActiveGatewaysLock.RUnlock()
 	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return errors.New("Unable to find the gateway in admin storage")
+		return errors.New("unable to find the gateway in admin storage")
 	}
 	return adminapi.RequestListDHTOffer(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }

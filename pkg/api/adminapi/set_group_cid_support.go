@@ -45,7 +45,7 @@ func SetGroupCIDOfferSupportedForProviders(gatewayInfo *register.GatewayRegister
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -56,7 +56,7 @@ func SetGroupCIDOfferSupportedForProviders(gatewayInfo *register.GatewayRegister
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	ok, err := fcrmessages.DecodeUpdateGatewayGroupCIDOfferSupportResponse(response)
