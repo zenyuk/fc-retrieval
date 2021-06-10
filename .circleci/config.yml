@@ -23,6 +23,8 @@ jobs:
       - run:
           name: Check code coverage
           command: |
+            go test -cover ./...
+            echo
             make coverage COV=$CODE_COVERAGE
 
 workflows:
