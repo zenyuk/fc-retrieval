@@ -67,20 +67,20 @@ func NewFilecoinRetrievalClient(settings ClientSettings) (*FilecoinRetrievalClie
 	return f, nil
 }
 
-func (f *FilecoinRetrievalClient) PaymentMgr() *fcrpaymentmgr.FCRPaymentMgr {
-	if f.paymentMgr == nil {
-		f.paymentMgrLock.Lock()
-		defer f.paymentMgrLock.Unlock()
-		if f.paymentMgr == nil {
-			mgr, err := fcrpaymentmgr.NewFCRPaymentMgr(f.Settings.walletPrivateKey, f.Settings.lotusAP, f.Settings.lotusAuthToken)
+func (c *FilecoinRetrievalClient) PaymentMgr() *fcrpaymentmgr.FCRPaymentMgr {
+	if c.paymentMgr == nil {
+		c.paymentMgrLock.Lock()
+		defer c.paymentMgrLock.Unlock()
+		if c.paymentMgr == nil {
+			mgr, err := fcrpaymentmgr.NewFCRPaymentMgr(c.Settings.walletPrivateKey, c.Settings.lotusAP, c.Settings.lotusAuthToken)
 			if err != nil {
 				logging.Error("Error initializing payment manager.")
 				return nil
 			}
-			f.paymentMgr = mgr
+			c.paymentMgr = mgr
 		}
 	}
-	return f.paymentMgr
+	return c.paymentMgr
 }
 
 // FindGateways find gateways located near to the specified location. Use AddGateways
@@ -284,13 +284,13 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 
 	gw, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
 	offers, err := clientapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
 	if err != nil {
 		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting standard discovery")
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
 	}
 	// Verify the offer one by one
 	for _, offer := range offers {
@@ -334,13 +334,13 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 
 	gw, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return offersMap, errors.New("Given gatewayID is not in active nodes map")
+		return offersMap, errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
 	contacted, contactedResp, uncontactable, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return offersMap, errors.New("Error in requesting dht discovery")
+		return offersMap, errors.New("error in requesting dht discovery")
 	}
 	for i := 0; i < len(uncontactable); i++ {
 		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
@@ -422,7 +422,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	// entryGatewayInfo - a Gateway which will be an entry point for us to get to other Gateways
 	entryGatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return nil, errors.New("Given gatewayID is not in active nodes map")
+		return nil, errors.New("given gatewayID is not in active nodes map")
 	}
 
 	defaultPaymentLane := uint64(0)
@@ -436,7 +436,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
 		}
 		paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGatewayInfo.Address, defaultPaymentLane, initialRequestPaymentAmount)
-		if needTopup || paymentErr != nil {
+		if paymentErr != nil {
 			return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
 		}
 	}
@@ -448,7 +448,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	contactedGateways, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&entryGatewayInfo, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGatewayInfo.NodeID, err)
-		return nil, errors.New("Error in requesting dht discovery")
+		return nil, errors.New("error in requesting dht discovery")
 	}
 	for i := 0; i < len(uncontactable); i++ {
 		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
@@ -516,7 +516,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
 		}
 		paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGatewayInfo.Address, defaultPaymentLane, offerRequestPaymentAmount)
-		if needTopup || paymentErr != nil {
+		if paymentErr != nil {
 			return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
 		}
 	}
@@ -538,11 +538,11 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 	provider, err := register.GetProviderByID(c.Settings.RegisterURL(), providerID)
 	if err != nil {
 		logging.Error("Error getting registered provider %v: %v", providerID, err.Error())
-		return false, errors.New("Provider not found inside register")
+		return false, errors.New("provider not found inside register")
 	}
 	if !validateProviderInfo(&provider) {
 		logging.Error("Register info not valid.")
-		return false, errors.New("Invalid register info")
+		return false, errors.New("invalid register info")
 	}
 
 	found, request, ack, err := clientapi.RequestDHTOfferAck(&provider, contentID, gatewayID)
@@ -562,26 +562,26 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 	gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), gatewayID)
 	if err != nil {
 		logging.Error("Error in getting gateway info.")
-		return false, errors.New("Error in getting gateway info")
+		return false, errors.New("error in getting gateway info")
 	}
 	if !validateGatewayInfo(&gatewayInfo) {
 		logging.Error("Gateway register info not valid.")
-		return false, errors.New("Gateway register info not valid")
+		return false, errors.New("gateway register info not valid")
 	}
 	gwPubKey, err := gatewayInfo.GetSigningKey()
 	if err != nil {
 		logging.Error("Fail to obtain public key.")
-		return false, errors.New("Fail to obtain public key")
+		return false, errors.New("fail to obtain public key")
 	}
 	// Get provider's pubkey
 	pvdPubKey, err := provider.GetSigningKey()
 	if err != nil {
 		logging.Error("Fail to obtain public key.")
-		return false, errors.New("Fail to obtain public key")
+		return false, errors.New("fail to obtain public key")
 	}
 	// Verify the request.
 	if request.Verify(pvdPubKey) != nil {
-		return false, errors.New("Error in verifying request")
+		return false, errors.New("error in verifying request")
 	}
 	// Verify the offer indeed contains the given cid
 	_, _, offers, err := fcrmessages.DecodeProviderPublishDHTOfferRequest(request)
@@ -596,11 +596,11 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 		}
 	}
 	if !found {
-		return false, errors.New("Initial request does not contain the given cid")
+		return false, errors.New("initial request does not contain the given cid")
 	}
 	// Verify the ack
 	if ack.Verify(gwPubKey) != nil {
-		return false, errors.New("Error in verifying the ack")
+		return false, errors.New("error in verifying the ack")
 	}
 	_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(ack)
 	if err != nil {
@@ -621,7 +621,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	gw, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
-		return make([]cidoffer.SubCIDOffer, 0), errors.New("Given gatewayID is not in active nodes map")
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("given gatewayID is not in active nodes map")
 	}
 
 	cidOffers := make([]cidoffer.SubCIDOffer, 0)
@@ -638,7 +638,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 		err = c.PaymentMgr().Topup(gw.Address, c.Settings.topUpAmount)
 		if err != nil {
 			logging.Warn("Topup. Gateway: %s, Error: %s", gw.NodeID, err)
-			return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in payment manager topup - is not enough balance")
+			return make([]cidoffer.SubCIDOffer, 0), errors.New("error in payment manager topup - is not enough balance")
 		}
 		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.Address, 0, c.Settings.searchPrice)
 		if err != nil {
@@ -651,7 +651,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 	offerDigests, err := clientapi.RequestStandardDiscoverV2(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
 	if err != nil {
 		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
-		return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in requesting standard discovery")
+		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
 	}
 	if len(offerDigests) == 0 {
 		// No offer found
@@ -678,7 +678,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 		err = c.PaymentMgr().Topup(gw.Address, c.Settings.TopUpAmount())
 		if err != nil {
 			logging.Warn("Topup. Gateway: %s, Error: %s", gw.NodeID, err)
-			return make([]cidoffer.SubCIDOffer, 0), errors.New("Error in payment manager topup - is not enough balance")
+			return make([]cidoffer.SubCIDOffer, 0), errors.New("error in payment manager topup - is not enough balance")
 		}
 		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.Address, 0, expectedAmount)
 		if err != nil {
