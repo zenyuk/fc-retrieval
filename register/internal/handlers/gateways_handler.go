@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-
 	"encoding/json"
 
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-redis/redis/v8"
+
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	middleware "github.com/go-openapi/runtime/middleware"
-	redis "github.com/go-redis/redis/v8"
 
 	"github.com/ConsenSys/fc-retrieval-register/models"
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
@@ -38,7 +38,7 @@ func AddGatewayRegister(params op.AddGatewayRegisterParams) middleware.Responder
 }
 
 // GetGatewayRegisters retrieve Gateway register list
-func GetGatewayRegisters(params op.GetGatewayRegistersParams) middleware.Responder {
+func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 	registerType := "gateway"
 	ctx := context.Background()
 
@@ -55,10 +55,12 @@ func GetGatewayRegisters(params op.GetGatewayRegistersParams) middleware.Respond
 		panic(err)
 	}
 
-	payload := []*models.GatewayRegister{}
+	var payload []*models.GatewayRegister
 	for _, register := range registers {
 		registerData := models.GatewayRegister{}
-		json.Unmarshal([]byte(register), &registerData)
+		if unmarshalErr := json.Unmarshal([]byte(register), &registerData); unmarshalErr != nil {
+			log.Error("inside GetGatewayRegisters - can't unmarshall JSON, %s", unmarshalErr.Error())
+		}
 		payload = append(payload, &registerData)
 	}
 
@@ -85,14 +87,16 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 	}
 
 	registerData := models.GatewayRegister{}
-	json.Unmarshal([]byte(register), &registerData)
+	if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
+		log.Error("inside GetGatewayRegisterByID - can't unmarshall JSON: %s", unmarshallErr.Error())
+	}
 
 	payload := registerData
 	return op.NewGetGatewayRegistersByIDOK().WithPayload(&payload)
 }
 
 // DeleteGatewayRegisters deletes all Gateways
-func DeleteGatewayRegisters(params op.DeleteGatewayRegisterParams) middleware.Responder {
+func DeleteGatewayRegisters(_ op.DeleteGatewayRegisterParams) middleware.Responder {
 	registerType := "gateway"
 
 	rdb := redis.NewClient(&redis.Options{
@@ -109,7 +113,7 @@ func DeleteGatewayRegisters(params op.DeleteGatewayRegisterParams) middleware.Re
 		panic(err)
 	}
 
-	for index, _ := range registers {
+	for index := range registers {
 		log.Info("DELETE %v", index)
 		err := rdb.HDel(ctx, registerType, index).Err()
 		if err != nil {

@@ -3,13 +3,13 @@ package handlers
 import (
 	"strings"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/ConsenSys/fc-retrieval-register/models"
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
 )
 
-// Homepage handler
+// HomepageHandler handler
 func HomepageHandler() middleware.Responder {
 	serviceName := apiconfig.GetString("SERVICE_NAME")
 

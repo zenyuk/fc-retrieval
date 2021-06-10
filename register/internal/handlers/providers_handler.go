@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-
 	"encoding/json"
 
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-redis/redis/v8"
+
 	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	middleware "github.com/go-openapi/runtime/middleware"
-	redis "github.com/go-redis/redis/v8"
 
 	"github.com/ConsenSys/fc-retrieval-register/models"
 	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
@@ -38,7 +38,7 @@ func AddProviderRegister(params op.AddProviderRegisterParams) middleware.Respond
 }
 
 // GetProviderRegisters retrieve Provider register list
-func GetProviderRegisters(params op.GetProviderRegistersParams) middleware.Responder {
+func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder {
 	registerType := "provider"
 	ctx := context.Background()
 
@@ -55,10 +55,12 @@ func GetProviderRegisters(params op.GetProviderRegistersParams) middleware.Respo
 		panic(err)
 	}
 
-	payload := []*models.ProviderRegister{}
+	var payload []*models.ProviderRegister
 	for _, register := range registers {
 		registerData := models.ProviderRegister{}
-		json.Unmarshal([]byte(register), &registerData)
+		if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
+			log.Error("inside GetProviderRegisters - can't unmarshall JSON: %s", unmarshallErr.Error())
+		}
 		payload = append(payload, &registerData)
 	}
 
@@ -85,14 +87,16 @@ func GetProviderRegisterByID(params op.GetProviderRegistersByIDParams) middlewar
 	}
 
 	registerData := models.ProviderRegister{}
-	json.Unmarshal([]byte(register), &registerData)
+	if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
+		log.Error("inside GetProviderRegisterByID - can't unmarshall JSON: %s", unmarshallErr.Error())
+	}
 
 	payload := registerData
 	return op.NewGetProviderRegistersByIDOK().WithPayload(&payload)
 }
 
 // DeleteProviderRegisters deletes all Providers
-func DeleteProviderRegisters(params op.DeleteProviderRegisterParams) middleware.Responder {
+func DeleteProviderRegisters(_ op.DeleteProviderRegisterParams) middleware.Responder {
 	registerType := "provider"
 
 	rdb := redis.NewClient(&redis.Options{
@@ -109,7 +113,7 @@ func DeleteProviderRegisters(params op.DeleteProviderRegisterParams) middleware.
 		panic(err)
 	}
 
-	for index, _ := range registers {
+	for index := range registers {
 		log.Info("DELETE %v", index)
 		err := rdb.HDel(ctx, registerType, index).Err()
 		if err != nil {
