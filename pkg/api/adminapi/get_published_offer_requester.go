@@ -45,10 +45,13 @@ func RequestGetPublishedOffer(
 		return false, nil, err
 	}
 
-	request, err := fcrmessages.EncodeProviderAdminGetPublishedOfferRequest(gatewayIDs)
+	request, encodeErr := fcrmessages.EncodeProviderAdminGetPublishedOfferRequest(gatewayIDs)
+	if encodeErr != nil {
+		return false, nil, errors.New("can't encode GetPublishedOffer request")
+	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return false, nil, errors.New("Error in signing the request")
+		return false, nil, errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
@@ -59,7 +62,7 @@ func RequestGetPublishedOffer(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return false, nil, errors.New("Fail to verify the response")
+		return false, nil, errors.New("fail to verify the response")
 	}
 
 	found, offers, err := fcrmessages.DecodeProviderAdminGetPublishedOfferResponse(response)
