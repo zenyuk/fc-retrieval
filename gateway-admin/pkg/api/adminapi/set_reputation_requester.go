@@ -49,7 +49,7 @@ func RequestSetReputation(
 	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return false, errors.New("Error in signing the request")
+		return false, errors.New("error in signing the request")
 	}
 
 	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
@@ -60,7 +60,7 @@ func RequestSetReputation(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return false, errors.New("Fail to verify the response")
+		return false, errors.New("fail to verify the response")
 	}
 
 	targetID, reputationNew, exists, err := fcrmessages.DecodeGatewayAdminSetReputationResponse(response)
@@ -68,13 +68,13 @@ func RequestSetReputation(
 		return false, err
 	}
 	if targetID.ToString() != clientID.ToString() {
-		return false, errors.New("Wrong client id")
+		return false, errors.New("wrong client id")
 	}
 	if !exists {
-		return false, errors.New("Client id not existed")
+		return false, errors.New("client id not existed")
 	}
 	if reputationNew != reputation {
-		return false, errors.New("Reputation not correctly set")
+		return false, errors.New("reputation not correctly set")
 	}
 
 	return true, nil
