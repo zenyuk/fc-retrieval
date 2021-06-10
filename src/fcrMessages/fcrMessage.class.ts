@@ -6,10 +6,10 @@ export class FCRMessage {
   messageType: number
   protocolVersion: number
   protocolSupported: number[]
-  messageBody: string
+  messageBody: object
   signature: string
 
-  constructor(msgType: number, msgBody: string) {
+  constructor(msgType: number, msgBody: object) {
     this.messageType = msgType
     this.messageBody = msgBody
     this.protocolVersion = defaultProtocolVersion
