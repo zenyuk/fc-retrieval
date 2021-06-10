@@ -43,10 +43,14 @@ func RequestPublishDHTOffer(
 		return err
 	}
 
-	request, err := fcrmessages.EncodeProviderAdminPublishDHTOfferRequest(cids, price, expiry, qos)
+	request, encodeErr := fcrmessages.EncodeProviderAdminPublishDHTOfferRequest(cids, price, expiry, qos)
+	if encodeErr != nil {
+		return errors.New("can't encode PublishDHTOffer request")
+	}
+
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("can't sign PublishDHTOffer request")
 	}
 
 	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
@@ -57,7 +61,7 @@ func RequestPublishDHTOffer(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishDHTOfferResponse(response)
@@ -67,7 +71,7 @@ func RequestPublishDHTOffer(
 	}
 	if !received {
 		logging.Error("Publish offer failed.")
-		return errors.New("Fail to publish offer")
+		return errors.New("fail to publish offer")
 	}
 	return nil
 }

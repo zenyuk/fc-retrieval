@@ -43,10 +43,13 @@ func RequestPublishGroupOffer(
 		return err
 	}
 
-	request, err := fcrmessages.EncodeProviderAdminPublishGroupOfferRequest(cids, price, expiry, qos)
+	request, encodeErr := fcrmessages.EncodeProviderAdminPublishGroupOfferRequest(cids, price, expiry, qos)
+	if encodeErr != nil {
+		return errors.New("can't encode PublishGroupOffer request")
+	}
 	// Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
-		return errors.New("Error in signing the request")
+		return errors.New("error signing PublishGroupOffer request")
 	}
 
 	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
@@ -57,7 +60,7 @@ func RequestPublishGroupOffer(
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return errors.New("Fail to verify the response")
+		return errors.New("fail to verify the response")
 	}
 
 	received, err := fcrmessages.DecodeProviderAdminPublishGroupOfferResponse(response)
@@ -67,7 +70,7 @@ func RequestPublishGroupOffer(
 	}
 	if !received {
 		logging.Error("Publish offer failed.")
-		return errors.New("Fail to publish offer")
+		return errors.New("fail to publish offer")
 	}
 	return nil
 }
