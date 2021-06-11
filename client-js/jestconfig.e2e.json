@@ -1,0 +1,10 @@
+{
+  "transform": {
+    "^.+\\.(t|j)sx?$": "ts-jest"
+  },
+  "testRegex": ".(/__tests__/.*|(\\.|/)(test|spec))\\.ts$",
+  "moduleFileExtensions": ["ts", "json", "node"],
+  "coverageDirectory": "./coverage/",
+  "collectCoverage": true,
+  "modulePathIgnorePatterns": ["src","lib","dist"]
+}
