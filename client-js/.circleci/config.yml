@@ -1,0 +1,18 @@
+# CircleCI 2.0 configuration file
+version: 2.1
+jobs:
+  utest:
+    docker:
+      - image: circleci/node:lts
+    working_directory: /usr/src/github.com/ConsenSys/fc-retrieval-client-js/
+    steps:
+      - checkout
+      # Run unit tests
+      - run: npm install
+      - run: npm run test
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - utest
