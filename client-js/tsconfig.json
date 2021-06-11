@@ -11,7 +11,7 @@
     "experimentalDecorators": false,
     "target": "es6",
     "sourceMap": true,
-    "allowJs": true,
+    "allowJs": false,
     "outDir": "dist",
     "lib": ["es7"],
   },
