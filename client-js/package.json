@@ -23,6 +23,9 @@
     }
   },
   "lint-staged": {
+    "src/**/*.{ts,js}": [
+      "eslint . --fix", "git add"
+    ],
     "src/**/*.{ts,json}": [
       "prettier --ignore-path ./.prettierignore --write"
     ]

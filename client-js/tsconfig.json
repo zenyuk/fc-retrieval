@@ -1,19 +1,20 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "declaration": false,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
+    "strict": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
     "removeComments": true,
     "noLib": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
     "target": "es6",
     "sourceMap": true,
     "allowJs": true,
     "outDir": "dist",
-    "lib": ["es7"]
+    "lib": ["es7"],
   },
-  "include": ["src**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
