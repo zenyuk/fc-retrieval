@@ -1,19 +1,34 @@
 {
   "name": "fc-retrieval-client-js",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "description": "Filecoin Secondary Retrieval Market Javascript client library.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "tslint -p tsconfig.json",
+    "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write && git status",
+    "lint": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
+    "lint:fix": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js}": [
+      "eslint . --fix", "git add"
+    ],
+    "src/**/*.{ts,json}": [
+      "prettier --ignore-path ./.prettierignore --write"
+    ]
   },
   "repository": {
     "type": "git",
@@ -29,20 +44,25 @@
   },
   "homepage": "https://github.com/consensys/fc-retrieval-client-js#readme",
   "files": [
-    "lib/**/*"
+    "src/**/*"
   ],
   "dependencies": {
+    "acorn": "^8.3.0",
     "axios": "^0.21.1"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.3",
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
     "axios-mock-adapter": "^1.19.0",
-    "codecov": "^3.1.0",
-    "jest": "^23.6.0",
-    "prettier": "^1.13.2",
-    "ts-jest": "^22.4.6",
-    "tslint": "^5.10.0",
-    "tslint-config-prettier": "^1.13.0",
-    "typescript": "^2.8.3"
+    "codecov": "^3.8.2",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.2",
+    "husky": "^6.0.0",
+    "jest": "^27.0.4",
+    "prettier": "2.3.0",
+    "ts-jest": "^27.0.0",
+    "typescript": "^4.3.2"
   }
 }
