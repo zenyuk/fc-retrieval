@@ -1,5 +1,6 @@
 import { Address } from './types'
 import { payResponse } from '../FilecoinRetrievalClient'
+import BN from 'bn.js'
 
 export interface LaneState {
   nonce: number
@@ -32,11 +33,11 @@ export class FCRPaymentMgr {
     this.inboundChs = {} as Map<string, ChannelState>
   }
 
-  topup(recipient: string, amount: string) {
+  topup(recipient: string, amount: BN) {
     // TODO
   }
 
-  pay(address: string, defaultPaymentLane: number, initialRequestPaymentAmount: number) {
+  pay(address: string, defaultPaymentLane: BN, initialRequestPaymentAmount: BN) {
     return { paychAddrs: '', voucher: '', topup: false } as payResponse
   }
 }

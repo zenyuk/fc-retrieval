@@ -1,4 +1,4 @@
-import { Settings } from './config/settings.interface'
+import { Settings } from './config/settings.config'
 import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class'
 import { GatewaysToUse } from './gateway/gateway.interface'
 import { ContentID } from './cid/cid.interface'
@@ -16,6 +16,7 @@ import {
 } from './fcrMessages/provider_publish_dht_offer'
 import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
 import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
+import BN from 'bn.js'
 
 export interface payResponse {
   paychAddrs: string
@@ -31,7 +32,7 @@ export class FilecoinRetrievalClient {
   paymentMgr: FCRPaymentMgr
 
   constructor(settings: Settings) {
-    this.settings = settings
+    this.settings = Object.assign({}, settings)
     this.activeGateways = {} as GatewaysToUse
     this.gatewaysToUse = {} as GatewaysToUse
     this.paymentMgr = {} as FCRPaymentMgr
@@ -61,8 +62,8 @@ export class FilecoinRetrievalClient {
 
     const gw = this.activeGateways[gatewayID.id]
 
-    const defaultPaymentLane = 0
-    const initialRequestPaymentAmount = numDHT * this.settings.searchPrice
+    const defaultPaymentLane = new BN(0)
+    const initialRequestPaymentAmount = new BN(numDHT).mul(this.settings.searchPrice)
     let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
 
     if (payResponse.topup) {
@@ -132,7 +133,7 @@ export class FilecoinRetrievalClient {
     for (let entry in offersDigestsFromAllGateways) {
       unit += entry.length
     }
-    const offerRequestPaymentAmount = this.settings.offerPrice * unit
+    const offerRequestPaymentAmount = this.settings.offerPrice.mul(new BN(unit))
 
     payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
 
@@ -167,7 +168,7 @@ export class FilecoinRetrievalClient {
     return false
   }
 
-  FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): boolean {
+  async FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): Promise<boolean> {
     const provider = getProviderByID(this.settings.registerURL, providerID.id)
 
     const pvalidation = validateProviderInfo(provider)
@@ -175,7 +176,7 @@ export class FilecoinRetrievalClient {
       throw new Error('Invalid register info')
     }
 
-    const dhtOfferAckResponse = requestDHTOfferAck(provider, contentID, gatewayID)
+    const dhtOfferAckResponse = await requestDHTOfferAck(provider, contentID, gatewayID)
     if (!dhtOfferAckResponse.found) {
       return false
     }
@@ -213,17 +214,17 @@ export class FilecoinRetrievalClient {
   }
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
-  findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
+  async findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
     const gw = this.activeGateways[gatewayID.id]
 
-    let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
+    let payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeID, this.settings.topUpAmount)
-      payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
+      payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
     }
 
-    const offerDigests = requestStandardDiscoverV2(
+    const offerDigests = await requestStandardDiscoverV2(
       gw,
       cid,
       Math.floor(Math.random() * 1000),
@@ -232,7 +233,7 @@ export class FilecoinRetrievalClient {
       payResponse.voucher,
     )
 
-    const offers = requestStandardDiscoverOffer(
+    const offers = await requestStandardDiscoverOffer(
       gw,
       cid,
       Math.floor(Math.random() * 1000),
