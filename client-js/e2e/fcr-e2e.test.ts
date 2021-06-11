@@ -22,6 +22,6 @@ describe('Client', () => {
     const url = defaultRegisterURL + '/registers/gateway'
     const response = await axios.get(url)
     const gateways = response.data as any[]
-    expect(gateways.length).toBeGreaterThan(0)
+    expect(gateways.length).toBeGreaterThanOrEqual(2)
   })
 })
