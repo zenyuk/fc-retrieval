@@ -5,9 +5,9 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test-e2e-watch": "jest --config jestconfig.json --watchAll",
-    "test-e2e": "jest --config jestconfig.json",
-    "test": "jest --config jestconfig.json",
+    "test-e2e-watch": "jest --config jestconfig.e2e.json --watchAll",
+    "test-e2e": "jest --config jestconfig.e2e.json",
+    "test": "jest --config jestconfig.json --setupFiles=./.env.js",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
@@ -37,6 +37,7 @@
     "axios": "^0.21.1"
   },
   "devDependencies": {
+    "dotenv": "^10.0.0",
     "@types/jest": "^22.2.3",
     "axios-mock-adapter": "^1.19.0",
     "codecov": "^3.1.0",
