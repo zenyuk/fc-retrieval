@@ -4,26 +4,57 @@ Filecoin Secondary Retrieval Market Javascript client library.
 
 ## Development
 
-### Get Itest
+### Get Itest, Gateway and Provider
 
-To develop on Fc Retrieval Client JS, first, clone [fc-retrieval-itest](https://github.com/ConsenSys/fc-retrieval-itest):
+To develop on Fc Retrieval Client JS, first, clone [fc-retrieval-itest](https://github.com/ConsenSys/fc-retrieval-itest), [fc-retrieval-gateway](https://github.com/ConsenSys/fc-retrieval-gateway):, [fc-retrieval-provider](https://github.com/ConsenSys/fc-retrieval-provider):
 
 ```
 git clone https://github.com/ConsenSys/fc-retrieval-itest.git
+git clone https://github.com/ConsenSys/fc-retrieval-gateway.git
+git clone https://github.com/ConsenSys/fc-retrieval-provider.git
 ```
 
 ### Build images
 
-To build images, execute:
+#### Itest images
+
+To build images, go to `fc-retrieval-itest` and execute:
 
 ```
 make lotusbase
 make lotusdaemon
 make lotusfullnode
+```
+
+Then build everything with:
+
+```
 make build tag
 ```
 
-Everytime `/util/util.go` is changed in `fc-retrieval-itest`, images should be rebuild.
+<i>(it can take few minutes)</i>
+
+Everytime `/util/util.go` is changed in `fc-retrieval-itest`, all images should be rebuild.
+
+#### Gateway image
+
+To build Gateway image, go to `fc-retrieval-gateway` and execute:
+
+```
+make build tag
+```
+
+Everytime code is changed in `fc-retrieval-gateway`, image should be rebuild.
+
+#### Provider image
+
+To build Provider image, go to `fc-retrieval-provider` and execute:
+
+```
+make build tag
+```
+
+Everytime code is changed in `fc-retrieval-provider`, image should be rebuild.
 
 ### Start Itest
 
@@ -42,8 +73,10 @@ The tests will be executed, and containers will stay up.
 To start Itest without hot reload, execute:
 
 ```
-go test -p 1 -v ./pkg/poc2v2/poc2v2usage_test.go
+go test -p 1 -v ./pkg/poc2js/poc2js_test.go
 ```
+
+Now it is possible to edit Client Js `.test.ts`, save updates, and the tests will automatically rerun the `fc-retrieval-itest`.
 
 The tests will be executed, and containers will stop.
 
