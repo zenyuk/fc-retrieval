@@ -63,7 +63,7 @@ Everytime code is changed in `fc-retrieval-provider`, image should be rebuild.
 To start Itest with hot reload, execute:
 
 ```
-RELOAD_JS_TESTS=yes go test -p 1 -v ./pkg/poc2js/poc2js_test.go
+RELOAD_JS_TESTS=yes go test -p 1 -v ./pkg/poc2js/poc2js_test.go -timeout=0
 ```
 
 The tests will be executed, and containers will stay up.
