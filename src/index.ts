@@ -1,4 +1,4 @@
-import { CreateSettings } from './config/createSettings'
+import { Settings } from './config/settings.config'
 import { FilecoinRetrievalClient } from './FilecoinRetrievalClient'
 
-export { CreateSettings, FilecoinRetrievalClient }
+export { Settings, FilecoinRetrievalClient }
