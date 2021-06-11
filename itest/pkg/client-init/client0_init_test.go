@@ -55,18 +55,23 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
-	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 

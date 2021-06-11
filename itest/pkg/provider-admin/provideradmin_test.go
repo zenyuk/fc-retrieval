@@ -41,8 +41,8 @@ import (
 )
 
 // Test the Provider Admin API.
-var providerTest_providerConfig = config.NewConfig(".env.provider")
-var gatewayConfig_gatewayConfig = config.NewConfig(".env.gateway")
+var providerTestProviderConfig = config.NewConfig(".env.provider")
+var gatewayConfigGatewayConfig = config.NewConfig(".env.gateway")
 
 func TestMain(m *testing.M) {
 	// Need to make sure this env is not set in host machine
@@ -65,34 +65,47 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start redis
 	redisContainer := util.StartRedis(ctx, networkName, true)
-	defer redisContainer.Terminate(ctx)
 
 	// Start register
 	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
-	defer registerContainer.Terminate(ctx)
 
 	// Start gateway
 	gatewayContainer := util.StartGateway(ctx, "gateway", tag, networkName, util.ColorBlue, gwEnv, true)
-	defer gatewayContainer.Terminate(ctx)
 
 	// Start provider
 	providerContainer := util.StartProvider(ctx, "provider", tag, networkName, util.ColorPurple, pvEnv, true)
-	defer providerContainer.Terminate(ctx)
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
-	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err := providerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err := gatewayContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  registerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  redisContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 
@@ -122,7 +135,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	// Gateway
 	gwConfBuilder := fcrgatewayadmin.CreateSettings()
 	gwConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gwConfBuilder.SetRegisterURL(providerTest_providerConfig.GetString("REGISTER_API_URL"))
+	gwConfBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
 	gwConf := gwConfBuilder.Build()
 
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gwConf)
@@ -152,16 +165,20 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	// gatewayRetrievalSigningKey := "01041ee440cab4f5e92803e29de7079d317a332b206b21df612fe0d1c34b585df4f44180aa9a75e4c95116ac341256333d7356d42704be43efd8828293ef013d9139"
 	// gatewayID, err := nodeid.NewRandomNodeID()
 	gatewayID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
+	if err != nil {
+		logging.Error("error generating gateway id")
+		os.Exit(1)
+	}
 	gatewayRegister := &register.GatewayRegister{
 		NodeID:              gatewayID.ToString(),
-		Address:             gatewayConfig_gatewayConfig.GetString("GATEWAY_ADDRESS"),
+		Address:             gatewayConfigGatewayConfig.GetString("GATEWAY_ADDRESS"),
 		RootSigningKey:      gatewayRootSigningKey,
 		SigningKey:          gatewayRetrievalSigningKey,
-		RegionCode:          gatewayConfig_gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		NetworkInfoGateway:  gatewayConfig_gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoProvider: gatewayConfig_gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		NetworkInfoClient:   gatewayConfig_gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:    gatewayConfig_gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		RegionCode:          gatewayConfigGatewayConfig.GetString("GATEWAY_REGION_CODE"),
+		NetworkInfoGateway:  gatewayConfigGatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
+		NetworkInfoProvider: gatewayConfigGatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
+		NetworkInfoClient:   gatewayConfigGatewayConfig.GetString("NETWORK_INFO_CLIENT"),
+		NetworkInfoAdmin:    gatewayConfigGatewayConfig.GetString("NETWORK_INFO_ADMIN"),
 	}
 
 	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
@@ -172,7 +189,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	// Provider
 	confBuilder := fcrprovideradmin.CreateSettings()
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(providerTest_providerConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
 
 	pvadmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
@@ -189,10 +206,12 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 
 	providerPrivKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	logging.Info("providerPrivKey: %v", providerPrivKey)
 	if err != nil {
-		logging.ErrorAndPanic(err.Error())
+		logging.Error("can't generate retrieval key pair: %s", err.Error())
+		os.Exit(1)
 	}
+	logging.Info("providerPrivKey: %v", providerPrivKey)
+
 	providerSigningKey, err := providerPrivKey.EncodePublicKey()
 	logging.Info("providerSigningKey: %s", providerSigningKey)
 	if err != nil {
@@ -200,18 +219,19 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 	providerID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
-		logging.ErrorAndPanic(err.Error())
+		logging.Error("can't generate provider ID: %s", err.Error())
+		os.Exit(1)
 	}
 
 	providerRegister := &register.ProviderRegister{
 		NodeID:             providerID.ToString(),
-		Address:            providerTest_providerConfig.GetString("PROVIDER_ADDRESS"),
+		Address:            providerTestProviderConfig.GetString("PROVIDER_ADDRESS"),
 		RootSigningKey:     gatewayRootSigningKey,
 		SigningKey:         gatewayRetrievalSigningKey,
-		RegionCode:         providerTest_providerConfig.GetString("PROVIDER_REGION_CODE"),
-		NetworkInfoGateway: providerTest_providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoClient:  providerTest_providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:   providerTest_providerConfig.GetString("NETWORK_INFO_ADMIN"),
+		RegionCode:         providerTestProviderConfig.GetString("PROVIDER_REGION_CODE"),
+		NetworkInfoGateway: providerTestProviderConfig.GetString("NETWORK_INFO_GATEWAY"),
+		NetworkInfoClient:  providerTestProviderConfig.GetString("NETWORK_INFO_CLIENT"),
+		NetworkInfoAdmin:   providerTestProviderConfig.GetString("NETWORK_INFO_ADMIN"),
 	}
 
 	// Initialise provider
@@ -254,14 +274,15 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Get all offers should be found")
 
 	// Get offers by gatewayIDs real
-	gateways, err := register.GetRegisteredGateways(providerTest_providerConfig.GetString("REGISTER_API_URL"))
+	gateways, err := register.GetRegisteredGateways(providerTestProviderConfig.GetString("REGISTER_API_URL"))
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
 	logging.Info("Registered gateways: %+v", gateways)
 	realNodeID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
-		logging.ErrorAndPanic(err.Error())
+		logging.Error("can't generate node ID: %s", err.Error())
+		os.Exit(1)
 	}
 	gatewayIDs = append(gatewayIDs, *realNodeID) // Add a gateway
 	logging.Info("Get offers by real gatewayID=%s", realNodeID.ToString())

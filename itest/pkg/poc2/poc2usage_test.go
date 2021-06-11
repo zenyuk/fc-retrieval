@@ -10,6 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -18,8 +21,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
 
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
@@ -55,15 +56,12 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start redis
 	redisContainer := util.StartRedis(ctx, networkName, true)
-	defer redisContainer.Terminate(ctx)
 
 	// Start register
 	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
-	defer registerContainer.Terminate(ctx)
 
 	// Start 3 providers
 	var providerContainers []*tc.Container
@@ -71,11 +69,6 @@ func TestMain(m *testing.M) {
 		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), tag, networkName, util.ColorBlue, pvEnv, true)
 		providerContainers = append(providerContainers, &c)
 	}
-	defer func() {
-		for _, c := range providerContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
 
 	// Start 33 gateways
 	var gatewayContainers []*tc.Container
@@ -83,23 +76,42 @@ func TestMain(m *testing.M) {
 		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), tag, networkName, util.ColorCyan, gwEnv, true)
 		gatewayContainers = append(gatewayContainers, &c)
 	}
-	defer func() {
-		for _, c := range gatewayContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
-	itestContainer.Exec(ctx, []string{"export"})
-	defer itestContainer.Terminate(ctx)
+	if _, err := itestContainer.Exec(ctx, []string{"export"}); err != nil {
+		logging.Error("can't execute 'export' command in test container")
+	}
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	for _, c := range gatewayContainers {
+		if err := (*c).Terminate(ctx); err != nil {
+			logging.Error("error while terminating gateway test container: %s", err.Error())
+		}
+	}
+	for _, c := range providerContainers {
+		if err := (*c).Terminate(ctx); err != nil {
+			logging.Error("error while terminating provider test container: %s", err.Error())
+		}
+	}
+	if err :=  registerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  redisContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 
