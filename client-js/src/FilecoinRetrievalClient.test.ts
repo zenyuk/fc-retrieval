@@ -1,9 +1,10 @@
-import { FilecoinRetrievalClient } from './index'
-import { defaults } from './constants/defaults'
+import { buildSettings } from './config/settings.config'
+import { FilecoinRetrievalClient, Settings } from './index'
 
 describe('Client', () => {
   it('findOffersStandardDiscoveryV2', async () => {
-    const client = new FilecoinRetrievalClient(defaults)
+    const settings = buildSettings("http://register:9020")
+    const client = new FilecoinRetrievalClient(settings)
 
     // const offers = await client.findOffersStandardDiscoveryV2()
     expect(['hello']).toEqual(['hello'])
