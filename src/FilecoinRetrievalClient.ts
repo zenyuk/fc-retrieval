@@ -168,7 +168,7 @@ export class FilecoinRetrievalClient {
     return false
   }
 
-  FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): boolean {
+  async FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): Promise<boolean> {
     const provider = getProviderByID(this.settings.registerURL, providerID.id)
 
     const pvalidation = validateProviderInfo(provider)
@@ -176,7 +176,7 @@ export class FilecoinRetrievalClient {
       throw new Error('Invalid register info')
     }
 
-    const dhtOfferAckResponse = requestDHTOfferAck(provider, contentID, gatewayID)
+    const dhtOfferAckResponse = await requestDHTOfferAck(provider, contentID, gatewayID)
     if (!dhtOfferAckResponse.found) {
       return false
     }
@@ -214,7 +214,7 @@ export class FilecoinRetrievalClient {
   }
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
-  findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
+  async findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
     const gw = this.activeGateways[gatewayID.id]
 
     let payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
@@ -224,7 +224,7 @@ export class FilecoinRetrievalClient {
       payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
     }
 
-    const offerDigests = requestStandardDiscoverV2(
+    const offerDigests = await requestStandardDiscoverV2(
       gw,
       cid,
       Math.floor(Math.random() * 1000),
@@ -233,7 +233,7 @@ export class FilecoinRetrievalClient {
       payResponse.voucher,
     )
 
-    const offers = requestStandardDiscoverOffer(
+    const offers = await requestStandardDiscoverOffer(
       gw,
       cid,
       Math.floor(Math.random() * 1000),
