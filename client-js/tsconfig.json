@@ -1,13 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es5",
     "module": "commonjs",
-    "declaration": true,
-    "outDir": "./lib",
     "strict": true,
-    "lib": [ "es2015" ],
-    // "esModuleInterop": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "noLib": false,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "target": "es6",
+    "sourceMap": true,
+    "allowJs": false,
+    "outDir": "dist",
+    "lib": ["es7"],
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
