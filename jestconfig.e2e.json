@@ -2,9 +2,10 @@
   "transform": {
     "^.+\\.(t|j)sx?$": "ts-jest"
   },
-  "testRegex": ".(/__tests__/.*|(\\.|/)(test|spec))\\.ts$",
-  "moduleFileExtensions": ["ts", "json", "node"],
+  "testRegex": "e2e(\\.|/)(test|spec)\\.ts$",
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
   "coverageDirectory": "./coverage/",
   "collectCoverage": true,
-  "modulePathIgnorePatterns": ["src","lib","dist"]
+  "modulePathIgnorePatterns": ["lib", "dist"]
 }
+
