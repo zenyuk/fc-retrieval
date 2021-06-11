@@ -375,6 +375,11 @@ func StartItest(ctx context.Context, tag string, network string, color string, l
 		Cmd:        []string{"go", "test", "-v", "--count=1", "/go/src/github.com/ConsenSys/fc-retrieval-itest/pkg/temp/"},
 		AutoRemove: true,
 	}
+
+	if reloadJsTests == "yes" {
+		req.Cmd = append(req.Cmd, "-timeout=0")
+	}
+
 	itestC, err := tc.GenericContainer(ctx, tc.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
