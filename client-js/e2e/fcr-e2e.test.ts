@@ -1,6 +1,3 @@
-import { FilecoinRetrievalClient } from './index'
-import { defaults } from './constants/defaults'
-
 describe('Client', () => {
   it('check FCR_REGISTER_API_URL value', async () => {
     expect(process.env.FCR_REGISTER_API_URL).toEqual('http://register:9020')
