@@ -6,7 +6,7 @@
 //   defaultRegisterURL: string
 // }
 
-import { Settings } from '../config/settings.interface'
+import { Settings } from '../config/settings.config'
 
 // export const defaults: Settings = {
 export const defaults: any = {
