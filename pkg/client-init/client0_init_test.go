@@ -84,9 +84,7 @@ func TestGetClientVersion(t *testing.T) {
 	}
 
 	// The version must be 1 or more.
-	if !assert.LessOrEqual(t, 1, ver) {
-		return
-	}
+	assert.LessOrEqual(t, 1, ver)
 }
 
 // Test that the client can be initialized without causing an error.
@@ -124,7 +122,5 @@ func TestUnknownGatewayAdded(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	gateways := fClient.GetActiveGateways()
-	if !assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned") {
-		return
-	}
+	assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned")
 }
