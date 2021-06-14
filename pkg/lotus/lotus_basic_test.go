@@ -56,22 +56,29 @@ func TestMain(m *testing.M) {
 	bgCtx := context.Background()
 	ctx, _ := context.WithTimeout(bgCtx, time.Minute*2)
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start lotus
 	lotusContainer := util.StartLotusDaemon(ctx, networkName, true)
-	defer lotusContainer.Terminate(ctx)
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
-	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err := lotusContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 

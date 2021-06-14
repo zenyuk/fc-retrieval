@@ -10,6 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -20,8 +23,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 var gatewayConfig = config.NewConfig(".env.gateway")
@@ -54,15 +55,12 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start redis
 	redisContainer := util.StartRedis(ctx, networkName, true)
-	defer redisContainer.Terminate(ctx)
 
 	// Start register
 	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
-	defer registerContainer.Terminate(ctx)
 
 	// Start 3 providers
 	var providerContainers []*tc.Container
@@ -70,11 +68,6 @@ func TestMain(m *testing.M) {
 		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), tag, networkName, util.ColorBlue, pvEnv, true)
 		providerContainers = append(providerContainers, &c)
 	}
-	defer func() {
-		for _, c := range providerContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
 
 	// Start 33 gateways
 	var gatewayContainers []*tc.Container
@@ -82,23 +75,42 @@ func TestMain(m *testing.M) {
 		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), tag, networkName, util.ColorCyan, gwEnv, true)
 		gatewayContainers = append(gatewayContainers, &c)
 	}
-	defer func() {
-		for _, c := range gatewayContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
-	itestContainer.Exec(ctx, []string{"export"})
-	defer itestContainer.Terminate(ctx)
+	if _, err := itestContainer.Exec(ctx, []string{"export"}); err != nil {
+		logging.Error("can't execute 'export' command in test container")
+	}
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	for _, c := range gatewayContainers {
+		if err := (*c).Terminate(ctx); err != nil {
+			logging.Error("error while terminating gateway test container: %s", err.Error())
+		}
+	}
+	for _, c := range providerContainers {
+		if err := (*c).Terminate(ctx); err != nil {
+			logging.Error("error while terminating provider test container: %s", err.Error())
+		}
+	}
+	if err :=  registerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  redisContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 
@@ -250,18 +262,16 @@ func TestInitialiseClient(t *testing.T) {
 	conf := confBuilder.Build()
 	client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
 	if !assert.Nil(t, err, "Error should be nil") {
-		return
+		t.Fatal(err)
 	}
 
 	added := client.AddGatewaysToUse(gwIDs)
 	if !assert.Equal(t, 32, added, "32 gateways should be added") {
-		return
+		t.Fatal()
 	}
 
 	added = client.AddActiveGateways(gwIDs)
-	if !assert.Equal(t, 32, added, "32 gateways should be active") {
-		return
-	}
+	assert.Equal(t, 32, added, "32 gateways should be active")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*               End TestInitialiseClient              */")
@@ -352,30 +362,30 @@ func TestPublishGroupOffer(t *testing.T) {
 	// Query gateway 0 for offer 0
 	offers, err := client.FindOffersStandardDiscovery(contentID01, gwIDs[0])
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 01.") {
-		return
+		t.Fatal()
 	}
 
 	// Query gateway 0 for offer 1
 	offers, err = client.FindOffersStandardDiscovery(contentID11, gwIDs[0])
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	// if !assert.Equal(t, 0, len(offers), "Should not find offer with cid 11.") {
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 11.") {
-		return
+		t.Fatal()
 	}
 
 	// Query gateway 1 for offer 0
 	offers, err = client.FindOffersStandardDiscovery(contentID01, gwIDs[1])
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	// if !assert.Equal(t, 0, len(offers), "Should not find offer with cid 01.") {
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 01.") {
-		return
+		t.Fatal()
 	}
 
 	// Query gateway 1 for offer 1
@@ -384,7 +394,7 @@ func TestPublishGroupOffer(t *testing.T) {
 		panic(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 11.") {
-		return
+		t.Fatal()
 	}
 
 	// Query gateway 2 for offer 0
@@ -394,18 +404,16 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 	// if !assert.Equal(t, 0, len(offers), "Should not find offer with cid 01.") {
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 01.") {
-		return
+		t.Fatal()
 	}
 
 	// Query gateway 2 for offer 1
 	offers, err = client.FindOffersStandardDiscovery(contentID11, gwIDs[2])
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	// if !assert.Equal(t, 0, len(offers), "Should not find offer with cid 11.") {
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 11.") {
-		return
-	}
+	assert.Equal(t, 1, len(offers), "Should find offer with cid 11.")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*              End TestPublishGroupOffer              */")
@@ -447,7 +455,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 5, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[6])
@@ -455,7 +463,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 6, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[12])
@@ -463,7 +471,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 12, within published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[21])
@@ -471,7 +479,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 21, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[22])
@@ -479,7 +487,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 22, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	// Try Standard Discovery for contentID1
@@ -488,7 +496,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 1 from gateway 24, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[25])
@@ -496,7 +504,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 1 from gateway 25, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[31])
@@ -504,7 +512,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 31, within published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[0])
@@ -512,7 +520,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 0, within published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[8])
@@ -520,7 +528,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 8, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[9])
@@ -528,7 +536,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 9, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	// Try DHT Search for content 0
@@ -537,7 +545,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 0, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offersMap, err := client.FindOffersDHTDiscovery(contentID0, gwIDs[0], 4)
@@ -545,44 +553,44 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 4, len(offersMap), "Should have a map of 4 entries.") {
-		return
+		t.Fatal()
 	}
 
 	// It should contact gateway 12, 13, 14, 15
 	_, exists := offersMap[gwIDs[12].ToString()]
 	if !assert.True(t, exists, "Should query gateway 12.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[12].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 12.") {
-		return
+		t.Fatal()
 	}
 
 	_, exists = offersMap[gwIDs[13].ToString()]
 	if !assert.True(t, exists, "Should query gateway 13.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[13].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 13.") {
-		return
+		t.Fatal()
 	}
 
 	_, exists = offersMap[gwIDs[14].ToString()]
 	if !assert.True(t, exists, "Should query gateway 14.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[14].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 14.") {
-		return
+		t.Fatal()
 	}
 
 	_, exists = offersMap[gwIDs[15].ToString()]
 	if !assert.True(t, exists, "Should query gateway 15.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[15].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 15.") {
-		return
+		t.Fatal()
 	}
 
 	// Try DHT Search for content 1
@@ -591,7 +599,7 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 15, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offersMap, err = client.FindOffersDHTDiscovery(contentID1, gwIDs[15], 3)
@@ -599,36 +607,34 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 3, len(offersMap), "Should have a map of 3 entries.") {
-		return
+		t.Fatal()
 	}
 
 	// It should contact gateway 0, 1 and 31
 	_, exists = offersMap[gwIDs[0].ToString()]
 	if !assert.True(t, exists, "Should query gateway 0.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[0].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 0.") {
-		return
+		t.Fatal()
 	}
 
 	_, exists = offersMap[gwIDs[1].ToString()]
 	if !assert.True(t, exists, "Should query gateway 1.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[1].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 1.") {
-		return
+		t.Fatal()
 	}
 
 	_, exists = offersMap[gwIDs[31].ToString()]
 	if !assert.True(t, exists, "Should query gateway 31.") {
-		return
+		t.Fatal()
 	}
 	offers = *(offersMap[gwIDs[31].ToString()])
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 31.") {
-		return
-	}
+	assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 31.")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*               End TestPublishDHTOffer               */")
@@ -713,12 +719,12 @@ func TestNewGateway(t *testing.T) {
 
 	added := client.AddGatewaysToUse([]*nodeid.NodeID{gwIDs[32]})
 	if !assert.Equal(t, 1, added, "1 gateway should be added") {
-		return
+		t.Fatal()
 	}
 
 	added = client.AddActiveGateways([]*nodeid.NodeID{gwIDs[32]})
 	if !assert.Equal(t, 1, added, "1 gateway should be active") {
-		return
+		t.Fatal()
 	}
 
 	// This new gateway should have used list cid offer to get both cid0 and cid1
@@ -736,16 +742,14 @@ func TestNewGateway(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 32.") {
-		return
+		t.Fatal(err)
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID1, gwIDs[32])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 1 from gateway 32.") {
-		return
-	}
+	assert.Equal(t, 1, len(offers), "Should find offer with cid 1 from gateway 32.")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*                  End TestNewGateway                 */")
@@ -793,7 +797,7 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 6, outside of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[32])
@@ -801,7 +805,7 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 32, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[15])
@@ -809,7 +813,7 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 15, within published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[21])
@@ -817,16 +821,14 @@ func TestPublishDHTOfferWithNewGateway(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 21, boundary of published ring.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(contentID0, gwIDs[22])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 22, outside of published ring.") {
-		return
-	}
+	assert.Equal(t, 0, len(offers), "Shouldn't find offer with cid 0 from gateway 22, outside of published ring.")
 
 	t.Log("/*******************************************************/")
 	t.Log("/*        End TestPublishDHTOfferWithNewGateway        */")

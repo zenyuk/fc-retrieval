@@ -53,18 +53,23 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
-	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 
@@ -77,9 +82,7 @@ func TestGetClientVersion(t *testing.T) {
 	}
 
 	// The version must be 1 or more.
-	if !assert.LessOrEqual(t, 1, ver) {
-		return
-	}
+	assert.LessOrEqual(t, 1, ver)
 }
 
 // Test that the client can be initialized without causing an error.
@@ -117,7 +120,5 @@ func TestUnknownGatewayAdded(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	gateways := fClient.GetActiveGateways()
-	if !assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned") {
-		return
-	}
+	assert.Equal(t, 0, len(gateways), "Unexpected number of gateways returned")
 }

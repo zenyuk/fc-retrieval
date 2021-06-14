@@ -47,10 +47,7 @@ const ColorBrightCyan = "\033[91m"
 const ColorBrightWhite = "\033[91m"
 
 const lotusDaemonWaitFor = "retrieval client"
-
-//const lotusFullNodeWaitFor = "GenerateWinningPoSt"
 const lotusFullNodeWaitFor = "starting winning PoSt warmup"
-
 const networkMode = "default"
 
 // GetCurrentBranch gets the current branch of this repo
@@ -132,7 +129,6 @@ func GetEnvMap(envFile string) map[string]string {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -143,6 +139,9 @@ func GetEnvMap(envFile string) map[string]string {
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
+	}
+	if err := file.Close(); err != nil {
+		logging.Error("error closing file: %s", err.Error())
 	}
 	return env
 }
@@ -208,7 +207,7 @@ func StartLotusFullNode(ctx context.Context, network string, verbose bool) tc.Co
 	return lotusC
 }
 
-// Start redis used by register
+// StartRedis - starts redis; used by register
 func StartRedis(ctx context.Context, network string, verbose bool) tc.Container {
 	// Start redis
 	req := tc.ContainerRequest{
@@ -238,7 +237,7 @@ func StartRedis(ctx context.Context, network string, verbose bool) tc.Container 
 	return redisC
 }
 
-// Start the register
+// StartRegister - starts the register
 func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a register container
 	req := tc.ContainerRequest{
@@ -268,7 +267,7 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 	return registerC
 }
 
-// Start a gateway of specific id, tag, network, log color and env
+// StartGateway - start a gateway of specific id, tag, network, log color and env
 func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a gateway container
 	req := tc.ContainerRequest{
@@ -298,7 +297,7 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 	return gatewayC
 }
 
-// Start a provider of specific id, tag, network, log color and env
+// StartProvider - start a provider of specific id, tag, network, log color and env
 func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a provider container
 	req := tc.ContainerRequest{
@@ -328,7 +327,7 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 	return providerC
 }
 
-// Start the itest, must only be called in host
+// StartItest - start the itest, must only be called in host
 func StartItest(ctx context.Context, tag string, network string, color string, lotusToken string, superAcct string, done chan bool, verbose bool, reloadJsTests string) tc.Container {
 	// Start a itest container
 	// Mount testdir
@@ -407,7 +406,7 @@ type logConsumer struct {
 
 func (g *logConsumer) Accept(l tc.Log) {
 	log := string(l.Content)
-	fmt.Print("{", string(g.color), g.name, "}: ", string("\033[0m"), log)
+	fmt.Print("{", g.color, g.name, "}: ", "\033[0m", log)
 	if g.done != nil {
 		if strings.Contains(log, "--- FAIL:") {
 			// Tests have falied.
@@ -419,7 +418,7 @@ func (g *logConsumer) Accept(l tc.Log) {
 	}
 }
 
-// The following helper method is used to generate a new filecoin account with 10 filecoins of balance
+// GenerateAccount - helper method, used to generate a new filecoin account with 10 filecoins of balance
 func GenerateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
@@ -470,11 +469,11 @@ func GenerateAccount(lotusAP string, token string, superAcct string, num int) ([
 		}
 
 		// Send request to lotus
-		cid, err := api.MpoolPush(context.Background(), signedMsg)
+		contentID, err := api.MpoolPush(context.Background(), signedMsg)
 		if err != nil {
 			return nil, nil, err
 		}
-		cids = append(cids, cid)
+		cids = append(cids, contentID)
 
 		// Add to result
 		privateKeys = append(privateKeys, privKeyStr)
@@ -482,10 +481,10 @@ func GenerateAccount(lotusAP string, token string, superAcct string, num int) ([
 	}
 
 	// Finally check receipts
-	for _, cid := range cids {
-		receipt := waitReceipt(&cid, &api)
+	for _, contentID := range cids {
+		receipt := waitReceipt(&contentID, &api)
 		if receipt.ExitCode != 0 {
-			return nil, nil, errors.New("Transaction fail to execute")
+			return nil, nil, errors.New("transaction fail to execute")
 		}
 	}
 

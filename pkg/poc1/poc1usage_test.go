@@ -68,34 +68,47 @@ func TestMain(m *testing.M) {
 	// Create shared net
 	ctx := context.Background()
 	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
 
 	// Start redis
 	redisContainer := util.StartRedis(ctx, networkName, true)
-	defer redisContainer.Terminate(ctx)
 
 	// Start register
 	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
-	defer registerContainer.Terminate(ctx)
 
 	// Start gateway
 	gatewayContainer := util.StartGateway(ctx, "gateway", tag, networkName, util.ColorBlue, gwEnv, true)
-	defer gatewayContainer.Terminate(ctx)
 
 	// Start provider
 	providerContainer := util.StartProvider(ctx, "provider", tag, networkName, util.ColorPurple, pvEnv, true)
-	defer providerContainer.Terminate(ctx)
 
 	// Start itest
 	done := make(chan bool)
 	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
-	defer itestContainer.Terminate(ctx)
 
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
 	} else {
-		logging.Fatal("Tests failed, shutdown...")
+		logging.Error("Tests failed, shutdown...")
+	}
+
+	if err := itestContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err := providerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err := gatewayContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  registerContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  redisContainer.Terminate(ctx); err != nil {
+		logging.Error("error while terminating test container: %s", err.Error())
+	}
+	if err :=  (*network).Remove(ctx); err != nil {
+		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
 
@@ -260,7 +273,7 @@ func TestPublishGroupCID(t *testing.T) {
 		logging.ErrorAndPanic(err.Error())
 	}
 	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
-		return
+		t.Fatal()
 	}
 
 	// Get offers by gatewayIDs real
@@ -274,7 +287,7 @@ func TestPublishGroupCID(t *testing.T) {
 		logging.ErrorAndPanic(err.Error())
 	}
 	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
-		return
+		t.Fatal()
 	}
 
 	// Get offers by gatewayIDs fake
@@ -285,9 +298,7 @@ func TestPublishGroupCID(t *testing.T) {
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
-	if !assert.Equal(t, 0, len(cidgroupInfo), "Offers should be empty") {
-		return
-	}
+	assert.Equal(t, 0, len(cidgroupInfo), "Offers should be empty")
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*       End TestProviderPublishGroupCIDOffer	         */")
@@ -327,14 +338,12 @@ func TestClientAddGateway(t *testing.T) {
 	// Add a gateway to use
 	added := client.AddGatewaysToUse([]*nodeid.NodeID{gwID})
 	if !assert.Equal(t, 1, added, "One gateway should be added") {
-		return
+		t.Fatal()
 	}
 
 	// Make the gateway to active, this involves doing an establishment
 	added = client.AddActiveGateways([]*nodeid.NodeID{gwID})
-	if !assert.Equal(t, 1, added, "One gateway should be added") {
-		return
-	}
+	assert.Equal(t, 1, added, "One gateway should be added")
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*              End TestClientAddGateway      	     */")
@@ -351,7 +360,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		panic(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[1]), gwID)
@@ -359,7 +368,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		panic(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 1.") {
-		return
+		t.Fatal()
 	}
 
 	offers, err = client.FindOffersStandardDiscovery(&(testCIDs[2]), gwID)
@@ -367,7 +376,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		panic(err)
 	}
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 2.") {
-		return
+		t.Fatal()
 	}
 
 	randomCID := cid.NewRandomContentID()
@@ -375,9 +384,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if !assert.Equal(t, 0, len(offers), "Shouldn't find any offer with random cid.") {
-		return
-	}
+	assert.Equal(t, 0, len(offers), "Shouldn't find any offer with random cid.")
 
 	logging.Info("/*******************************************************/")
 	logging.Info("/*        End TestClientStdContentDiscover     	     */")
