@@ -134,7 +134,7 @@ func TestNewAccounts(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	var err error
-	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, superAcct, 38)
+	privateKeys, accountAddrs, err = util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -931,33 +931,5 @@ func TestDHTOfferAck(t *testing.T) {
 
 	t.Log("/*******************************************************/")
 	t.Log("/*                 End TestDHTOfferAck                 */")
-	t.Log("/*******************************************************/")
-}
-
-// Test client JS
-func TestClientJS(t *testing.T) {
-	t.Log("/*******************************************************/")
-	t.Log("/*             Start TestClientJS              */")
-	t.Log("/*******************************************************/")
-
-	assert.Nil(t, util.CallClientJsInstall())
-
-	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	if err != nil {
-		panic(err)
-	}
-	key, err := blockchainPrivateKey.EncodePublicKey()
-	if err != nil {
-		panic(err)
-	}
-	walletKey := privateKeys[0]
-	privateKeys = privateKeys[1:]
-	accountAddrs = accountAddrs[1:]
-
-	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken)
-	assert.Nil(t, err)
-
-	t.Log("/*******************************************************/")
-	t.Log("/*               End TestClientJS              */")
 	t.Log("/*******************************************************/")
 }
