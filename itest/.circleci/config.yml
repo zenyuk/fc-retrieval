@@ -99,7 +99,7 @@ jobs:
           workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-register"
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-client-js"
-          workdir: "/home/circleci/usr/src/github.com/ConsenSys/fc-retrieval-client-js"
+          workdir: "/home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client-js"
       - run:
           name: Register - Use remote config
           command: make useremote
