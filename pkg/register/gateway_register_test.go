@@ -65,13 +65,13 @@ func ExampleGatewayGetNetworkInfoAdmin() {
 func ExampleGatewayGetRootSigningKey() {
 	v, err := gr.GetRootSigningKey()
 	fmt.Println(v, err)
-	// Output: <nil> Incorrect secp256k1 public key length: 32
+	// Output: <nil> incorrect secp256k1 public key length: 32
 }
 
 func ExampleGatewayGetSigningKey() {
 	v, err := gr.GetSigningKey()
 	fmt.Println(v, err)
-	// Output: <nil> Incorrect secp256k1 public key length: 32
+	// Output: <nil> incorrect secp256k1 public key length: 32
 }
 
 func ExampleRegisterGateway() {
