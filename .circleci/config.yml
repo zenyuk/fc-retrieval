@@ -132,7 +132,7 @@ jobs:
           working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client/
       - run:
           command: cat package.json
-          working_directory: /home/circleci/usr/src/github.com/ConsenSys/fc-retrieval-client-js/
+          working_directory: /home/circleci/go/src/github.com/ConsenSys/fc-retrieval-client-js/
       - run:
           name: Make Integration Tests
           command: make clean build tag
