@@ -1,0 +1,9 @@
+{
+  "transform": {
+    "^.+\\.(t|j)sx?$": "ts-jest"
+  },
+  "testRegex": "e2e(\\.|/)(test|spec)\\.ts$",
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "modulePathIgnorePatterns": ["lib", "dist"]
+}
+
