@@ -50,7 +50,7 @@ func Example_NewFCRPaymentMgr_err02() {
 	fmt.Println(err)
 	// Output:
 	// *fcrpaymentmgr.FCRPaymentMgr
-	// Unable to get public key, private key is empty
+	// unable to get public key, private key is empty
 }
 
 func Example_NewFCRPaymentMgr_ok() {

@@ -27,6 +27,18 @@ func ExampleGetJSON_02() {
 	// Output: map[k1:v1] <nil>
 }
 
+func ExampleGetJSON_03() {
+	v01 := make(map[string]string)
+
+	httpClient = utest.NewTestClientString(`{"`)
+	err := GetJSON("", &v01)
+	httpClient = &http.Client{}
+
+	fmt.Println(v01, err)
+	// Output: map[] unexpected EOF
+}
+
+
 func ExampleSendJSON_01() {
 	err := SendJSON("", 1)
 	fmt.Println(err)
@@ -53,12 +65,17 @@ func ExampleSendMessage_02() {
 	var req fcrmessages.FCRMessage
 	var resp *fcrmessages.FCRMessage
 
-	httpClient = utest.NewTestClientString(``)
-	resp, err := SendMessage("", &req)
+	httpClient = utest.NewTestClientString(`
+	{"message_type":1,
+	"protocol_version":2,
+	"protocol_supported":[3],
+	"message_body":[4],
+	"message_signature":""}`)
+	resp, err := SendMessage("0", &req)
 	httpClient = &http.Client{}
 
 	fmt.Println(resp, err)
-	// Output: &{0 0 [] [] } <nil>
+	// Output: &{1 2 [3] [4] } <nil>
 }
 
 func ExampleSendMessage_03() {
@@ -85,4 +102,16 @@ func ExampleSendMessage_04() {
 
 	fmt.Println(resp, err)
 	// Output: &{0 0 [] [] } test error
+}
+
+func ExampleSendMessage_05() {
+	var req fcrmessages.FCRMessage
+	var resp *fcrmessages.FCRMessage
+
+	httpClient = utest.NewTestClientString(`{`)
+	resp, err := SendMessage("0", &req)
+	httpClient = &http.Client{}
+
+	fmt.Println(resp, err != nil)
+	// Output: <nil> true
 }
