@@ -32,6 +32,35 @@ func TestNewNode(t *testing.T) {
 	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000005", id.ToString())
 }
 
+func TestNewNodeTooLong(t *testing.T) {
+	idBytes := make([]byte, 33)
+	for i := 0; i < 33; i++ {
+		idBytes[i] = 0xff
+	}
+	_, err := NewNodeID(big.NewInt(0).SetBytes(idBytes))
+	assert.NotEmpty(t, err)
+}
+
+func TestNewNodeEmpty(t *testing.T) {
+	id, err := NewNodeIDFromBytes([]byte{})
+	assert.Empty(t, err)
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000000", id.ToString())
+}
+
+func TestNewNodeNil(t *testing.T) {
+	id := &NodeID{}
+	assert.Equal(t, "00", id.ToString())
+}
+
+func TestNewNodeIDTooLong(t *testing.T) {
+	idBytes := make([]byte, 33)
+	for i := 0; i < 33; i++ {
+		idBytes[i] = 0xff
+	}
+	_, err := NewNodeIDFromBytes(idBytes)
+	assert.NotEmpty(t, err)
+}
+
 func TestNewNodeIDFromBytes(t *testing.T) {
 	id, err := NewNodeIDFromBytes([]byte{1})
 	assert.Empty(t, err)
