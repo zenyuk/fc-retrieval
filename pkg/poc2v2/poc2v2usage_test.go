@@ -25,6 +25,7 @@ import (
 )
 
 const lotusAP = "http://lotus-full-node:1234/rpc/v0"
+
 var lotusToken string
 var superAcct string
 var gatewayConfig = config.NewConfig(".env.gateway")
@@ -116,13 +117,13 @@ func TestMain(m *testing.M) {
 			logging.Error("error while terminating provider test container: %s", err.Error())
 		}
 	}
-	if err :=  registerContainer.Terminate(ctx); err != nil {
+	if err := registerContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  redisContainer.Terminate(ctx); err != nil {
+	if err := redisContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
@@ -930,5 +931,33 @@ func TestDHTOfferAck(t *testing.T) {
 
 	t.Log("/*******************************************************/")
 	t.Log("/*                 End TestDHTOfferAck                 */")
+	t.Log("/*******************************************************/")
+}
+
+// Test client JS
+func TestClientJS(t *testing.T) {
+	t.Log("/*******************************************************/")
+	t.Log("/*             Start TestClientJS              */")
+	t.Log("/*******************************************************/")
+
+	assert.Nil(t, util.CallClientJsInstall())
+
+	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		panic(err)
+	}
+	key, err := blockchainPrivateKey.EncodePublicKey()
+	if err != nil {
+		panic(err)
+	}
+	walletKey := privateKeys[0]
+	privateKeys = privateKeys[1:]
+	accountAddrs = accountAddrs[1:]
+
+	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken)
+	assert.Nil(t, err)
+
+	t.Log("/*******************************************************/")
+	t.Log("/*               End TestClientJS              */")
 	t.Log("/*******************************************************/")
 }
