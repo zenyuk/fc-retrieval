@@ -1,3 +1,9 @@
+/*
+Package cidoffer - provides functionality like create, verify, sign and get details for CIDOffer and SubCIDOffer structures.
+
+CIDOffer represents an offer from a Storage Provider, explaining on what conditions the client can retrieve a set of uniquely identified files from Filecoin blockchain network.
+SubCIDOffer represents an offer from a Storage Provider, just like CIDOffer, but for a single file and includes a merkle proof
+*/
 package cidoffer
 
 /*
@@ -22,11 +28,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/cbergoon/merkletree"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/cbergoon/merkletree"
 )
 
 const CIDOfferDigestSize = sha512.Size256
@@ -178,8 +185,8 @@ func (c *CIDOffer) GenerateSubCIDOffer(cid *cid.ContentID) (*SubCIDOffer, error)
 // message digest should only be used within the gateway.
 func (c *CIDOffer) GetMessageDigest() (sum256 [CIDOfferDigestSize]byte) {
 	b := c.providerID.ToBytes()
-	for _, cid := range c.cids {
-		b = append(b, cid.ToBytes()...)
+	for _, id := range c.cids {
+		b = append(b, id.ToBytes()...)
 	}
 	bPrice := make([]byte, 8)
 	binary.BigEndian.PutUint64(bPrice, uint64(c.price))

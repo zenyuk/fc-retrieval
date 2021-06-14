@@ -1,3 +1,6 @@
+/*
+Package fcrrestserver - common methods to create HTTP endpoints and handle HTTP requests across the application.
+*/
 package fcrrestserver
 
 /*
@@ -20,9 +23,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/ant0ine/go-json-rest/rest"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // FCRRESTServer represents a REST server handling http requests.
@@ -66,7 +70,7 @@ func (s *FCRRESTServer) AddHandler(listenAddr string, msgType int32, handler fun
 func (s *FCRRESTServer) Start() error {
 	// Start server
 	if s.start {
-		return errors.New("Server already started")
+		return errors.New("server already started")
 	}
 	for _, listenAddr := range s.listenAddrs {
 		errChan := make(chan bool)
@@ -88,7 +92,7 @@ func (s *FCRRESTServer) Start() error {
 			logging.Error(http.ListenAndServe(":"+addr, api.MakeHandler()).Error())
 		}(listenAddr, errChan)
 		if <-errChan {
-			return errors.New("Fail to start REST Server")
+			return errors.New("fail to start REST Server")
 		}
 		logging.Info("REST server starts listening on %s for connections.", listenAddr)
 	}
@@ -100,7 +104,11 @@ func (s *FCRRESTServer) Start() error {
 func (s *FCRRESTServer) msgRouter(w rest.ResponseWriter, r *rest.Request, listenAddr string) {
 	logging.Trace("Received request via /v1 API")
 	content, err := ioutil.ReadAll(r.Body)
-	r.Body.Close()
+
+	if closeErr := r.Body.Close(); closeErr != nil {
+		logging.Error("msgRouter can't close request body")
+	}
+
 	if err != nil {
 		logging.Error("Error reading request: %s.", err.Error())
 		rest.Error(w, "Error reading request", http.StatusBadRequest)
