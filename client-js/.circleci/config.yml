@@ -1,0 +1,17 @@
+# CircleCI 2.0 configuration file
+version: 2.1
+jobs:
+  utest:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      # Run unit tests
+      - run: npm install
+      - run: npm run test
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - utest
+

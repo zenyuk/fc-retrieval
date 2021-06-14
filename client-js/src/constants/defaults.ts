@@ -6,8 +6,6 @@
 //   defaultRegisterURL: string
 // }
 
-import { Settings } from '../config/settings.interface'
-
 // export const defaults: Settings = {
 export const defaults: any = {
   // DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
@@ -30,4 +28,4 @@ export const defaults: any = {
   // register:9020 is the value that will work for the integration test system.
   // defaultRegisterURL: 'http://localhost:9020',
   registerURL: 'http://localhost:9020',
-}
+};
