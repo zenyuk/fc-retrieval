@@ -1,3 +1,9 @@
+/*
+Package nodeid - combines common operation on FileCoin NodeID.
+
+NodeID is a unique identifier for a node, participating in FileCoin network operations.
+Example of the node might be a Retrieval Gateway or a Retrieval Provider.
+*/
 package nodeid
 
 /*
@@ -61,16 +67,16 @@ func NewNodeIDFromBytes(id []byte) (*NodeID, error) {
 // NewNodeIDFromHexString creates a NodeID from a string.
 func NewNodeIDFromHexString(id string) (*NodeID, error) {
 	var n = NodeID{}
-	bytes, err := hex.DecodeString(id)
+	decoded, err := hex.DecodeString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(bytes) > WordSize {
+	if len(decoded) > WordSize {
 		return nil, fmt.Errorf("NodeID: Incorrect size: %d, should be fewer than %d", len(id), WordSize)
 	}
 	n.id = make([]byte, WordSize)
-	copy(n.id[WordSize-len(bytes):], bytes)
+	copy(n.id[WordSize-len(decoded):], decoded)
 	return &n, nil
 }
 

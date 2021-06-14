@@ -1,3 +1,10 @@
+/*
+Package fcrmessages - contains all RPC messages exist in FileCoin Secondary Retrieval Market network and used to
+communicate between the following types of nodes: Retrieval Providers, Retrieval Providers Admins, Retrieval Gateways,
+Retrieval Gateways Admins, Retrieval Registers and Retrieval Clients.
+
+All the messages could be split in two group: request and response.
+*/
 package fcrmessages
 
 /*
@@ -42,7 +49,7 @@ func DecodeInsufficientFundsResponse(fcrMsg *FCRMessage) (
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != InsufficientFundsResponseType {
-		return 0, errors.New("Message type mismatch")
+		return 0, errors.New("message type mismatch")
 	}
 	msg := insufficientFundsResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
