@@ -6,7 +6,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test-e2e-watch": "jest --config jestconfig.e2e.json --watchAll",
+    "test-e2e-watch": "jest --config jestconfig.e2e.json --watchAll --verbose --silent=false",
     "test-e2e": "jest --config jestconfig.e2e.json",
     "test": "jest --config jestconfig.json --setupFiles=./.env.js",
     "build": "tsc",
