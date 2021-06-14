@@ -13,8 +13,6 @@ jobs:
       - run: make utest
   
   coverage:
-    environment:
-      CODE_COVERAGE: 47
     docker:
       - image: circleci/golang:1.15
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-common/
@@ -23,7 +21,9 @@ jobs:
       - run:
           name: Check code coverage
           command: |
-            make coverage COV=$CODE_COVERAGE
+            go test -cover ./...
+            echo
+            make coverage
 
 workflows:
   version: 2

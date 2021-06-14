@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -399,49 +398,6 @@ func (mgr *FCRPaymentMgr) Receive(channel string, voucher string) (*big.Int, err
 // Shutdown will safely shutdown the payment manager.
 func (mgr *FCRPaymentMgr) Shutdown() {
 	// TODO: Need to save the internal storage of the channel state
-}
-
-// Dump is used for debugging only, it returns the string repr of payment manager.
-// This is not thread safe and should only be called for debugging.
-func (mgr *FCRPaymentMgr) Dump() string {
-	var sb strings.Builder
-	sb.WriteString("Payment Manager status:\n")
-	sb.WriteString(fmt.Sprintf("Private key: %v\n", hex.EncodeToString(mgr.privKey)))
-	sb.WriteString(fmt.Sprintf("Adress: %v\n", mgr.address.String()))
-	sb.WriteString(fmt.Sprintf("Auth token: %v\n", mgr.authToken))
-	sb.WriteString("Outbound channels:\n")
-	for recipient, cs := range mgr.outboundChs {
-		sb.WriteString(fmt.Sprintf("\t\tChannel address: %v (Recipient address %v)\n", cs.addr.String(), recipient))
-		sb.WriteString(fmt.Sprintf("\t\tChannel balance: %v\n", cs.balance.String()))
-		sb.WriteString(fmt.Sprintf("\t\tChannel redeemed: %v\n", cs.redeemed.String()))
-		sb.WriteString("\t\tLane states:\n")
-		for lane, ls := range cs.laneStates {
-			sb.WriteString(fmt.Sprintf("\t\t\t\tLane: %v, Nonce: %v, Redeemed: %v\n", lane, ls.nonce, ls.redeemed))
-			sb.WriteString(fmt.Sprintf("\t\t\t\tVouchers: "))
-			for _, voucher := range ls.vouchers {
-				sb.WriteString(voucher)
-				sb.WriteString(" ")
-			}
-			sb.WriteString("\n")
-		}
-	}
-	sb.WriteString("Inbound channels:\n")
-	for _, cs := range mgr.inboundChs {
-		sb.WriteString(fmt.Sprintf("\t\tChannel address: %v\n", cs.addr.String()))
-		sb.WriteString(fmt.Sprintf("\t\tChannel balance: %v\n", cs.balance.String()))
-		sb.WriteString(fmt.Sprintf("\t\tChannel redeemed: %v\n", cs.redeemed.String()))
-		sb.WriteString("\t\tLane states:\n")
-		for lane, ls := range cs.laneStates {
-			sb.WriteString(fmt.Sprintf("\t\t\t\tLane: %v, Nonce: %v, Redeemed: %v\n", lane, ls.nonce, ls.redeemed))
-			sb.WriteString(fmt.Sprintf("\t\t\t\tVouchers: "))
-			for _, voucher := range ls.vouchers {
-				sb.WriteString(voucher)
-				sb.WriteString(" ")
-			}
-			sb.WriteString("\n")
-		}
-	}
-	return sb.String()
 }
 
 // encodedVoucher returns the encoded string of a given signed voucher
