@@ -277,9 +277,9 @@ func TestInitialiseGateways(t *testing.T) {
 }
 
 // Test client JS
-func TestInitialiseClientJS(t *testing.T) {
+func TestClientJS(t *testing.T) {
 	t.Log("/*******************************************************/")
-	t.Log("/*             Start TestInitialiseClient              */")
+	t.Log("/*             Start TestClientJS              */")
 	t.Log("/*******************************************************/")
 
 	assert.Nil(t, util.CallClientJsInstall())
@@ -300,6 +300,6 @@ func TestInitialiseClientJS(t *testing.T) {
 	assert.Nil(t, err)
 
 	t.Log("/*******************************************************/")
-	t.Log("/*               End TestInitialiseClient              */")
+	t.Log("/*               End TestClientJS              */")
 	t.Log("/*******************************************************/")
 }
