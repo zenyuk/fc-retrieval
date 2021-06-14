@@ -12,7 +12,7 @@
     "build": "tsc",
     "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write && git status",
     "lint": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
-    "lint:fix": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
+    "lint:fix": "eslint 'src/**/*.ts' -c '.eslintrc.js' --fix",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
