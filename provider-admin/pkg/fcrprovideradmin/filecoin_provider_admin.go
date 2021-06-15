@@ -35,28 +35,30 @@ type FilecoinRetrievalProviderAdmin struct {
 	Settings ProviderAdminSettings
 
 	// List of providers this admin is in use
-	ActiveProviders     map[string]register.ProviderRegister
+	ActiveProviders     map[string]register.ProviderRegistrar
 	ActiveProvidersLock sync.RWMutex
+	AdminApiCaller      adminapi.AdminApi
 }
 
 // NewFilecoinRetrievalProviderAdmin initialise the Filecoin Retreival Provider Admin library
 func NewFilecoinRetrievalProviderAdmin(settings ProviderAdminSettings) *FilecoinRetrievalProviderAdmin {
 	return &FilecoinRetrievalProviderAdmin{
 		Settings:            settings,
-		ActiveProviders:     make(map[string]register.ProviderRegister),
+		ActiveProviders:     make(map[string]register.ProviderRegistrar),
 		ActiveProvidersLock: sync.RWMutex{},
+		AdminApiCaller:      adminapi.NewAdminApi(),
 	}
 }
 
 // InitialiseProvider initialise a given provider
-func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerInfo *register.ProviderRegister, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	err := adminapi.RequestInitialiseKey(providerInfo, providerPrivKey, providerPrivKeyVer, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerRegistrar register.ProviderRegistrar, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := c.AdminApiCaller.RequestInitialiseKey(providerRegistrar, providerPrivKey, providerPrivKeyVer, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 	if err != nil {
 		return err
 	}
 
 	// Register this provider
-	err = providerInfo.RegisterProvider(c.Settings.RegisterURL())
+	err = providerRegistrar.RegisterProvider(c.Settings.RegisterURL())
 	if err != nil {
 		logging.Error("Error in register the provider.")
 		return err
@@ -64,22 +66,22 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerInfo *regist
 
 	// Add this provider to the active providers list
 	c.ActiveProvidersLock.Lock()
-	c.ActiveProviders[providerInfo.NodeID] = *providerInfo
+	c.ActiveProviders[providerRegistrar.GetNodeID()] = providerRegistrar
 	c.ActiveProvidersLock.Unlock()
 	return nil
 }
 
 // InitialiseProviderV2 initialise a given v2 provider
 func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
-	providerInfo *register.ProviderRegister,
+	providerRegistrar register.ProviderRegistrar,
 	providerPrivKey *fcrcrypto.KeyPair,
 	providerPrivKeyVer *fcrcrypto.KeyVersion,
 	lotusWalletPrivateKey string,
 	lotusAP string,
 	lotusAuthToken string,
 ) error {
-	err := adminapi.RequestInitialiseKeyV2(
-		providerInfo,
+	err := c.AdminApiCaller.RequestInitialiseKeyV2(
+		providerRegistrar,
 		providerPrivKey,
 		providerPrivKeyVer,
 		c.Settings.providerAdminPrivateKey,
@@ -93,7 +95,7 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 	}
 
 	// Register this provider
-	err = providerInfo.RegisterProvider(c.Settings.RegisterURL())
+	err = providerRegistrar.RegisterProvider(c.Settings.RegisterURL())
 	if err != nil {
 		logging.Error("Error in register the provider.")
 		return err
@@ -101,7 +103,7 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 
 	// Add this provider to the active providers list
 	c.ActiveProvidersLock.Lock()
-	c.ActiveProviders[providerInfo.NodeID] = *providerInfo
+	c.ActiveProviders[providerRegistrar.GetNodeID()] = providerRegistrar
 	c.ActiveProvidersLock.Unlock()
 	return nil
 }
@@ -110,42 +112,42 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
-	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return adminapi.RequestPublishGroupOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestPublishGroupOffer(providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // PublishDHTCID publish a dht cid offer to a given provider
 func (c *FilecoinRetrievalProviderAdmin) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
-	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return adminapi.RequestPublishDHTOffer(&providerInfo, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestPublishDHTOffer(providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // GetGroupCIDOffer checks the group offer stored in the provider
 func (c *FilecoinRetrievalProviderAdmin) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
-	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return false, nil, errors.New("unable to find the provider in admin storage")
 	}
-	return adminapi.RequestGetPublishedOffer(&providerInfo, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestGetPublishedOffer(providerRegistrar, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // ForceUpdate forces the provider to update its internal register
 func (c *FilecoinRetrievalProviderAdmin) ForceUpdate(providerID *nodeid.NodeID) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
-	providerInfo, exists := c.ActiveProviders[providerID.ToString()]
+	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return adminapi.RequestForceRefresh(&providerInfo, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestForceRefresh(providerRegistrar, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
