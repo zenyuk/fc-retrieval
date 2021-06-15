@@ -25,16 +25,15 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestForceRefresh forces a given provider to refresh its internal register
-func RequestForceRefresh(
-	providerInfo *register.ProviderRegister,
+func(a *Admin) RequestForceRefresh(
+	providerRegistrar register.ProviderRegistrar,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
+	pubKey, err := providerRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
@@ -51,7 +50,7 @@ func RequestForceRefresh(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

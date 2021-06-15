@@ -23,12 +23,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestPublishGroupOffer publish a group cid offer to a given provider
-func RequestPublishGroupOffer(
-	providerInfo *register.ProviderRegister,
+func (a *Admin) RequestPublishGroupOffer(
+	providerRegistrar register.ProviderRegistrar,
 	cids []cid.ContentID,
 	price uint64,
 	expiry int64,
@@ -37,7 +36,7 @@ func RequestPublishGroupOffer(
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
 ) error {
 	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
+	pubKey, err := providerRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
@@ -52,7 +51,7 @@ func RequestPublishGroupOffer(
 		return errors.New("error signing PublishGroupOffer request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
