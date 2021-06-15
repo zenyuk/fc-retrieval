@@ -34,28 +34,31 @@ type FilecoinRetrievalGatewayAdmin struct {
 	Settings GatewayAdminSettings
 
 	// List of gateways this admin is in use
-	ActiveGateways     map[string]register.GatewayRegister
+	ActiveGateways     map[string]register.GatewayRegistrar
 	ActiveGatewaysLock sync.RWMutex
+
+  AdminApiCaller      adminapi.AdminApi
 }
 
 // NewFilecoinRetrievalGatewayAdmin initialise the Filecoin Retreival Gateway Admin library
 func NewFilecoinRetrievalGatewayAdmin(settings GatewayAdminSettings) *FilecoinRetrievalGatewayAdmin {
 	return &FilecoinRetrievalGatewayAdmin{
 		Settings:           settings,
-		ActiveGateways:     make(map[string]register.GatewayRegister),
+		ActiveGateways:     make(map[string]register.GatewayRegistrar),
 		ActiveGatewaysLock: sync.RWMutex{},
+    AdminApiCaller:     adminapi.NewAdminApi(),
 	}
 }
 
 // InitialiseGateway initialise a given gateway
-func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayInfo *register.GatewayRegister, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
-	err := adminapi.RequestInitialiseKey(gatewayInfo, gatewayPrivKey, gatewayPrivKeyVer, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayRegistrar register.GatewayRegistrar, gatewayPrivKey *fcrcrypto.KeyPair, gatewayPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := c.AdminApiCaller.RequestInitialiseKey(gatewayRegistrar, gatewayPrivKey, gatewayPrivKeyVer, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 	if err != nil {
 		return err
 	}
 
 	// Register this gateway
-	err = gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	err = gatewayRegistrar.RegisterGateway(c.Settings.RegisterURL())
 	if err != nil {
 		logging.Error("Error in register the gateway.")
 		return err
@@ -63,22 +66,22 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayInfo *register.
 
 	// Add this provider to the active gateways list
 	c.ActiveGatewaysLock.Lock()
-	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGateways[gatewayRegistrar.GetNodeID()] = gatewayRegistrar
 	c.ActiveGatewaysLock.Unlock()
 	return nil
 }
 
 // InitialiseGatewayV2 initialise a given v2 gateway
 func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
-	gatewayInfo *register.GatewayRegister,
+  gatewayRegistrar register.GatewayRegistrar,
 	gatewayPrivKey *fcrcrypto.KeyPair,
 	gatewayPrivKeyVer *fcrcrypto.KeyVersion,
 	lotusWalletPrivateKey string,
 	lotusAP string,
 	lotusAuthToken string,
 ) error {
-	err := adminapi.RequestInitialiseKeyV2(
-		gatewayInfo,
+	err := c.AdminApiCaller.RequestInitialiseKeyV2(
+    gatewayRegistrar,
 		gatewayPrivKey,
 		gatewayPrivKeyVer,
 		c.Settings.gatewayAdminPrivateKey,
@@ -92,7 +95,7 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
 	}
 
 	// Register this gateway
-	err = gatewayInfo.RegisterGateway(c.Settings.RegisterURL())
+	err = gatewayRegistrar.RegisterGateway(c.Settings.RegisterURL())
 	if err != nil {
 		logging.Error("Error in register the gateway.")
 		return err
@@ -100,7 +103,7 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
 
 	// Add this gateway to the active gateways list
 	c.ActiveGatewaysLock.Lock()
-	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGateways[gatewayRegistrar.GetNodeID()] = gatewayRegistrar
 	c.ActiveGatewaysLock.Unlock()
 	return nil
 }
@@ -124,32 +127,32 @@ func (c *FilecoinRetrievalGatewayAdmin) GetCIDOffersList() ([]cidoffer.CIDOffer,
 func (c *FilecoinRetrievalGatewayAdmin) ForceUpdate(gatewayID *nodeid.NodeID) error {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
-	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
+  gatewayRegistrar, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
 		return errors.New("unable to find the gateway in admin storage")
 	}
-	return adminapi.RequestForceRefresh(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestForceRefresh(gatewayRegistrar, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
 
 // ListDHTOffer asks the gateway to list dht offer from providers
 func (c *FilecoinRetrievalGatewayAdmin) ListDHTOffer(gatewayID *nodeid.NodeID) error {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
-	gatewayInfo, exists := c.ActiveGateways[gatewayID.ToString()]
+  gatewayRegistrar, exists := c.ActiveGateways[gatewayID.ToString()]
 	if !exists {
 		return errors.New("unable to find the gateway in admin storage")
 	}
-	return adminapi.RequestListDHTOffer(&gatewayInfo, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestListDHTOffer(gatewayRegistrar, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 }
 
-func (c *FilecoinRetrievalGatewayAdmin) UpdateGatewaySupportedFeatures(gatewayInfo *register.GatewayRegister, providers []nodeid.NodeID) error {
+func (c *FilecoinRetrievalGatewayAdmin) UpdateGatewaySupportedFeatures(gatewayRegistrar register.GatewayRegistrar, providers []nodeid.NodeID) error {
 	c.ActiveGatewaysLock.Lock()
 	defer c.ActiveGatewaysLock.Unlock()
-	err := adminapi.SetGroupCIDOfferSupportedForProviders(gatewayInfo, providers, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
+	err := c.AdminApiCaller.SetGroupCIDOfferSupportedForProviders(gatewayRegistrar, providers, c.Settings.gatewayAdminPrivateKey, c.Settings.gatewayAdminPrivateKeyVer)
 	if err != nil {
 		return err
 	}
 
-	c.ActiveGateways[gatewayInfo.NodeID] = *gatewayInfo
+	c.ActiveGateways[gatewayRegistrar.GetNodeID()] = gatewayRegistrar
 	return nil
 }

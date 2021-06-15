@@ -19,22 +19,21 @@ package adminapi
  */
 
 import (
-	"errors"
+  "errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // RequestForceRefresh forces a given gateway to refresh its internal register
-func RequestForceRefresh(
-	gatewayInfo *register.GatewayRegister,
+func (a *Admin) RequestForceRefresh(
+  gatewayRegistrar register.GatewayRegistrar,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
@@ -51,7 +50,7 @@ func RequestForceRefresh(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
