@@ -10,9 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
-
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -23,9 +20,12 @@ import (
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 const lotusAP = "http://lotus-full-node:1234/rpc/v0"
+
 var lotusToken string
 var superAcct string
 var gatewayConfig = config.NewConfig(".env.gateway")
@@ -93,8 +93,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true)
-
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true, "")
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")
@@ -118,13 +117,13 @@ func TestMain(m *testing.M) {
 			logging.Error("error while terminating provider test container: %s", err.Error())
 		}
 	}
-	if err :=  registerContainer.Terminate(ctx); err != nil {
+	if err := registerContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  redisContainer.Terminate(ctx); err != nil {
+	if err := redisContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }

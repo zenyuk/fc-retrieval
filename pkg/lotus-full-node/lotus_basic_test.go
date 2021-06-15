@@ -30,13 +30,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 )
 
 func TestMain(m *testing.M) {
@@ -62,8 +60,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
-
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")

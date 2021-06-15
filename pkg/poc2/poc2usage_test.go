@@ -20,10 +20,9 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
 )
 
 var gatewayConfig = config.NewConfig(".env.gateway")
@@ -79,7 +78,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true)
+	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
 	if _, err := itestContainer.Exec(ctx, []string{"export"}); err != nil {
 		logging.Error("can't execute 'export' command in test container")
 	}
