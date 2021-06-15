@@ -23,11 +23,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
-func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
+func (c *Client) RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
 	if len(challenge) != 32 {
 		return errors.New("challenge is not 32 bytes")
 	}
@@ -40,7 +39,7 @@ func RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byt
 		return err
 	}
 
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return err
 	}
