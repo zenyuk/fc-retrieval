@@ -23,11 +23,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestDHTDiscover requests a dht discover to a given gateway for a given contentID, nonce and ttl.
-func RequestDHTDiscover(
+func (c *Client) RequestDHTDiscover(
 	gatewayInfo *register.GatewayRegister,
 	contentID *cid.ContentID,
 	nonce int64,
@@ -45,7 +44,7 @@ func RequestDHTDiscover(
 	}
 
 	// Send request and get response
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return nil, nil, nil, err
 	}
