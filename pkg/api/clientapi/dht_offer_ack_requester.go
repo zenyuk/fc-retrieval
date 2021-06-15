@@ -23,11 +23,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestDHTOfferAck requests a dht offer ack to a given provider for a pair of cid and gateway id
-func RequestDHTOfferAck(
+func (c *Client) RequestDHTOfferAck(
 	providerInfo *register.ProviderRegister,
 	contentID *cid.ContentID,
 	gatewayID *nodeid.NodeID,
@@ -40,7 +39,7 @@ func RequestDHTOfferAck(
 	}
 
 	// Send request and get response
-	response, err := req.SendMessage(providerInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(providerInfo.NetworkInfoClient, request)
 	if err != nil {
 		return false, nil, nil, err
 	}

@@ -23,11 +23,10 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestStandardDiscoverV2 requests a standard discover to a given gateway for a given contentID, nonce and ttl.
-func RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64, paychAddr string, voucher string) ([][cidoffer.CIDOfferDigestSize]byte, error) {
+func (c *Client) RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64, paychAddr string, voucher string) ([][cidoffer.CIDOfferDigestSize]byte, error) {
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequestV2(contentID, nonce, ttl, paychAddr, voucher)
 	if err != nil {
@@ -36,7 +35,7 @@ func RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID 
 	}
 
 	// Send request and get response
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return nil, err
 	}

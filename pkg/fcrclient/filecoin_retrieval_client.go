@@ -29,6 +29,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
@@ -53,16 +54,21 @@ type FilecoinRetrievalClient struct {
 	// PaymentMgr payment manager
 	paymentMgr     *fcrpaymentmgr.FCRPaymentMgr
 	paymentMgrLock sync.RWMutex
+
+	ClientApi      clientapi.ClientApi
+	RegisterMgr    *fcrregistermgr.FCRRegisterMgr
 }
 
 // NewFilecoinRetrievalClient initialise the Filecoin Retrieval Client library
-func NewFilecoinRetrievalClient(settings ClientSettings) (*FilecoinRetrievalClient, error) {
+func NewFilecoinRetrievalClient(settings ClientSettings, registerMgr *fcrregistermgr.FCRRegisterMgr) (*FilecoinRetrievalClient, error) {
 	f := &FilecoinRetrievalClient{
 		Settings:           settings,
 		GatewaysToUse:      make(map[string]register.GatewayRegister),
 		GatewaysToUseLock:  sync.RWMutex{},
 		ActiveGateways:     make(map[string]register.GatewayRegister),
 		ActiveGatewaysLock: sync.RWMutex{},
+		ClientApi:          clientapi.NewClientApi(),
+		RegisterMgr:        registerMgr,
 	}
 	return f, nil
 }
@@ -88,7 +94,7 @@ func (c *FilecoinRetrievalClient) PaymentMgr() *fcrpaymentmgr.FCRPaymentMgr {
 func (c *FilecoinRetrievalClient) FindGateways(location string, maxNumToLocate int) ([]*nodeid.NodeID, error) {
 	// Determine gateways to use. For the moment, this is just "use all of them"
 	// TODO: This will have to become, use gateways that this client has FIL registered with.
-	gateways, err := register.GetRegisteredGateways(c.Settings.RegisterURL())
+	gateways, err := c.RegisterMgr.GetRegisteredGateways()
 	if err != nil {
 		logging.Error("Error in getting all registered gateways.")
 		return nil, err
@@ -123,7 +129,7 @@ func (c *FilecoinRetrievalClient) AddGatewaysToUse(gwNodeIDs []*nodeid.NodeID) i
 		if exist {
 			continue
 		}
-		gateway, err := register.GetGatewayByID(c.Settings.RegisterURL(), gwToAddID)
+		gateway, err := c.RegisterMgr.GetGatewayByID(gwToAddID)
 		if err != nil {
 			logging.Error("Error getting registered gateway %v: %v", gwToAddID, err.Error())
 			continue
@@ -217,7 +223,7 @@ func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) 
 		challenge := make([]byte, 32)
 		rand.Read(challenge)
 		ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-		err := clientapi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
+		err := c.ClientApi.RequestEstablishment(&info, challenge, c.Settings.ClientID(), ttl)
 		if err != nil {
 			logging.Error("Error in initial establishment: %v", err.Error())
 			continue
@@ -287,7 +293,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 		return make([]cidoffer.SubCIDOffer, 0), errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	offers, err := clientapi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
+	offers, err := c.ClientApi.RequestStandardDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
 	if err != nil {
 		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
 		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
@@ -295,7 +301,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 	// Verify the offer one by one
 	for _, offer := range offers {
 		// Get provider's pubkey
-		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+		providerInfo, err := c.RegisterMgr.GetProviderByID(offer.GetProviderID())
 		if !validateProviderInfo(&providerInfo) {
 			logging.Error("Provider register info not valid.")
 			continue
@@ -337,7 +343,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 		return offersMap, errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	contacted, contactedResp, uncontactable, err := clientapi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	contacted, contactedResp, uncontactable, err := c.ClientApi.RequestDHTDiscover(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
 		return offersMap, errors.New("error in requesting dht discovery")
@@ -351,7 +357,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 		resp := contactedResp[i]
 		// Verify the sub response
 		// Get gateway's pubkey
-		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &id)
+		gatewayInfo, err := c.RegisterMgr.GetGatewayByID(&id)
 		if err != nil {
 			logging.Error("Error in getting gateway info.")
 			continue
@@ -377,7 +383,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 		entry := make([]cidoffer.SubCIDOffer, 0)
 		for _, offer := range offers {
 			// Get provider's pubkey
-			providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+			providerInfo, err := c.RegisterMgr.GetProviderByID(offer.GetProviderID())
 			if err != nil {
 				logging.Error("Error in getting provider info.")
 				continue
@@ -445,7 +451,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	// TODO need to do nonce management
 	nonce := rand.Int63()
 	ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-	contactedGateways, contactedResp, uncontactable, err := clientapi.RequestDHTDiscoverV2(&entryGatewayInfo, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
+	contactedGateways, contactedResp, uncontactable, err := c.ClientApi.RequestDHTDiscoverV2(&entryGatewayInfo, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGatewayInfo.NodeID, err)
 		return nil, errors.New("error in requesting dht discovery")
@@ -461,7 +467,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 		resp := contactedResp[i]
 		// Verify the sub response
 		// Get gateway's pubkey
-		gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), &contactedGatewayID)
+		gatewayInfo, err := c.RegisterMgr.GetGatewayByID(&contactedGatewayID)
 		if err != nil {
 			logging.Error("Error in getting gateway info.")
 			continue
@@ -522,7 +528,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	}
 	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
 
-	allGatewaysOffers, discoverError := clientapi.RequestDHTOfferDiscover(&entryGatewayInfo, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
+	allGatewaysOffers, discoverError := c.ClientApi.RequestDHTOfferDiscover(&entryGatewayInfo, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
 	if discoverError != nil {
 		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
 	}
@@ -535,7 +541,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair
 func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gatewayID *nodeid.NodeID, providerID *nodeid.NodeID) (bool, error) {
-	provider, err := register.GetProviderByID(c.Settings.RegisterURL(), providerID)
+	provider, err := c.RegisterMgr.GetProviderByID(providerID)
 	if err != nil {
 		logging.Error("Error getting registered provider %v: %v", providerID, err.Error())
 		return false, errors.New("provider not found inside register")
@@ -545,7 +551,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 		return false, errors.New("invalid register info")
 	}
 
-	found, request, ack, err := clientapi.RequestDHTOfferAck(&provider, contentID, gatewayID)
+	found, request, ack, err := c.ClientApi.RequestDHTOfferAck(&provider, contentID, gatewayID)
 	if err != nil {
 		return false, err
 	}
@@ -559,7 +565,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 
 	// Get provider pub key and gw pub key
 	// Get gateway's pubkey
-	gatewayInfo, err := register.GetGatewayByID(c.Settings.RegisterURL(), gatewayID)
+	gatewayInfo, err := c.RegisterMgr.GetGatewayByID(gatewayID)
 	if err != nil {
 		logging.Error("Error in getting gateway info.")
 		return false, errors.New("error in getting gateway info")
@@ -648,7 +654,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	// It pays for the first request to get a list of offer digests.
 	// TODO need to do nonce management
-	offerDigests, err := clientapi.RequestStandardDiscoverV2(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
+	offerDigests, err := c.ClientApi.RequestStandardDiscoverV2(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
 	if err != nil {
 		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.NodeID, err)
 		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
@@ -686,13 +692,13 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 		}
 	}
 
-	offers, err := clientapi.RequestStandardDiscoverOffer(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), offerDigests, paychAddr, voucher)
+	offers, err := c.ClientApi.RequestStandardDiscoverOffer(&gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), offerDigests, paychAddr, voucher)
 
 	var validOffers []cidoffer.SubCIDOffer
 	// Verify the offer one by one
 	for _, offer := range offers {
 		// Get provider's pubkey
-		providerInfo, err := register.GetProviderByID(c.Settings.RegisterURL(), offer.GetProviderID())
+		providerInfo, err := c.RegisterMgr.GetProviderByID(offer.GetProviderID())
 		if !validateProviderInfo(&providerInfo) {
 			logging.Error("Provider register info not valid.")
 			continue

@@ -30,7 +30,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // GatewaySubOffers - relation between a Gateway and the Sub-Offers received through the Gateway
@@ -39,7 +38,7 @@ type GatewaySubOffers struct {
 	SubOffers []cidoffer.SubCIDOffer `json:"sub_cid_offers"`
 }
 
-func RequestDHTOfferDiscover(
+func (c *Client) RequestDHTOfferDiscover(
 	gatewayInfo *register.GatewayRegister,
 	gatewayIDs []nodeid.NodeID,
 	contentID *cid.ContentID,
@@ -55,7 +54,7 @@ func RequestDHTOfferDiscover(
 	}
 
 	// Send request and get response
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
 	if err != nil {
 		return nil, err
 	}
