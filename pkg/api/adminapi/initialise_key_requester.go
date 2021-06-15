@@ -23,23 +23,22 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestInitialiseKey initialise a given provider
-func RequestInitialiseKey(
-	providerInfo *register.ProviderRegister,
+func (a *Admin) RequestInitialiseKey(
+	providerRegistrar register.ProviderRegistrar,
 	providerPrivKey *fcrcrypto.KeyPair,
 	providerPrivKeyVer *fcrcrypto.KeyVersion,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
+	pubKey, err := providerRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
 	}
-	nodeID, err := nodeid.NewNodeIDFromHexString(providerInfo.NodeID)
+	nodeID, err := nodeid.NewNodeIDFromHexString(providerRegistrar.GetNodeID())
 	if err != nil {
 		logging.Error("Error in generating nodeID.")
 		return err
@@ -55,7 +54,7 @@ func RequestInitialiseKey(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

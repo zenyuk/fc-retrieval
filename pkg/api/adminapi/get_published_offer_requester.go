@@ -24,12 +24,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
 )
 
 // RequestGetPublishedOffer checks the group offer stored in the provider for a given list of gateways.
-func RequestGetPublishedOffer(
-	providerInfo *register.ProviderRegister,
+func (a *Admin) RequestGetPublishedOffer(
+	providerRegistrar register.ProviderRegistrar,
 	gatewayIDs []nodeid.NodeID,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
@@ -39,7 +38,7 @@ func RequestGetPublishedOffer(
 	error, // error
 ) {
 	// First, Get pubkey
-	pubKey, err := providerInfo.GetSigningKey()
+	pubKey, err := providerRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return false, nil, err
@@ -54,7 +53,7 @@ func RequestGetPublishedOffer(
 		return false, nil, errors.New("error in signing the request")
 	}
 
-	response, err := req.SendMessage(providerInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return false, nil, err
