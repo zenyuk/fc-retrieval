@@ -16,25 +16,24 @@ package adminapi
  */
 
 import (
-	"errors"
+  "errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	req "github.com/ConsenSys/fc-retrieval-common/pkg/request"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
 // RequestGetReputation gets the reputation for a given client id
-func RequestGetReputation(
-	gatewayInfo *register.GatewayRegister,
+func (a *Admin) RequestGetReputation(
+  gatewayRegistrar register.GatewayRegistrar,
 	clientID *nodeid.NodeID,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
 ) (int64, error) {
 	// First, Get pubkey
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return 0, err
@@ -51,7 +50,7 @@ func RequestGetReputation(
 		return 0, errors.New("error in signing the request")
 	}
 
-	response, err := req.SendMessage(gatewayInfo.NetworkInfoAdmin, request)
+	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return 0, err
