@@ -26,7 +26,15 @@ import (
 )
 
 // RequestStandardDiscoverV2 requests a standard discover to a given gateway for a given contentID, nonce and ttl.
-func (c *Client) RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister, contentID *cid.ContentID, nonce int64, ttl int64, paychAddr string, voucher string) ([][cidoffer.CIDOfferDigestSize]byte, error) {
+func (c *Client) RequestStandardDiscoverV2(
+	gatewayRegistrar register.GatewayRegistrar,
+	contentID *cid.ContentID,
+	nonce int64,
+	ttl int64,
+	paychAddr string,
+	voucher string,
+) ([][cidoffer.CIDOfferDigestSize]byte, error) {
+
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequestV2(contentID, nonce, ttl, paychAddr, voucher)
 	if err != nil {
@@ -35,13 +43,13 @@ func (c *Client) RequestStandardDiscoverV2(gatewayInfo *register.GatewayRegister
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return nil, err
 	}

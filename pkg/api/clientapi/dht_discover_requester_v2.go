@@ -27,7 +27,7 @@ import (
 
 // RequestDHTDiscoverV2 requests a dht discover to a given gateway for a given contentID, nonce and ttl.
 func (c *Client) RequestDHTDiscoverV2(
-	gatewayInfo *register.GatewayRegister,
+	gatewayRegistrar register.GatewayRegistrar,
 	contentID *cid.ContentID,
 	nonce int64,
 	ttl int64,
@@ -44,13 +44,13 @@ func (c *Client) RequestDHTDiscoverV2(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return nil, nil, nil, err
 	}

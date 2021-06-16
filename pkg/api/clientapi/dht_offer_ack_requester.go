@@ -27,7 +27,7 @@ import (
 
 // RequestDHTOfferAck requests a dht offer ack to a given provider for a pair of cid and gateway id
 func (c *Client) RequestDHTOfferAck(
-	providerInfo *register.ProviderRegister,
+	gatewayRegistrar register.ProviderRegistrar,
 	contentID *cid.ContentID,
 	gatewayID *nodeid.NodeID,
 ) (bool, *fcrmessages.FCRMessage, *fcrmessages.FCRMessage, error) {
@@ -39,13 +39,13 @@ func (c *Client) RequestDHTOfferAck(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(providerInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return false, nil, nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := providerInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return false, nil, nil, err
 	}

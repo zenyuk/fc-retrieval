@@ -22,33 +22,33 @@ import (
 
 // Validate the information coming from the Register.
 // Return true if the information is valid.
-func validateGatewayInfo(gateway *register.GatewayRegister) bool {
+func validateGatewayInfo(gateway register.GatewayRegistrar) bool {
 	// All of the fields must have a value in them.
-	if gateway.NodeID == "" {
+	if gateway.GetNodeID() == "" {
 		logging.Warn("Gateway registration issue: NodeID not set")
 		return false
 	}
-	if gateway.Address == "" {
+	if gateway.GetAddress() == "" {
 		logging.Warn("Gateway registration issue: Gateway IP address or domain name not set")
 		return false
 	}
-	if gateway.NetworkInfoGateway == "" {
+	if gateway.GetNetworkInfoGateway() == "" {
 		logging.Warn("Gateway registration issue: Port for Gateway to Gateway communications not set")
 		return false
 	}
-	if gateway.NetworkInfoProvider == "" {
+	if gateway.GetNetworkInfoProvider() == "" {
 		logging.Warn("Gateway registration issue: Port for Provider to Gateway communications not set")
 		return false
 	}
-	if gateway.NetworkInfoClient == "" {
+	if gateway.GetNetworkInfoClient() == "" {
 		logging.Warn("Gateway registration issue: Port for Client to Gateway communications not set")
 		return false
 	}
-	if gateway.NetworkInfoAdmin == "" {
+	if gateway.GetNetworkInfoAdmin() == "" {
 		logging.Warn("Gateway registration issue: Port for Admin to Gateway communications not set")
 		return false
 	}
-	if gateway.RegionCode == "" {
+	if gateway.GetRegionCode() == "" {
 		logging.Warn("Gateway registration issue: Region Code not set")
 		return false
 	}
@@ -67,29 +67,29 @@ func validateGatewayInfo(gateway *register.GatewayRegister) bool {
 
 // Validate the information coming from the Register.
 // Return true if the information is valid.
-func validateProviderInfo(provider *register.ProviderRegister) bool {
+func validateProviderInfo(provider register.ProviderRegistrar) bool {
 	// All of the fields must have a value in them.
-	if provider.NodeID == "" {
+	if provider.GetNodeID() == "" {
 		logging.Warn("Provider registration issue: NodeID not set")
 		return false
 	}
-	if provider.Address == "" {
+	if provider.GetAddress() == "" {
 		logging.Warn("Provider registration issue: Provider IP address or domain name not set")
 		return false
 	}
-	if provider.NetworkInfoGateway == "" {
+	if provider.GetNetworkInfoGateway() == "" {
 		logging.Warn("Provider registration issue: Port for Gateway to Provider communications not set")
 		return false
 	}
-	if provider.NetworkInfoClient == "" {
+	if provider.GetNetworkInfoClient() == "" {
 		logging.Warn("Provider registration issue: Port for Client to Provider communications not set")
 		return false
 	}
-	if provider.NetworkInfoAdmin == "" {
+	if provider.GetNetworkInfoAdmin() == "" {
 		logging.Warn("Provider registration issue: Port for Admin to Provider communications not set")
 		return false
 	}
-	if provider.RegionCode == "" {
+	if provider.GetRegionCode() == "" {
 		logging.Warn("Provider registration issue: Region Code not set")
 		return false
 	}

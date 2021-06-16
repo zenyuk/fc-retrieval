@@ -26,7 +26,13 @@ import (
 )
 
 // RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
-func (c *Client) RequestEstablishment(gatewayInfo *register.GatewayRegister, challenge []byte, clientID *nodeid.NodeID, ttl int64) error {
+func (c *Client) RequestEstablishment(
+	gatewayRegistrar register.GatewayRegistrar,
+	challenge []byte,
+	clientID *nodeid.NodeID,
+	ttl int64,
+) error {
+
 	if len(challenge) != 32 {
 		return errors.New("challenge is not 32 bytes")
 	}
@@ -39,13 +45,13 @@ func (c *Client) RequestEstablishment(gatewayInfo *register.GatewayRegister, cha
 		return err
 	}
 
-	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return err
 	}
@@ -60,7 +66,7 @@ func (c *Client) RequestEstablishment(gatewayInfo *register.GatewayRegister, cha
 		return err
 	}
 
-	if gatewayInfo.NodeID != gatewayID.ToString() {
+	if gatewayRegistrar.GetNodeID() != gatewayID.ToString() {
 		return errors.New("gateway ID not match")
 	}
 	if recvChallenge != string(b) {
