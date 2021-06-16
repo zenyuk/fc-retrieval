@@ -3,7 +3,7 @@ module github.com/ConsenSys/fc-retrieval-register
 go 1.15
 
 require (
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210615052246-c92b64409e66
+	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210616033324-f82817878e6e
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/errors v0.19.9
