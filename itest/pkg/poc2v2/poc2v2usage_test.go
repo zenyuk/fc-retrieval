@@ -10,18 +10,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	tc "github.com/wcgcyx/testcontainers-go"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
 )
 
 const lotusAP = "http://lotus-full-node:1234/rpc/v0"
@@ -187,18 +190,19 @@ func TestInitialiseProviders(t *testing.T) {
 		pIDs = append(pIDs, providerID)
 
 		identifier := fmt.Sprintf("-%v", i)
-		providerRegister := &register.ProviderRegister{
-			NodeID:             providerID.ToString(),
-			Address:            walletAddress,
-			RootSigningKey:     providerRootSigningKey,
-			SigningKey:         providerRetrievalSigningKey,
-			RegionCode:         providerConfig.GetString("PROVIDER_REGION_CODE"),
-			NetworkInfoGateway: providerConfig.GetString("NETWORK_INFO_GATEWAY")[:8] + identifier + providerConfig.GetString("NETWORK_INFO_GATEWAY")[8:],
-			NetworkInfoClient:  providerConfig.GetString("NETWORK_INFO_CLIENT")[:8] + identifier + providerConfig.GetString("NETWORK_INFO_CLIENT")[8:],
-			NetworkInfoAdmin:   providerConfig.GetString("NETWORK_INFO_ADMIN")[:8] + identifier + providerConfig.GetString("NETWORK_INFO_ADMIN")[8:],
-		}
+		providerRegistrar := register.NewProviderRegister(
+			providerID.ToString(),
+			walletAddress,
+			providerRootSigningKey,
+			providerRetrievalSigningKey,
+			providerConfig.GetString("PROVIDER_REGION_CODE"),
+			providerConfig.GetString("NETWORK_INFO_GATEWAY")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_GATEWAY")[8:],
+			providerConfig.GetString("NETWORK_INFO_CLIENT")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_CLIENT")[8:],
+			providerConfig.GetString("NETWORK_INFO_ADMIN")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_ADMIN")[8:],
+			request.NewHttpCommunicator(),
+		)
 
-		err = pAdmin.InitialiseProviderV2(providerRegister, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		err = pAdmin.InitialiseProviderV2(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			panic(err)
 		}
@@ -263,19 +267,20 @@ func TestInitialiseGateways(t *testing.T) {
 		gwIDs = append(gwIDs, gatewayID)
 
 		identifier := fmt.Sprintf("-%v", i)
-		gatewayRegister := &register.GatewayRegister{
-			NodeID:              gatewayID.ToString(),
-			Address:             walletAddress,
-			RootSigningKey:      gatewayRootSigningKey,
-			SigningKey:          gatewayRetrievalSigningKey,
-			RegionCode:          gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-			NetworkInfoGateway:  gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-			NetworkInfoProvider: gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-			NetworkInfoClient:   gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-			NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
-		}
+		gatewayRegistrar := register.NewGatewayRegister(
+			gatewayID.ToString(),
+			walletAddress,
+			gatewayRootSigningKey,
+			gatewayRetrievalSigningKey,
+			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
+			gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
+			gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
+			gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
+			gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
+			request.NewHttpCommunicator(),
+		)
 
-		err = gwAdmin.InitialiseGatewayV2(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			panic(err)
 		}
@@ -309,7 +314,8 @@ func TestInitialiseClient(t *testing.T) {
 	confBuilder.SetLotusAP(lotusAP)
 	confBuilder.SetLotusAuthToken(lotusToken)
 	conf := confBuilder.Build()
-	client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), true, true, 10*time.Second)
+	client, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
 	if !assert.Nil(t, err, "Error should be nil") {
 		t.Fatal(err)
 	}
@@ -724,19 +730,20 @@ func TestNewGateway(t *testing.T) {
 	gwIDs = append(gwIDs, gatewayID)
 
 	identifier := fmt.Sprintf("-32")
-	gatewayRegister := &register.GatewayRegister{
-		NodeID:              gatewayID.ToString(),
-		Address:             walletAddress,
-		RootSigningKey:      gatewayRootSigningKey,
-		SigningKey:          gatewayRetrievalSigningKey,
-		RegionCode:          gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		NetworkInfoGateway:  gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-		NetworkInfoProvider: gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-		NetworkInfoClient:   gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-		NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7] + identifier + gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
-	}
+	gatewayRegistrar := register.NewGatewayRegister(
+		gatewayID.ToString(),
+		walletAddress,
+		gatewayRootSigningKey,
+		gatewayRetrievalSigningKey,
+		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
+		gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
+		gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
+		gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
+		gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
+		request.NewHttpCommunicator(),
+	)
 
-	err = gwAdmin.InitialiseGatewayV2(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+	err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 	if err != nil {
 		panic(err)
 	}

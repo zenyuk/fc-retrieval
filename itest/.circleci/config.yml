@@ -49,7 +49,7 @@ jobs:
   # Do a local build first, just to make sure the integration test code builds.
   checkmainmodules:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
@@ -59,7 +59,7 @@ jobs:
 
   localbuild:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/
     steps:
       - checkout
@@ -187,7 +187,7 @@ jobs:
   # check parameter passing
   checkparam:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     environment:
       REPOBRANCH: << pipeline.parameters.repox-branch >>
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-itest/

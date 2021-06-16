@@ -25,17 +25,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
 )
 
 // Test the Provider Admin API.
@@ -96,13 +99,13 @@ func TestMain(m *testing.M) {
 	if err := gatewayContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  registerContainer.Terminate(ctx); err != nil {
+	if err := registerContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  redisContainer.Terminate(ctx); err != nil {
+	if err := redisContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
@@ -159,6 +162,11 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		panic(err)
 	}
 
+	var registerMgr = fcrregistermgr.NewFCRRegisterMgr(providerTestProviderConfig.GetString("REGISTER_API_URL"), true, true, 10*time.Second)
+	if err := registerMgr.Start(); err != nil {
+		logging.Error("error starting Register Manager: %s", err.Error())
+	}
+
 	// gatewayRootSigningKey := "0104d799bc7141b058b4c9d819ba8d8fa1e87b2ee9132f5b59d3a91edcd72c08cd64d2fd44f99f8d4a0159a65a0c8c0409f646712793ab4fb7b6151654b6e00ca69f"
 	// gatewayRetrievalSigningKey := "01041ee440cab4f5e92803e29de7079d317a332b206b21df612fe0d1c34b585df4f44180aa9a75e4c95116ac341256333d7356d42704be43efd8828293ef013d9139"
 	// gatewayID, err := nodeid.NewRandomNodeID()
@@ -167,19 +175,20 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		logging.Error("error generating gateway id")
 		os.Exit(1)
 	}
-	gatewayRegister := &register.GatewayRegister{
-		NodeID:              gatewayID.ToString(),
-		Address:             gatewayConfigGatewayConfig.GetString("GATEWAY_ADDRESS"),
-		RootSigningKey:      gatewayRootSigningKey,
-		SigningKey:          gatewayRetrievalSigningKey,
-		RegionCode:          gatewayConfigGatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		NetworkInfoGateway:  gatewayConfigGatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoProvider: gatewayConfigGatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		NetworkInfoClient:   gatewayConfigGatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:    gatewayConfigGatewayConfig.GetString("NETWORK_INFO_ADMIN"),
-	}
+	gatewayRegistrar := register.NewGatewayRegister(
+		gatewayID.ToString(),
+		gatewayConfigGatewayConfig.GetString("GATEWAY_ADDRESS"),
+		gatewayRootSigningKey,
+		gatewayRetrievalSigningKey,
+		gatewayConfigGatewayConfig.GetString("GATEWAY_REGION_CODE"),
+		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
+		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
+		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_CLIENT"),
+		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		request.NewHttpCommunicator(),
+	)
 
-	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
@@ -221,19 +230,20 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		os.Exit(1)
 	}
 
-	providerRegister := &register.ProviderRegister{
-		NodeID:             providerID.ToString(),
-		Address:            providerTestProviderConfig.GetString("PROVIDER_ADDRESS"),
-		RootSigningKey:     gatewayRootSigningKey,
-		SigningKey:         gatewayRetrievalSigningKey,
-		RegionCode:         providerTestProviderConfig.GetString("PROVIDER_REGION_CODE"),
-		NetworkInfoGateway: providerTestProviderConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoClient:  providerTestProviderConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:   providerTestProviderConfig.GetString("NETWORK_INFO_ADMIN"),
-	}
+	providerRegistrar := register.NewProviderRegister(
+		providerID.ToString(),
+		providerTestProviderConfig.GetString("PROVIDER_ADDRESS"),
+		gatewayRootSigningKey,
+		gatewayRetrievalSigningKey,
+		providerTestProviderConfig.GetString("PROVIDER_REGION_CODE"),
+		providerTestProviderConfig.GetString("NETWORK_INFO_GATEWAY"),
+		providerTestProviderConfig.GetString("NETWORK_INFO_CLIENT"),
+		providerTestProviderConfig.GetString("NETWORK_INFO_ADMIN"),
+		request.NewHttpCommunicator(),
+	)
 
 	// Initialise provider
-	err = pvadmin.InitialiseProvider(providerRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = pvadmin.InitialiseProvider(providerRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -272,9 +282,9 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Get all offers should be found")
 
 	// Get offers by gatewayIDs real
-	gateways, err := register.GetRegisteredGateways(providerTestProviderConfig.GetString("REGISTER_API_URL"))
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
+	gateways := registerMgr.GetAllGateways()
+	if gateways == nil {
+		logging.ErrorAndPanic("expecting list of gateways, got nil")
 	}
 	logging.Info("Registered gateways: %+v", gateways)
 	realNodeID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")

@@ -17,8 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/docker/docker/api/types/container"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -28,6 +26,9 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/testcontainers/testcontainers-go/wait"
 	tc "github.com/wcgcyx/testcontainers-go"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 )
 
 const ColorRed = "\033[31m"
@@ -406,7 +407,7 @@ type logConsumer struct {
 
 func (g *logConsumer) Accept(l tc.Log) {
 	log := string(l.Content)
-	fmt.Print("{", g.color, g.name, "}: ", "\033[0m", log)
+	fmt.Print(g.color, "[", strings.ToUpper(g.name), "]", "\033[0m:", log)
 	if g.done != nil {
 		if strings.Contains(log, "--- FAIL:") {
 			// Tests have falied.

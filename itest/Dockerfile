@@ -1,5 +1,5 @@
 # Copyright (C) 2020 ConsenSys Software Inc
-FROM golang:1.15-alpine
+FROM golang:1.16-alpine
 
 RUN apk add --no-cache make gcc musl-dev linux-headers git nodejs npm
 
