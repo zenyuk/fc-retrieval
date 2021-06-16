@@ -39,7 +39,7 @@ type GatewaySubOffers struct {
 }
 
 func (c *Client) RequestDHTOfferDiscover(
-	gatewayInfo *register.GatewayRegister,
+	gatewayRegistrar register.GatewayRegistrar,
 	gatewayIDs []nodeid.NodeID,
 	contentID *cid.ContentID,
 	nonce int64,
@@ -54,13 +54,13 @@ func (c *Client) RequestDHTOfferDiscover(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return nil, err
 	}

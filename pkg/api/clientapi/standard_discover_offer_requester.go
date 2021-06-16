@@ -27,7 +27,7 @@ import (
 
 // RequestStandardDiscoverOffer requests a standard discover to a given gateway for a given contentID, nonce and ttl.
 func (c *Client) RequestStandardDiscoverOffer(
-	gatewayInfo *register.GatewayRegister,
+	gatewayRegistrar register.GatewayRegistrar,
 	contentID *cid.ContentID,
 	nonce int64,
 	ttl int64,
@@ -43,13 +43,13 @@ func (c *Client) RequestStandardDiscoverOffer(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayInfo.NetworkInfoClient, request)
+	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the gateway's public key
-	pubKey, err := gatewayInfo.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		return nil, err
 	}
