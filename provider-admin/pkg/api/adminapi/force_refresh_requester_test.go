@@ -44,6 +44,7 @@ func Test_RequestForceRefresh_Calls_RequestForceRefresh(t *testing.T) {
 		SigningKey:       pubKeyStr,
 	}
 
+	// assert
 	mockHttpCommunicator.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(&fcrmessages.FCRMessage{}, nil).Times(1)
 
 	// act
