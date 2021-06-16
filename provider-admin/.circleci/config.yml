@@ -6,7 +6,7 @@ version: 2.1
 jobs:
   utest:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider-admin/
     steps:
       - checkout
@@ -16,7 +16,7 @@ jobs:
     environment:
       CODE_COVERAGE: 0
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider-admin/
     steps:
       - checkout
