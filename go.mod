@@ -1,5 +1,5 @@
 module github.com/ConsenSys/fc-retrieval-client
 
-go 1.15
+go 1.16
 
-require github.com/ConsenSys/fc-retrieval-common v0.0.0-20210616033324-f82817878e6e
+require github.com/ConsenSys/fc-retrieval-common v0.0.0-20210616075156-3a2c7da3688b
