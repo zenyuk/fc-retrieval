@@ -9,17 +9,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
-	"github.com/stretchr/testify/assert"
 )
 
 /*
@@ -101,13 +104,13 @@ func TestMain(m *testing.M) {
 	if err := gatewayContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  registerContainer.Terminate(ctx); err != nil {
+	if err := registerContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  redisContainer.Terminate(ctx); err != nil {
+	if err := redisContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
@@ -153,19 +156,24 @@ func TestInitialiseGateway(t *testing.T) {
 	}
 	gwID = gatewayID
 
-	gatewayRegister := &register.GatewayRegister{
-		NodeID:              gatewayID.ToString(),
-		Address:             gatewayConfig.GetString("GATEWAY_ADDRESS"),
-		RootSigningKey:      gatewayRootSigningKey,
-		SigningKey:          gatewayRetrievalSigningKey,
-		RegionCode:          gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		NetworkInfoGateway:  gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoProvider: gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		NetworkInfoClient:   gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, true, 10*time.Second)
+	if err := rm.Start(); err != nil {
+		logging.Error("error starting Register Manager: %s", err.Error())
 	}
 
-	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	gatewayRegistrar := register.NewGatewayRegister(
+		gatewayID.ToString(),
+		gatewayConfig.GetString("GATEWAY_ADDRESS"),
+		gatewayRootSigningKey,
+		gatewayRetrievalSigningKey,
+		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
+		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
+		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
+		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
+		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		request.NewHttpCommunicator(),
+	)
+	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
@@ -212,19 +220,20 @@ func TestInitialiseProvider(t *testing.T) {
 	providerID := nodeid.NewRandomNodeID()
 	pID = providerID
 
-	providerRegister := &register.ProviderRegister{
-		NodeID:             providerID.ToString(),
-		Address:            providerConfig.GetString("PROVIDER_ADDRESS"),
-		RootSigningKey:     providerRootSigningKey,
-		SigningKey:         providerSigningKey,
-		RegionCode:         providerConfig.GetString("PROVIDER_REGION_CODE"),
-		NetworkInfoGateway: providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoClient:  providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:   providerConfig.GetString("NETWORK_INFO_ADMIN"),
-	}
+	providerRegistrar := register.NewProviderRegister(
+		providerID.ToString(),
+		providerConfig.GetString("PROVIDER_ADDRESS"),
+		providerRootSigningKey,
+		providerSigningKey,
+		providerConfig.GetString("PROVIDER_REGION_CODE"),
+		providerConfig.GetString("NETWORK_INFO_GATEWAY"),
+		providerConfig.GetString("NETWORK_INFO_CLIENT"),
+		providerConfig.GetString("NETWORK_INFO_ADMIN"),
+		request.NewHttpCommunicator(),
+	)
 
 	// Initialise provider
-	err = pAdmin.InitialiseProvider(providerRegister, providerPrivKey, fcrcrypto.DecodeKeyVersion(1))
+	err = pAdmin.InitialiseProvider(providerRegistrar, providerPrivKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
@@ -320,7 +329,8 @@ func TestInitClient(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
 	conf := confBuilder.Build()
-	client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, false, 10*time.Second)
+	client, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
 	if err != nil {
 		t.Fatal(err)
 	}

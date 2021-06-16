@@ -22,16 +22,20 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -81,13 +85,13 @@ func TestMain(m *testing.M) {
 	if err := gatewayContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  registerContainer.Terminate(ctx); err != nil {
+	if err := registerContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  redisContainer.Terminate(ctx); err != nil {
+	if err := redisContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
@@ -125,19 +129,25 @@ func TestOneGateway(t *testing.T) {
 
 	gatewayID := nodeid.NewRandomNodeID()
 
-	gatewayRegister := &register.GatewayRegister{
-		NodeID:              gatewayID.ToString(),
-		Address:             gatewayConfig.GetString("GATEWAY_ADDRESS"),
-		RootSigningKey:      gatewayRootSigningKey,
-		SigningKey:          gatewayRetrievalSigningKey,
-		RegionCode:          gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		NetworkInfoGateway:  gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		NetworkInfoProvider: gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		NetworkInfoClient:   gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		NetworkInfoAdmin:    gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+	gatewayRegistrar := register.NewGatewayRegister(
+		gatewayID.ToString(),
+		gatewayConfig.GetString("GATEWAY_ADDRESS"),
+		gatewayRootSigningKey,
+		gatewayRetrievalSigningKey,
+		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
+		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
+		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
+		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
+		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		request.NewHttpCommunicator(),
+	)
+
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, true, 10*time.Second)
+	if err := rm.Start(); err != nil {
+		logging.Error("error starting Register Manager: %s", err.Error())
 	}
 
-	err = gwAdmin.InitialiseGateway(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
@@ -154,7 +164,7 @@ func TestOneGateway(t *testing.T) {
 	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	clientConf := clientConfBuilder.Build()
 
-	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf)
+	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf, rm)
 	assert.Nil(t, err)
 	newGatewaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatewaysToBeAdded = append(newGatewaysToBeAdded, gatewayID)

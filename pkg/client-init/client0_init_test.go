@@ -25,12 +25,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
-	"github.com/stretchr/testify/assert"
 )
 
 // Tests in this file use the Client API, but don't need the rest of the system to be
@@ -68,7 +70,7 @@ func TestMain(m *testing.M) {
 	if err := itestContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }
@@ -97,7 +99,8 @@ func TestInitClientNoRetrievalKey(t *testing.T) {
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 	conf := confBuilder.Build()
 
-	fClient, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, false, 10*time.Second)
+	fClient, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
 	assert.Nil(t, err)
 }
 
@@ -108,6 +111,11 @@ func TestNoConfiguredGateways(t *testing.T) {
 }
 
 func TestUnknownGatewayAdded(t *testing.T) {
+	var rm = fcrregistermgr.NewFCRRegisterMgr("http://localhost/fakeurl", false, true, 10*time.Second)
+	if err := rm.Start(); err != nil {
+		logging.Error("error starting Register Manager: %s", err.Error())
+	}
+
 	randomGatewayID := nodeid.NewRandomNodeID()
 	newGatwaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatwaysToBeAdded = append(newGatwaysToBeAdded, randomGatewayID)
