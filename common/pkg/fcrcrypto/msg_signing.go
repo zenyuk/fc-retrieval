@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"reflect"
+	"strconv"
 )
 
 /**
@@ -81,7 +82,28 @@ func getToBeSigned(msg interface{}) []byte {
 
 	var allFields string
 	for i := 0; i < v.NumField(); i++ {
-		fieldAsString := v.Field(i).String()
+		var fieldAsString string
+		switch v.Field(i).Kind() {
+		case reflect.Bool:
+			fieldAsString = strconv.FormatBool(v.Field(i).Bool())
+		case reflect.Int,
+			reflect.Int8,
+			reflect.Int16,
+			reflect.Int32,
+			reflect.Int64,
+			reflect.Uint,
+			reflect.Uint8,
+			reflect.Uint16,
+			reflect.Uint32,
+			reflect.Uint64,
+			reflect.Uintptr,
+			reflect.Float32,
+			reflect.Float64:
+			fieldAsString = strconv.FormatInt(v.Field(i).Int(), 16)
+		default:
+			fieldAsString = v.Field(i).String()
+		}
+
 		allFields = allFields + fieldAsString
 	}
 	return []byte(allFields)
