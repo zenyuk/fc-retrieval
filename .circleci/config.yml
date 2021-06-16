@@ -42,7 +42,7 @@ commands:
 jobs:
   release:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
     steps:
       # git clone the Client and change to the correct branch.
@@ -63,7 +63,7 @@ jobs:
           command: make release
   triggerItest:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     steps:
       - getrepobranch:
           repo: "https://github.com/ConsenSys/fc-retrieval-itest"
@@ -92,7 +92,7 @@ jobs:
   utest:
     docker:
       # specify the version
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -121,7 +121,7 @@ jobs:
     environment:
       CODE_COVERAGE: 0
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     working_directory: /go/src/github.com/ConsenSys/fc-retrieval-client/
     steps:
       - checkout
