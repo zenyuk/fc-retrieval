@@ -306,7 +306,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 			continue
 		}
 		if err != nil {
-			logging.Error("Offer signature fail to verify.")
+			logging.Error("Offer signature fail to verify 3, with error: " + fmt.Sprintf("%v", err))
 			continue
 		}
 		pubKey, err := provider.GetSigningKey()
@@ -315,8 +315,9 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 			continue
 		}
 		// Verify the offer sig
-		if offer.Verify(pubKey) != nil {
-			logging.Error("Offer signature fail to verify.")
+		err = offer.Verify(pubKey)
+		if err != nil {
+			logging.Error("Offer signature fail to verify 4, with error: " + fmt.Sprintf("%v", err))
 			continue
 		}
 		// Now Verify the merkle proof
@@ -397,8 +398,9 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 				continue
 			}
 			// Verify the offer sig
-			if offer.Verify(pubKey) != nil {
-				logging.Error("Offer signature fail to verify.")
+			err = offer.Verify(pubKey)
+			if err != nil {
+				logging.Error("Offer signature fail to verify 5, with error: " + fmt.Sprintf("%v", err))
 				continue
 			}
 			// Now Verify the merkle proof
@@ -703,7 +705,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 			continue
 		}
 		if err != nil {
-			logging.Error("Offer signature fail to verify.")
+			logging.Error("Offer signature fail to verify 1, with error: " + fmt.Sprintf("%v", err))
 			continue
 		}
 		pubKey, err := provider.GetSigningKey()
@@ -712,8 +714,9 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 			continue
 		}
 		// Verify the offer sig
-		if offer.Verify(pubKey) != nil {
-			logging.Error("Offer signature fail to verify.")
+		err = offer.Verify(pubKey)
+		if err != nil {
+			logging.Error("Offer signature fail to verify 2, with error: " + fmt.Sprintf("%v", err))
 			continue
 		}
 		// Now Verify the merkle proof
