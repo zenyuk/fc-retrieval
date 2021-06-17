@@ -20,47 +20,58 @@ import (
 	"testing"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/cidadaptor"
 	"github.com/cbergoon/merkletree"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateTree(t *testing.T) {
 	cid1, err := cid.NewContentIDFromHexString("01")
+	cida1 := cidadaptor.ContentIDAdaptor{Id: cid1.ToString()}
 	assert.Empty(t, err)
 	cid2, err := cid.NewContentIDFromHexString("02")
+	cida2 := cidadaptor.ContentIDAdaptor{Id: cid2.ToString()}
 	assert.Empty(t, err)
 	cid3, err := cid.NewContentIDFromHexString("03")
+	cida3 := cidadaptor.ContentIDAdaptor{Id: cid3.ToString()}
 	assert.Empty(t, err)
 	cid4, err := cid.NewContentIDFromHexString("04")
+	cida4 := cidadaptor.ContentIDAdaptor{Id: cid4.ToString()}
 	assert.Empty(t, err)
 	cid5, err := cid.NewContentIDFromHexString("05")
+	cida5 := cidadaptor.ContentIDAdaptor{Id: cid5.ToString()}
 	assert.Empty(t, err)
-	tree, err := CreateMerkleTree([]merkletree.Content{cid1, cid2, cid3, cid4, cid5})
+	tree, err := CreateMerkleTree([]merkletree.Content{cida1, cida2, cida3, cida4, cida5})
 	assert.Empty(t, err)
 	assert.NotEmpty(t, tree)
 	_, err = CreateMerkleTree([]merkletree.Content{})
 	assert.NotEmpty(t, err)
-	assert.Equal(t, "b3704b0f54c4070b36ace72ae3f4879e91eda3f81cef4cb97653d2a0b8592ce1", tree.GetMerkleRoot())
+	assert.Equal(t, "93fe3ef34b47ac151048bb83ddce0656f794ad70adde0f563e1e6fb129d5a15f", tree.GetMerkleRoot())
 }
 
 func TestCreateTreeOneElement(t *testing.T) {
 	cid1, err := cid.NewContentIDFromHexString("01")
+
+	cida1 := cidadaptor.ContentIDAdaptor{Id: cid1.ToString()}
+
 	assert.Empty(t, err)
-	tree, err := CreateMerkleTree([]merkletree.Content{cid1})
+	tree, err := CreateMerkleTree([]merkletree.Content{cida1})
 	assert.Empty(t, err)
 	assert.NotEmpty(t, tree)
-	assert.Equal(t, "c3c3a46684c07d12a9c238787df3049a6f258e7af203e5ddb66a8bd66637e108", tree.GetMerkleRoot())
+
+	assert.Equal(t, "c8bc8219fe198ce0a3b7fa9d14c7f88c16fc9bae96622761643eaafbc7eb7303", tree.GetMerkleRoot())
 }
 
 func TestCreateTreeManyElements(t *testing.T) {
 	elements := make([]merkletree.Content, 0)
 	for i := 0; i < 100; i++ {
 		cid, err := cid.NewContentID(big.NewInt(int64(i)))
+		cida := cidadaptor.ContentIDAdaptor{Id: cid.ToString()}
 		assert.Empty(t, err)
-		elements = append(elements, cid)
+		elements = append(elements, cida)
 	}
 	tree, err := CreateMerkleTree(elements)
 	assert.Empty(t, err)
 	assert.NotEmpty(t, tree)
-	assert.Equal(t, "eeb5943906dc9937a7b42ca9b57e2afe51d7551245a0ba00695b91cd261dafb0", tree.GetMerkleRoot())
+	assert.Equal(t, "f217029c872d9d64f6f5a860fcd027dd8348229f3fb8eb0c7a9ad534ecfa3eae", tree.GetMerkleRoot())
 }
