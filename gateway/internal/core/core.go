@@ -25,7 +25,7 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcroffermgr"
+	fcroffermgr "github.com/ConsenSys/fc-retrieval-common/pkg/offermgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
