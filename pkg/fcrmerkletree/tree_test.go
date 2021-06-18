@@ -20,26 +20,25 @@ import (
 	"testing"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidadaptor"
 	"github.com/cbergoon/merkletree"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateTree(t *testing.T) {
 	cid1, err := cid.NewContentIDFromHexString("01")
-	cida1 := cidadaptor.ContentIDAdaptor{Id: cid1.ToString()}
+	cida1 := cid.ContentIDAdapter{Id: cid1.ToString()}
 	assert.Empty(t, err)
 	cid2, err := cid.NewContentIDFromHexString("02")
-	cida2 := cidadaptor.ContentIDAdaptor{Id: cid2.ToString()}
+	cida2 := cid.ContentIDAdapter{Id: cid2.ToString()}
 	assert.Empty(t, err)
 	cid3, err := cid.NewContentIDFromHexString("03")
-	cida3 := cidadaptor.ContentIDAdaptor{Id: cid3.ToString()}
+	cida3 := cid.ContentIDAdapter{Id: cid3.ToString()}
 	assert.Empty(t, err)
 	cid4, err := cid.NewContentIDFromHexString("04")
-	cida4 := cidadaptor.ContentIDAdaptor{Id: cid4.ToString()}
+	cida4 := cid.ContentIDAdapter{Id: cid4.ToString()}
 	assert.Empty(t, err)
 	cid5, err := cid.NewContentIDFromHexString("05")
-	cida5 := cidadaptor.ContentIDAdaptor{Id: cid5.ToString()}
+	cida5 := cid.ContentIDAdapter{Id: cid5.ToString()}
 	assert.Empty(t, err)
 	tree, err := CreateMerkleTree([]merkletree.Content{cida1, cida2, cida3, cida4, cida5})
 	assert.Empty(t, err)
@@ -52,7 +51,7 @@ func TestCreateTree(t *testing.T) {
 func TestCreateTreeOneElement(t *testing.T) {
 	cid1, err := cid.NewContentIDFromHexString("01")
 
-	cida1 := cidadaptor.ContentIDAdaptor{Id: cid1.ToString()}
+	cida1 := cid.ContentIDAdapter{Id: cid1.ToString()}
 
 	assert.Empty(t, err)
 	tree, err := CreateMerkleTree([]merkletree.Content{cida1})
@@ -65,8 +64,8 @@ func TestCreateTreeOneElement(t *testing.T) {
 func TestCreateTreeManyElements(t *testing.T) {
 	elements := make([]merkletree.Content, 0)
 	for i := 0; i < 100; i++ {
-		cid, err := cid.NewContentID(big.NewInt(int64(i)))
-		cida := cidadaptor.ContentIDAdaptor{Id: cid.ToString()}
+		cid1, err := cid.NewContentID(big.NewInt(int64(i)))
+		cida := cid.ContentIDAdapter{Id: cid1.ToString()}
 		assert.Empty(t, err)
 		elements = append(elements, cida)
 	}
