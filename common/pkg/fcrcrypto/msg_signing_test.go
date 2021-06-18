@@ -37,6 +37,16 @@ const (
 	PubKey                                = "01047799f37b014564e23578447d718e5c70a786b0e4e58ca25cb2a086b822434594d910b9b8c0fcbfe9f4c2db321e874819e0614be5b57fbb5080accd69adb2eaad"
 )
 
+func TestGetToBeSigned(t *testing.T) {
+	out := getToBeSigned(CopiedClientEstablishmentResponse{
+		MessageType:     CopiedClientEstablishmentResponseType,
+		ProtocolVersion: 1,
+		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
+		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
+	})
+	assert.Equal(t, out, []byte("111234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef"))
+}
+
 func TestSignMsgWithError(t *testing.T) {
 	keyPair, err := DecodePrivateKey(PrivKey)
 	if err != nil {
@@ -58,7 +68,7 @@ func TestSignEmptyMsg(t *testing.T) {
 
 	sig, err := SignMessage(keyPair, InitialKeyVersion(), CopiedClientEstablishmentResponse{})
 	assert.Empty(t, err)
-	assert.Equal(t, "00000001e79fdaa275888de3b3171ddf219d61cd19df42f1fa942d88150722438efcdcaf55195e10fd8267536eb9e807061460bec41d8b04a88cf53a68a0c17f383c625801", sig)
+	assert.Equal(t, "0000000149a4c1bab090ce563b003bc017cf255b89d26e1f7170da57e58e58afe51407aa51255338e77a828434cf97f71716b0e0c70a8f5c762fd64380916a8d98d0daf700", sig)
 }
 
 func TestSignNonEmptyMsg(t *testing.T) {
@@ -74,7 +84,7 @@ func TestSignNonEmptyMsg(t *testing.T) {
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
 	})
 	assert.Empty(t, err)
-	assert.Equal(t, "00000001f6ef07bbb3522b0d087bdd5ff4aff73d5f55ed4febd45c02b8f375aa0082a9f85a2e152c03786842a9ee04d4b4d56d4d0a33ffac14f4601d65dd755dfa6ffafe01", sig)
+	assert.Equal(t, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000", sig)
 }
 
 func TestSignNonEmptyMsgPtr(t *testing.T) {
@@ -90,7 +100,7 @@ func TestSignNonEmptyMsgPtr(t *testing.T) {
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
 	})
 	assert.Empty(t, err)
-	assert.Equal(t, "00000001f6ef07bbb3522b0d087bdd5ff4aff73d5f55ed4febd45c02b8f375aa0082a9f85a2e152c03786842a9ee04d4b4d56d4d0a33ffac14f4601d65dd755dfa6ffafe01", sig)
+	assert.Equal(t, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000", sig)
 }
 
 func TestExtractKeyVersionFromMsgWithError(t *testing.T) {
@@ -224,21 +234,58 @@ func TestVerifyMsg(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	res, err := VerifyMessage(keyPair, "00000001f6ef07bbb3522b0d087bdd5aa4aff73d5f55ed4febd45c02b8f375aa0082a9f85a2e152c03786842a9ee04d4b4d56d4d0a33ffac14f4601d65dd755dfa6ffafe01", CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
-		ProtocolVersion: 1,
-		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
-		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
-	})
+	res, err := VerifyMessage(keyPair, "00000001b29b643d232313afbbad00d6b10e73aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000",
+		CopiedClientEstablishmentResponse{
+			MessageType:     CopiedClientEstablishmentResponseType,
+			ProtocolVersion: 1,
+			GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
+			Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
+		})
 	assert.Empty(t, err)
 	assert.False(t, res)
 
-	res, err = VerifyMessage(keyPair, "00000001f6ef07bbb3522b0d087bdd5ff4aff73d5f55ed4febd45c02b8f375aa0082a9f85a2e152c03786842a9ee04d4b4d56d4d0a33ffac14f4601d65dd755dfa6ffafe01", CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
-		ProtocolVersion: 1,
-		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
-		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
-	})
+	res, err = VerifyMessage(keyPair, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000",
+		CopiedClientEstablishmentResponse{
+			MessageType:     CopiedClientEstablishmentResponseType,
+			ProtocolVersion: 1,
+			GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
+			Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
+		})
 	assert.Empty(t, err)
 	assert.True(t, res)
+}
+
+func TestSignMsgWithPtr(t *testing.T) {
+
+	type (
+		CopyNodeID struct {
+			id []byte
+		}
+		CopyCidOfferSigning struct {
+			nodeID     CopyNodeID
+			merkleRoot string
+			price      uint64
+			expiry     int64
+			qos        uint64
+		}
+	)
+
+	keyPair, err := DecodePrivateKey(PrivKey)
+	if err != nil {
+		panic(err)
+	}
+
+	sig, err := SignMessage(keyPair, DecodeKeyVersion(uint32(0xffff)), CopyCidOfferSigning{
+		nodeID: CopyNodeID{
+			id: []byte("dsafgasdgadfs"),
+		},
+		merkleRoot: "asdfdasfas",
+		expiry:     55,
+		qos:        66,
+	})
+
+	assert.Empty(t, err)
+	assert.Equal(t,
+		"0000ffffe06f57c7078230fe0d0ac7bf39319bfde7eade02a9bbc7d7f6333d5e9cd3c22339436505f018b785e35f85eecc92f05e5e0610f640230c26ce18a33b2551f58d01",
+		sig)
 }
