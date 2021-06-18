@@ -1,9 +1,9 @@
 /*
-Package cid - provides methods for ContentIDAdaptor struct.
+Package cid - provides methods for ContentIDAdapter struct.
 
-ContentIDAdaptor is 32 bytes is a unique identifier of a file stored in a Filecoin blockchain network.
+ContentIDAdapter is 32 bytes is a unique identifier of a file stored in a Filecoin blockchain network.
 */
-package cidadaptor
+package cid
 
 /*
  * Copyright 2020 ConsenSys Software Inc.
@@ -27,15 +27,13 @@ import (
 	"github.com/cbergoon/merkletree"
 )
 
-const WordSize = 32 // the ContentIDAdaptor length is 32 bytes.
-
-// ContentIDAdaptor represents a CID.
-type ContentIDAdaptor struct {
+// ContentIDAdapter represents a CID.
+type ContentIDAdapter struct {
 	Id string
 }
 
-// CalculateHash hashes the values of a ContentIDAdaptor.
-func (n ContentIDAdaptor) CalculateHash() ([]byte, error) {
+// CalculateHash hashes the values of a ContentIDAdapter.
+func (n ContentIDAdapter) CalculateHash() ([]byte, error) {
 	h := sha256.New()
 	if _, err := h.Write([]byte(n.Id)); err != nil {
 		return nil, err
@@ -47,11 +45,11 @@ func (n ContentIDAdaptor) CalculateHash() ([]byte, error) {
 }
 
 //Equals tests for equality of two Contents
-func (n ContentIDAdaptor) Equals(other merkletree.Content) (bool, error) {
-	return n.ToString() == other.(*ContentIDAdaptor).ToString(), nil
+func (n ContentIDAdapter) Equals(other merkletree.Content) (bool, error) {
+	return n.ToString() == other.(*ContentIDAdapter).ToString(), nil
 }
 
 // ToString returns a string for the ContentID.
-func (n *ContentIDAdaptor) ToString() string {
+func (n *ContentIDAdapter) ToString() string {
 	return n.Id
 }
