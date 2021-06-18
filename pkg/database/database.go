@@ -8,12 +8,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//
+// 
 type Database struct {
-	db *sql.DB
+	*sql.DB
 }
 
-// NewDatabase returns
+// NewDatabase returns a Database
 func NewDatabase() (*Database, error) {
 	_ = os.MkdirAll("logs", os.ModePerm)
 
@@ -27,15 +27,12 @@ func NewDatabase() (*Database, error) {
 		dbFileName = dockerName + dbFileName
 	}
 	db, err := sql.Open("sqlite3", "logs" + "/" + dbFileName)
-	return &Database{db:db}, err
+	return &Database{DB:db}, err
 }
 
-//
+// Exec runs database dml insert/update/delete, or ddl create/alter
 func (db *Database) Exec (statement string, parameters ...interface{}) (res sql.Result, err error) {
-	defer func() {
-		// fmt.Printf("`%v`\t`%v`\n", err, statement)
-	}()
-	stmt, err := db.db.Prepare(statement)
+	stmt, err := db.DB.Prepare(statement)
 
 	if err != nil {
 		return nil, err
@@ -46,15 +43,15 @@ func (db *Database) Exec (statement string, parameters ...interface{}) (res sql.
 	return res, err
 }
 
+// Query runs a database queriy
 func (db *Database) Query (statement string, parameters ...interface{}) (res *sql.Rows, err error) {
-	defer func() {
-		// fmt.Printf("`%v`\t`%v`\n", err, statement)
-	}()
-	stmt, err := db.db.Prepare(statement)
+	stmt, err := db.DB.Prepare(statement)
+
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
+
 	res, err = stmt.Query(parameters...)
 	return res, err
 }
