@@ -91,15 +91,21 @@ func getToBeSigned(msg interface{}) []byte {
 			reflect.Int16,
 			reflect.Int32,
 			reflect.Int64,
-			reflect.Uint,
+			reflect.Float32,
+			reflect.Float64:
+			fieldAsString = strconv.FormatInt(v.Field(i).Int(), 16)
+		case reflect.Uint,
 			reflect.Uint8,
 			reflect.Uint16,
 			reflect.Uint32,
 			reflect.Uint64,
-			reflect.Uintptr,
-			reflect.Float32,
-			reflect.Float64:
-			fieldAsString = strconv.FormatInt(v.Field(i).Int(), 16)
+			reflect.Uintptr:
+			fieldAsString = strconv.FormatUint(v.Field(i).Uint(), 16)
+			// TODO
+		// case reflect.Struct:
+		// 	fieldAsString = string(getToBeSigned(v.Field(i)))
+		// case reflect.Ptr:
+		// 	fieldAsString = string(getToBeSigned(v.Field(i)))
 		default:
 			fieldAsString = v.Field(i).String()
 		}
