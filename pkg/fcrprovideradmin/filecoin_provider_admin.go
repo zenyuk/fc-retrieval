@@ -22,7 +22,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/api/adminapi"
@@ -57,13 +56,6 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerRegistrar re
 		return err
 	}
 
-	// Register this provider
-	err = providerRegistrar.RegisterProvider(c.Settings.RegisterURL())
-	if err != nil {
-		logging.Error("Error in register the provider.")
-		return err
-	}
-
 	// Add this provider to the active providers list
 	c.ActiveProvidersLock.Lock()
 	c.ActiveProviders[providerRegistrar.GetNodeID()] = providerRegistrar
@@ -91,13 +83,6 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 		lotusAuthToken,
 	)
 	if err != nil {
-		return err
-	}
-
-	// Register this provider
-	err = providerRegistrar.RegisterProvider(c.Settings.RegisterURL())
-	if err != nil {
-		logging.Error("Error in register the provider.")
 		return err
 	}
 

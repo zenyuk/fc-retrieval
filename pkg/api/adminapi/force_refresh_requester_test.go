@@ -3,6 +3,17 @@ Package adminapi - remote API for FileCoin Secondary Retrieval - Provider Admin 
 */
 package adminapi
 
+import (
+	"testing"
+
+	"github.com/golang/mock/gomock"
+
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/mocks"
+	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+)
+
 /*
  * Copyright 2020 ConsenSys Software Inc.
  *
@@ -17,17 +28,6 @@ package adminapi
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
-import (
-	"testing"
-
-	"github.com/golang/mock/gomock"
-
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/mocks"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-)
 
 func Test_RequestForceRefresh_Calls_RequestForceRefresh(t *testing.T) {
 	// arrange
