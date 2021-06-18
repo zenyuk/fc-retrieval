@@ -32,29 +32,29 @@ func (a *Admin) RequestInitialiseKey(
 	gatewayPrivKeyVer *fcrcrypto.KeyVersion,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
-	// First, Get pubkey
+  // First, Get pubkey
 	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
 	}
-	nodeID, err := nodeid.NewNodeIDFromHexString(gatewayRegistrar.GetNodeID())
+  nodeID, err := nodeid.NewNodeIDFromHexString(gatewayRegistrar.GetNodeID())
 	if err != nil {
 		logging.Error("Error in generating nodeID.")
 		return err
 	}
-	// Second, send key exchange to activate the given gateway
+  // Second, send key exchange to activate the given gateway
 	request, err := fcrmessages.EncodeGatewayAdminInitialiseKeyRequest(nodeID, gatewayPrivKey, gatewayPrivKeyVer)
 	if err != nil {
 		logging.Error("Error in encoding message.")
 		return err
 	}
-	// Sign the request
+  // Sign the request
 	if request.Sign(signingPrivkey, signingPrivKeyVer) != nil {
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+  response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err
@@ -64,13 +64,12 @@ func (a *Admin) RequestInitialiseKey(
 	if response.Verify(pubKey) != nil {
 		return errors.New("fail to verify the response")
 	}
-
-	ok, err := fcrmessages.DecodeGatewayAdminInitialiseKeyResponse(response)
+  ok, err := fcrmessages.DecodeGatewayAdminInitialiseKeyResponse(response)
 	if err != nil {
 		logging.Error("Error in decoding the message.")
 		return err
 	}
-	if !ok {
+  if !ok {
 		logging.Error("Initialise gateway failed.")
 		return errors.New("fail to initialise gateway")
 	}

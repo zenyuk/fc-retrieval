@@ -16,15 +16,14 @@ package fcrgatewayadmin
  */
 
 import (
-	"errors"
-	"sync"
+  "errors"
+  "sync"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/api/adminapi"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
+  "github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/api/adminapi"
 )
 
 // FilecoinRetrievalGatewayAdmin is an example implementation using the api,
@@ -57,17 +56,10 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGateway(gatewayRegistrar regis
 		return err
 	}
 
-	// Register this gateway
-	err = gatewayRegistrar.RegisterGateway(c.Settings.RegisterURL())
-	if err != nil {
-		logging.Error("Error in register the gateway.")
-		return err
-	}
-
-	// Add this provider to the active gateways list
+	// Add this gateway to the active gateways list
 	c.ActiveGatewaysLock.Lock()
 	c.ActiveGateways[gatewayRegistrar.GetNodeID()] = gatewayRegistrar
-	c.ActiveGatewaysLock.Unlock()
+  c.ActiveGatewaysLock.Unlock()
 	return nil
 }
 
@@ -91,13 +83,6 @@ func (c *FilecoinRetrievalGatewayAdmin) InitialiseGatewayV2(
 		lotusAuthToken,
 	)
 	if err != nil {
-		return err
-	}
-
-	// Register this gateway
-	err = gatewayRegistrar.RegisterGateway(c.Settings.RegisterURL())
-	if err != nil {
-		logging.Error("Error in register the gateway.")
 		return err
 	}
 
