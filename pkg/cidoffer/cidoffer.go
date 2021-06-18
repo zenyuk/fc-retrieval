@@ -130,6 +130,11 @@ func (c *CIDOffer) GetSignature() string {
 	return c.signature
 }
 
+// SetSignature sets the signature of this offer.
+func (c *CIDOffer) SetSignature(s string) {
+	c.signature = s
+}
+
 // HasExpired returns true if the offer expiry date is in the past.
 func (c *CIDOffer) HasExpired() bool {
 	expiryTime := time.Unix(c.expiry, 0)
