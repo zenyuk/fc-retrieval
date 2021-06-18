@@ -107,33 +107,35 @@ func (mgr *FCROfferMgr) insertOffer(offer *cidoffer.CIDOffer) (err error) {
 }
 
 // selectOffersSingle retrieves offers by a CID
-// TODO: expiry
 func (mgr *FCROfferMgr) selectOffersSingle(c *cid.ContentID) (res []cidoffer.CIDOffer, find bool) {
 	sqlSelectOffer :=
 		`select o.digest, o.provider_id, o.expiry, o.price, o.qos, o.signature
-		from offer o join content c on o.digest=c.digest where c.content_id=?`
+		from offer o join content c on o.digest=c.digest 
+		where c.content_id=?
+		and datetime(o.expiry, 'unixepoch') > datetime('now', 'utc')`
 
 	return mgr.selectOffers(sqlSelectOffer, -1, c.ToString())
 }
 
 // selectOffersRange retrieves offers by a range of CIDs
-// TODO: expiry
 func (mgr *FCROfferMgr) selectOffersRange(maxOffers int, cidMin *cid.ContentID, cidMax *cid.ContentID) (res []cidoffer.CIDOffer, find bool) {
 	sqlSelectOffer :=
 		`select o.digest, o.provider_id, o.expiry, o.price, o.qos, o.signature
 		from offer o, (select distinct digest from content 
 				where content_id>=? and content_id<=?) c
-		where o.digest=c.digest`
+		where o.digest=c.digest
+		and datetime(o.expiry, 'unixepoch') > datetime('now', 'utc')`
 
 	return mgr.selectOffers(sqlSelectOffer, maxOffers, cidMin.ToString(), cidMax.ToString())
 }
 
 // selectOffersDigest retrieves a offer by a digest
-// TODO: expiry
 func (mgr *FCROfferMgr) selectOffersDigest(digest []byte) (*cidoffer.CIDOffer, bool) {
 	sqlSelectOffer :=
 		`select o.digest, o.provider_id, o.expiry, o.price, o.qos, o.signature
-		from offer o where o.digest=?`
+		from offer o
+		where o.digest=?
+		and datetime(o.expiry, 'unixepoch') > datetime('now', 'utc')`
 
 	offers, exist := mgr.selectOffers(sqlSelectOffer, 1, hex.EncodeToString(digest))
 	if !exist {

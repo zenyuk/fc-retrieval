@@ -71,7 +71,7 @@ func TestGetGroupOffers02(t *testing.T) {
 	assert.Equal(t, false, find)
 }
 
-func aTestGetDTHOffers01(t *testing.T) {
+func TestGetDTHOffers01(t *testing.T) {
 	offerSingle, err := getOfferSingle(7)
 	assert.Equal(t, err, nil)
 	mgr := NewFCROfferMgr()
@@ -88,6 +88,20 @@ func aTestGetDTHOffers01(t *testing.T) {
 	_, find = mgr.GetDHTOffers(intToCid(8))
 	assert.Equal(t, false, find)
 }
+
+func TestGetDTHOffers02(t *testing.T) {
+	offerSingle, err := getOfferSingleExpired()
+	assert.Equal(t, err, nil)
+	mgr := NewFCROfferMgr()
+
+	err = mgr.AddDHTOffer(offerSingle)
+	assert.Equal(t, err, nil)
+
+	_, find := mgr.GetDHTOffers(intToCid(7))
+	assert.Equal(t, false, find)
+}
+
+
 // Helper functions
 
 func intToCid(n int64) *cid.ContentID {
