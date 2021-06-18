@@ -55,7 +55,7 @@ func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 		panic(err)
 	}
 
-	var payload []*models.GatewayRegister
+	payload := []*models.GatewayRegister{}
 	for _, register := range registers {
 		registerData := models.GatewayRegister{}
 		if unmarshalErr := json.Unmarshal([]byte(register), &registerData); unmarshalErr != nil {
