@@ -12,7 +12,7 @@ require (
 	github.com/filecoin-project/go-state-types v0.1.0
 	github.com/filecoin-project/lotus v1.8.0
 	github.com/filecoin-project/specs-actors/v4 v4.0.1
-	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52
