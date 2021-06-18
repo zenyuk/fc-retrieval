@@ -122,6 +122,10 @@ func (c *FilecoinRetrievalClient) FindGateways(location string, maxNumToLocate i
 func (c *FilecoinRetrievalClient) AddGatewaysToUse(gwNodeIDs []*nodeid.NodeID) int {
 	numAdded := 0
 	for _, gwToAddID := range gwNodeIDs {
+		if gwToAddID == nil {
+			logging.Error("can't add a gateway to use, a nil was given")
+			continue
+		}
 		c.GatewaysToUseLock.RLock()
 		_, exist := c.GatewaysToUse[gwToAddID.ToString()]
 		c.GatewaysToUseLock.RUnlock()
@@ -130,7 +134,7 @@ func (c *FilecoinRetrievalClient) AddGatewaysToUse(gwNodeIDs []*nodeid.NodeID) i
 		}
 		gateway := c.RegisterMgr.GetGateway(gwToAddID)
 		if gateway == nil {
-			logging.Error("Error getting registered gateway %v", gwToAddID)
+			logging.Error("error getting registered gateway %v", gwToAddID.ToString())
 			continue
 		}
 		if !validateGatewayInfo(gateway) {
