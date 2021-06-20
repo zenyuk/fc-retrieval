@@ -15,7 +15,6 @@ import (
 
 // AddGatewayRegister to create a gateway register
 func AddGatewayRegister(params op.AddGatewayRegisterParams) middleware.Responder {
-	registerType := "gateway"
 	register := params.Register
 	ctx := context.Background()
 
@@ -25,13 +24,13 @@ func AddGatewayRegister(params op.AddGatewayRegisterParams) middleware.Responder
 		DB:       0, // use default DB
 	})
 
-	err := rdb.HSet(ctx, registerType, register.NodeID, register).Err()
+	err := rdb.HSet(ctx, "gateway", register.NodeID, register).Err()
 	if err != nil {
 		log.Error("Unable to set Redis value")
 		panic(err)
 	}
 
-	log.Info("Register created %v", registerType)
+	log.Info("register created a gateway record with ID: %s", params.Register.NodeID)
 
 	// Response
 	return op.NewAddGatewayRegisterOK().WithPayload(register)
@@ -39,16 +38,14 @@ func AddGatewayRegister(params op.AddGatewayRegisterParams) middleware.Responder
 
 // GetGatewayRegisters retrieve Gateway register list
 func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
-	registerType := "gateway"
 	ctx := context.Background()
-
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
 		Password: apiconfig.GetString("REDIS_PASSWORD"),
 		DB:       0, // use default DB
 	})
 
-	registers, err := rdb.HGetAll(ctx, registerType).Result()
+	gatewayRegisters, err := rdb.HGetAll(ctx, "gateway").Result()
 
 	if err != nil {
 		log.Error("Unable to get Redis value")
@@ -56,12 +53,14 @@ func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 	}
 
 	payload := []*models.GatewayRegister{}
-	for _, register := range registers {
+	log.Debug("total gateway register records: %d", len(gatewayRegisters))
+	for _, g := range gatewayRegisters {
 		registerData := models.GatewayRegister{}
-		if unmarshalErr := json.Unmarshal([]byte(register), &registerData); unmarshalErr != nil {
+		if unmarshalErr := json.Unmarshal([]byte(g), &registerData); unmarshalErr != nil {
 			log.Error("inside GetGatewayRegisters - can't unmarshall JSON, %s", unmarshalErr.Error())
 		}
 		payload = append(payload, &registerData)
+		log.Debug("gateway register ID: %s", registerData.NodeID)
 	}
 
 	return op.NewGetGatewayRegistersOK().WithPayload(payload)
@@ -69,7 +68,6 @@ func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 
 // GetGatewayRegisterByID retrieve Gateway register by ID
 func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.Responder {
-	registerType := "gateway"
 	registerID := params.ID
 	ctx := context.Background()
 
@@ -79,7 +77,7 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 		DB:       0, // use default DB
 	})
 
-	register, err := rdb.HGet(ctx, registerType, registerID).Result()
+	gatewayRegister, err := rdb.HGet(ctx, "gateway", registerID).Result()
 	if err != nil {
 		msg := "Register not found"
 		log.Error(msg)
@@ -87,7 +85,7 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 	}
 
 	registerData := models.GatewayRegister{}
-	if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
+	if unmarshallErr := json.Unmarshal([]byte(gatewayRegister), &registerData); unmarshallErr != nil {
 		log.Error("inside GetGatewayRegisterByID - can't unmarshall JSON: %s", unmarshallErr.Error())
 	}
 
@@ -97,7 +95,7 @@ func GetGatewayRegisterByID(params op.GetGatewayRegistersByIDParams) middleware.
 
 // DeleteGatewayRegisters deletes all Gateways
 func DeleteGatewayRegisters(_ op.DeleteGatewayRegisterParams) middleware.Responder {
-	registerType := "gateway"
+	const registerTypeGateway = "gateway"
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
@@ -107,15 +105,15 @@ func DeleteGatewayRegisters(_ op.DeleteGatewayRegisterParams) middleware.Respond
 
 	ctx := context.Background()
 
-	registers, err := rdb.HGetAll(ctx, registerType).Result()
+	registers, err := rdb.HGetAll(ctx, registerTypeGateway).Result()
 	if err != nil {
 		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
 	for index := range registers {
-		log.Info("DELETE %v", index)
-		err := rdb.HDel(ctx, registerType, index).Err()
+		log.Info("register deleted a gateway record with ID: %s", index)
+		err := rdb.HDel(ctx, registerTypeGateway, index).Err()
 		if err != nil {
 			log.Error("Unable to set Redis value")
 			panic(err)

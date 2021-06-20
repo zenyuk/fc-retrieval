@@ -15,7 +15,6 @@ import (
 
 // AddProviderRegister to create a provider register
 func AddProviderRegister(params op.AddProviderRegisterParams) middleware.Responder {
-	registerType := "provider"
 	register := params.Register
 	ctx := context.Background()
 
@@ -25,13 +24,13 @@ func AddProviderRegister(params op.AddProviderRegisterParams) middleware.Respond
 		DB:       0, // use default DB
 	})
 
-	err := rdb.HSet(ctx, registerType, register.NodeID, register).Err()
+	err := rdb.HSet(ctx, "provider", register.NodeID, register).Err()
 	if err != nil {
 		log.Error("Unable to set Redis value")
 		panic(err)
 	}
 
-	log.Info("Register created %v", registerType)
+	log.Info("register created a provider record with ID: %s", params.Register.NodeID)
 
 	// Response
 	return op.NewAddProviderRegisterOK().WithPayload(register)
@@ -39,7 +38,6 @@ func AddProviderRegister(params op.AddProviderRegisterParams) middleware.Respond
 
 // GetProviderRegisters retrieve Provider register list
 func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder {
-	registerType := "provider"
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
@@ -48,7 +46,7 @@ func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder 
 		DB:       0, // use default DB
 	})
 
-	registers, err := rdb.HGetAll(ctx, registerType).Result()
+	providerRegisters, err := rdb.HGetAll(ctx, "provider").Result()
 
 	if err != nil {
 		log.Error("Unable to get Redis value")
@@ -56,12 +54,14 @@ func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder 
 	}
 
 	var payload []*models.ProviderRegister
-	for _, register := range registers {
+	log.Debug("total provider register records: %d", len(providerRegisters))
+	for _, register := range providerRegisters {
 		registerData := models.ProviderRegister{}
 		if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
 			log.Error("inside GetProviderRegisters - can't unmarshall JSON: %s", unmarshallErr.Error())
 		}
 		payload = append(payload, &registerData)
+		log.Debug("provider register ID: %s", registerData.NodeID)
 	}
 
 	return op.NewGetProviderRegistersOK().WithPayload(payload)
@@ -69,7 +69,6 @@ func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder 
 
 // GetProviderRegisterByID retrieve Provider register by ID
 func GetProviderRegisterByID(params op.GetProviderRegistersByIDParams) middleware.Responder {
-	registerType := "provider"
 	registerID := params.ID
 	ctx := context.Background()
 
@@ -79,7 +78,7 @@ func GetProviderRegisterByID(params op.GetProviderRegistersByIDParams) middlewar
 		DB:       0, // use default DB
 	})
 
-	register, err := rdb.HGet(ctx, registerType, registerID).Result()
+	register, err := rdb.HGet(ctx, "provider", registerID).Result()
 	if err != nil {
 		msg := "Register not found"
 		log.Error(msg)
@@ -97,7 +96,7 @@ func GetProviderRegisterByID(params op.GetProviderRegistersByIDParams) middlewar
 
 // DeleteProviderRegisters deletes all Providers
 func DeleteProviderRegisters(_ op.DeleteProviderRegisterParams) middleware.Responder {
-	registerType := "provider"
+	const registerTypeProvider = "provider"
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     apiconfig.GetString("REDIS_URL") + ":" + apiconfig.GetString("REDIS_PORT"),
@@ -107,15 +106,15 @@ func DeleteProviderRegisters(_ op.DeleteProviderRegisterParams) middleware.Respo
 
 	ctx := context.Background()
 
-	registers, err := rdb.HGetAll(ctx, registerType).Result()
+	registers, err := rdb.HGetAll(ctx, registerTypeProvider).Result()
 	if err != nil {
 		log.Error("Unable to get Redis value")
 		panic(err)
 	}
 
 	for index := range registers {
-		log.Info("DELETE %v", index)
-		err := rdb.HDel(ctx, registerType, index).Err()
+		log.Info("register deleted a provider record with ID: %s", index)
+		err := rdb.HDel(ctx, registerTypeProvider, index).Err()
 		if err != nil {
 			log.Error("Unable to set Redis value")
 			panic(err)

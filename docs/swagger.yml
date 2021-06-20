@@ -205,7 +205,7 @@ definitions:
       rootSigningKey:
         type: string
         description: Retrieval provider Root Signing Public Key.
-      sigingKey:
+      signingKey:
         type: string
         description: Used for signing CID Group Offers and Single CID Offers.
       networkInfoGateway:
@@ -237,7 +237,7 @@ definitions:
       rootSigningKey:
         type: string
         description: Retrieval provider Root Signing Public Key.
-      sigingKey:
+      signingKey:
         type: string
         description: Used for signing CID Group Offers and Single CID Offers.
       networkInfoGateway:
