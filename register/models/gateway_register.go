@@ -42,7 +42,7 @@ type GatewayRegister struct {
 	RootSigningKey string `json:"rootSigningKey,omitempty"`
 
 	// Used for signing CID Group Offers and Single CID Offers.
-	SigingKey string `json:"sigingKey,omitempty"`
+	SigingKey string `json:"signingKey,omitempty"`
 }
 
 // Validate validates this gateway register
