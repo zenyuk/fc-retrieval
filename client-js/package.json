@@ -51,10 +51,13 @@
     "src/**/*"
   ],
   "dependencies": {
+    "@types/qs": "^6.9.6",
     "acorn": "^8.3.0",
     "axios": "^0.21.1",
     "bn.js": "^5.2.0",
-    "@types/qs": "^6.9.6",
+    "ethereumjs-util": "^7.0.10",
+    "merkle-tree-solidity": "^1.0.8",
+    "merkletreejs": "^0.2.18",
     "qs": "^6.10.1"
   },
   "devDependencies": {
