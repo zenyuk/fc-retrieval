@@ -1,12 +1,12 @@
 import { ContentID } from '../cid/cid.interface'
-import { FCRMerkleProof } from '../fcrMerkleTree/proof.class'
+import { MerkleProof } from '../fcrMerkleTree/proof'
 import { NodeID } from '../nodeid/nodeid.interface'
 
 export class SubCIDOffer {
   providerID: NodeID
   subCID: ContentID
   merkleRoot: string
-  merkleProof: FCRMerkleProof
+  merkleProof: MerkleProof
   price: number
   expiry: number
   qos: number
@@ -16,7 +16,7 @@ export class SubCIDOffer {
     providerID: NodeID,
     subCID: ContentID,
     merkleRoot: string,
-    merkleProof: FCRMerkleProof,
+    merkleProof: MerkleProof,
     price: number,
     expiry: number,
     qos: number,
@@ -48,8 +48,8 @@ export class SubCIDOffer {
   }
 
   // GetMerkleProof returns the merkle proof of this offer.
-  getMerkleProof(): FCRMerkleProof {
-    return {} as FCRMerkleProof
+  getMerkleProof(): MerkleProof {
+    return {} as MerkleProof
   }
 
   // GetPrice returns the price of this offer.
