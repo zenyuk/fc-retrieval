@@ -84,7 +84,7 @@ curl --location --request POST 'http://localhost:9020/registers/gateway' \
     "networkInfoAdmin": "127.0.0.1:9013",
     "regionCode": "FR",
     "rootSigningKey": "0xABCDE123456789",
-    "sigingKey": "0x987654321EDCBA"
+    "signingKey": "0x987654321EDCBA"
 }'
 ```
 
@@ -106,7 +106,7 @@ curl --location --request POST 'http://localhost:9020/registers/provider' \
     "networkInfo": "127.0.0.1:9030",
     "regionCode": "FR",
     "rootSigningKey": "0xABCDE123456789",
-    "sigingKey": "0x987654321EDCBA"
+    "signingKey": "0x987654321EDCBA"
 }'
 ```
 
