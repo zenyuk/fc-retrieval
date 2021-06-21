@@ -3,8 +3,8 @@ package fcrcrypto
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"reflect"
-	"strconv"
 )
 
 /**
@@ -73,44 +73,54 @@ func VerifyMessage(pubKey *KeyPair, signature string, msg interface{}) (bool, er
 }
 
 func getToBeSigned(msg interface{}) []byte {
-	var v reflect.Value
-	if reflect.ValueOf(msg).Type().Kind() == reflect.Ptr {
-		v = reflect.ValueOf(msg).Elem()
-	} else {
-		v = reflect.ValueOf(msg)
+	allFields := DumpStructPayload(msg)
+
+	return []byte(allFields)
+}
+
+func DumpStructPayloadV(val reflect.Value) string {
+
+	if val.Kind() == reflect.Interface && !val.IsNil() {
+		elm := val.Elem()
+		if elm.Kind() == reflect.Ptr && !elm.IsNil() && elm.Elem().Kind() == reflect.Ptr {
+			val = elm
+		}
+	}
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
 	}
 
-	var allFields string
-	for i := 0; i < v.NumField(); i++ {
-		var fieldAsString string
-		switch v.Field(i).Kind() {
-		case reflect.Bool:
-			fieldAsString = strconv.FormatBool(v.Field(i).Bool())
-		case reflect.Int,
-			reflect.Int8,
-			reflect.Int16,
-			reflect.Int32,
-			reflect.Int64,
-			reflect.Float32,
-			reflect.Float64:
-			fieldAsString = strconv.FormatInt(v.Field(i).Int(), 16)
-		case reflect.Uint,
-			reflect.Uint8,
-			reflect.Uint16,
-			reflect.Uint32,
-			reflect.Uint64,
-			reflect.Uintptr:
-			fieldAsString = strconv.FormatUint(v.Field(i).Uint(), 16)
-			// TODO
-		// case reflect.Struct:
-		// 	fieldAsString = string(getToBeSigned(v.Field(i)))
-		// case reflect.Ptr:
-		// 	fieldAsString = string(getToBeSigned(v.Field(i)))
-		default:
-			fieldAsString = v.Field(i).String()
+	var out string
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+
+		if valueField.Kind() == reflect.Interface && !valueField.IsNil() {
+			elm := valueField.Elem()
+			if elm.Kind() == reflect.Ptr && !elm.IsNil() && elm.Elem().Kind() == reflect.Ptr {
+				valueField = elm
+			}
 		}
 
-		allFields = allFields + fieldAsString
+		if valueField.Kind() == reflect.Ptr {
+			valueField = valueField.Elem()
+		}
+
+		var value interface{}
+		if valueField.CanInterface() {
+			value = valueField.Interface()
+		}
+
+		if value != nil {
+			out = fmt.Sprintf("%v%v", out, value)
+		}
+
+		if valueField.Kind() == reflect.Struct {
+			DumpStructPayloadV(valueField)
+		}
 	}
-	return []byte(allFields)
+	return out
+}
+
+func DumpStructPayload(v interface{}) string {
+	return DumpStructPayloadV(reflect.ValueOf(v))
 }

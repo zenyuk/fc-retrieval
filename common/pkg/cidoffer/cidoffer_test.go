@@ -129,7 +129,7 @@ func TestSigning(t *testing.T) {
 	assert.Empty(t, err)
 	err = offer.Sign(privKey, fcrcrypto.InitialKeyVersion())
 	assert.Empty(t, err)
-	assert.Equal(t, "000000011cd8038e8ae437ce74f78e60cb000d761354cd3e0d458d7b29e6e0b15576e8801811fb7fd7b0600b1c106694277141dc11bbe4d9f6171c218ec0fe3f7184a88a00", offer.GetSignature())
+	assert.Equal(t, "00000001278d023bbdab1fa9ebd2ce74c18cda2eb77ad0990fce3595be5dc0b36da0a3341350683a5cf9e5de925d03180ea8a00ce01128d35a807fe91946ed7e84c0d0b900", offer.GetSignature())
 
 	pubKey, err := fcrcrypto.DecodePublicKey(PubKey)
 	assert.Empty(t, err)

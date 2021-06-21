@@ -46,7 +46,7 @@ func TestSign(t *testing.T) {
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
-		signature:         "000000016eb36f5564f2c514611b79be362c0c7ed8a38a85bdf12b16878e6c0cb283116d16c21159c83112ca90ac1e7061f1387c5506d4e47613a963baf860529f07491701",
+		signature:         "00000001278d023bbdab1fa9ebd2ce74c18cda2eb77ad0990fce3595be5dc0b36da0a3341350683a5cf9e5de925d03180ea8a00ce01128d35a807fe91946ed7e84c0d0b900",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
@@ -68,7 +68,7 @@ func TestVerify(t *testing.T) {
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
-		signature:         "000000016eb36f5564f2c514611b79be362c0c7ed8a38a85bdf12b16878e6c0cb283116d16c21159c83112ca90ac1e7061f1387c5506d4e47613a963baf860529f07491701",
+		signature:         "00000001278d023bbdab1fa9ebd2ce74c18cda2eb77ad0990fce3595be5dc0b36da0a3341350683a5cf9e5de925d03180ea8a00ce01128d35a807fe91946ed7e84c0d0b900",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
