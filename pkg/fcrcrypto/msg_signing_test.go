@@ -262,8 +262,8 @@ func TestSignMsgWithPtr(t *testing.T) {
 			id []byte
 		}
 		CopyCidOfferSigning struct {
-			nodeID     CopyNodeID
-			merkleRoot string
+			NodeID     *CopyNodeID
+			MerkleRoot string
 			price      uint64
 			expiry     int64
 			qos        uint64
@@ -276,16 +276,16 @@ func TestSignMsgWithPtr(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, DecodeKeyVersion(uint32(0xffff)), CopyCidOfferSigning{
-		nodeID: CopyNodeID{
+		NodeID: &CopyNodeID{
 			id: []byte("dsafgasdgadfs"),
 		},
-		merkleRoot: "asdfdasfas",
+		MerkleRoot: "asdfdasfas",
 		expiry:     55,
 		qos:        66,
 	})
 
 	assert.Empty(t, err)
 	assert.Equal(t,
-		"0000ffffe06f57c7078230fe0d0ac7bf39319bfde7eade02a9bbc7d7f6333d5e9cd3c22339436505f018b785e35f85eecc92f05e5e0610f640230c26ce18a33b2551f58d01",
+		"0000ffff26ed1e1a7cf86d7125983d1bed3a95ec23352f23e2cf8d07ae296e52255f3f1f76659c7a36b7e3e567592ebc7d731c66637a09d5d04ca13fcf22c4d5d18df37001",
 		sig)
 }
