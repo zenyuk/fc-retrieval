@@ -77,12 +77,13 @@ Register a Gateway
 curl --location --request POST 'http://localhost:9020/registers/gateway' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "address": "f01234",
+    "nodeId": "101112131415161718191A1B1C1D1E3F202122232425262728292A2B2C2D2E1F",
+    "address": "f0121345",
     "networkInfoClient": "127.0.0.1:9010",
     "networkInfoProvider": "127.0.0.1:9011",
     "networkInfoGateway": "127.0.0.1:9012",
     "networkInfoAdmin": "127.0.0.1:9013",
-    "regionCode": "FR",
+    "regionCode": "US",
     "rootSigningKey": "0xABCDE123456789",
     "signingKey": "0x987654321EDCBA"
 }'
@@ -102,9 +103,12 @@ Register a Provider
 curl --location --request POST 'http://localhost:9020/registers/provider' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "address": "f01234",
-    "networkInfo": "127.0.0.1:9030",
-    "regionCode": "FR",
+    "nodeId": "101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E3F",
+    "address": "f0121345",
+    "networkInfoClient": "127.0.0.1:9030",
+    "networkInfoGateway": "127.0.0.1:9032",
+    "networkInfoAdmin": "127.0.0.1:9033",
+    "regionCode": "US",
     "rootSigningKey": "0xABCDE123456789",
     "signingKey": "0x987654321EDCBA"
 }'
