@@ -24,8 +24,8 @@ import (
 
 // clientEstablishmentResponse is the response to clientEstablishmentRequest
 type clientEstablishmentResponse struct {
-	GatewayID nodeid.NodeID `json:"gateway_id"`
-	Challenge string        `json:"challenge"`
+	GatewayID string `json:"gateway_id"`
+	Challenge string `json:"challenge"`
 }
 
 // EncodeClientEstablishmentResponse is used to get the FCRMessage of clientEstablishmentResponse
@@ -34,7 +34,7 @@ func EncodeClientEstablishmentResponse(
 	challenge string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientEstablishmentResponse{
-		GatewayID: *gatewayID,
+		GatewayID: gatewayID.ToString(),
 		Challenge: challenge,
 	})
 	if err != nil {
@@ -57,5 +57,6 @@ func DecodeClientEstablishmentResponse(fcrMsg *FCRMessage) (
 	if err != nil {
 		return nil, "", err
 	}
-	return &msg.GatewayID, msg.Challenge, nil
+	gatewayID, _ := nodeid.NewNodeIDFromHexString(msg.GatewayID)
+	return gatewayID, msg.Challenge, nil
 }
