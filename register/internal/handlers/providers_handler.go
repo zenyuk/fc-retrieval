@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-redis/redis/v8"
@@ -54,15 +56,16 @@ func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder 
 	}
 
 	var payload []*models.ProviderRegister
-	log.Debug("total provider register records: %d", len(providerRegisters))
+	var debugOutputSb strings.Builder
 	for _, register := range providerRegisters {
 		registerData := models.ProviderRegister{}
 		if unmarshallErr := json.Unmarshal([]byte(register), &registerData); unmarshallErr != nil {
 			log.Error("inside GetProviderRegisters - can't unmarshall JSON: %s", unmarshallErr.Error())
 		}
 		payload = append(payload, &registerData)
-		log.Debug("provider register ID: %s", registerData.NodeID)
+		debugOutputSb.WriteString(fmt.Sprintf("%s, ", registerData.NodeID))
 	}
+	log.Debug("total provider register records: %d; IDs: %s", len(providerRegisters), debugOutputSb.String())
 
 	return op.NewGetProviderRegistersOK().WithPayload(payload)
 }
