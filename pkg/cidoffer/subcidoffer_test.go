@@ -108,7 +108,7 @@ func TestSubOfferVerify(t *testing.T) {
 	assert.Empty(t, err)
 	cids := []cid.ContentID{*aCid1, *aCid2, *aCid3}
 	price := uint64(5)
-	expiry := time.Now().Add(12 * time.Hour).Unix()
+	expiry := int64(9_223_372_030_000_000_000)
 	qos := uint64(5)
 	offer, err := NewCIDOffer(aNodeID, cids, price, expiry, qos)
 	privKey, err := fcrcrypto.DecodePrivateKey(PrivKey)
@@ -119,6 +119,9 @@ func TestSubOfferVerify(t *testing.T) {
 	subOffer, err := offer.GenerateSubCIDOffer(aCid1)
 	assert.Empty(t, err)
 	assert.NotEmpty(t, subOffer)
+
+	err = subOffer.Sign(privKey, fcrcrypto.InitialKeyVersion())
+	assert.Empty(t, err)
 
 	pubKey, err := fcrcrypto.DecodePublicKey(PubKey)
 	assert.Empty(t, err)
