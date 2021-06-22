@@ -16,12 +16,11 @@ package clientapi
  */
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
 )
 
@@ -38,37 +37,36 @@ func (c *Client) RequestStandardDiscoverV2(
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequestV2(contentID, nonce, ttl, paychAddr, voucher)
 	if err != nil {
-		logging.Error("Error encoding Client Standard Discover Request: %+v", err)
-		return nil, err
+		return nil, fmt.Errorf("error encoding Client Standard Discover Request: %s", err.Error())
 	}
 
 	// Send request and get response
 	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error sending message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Get the gateway's public key
 	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting signing key of gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, errors.New("verification failed")
+		return nil, fmt.Errorf("response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
 	}
 
 	// Decode the response, TODO deal with funded payment channels and found
 	cID, nonceRecv, _, offerDigests, _, err := fcrmessages.DecodeClientStandardDiscoverResponseV2(response)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding Client Standard Discover Response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
 	}
 	if cID.ToString() != contentID.ToString() {
-		return nil, errors.New("CID Mismatch")
+		return nil, fmt.Errorf("error validating CID for Client Standard Discover Response for gateway ID: %s; expected CID: %s, actual CID: %s", gatewayRegistrar.GetNodeID(), contentID, cID)
 	}
 	if nonce != nonceRecv {
-		return nil, errors.New("nonce mismatch")
+		return nil, fmt.Errorf("error validating nonce for Client Standard Discover Response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, nonceRecv)
 	}
 
 	return offerDigests, nil
