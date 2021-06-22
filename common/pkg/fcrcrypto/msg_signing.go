@@ -3,8 +3,6 @@ package fcrcrypto
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
-	"reflect"
 )
 
 /**
@@ -38,8 +36,8 @@ const (
 
 // SignMessage signs a message using the specified private key.
 // Note that the struct must contain a field "Signature"
-func SignMessage(pKey *KeyPair, keyVersion *KeyVersion, msg interface{}) (string, error) {
-	rawSig, err := pKey.Sign(getToBeSigned(msg))
+func SignMessage(pKey *KeyPair, keyVersion *KeyVersion, msg []byte) (string, error) {
+	rawSig, err := pKey.Sign(msg)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +57,7 @@ func ExtractKeyVersionFromMessage(signature string) (*KeyVersion, error) {
 
 // VerifyMessage verifies a message using the specified public key.
 // Note that the struct must contain a field "Signature"
-func VerifyMessage(pubKey *KeyPair, signature string, msg interface{}) (bool, error) {
+func VerifyMessage(pubKey *KeyPair, signature string, msg []byte) (bool, error) {
 	sigBytes, err := hex.DecodeString(signature)
 	if err != nil {
 		return false, err
@@ -69,64 +67,5 @@ func VerifyMessage(pubKey *KeyPair, signature string, msg interface{}) (bool, er
 		err := errors.New("sigBytes is empty, unable to verify, please check signature")
 		return false, err
 	}
-	return pubKey.Verify(sigBytes[sigOfsRawSig:], getToBeSigned(msg))
-}
-
-func getToBeSigned(msg interface{}) []byte {
-	allFields := DumpStructPayload(msg)
-
-	return []byte(allFields)
-}
-
-func DumpStructPayloadV(val reflect.Value) string {
-
-	if val.Kind() == reflect.Interface && !val.IsNil() {
-		elm := val.Elem()
-		if elm.Kind() == reflect.Ptr && !elm.IsNil() && elm.Elem().Kind() == reflect.Ptr {
-			val = elm
-		}
-	}
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-
-	var out string
-	for i := 0; i < val.NumField(); i++ {
-		valueField := val.Field(i)
-
-		if valueField.Kind() == reflect.Interface && !valueField.IsNil() {
-			elm := valueField.Elem()
-			if elm.Kind() == reflect.Ptr && !elm.IsNil() && elm.Elem().Kind() == reflect.Ptr {
-				valueField = elm
-			}
-		}
-
-		if valueField.Kind() == reflect.Ptr {
-			valueField = valueField.Elem()
-		}
-
-		var value interface{}
-		if valueField.CanInterface() {
-			value = valueField.Interface()
-		}
-
-		if value != nil {
-			out = fmt.Sprintf("%v%v", out, value)
-		}
-
-		if valueField.Kind() == reflect.Struct {
-			DumpStructPayloadV(valueField)
-		}
-	}
-
-	for i := 0; i < val.NumMethod(); i++ {
-		if method := val.Method(i); method.IsValid() && method.CanInterface() {
-			out += val.Method(i).Call([]reflect.Value{})[0].String()
-		}
-	}
-	return out
-}
-
-func DumpStructPayload(v interface{}) string {
-	return DumpStructPayloadV(reflect.ValueOf(v))
+	return pubKey.Verify(sigBytes[sigOfsRawSig:], msg)
 }

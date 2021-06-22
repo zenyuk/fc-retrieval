@@ -88,7 +88,11 @@ func (fcrMsg *FCRMessage) GetSignature() string {
 func (fcrMsg *FCRMessage) Sign(privKey *fcrcrypto.KeyPair, keyVer *fcrcrypto.KeyVersion) error {
 	// Clear signature
 	fcrMsg.signature = ""
-	sig, err := fcrcrypto.SignMessage(privKey, keyVer, fcrMsg)
+	raw, err := fcrMsg.MarshalToSign()
+	if err != nil {
+		return err
+	}
+	sig, err := fcrcrypto.SignMessage(privKey, keyVer, raw)
 	if err != nil {
 		return err
 	}
@@ -101,7 +105,11 @@ func (fcrMsg *FCRMessage) Verify(pubKey *fcrcrypto.KeyPair) error {
 	// Clear signature
 	sig := fcrMsg.signature
 	fcrMsg.signature = ""
-	res, err := fcrcrypto.VerifyMessage(pubKey, sig, fcrMsg)
+	raw, err := fcrMsg.MarshalToSign()
+	if err != nil {
+		return err
+	}
+	res, err := fcrcrypto.VerifyMessage(pubKey, sig, raw)
 	if err != nil {
 		return err
 	}
@@ -152,6 +160,17 @@ func (fcrMsg *FCRMessage) UnmarshalJSON(p []byte) error {
 	fcrMsg.messageBody = msgJson.MessageBody
 	fcrMsg.signature = msgJson.Signature
 	return nil
+}
+
+// MarshalJSON is used to marshal offer into bytes to sign the message.
+// This not includes the signature field
+func (fcrMsg FCRMessage) MarshalToSign() ([]byte, error) {
+	return json.Marshal(fcrMessageJson{
+		MessageType:       fcrMsg.messageType,
+		ProtocolVersion:   fcrMsg.protocolVersion,
+		ProtocolSupported: fcrMsg.protocolSupported,
+		MessageBody:       fcrMsg.messageBody,
+	})
 }
 
 // GetCurrentProtocolVersion gets the current protocol version of all messages.

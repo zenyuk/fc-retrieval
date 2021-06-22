@@ -1,6 +1,7 @@
 package fcrmessages
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
@@ -46,12 +47,12 @@ func TestSign(t *testing.T) {
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
-		signature:         "000000015d91ae6519d7510a0c5f16e5dc871e209855c04ed54b8964cbb4b4339cc4d0e83243da924d65e567efb3dc75051f5ae367743c7fa71bfd730085d086c2d1af0800",
+		signature:         "00000001faa9487c9e61d6ba0d05df6bca3ddcbc9f67abe62f4646630c6cea4012058cb61e66f4f65c72b0f2f8f0dffb66797427f178209c1a9491dc7b84fc3bc798e75801",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	msg.Sign(mockPrivKey, mockKeyVer)
-
+	fmt.Println(msg.GetSignature())
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, msg.GetSignature(), validMsg.GetSignature())
 }
@@ -68,13 +69,13 @@ func TestVerify(t *testing.T) {
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
 		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
-		signature:         "000000015d91ae6519d7510a0c5f16e5dc871e209855c04ed54b8964cbb4b4339cc4d0e83243da924d65e567efb3dc75051f5ae367743c7fa71bfd730085d086c2d1af0800",
+		signature:         "00000001faa9487c9e61d6ba0d05df6bca3ddcbc9f67abe62f4646630c6cea4012058cb61e66f4f65c72b0f2f8f0dffb66797427f178209c1a9491dc7b84fc3bc798e75801",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	msg.Sign(mockPrivKey, mockKeyVer)
 	err := msg.Verify(mockPubKey)
-
+	fmt.Println(msg.GetSignature())
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, msg.GetSignature(), validMsg.GetSignature())
 	assert.Empty(t, err)
