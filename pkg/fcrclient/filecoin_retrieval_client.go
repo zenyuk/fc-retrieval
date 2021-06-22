@@ -55,8 +55,8 @@ type FilecoinRetrievalClient struct {
 	paymentMgr     *fcrpaymentmgr.FCRPaymentMgr
 	paymentMgrLock sync.RWMutex
 
-	clientApi      clientapi.ClientApi
-	registerMgr    *fcrregistermgr.FCRRegisterMgr
+	clientApi   clientapi.ClientApi
+	registerMgr *fcrregistermgr.FCRRegisterMgr
 }
 
 // NewFilecoinRetrievalClient initialise the Filecoin Retrieval Client library
@@ -474,7 +474,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 		resp := contactedResp[i]
 		// Verify the sub response
 		// Get gateway's pubkey
-		gateway  := c.registerMgr.GetGateway(&contactedGatewayID)
+		gateway := c.registerMgr.GetGateway(&contactedGatewayID)
 		if gateway == nil {
 			logging.Error("Error in getting gateway info.")
 			continue
@@ -642,20 +642,19 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 	// It will call the payment manager to pay for the initial request
 	paychAddr, voucher, topup, err := c.paymentMgr.Pay(gw.GetAddress(), 0, c.Settings.searchPrice)
 	if err != nil {
-		return cidOffers, err
+		return cidOffers, fmt.Errorf("error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
 	}
 
 	// There isn't any balance in the payment channel, need to topup (create)
 	if topup == true {
-		// If topup failed, then there is not enough balance, return error.
+		// If topup failed, then probably there is not enough balance, return detailed error.
 		err = c.PaymentMgr().Topup(gw.GetAddress(), c.Settings.topUpAmount)
 		if err != nil {
-			logging.Warn("Topup. Gateway: %s, Error: %s", gw.GetNodeID(), err)
-			return make([]cidoffer.SubCIDOffer, 0), errors.New("error in payment manager topup - is not enough balance")
+			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error to topup payment channel for gateway ID: %s;  error: %s", gw.GetNodeID(), err.Error())
 		}
 		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.GetAddress(), 0, c.Settings.searchPrice)
 		if err != nil {
-			return cidOffers, err
+			return cidOffers, fmt.Errorf("topup successed but error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
 		}
 	}
 
@@ -663,8 +662,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 	// TODO need to do nonce management
 	offerDigests, err := c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
 	if err != nil {
-		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.GetNodeID(), err)
-		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
+		return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), err.Error())
 	}
 	if len(offerDigests) == 0 {
 		// No offer found
@@ -682,7 +680,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.GetAddress(), 0, expectedAmount)
 	if err != nil {
-		return cidOffers, err
+		return cidOffers, fmt.Errorf("error paying expected amount to gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
 	}
 
 	// There isn't any balance in the payment channel, need to topup (create)
@@ -690,12 +688,11 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 		// If topup failed, then there is not enough balance, return error.
 		err = c.PaymentMgr().Topup(gw.GetAddress(), c.Settings.TopUpAmount())
 		if err != nil {
-			logging.Warn("Topup. Gateway: %s, Error: %s", gw.GetNodeID(), err)
-			return make([]cidoffer.SubCIDOffer, 0), errors.New("error in payment manager topup - is not enough balance")
+			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error to topup payment channel for gateway ID: %s;  error: %s", gw.GetNodeID(), err.Error())
 		}
 		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.GetAddress(), 0, expectedAmount)
 		if err != nil {
-			return cidOffers, err
+			return cidOffers, fmt.Errorf("topup successed but error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
 		}
 	}
 
