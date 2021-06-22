@@ -2,9 +2,10 @@ package fcrmessages
 
 import (
 	"testing"
-	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/challenge"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestEncodeClientEstablishmentRequest success test
@@ -13,11 +14,11 @@ func TestEncodeClientEstablishmentRequest(t *testing.T) {
 	mockChallenge := challenge.NewRandomChallenge()
 	mockTTL := int64(100)
 	validMsg := &FCRMessage{
-		messageType:100,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"client_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","challenge":"` + mockChallenge + `","ttl":100}`), 
-		signature:"",
+		messageType:       100,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"client_id":"0000000000000000000000000000000000000000000000000000000000000042","challenge":"` + mockChallenge + `","ttl":100}`),
+		signature:         "",
 	}
 
 	msg, err := EncodeClientEstablishmentRequest(
@@ -35,11 +36,11 @@ func TestDecodeClientEstablishmentRequest(t *testing.T) {
 	mockChallenge := challenge.NewRandomChallenge()
 	mockTTL := int64(100)
 	validMsg := &FCRMessage{
-		messageType:100,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"client_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","challenge":"` + mockChallenge + `","ttl":100}`), 
-		signature:"",
+		messageType:       100,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"client_id":"0000000000000000000000000000000000000000000000000000000000000042","challenge":"` + mockChallenge + `","ttl":100}`),
+		signature:         "",
 	}
 
 	clientID, challenge, ttl, err := DecodeClientEstablishmentRequest(validMsg)
