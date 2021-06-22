@@ -118,6 +118,10 @@ func DumpStructPayloadV(val reflect.Value) string {
 			DumpStructPayloadV(valueField)
 		}
 	}
+
+	for i := 0; i < val.NumMethod(); i++ {
+		out += val.Method(i).Call([]reflect.Value{})[0].String()
+	}
 	return out
 }
 
