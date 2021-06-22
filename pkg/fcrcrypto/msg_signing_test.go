@@ -16,6 +16,7 @@ package fcrcrypto
  */
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ import (
 // CopiedClientEstablishmentResponse is a copy of a message used in the messages module. The
 // struct has been copied here to remove the circular dependancy.
 type CopiedClientEstablishmentResponse struct {
-	MessageType     int32  `json:"message_type"`
+	messageType     int32  `json:"message_type"`
 	ProtocolVersion int32  `json:"protocol_version"`
 	GatewayID       string `json:"gateway_id"`
 	Challenge       string `json:"challenge"`
@@ -37,14 +38,18 @@ const (
 	PubKey                                = "01047799f37b014564e23578447d718e5c70a786b0e4e58ca25cb2a086b822434594d910b9b8c0fcbfe9f4c2db321e874819e0614be5b57fbb5080accd69adb2eaad"
 )
 
+func (c CopiedClientEstablishmentResponse) MessageType() string {
+	return fmt.Sprintf("  #messageType %v", c.messageType)
+}
+
 func TestGetToBeSigned(t *testing.T) {
 	out := getToBeSigned(CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
 	})
-	assert.Equal(t, out, []byte("111234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef"))
+	assert.Equal(t, string(out), "11234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef  #messageType 1")
 }
 
 func TestSignMsgWithError(t *testing.T) {
@@ -78,7 +83,7 @@ func TestSignNonEmptyMsg(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, InitialKeyVersion(), CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -94,7 +99,7 @@ func TestSignNonEmptyMsgPtr(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, InitialKeyVersion(), &CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -122,7 +127,7 @@ func TestExtractKeyVersionFromMsgInitialVer(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, InitialKeyVersion(), &CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -143,7 +148,7 @@ func TestExtractKeyVersionFromMsgZeroVer(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, DecodeKeyVersion(uint32(0)), &CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -164,7 +169,7 @@ func TestExtractKeyVersionFromMsgVer(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, DecodeKeyVersion(uint32(0xff)), &CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -185,7 +190,7 @@ func TestExtractKeyVersionFromMsgMaxVer(t *testing.T) {
 	}
 
 	sig, err := SignMessage(keyPair, DecodeKeyVersion(uint32(0xffff)), &CopiedClientEstablishmentResponse{
-		MessageType:     CopiedClientEstablishmentResponseType,
+		messageType:     CopiedClientEstablishmentResponseType,
 		ProtocolVersion: 1,
 		GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -236,7 +241,7 @@ func TestVerifyMsg(t *testing.T) {
 	}
 	res, err := VerifyMessage(keyPair, "00000001b29b643d232313afbbad00d6b10e73aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000",
 		CopiedClientEstablishmentResponse{
-			MessageType:     CopiedClientEstablishmentResponseType,
+			messageType:     CopiedClientEstablishmentResponseType,
 			ProtocolVersion: 1,
 			GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 			Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
@@ -246,7 +251,7 @@ func TestVerifyMsg(t *testing.T) {
 
 	res, err = VerifyMessage(keyPair, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000",
 		CopiedClientEstablishmentResponse{
-			MessageType:     CopiedClientEstablishmentResponseType,
+			messageType:     CopiedClientEstablishmentResponseType,
 			ProtocolVersion: 1,
 			GatewayID:       "1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0",
 			Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
