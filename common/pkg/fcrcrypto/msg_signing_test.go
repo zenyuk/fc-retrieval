@@ -73,7 +73,7 @@ func TestSignEmptyMsg(t *testing.T) {
 
 	sig, err := SignMessage(keyPair, InitialKeyVersion(), CopiedClientEstablishmentResponse{})
 	assert.Empty(t, err)
-	assert.Equal(t, "0000000149a4c1bab090ce563b003bc017cf255b89d26e1f7170da57e58e58afe51407aa51255338e77a828434cf97f71716b0e0c70a8f5c762fd64380916a8d98d0daf700", sig)
+	assert.Equal(t, "00000001e3cbf07cd2d9bf10ec51fbb3ffb4d123f3e366381affb74cbe668fd4ad0057a507b55f7c7d19e7557214678e939184d0eaf5d1b491ca4c7964c7dfde44f67a1400", sig)
 }
 
 func TestSignNonEmptyMsg(t *testing.T) {
@@ -89,7 +89,7 @@ func TestSignNonEmptyMsg(t *testing.T) {
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
 	})
 	assert.Empty(t, err)
-	assert.Equal(t, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000", sig)
+	assert.Equal(t, "00000001bdd77115f300b426df33c322cd3965a0364df78c91223425392a79eb8ab2208424699bf270ad27f358de16ab9249c07bc095be86d239eac2392228bf81fb56e401", sig)
 }
 
 func TestSignNonEmptyMsgPtr(t *testing.T) {
@@ -105,7 +105,7 @@ func TestSignNonEmptyMsgPtr(t *testing.T) {
 		Challenge:       "a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef",
 	})
 	assert.Empty(t, err)
-	assert.Equal(t, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000", sig)
+	assert.Equal(t, "00000001bdd77115f300b426df33c322cd3965a0364df78c91223425392a79eb8ab2208424699bf270ad27f358de16ab9249c07bc095be86d239eac2392228bf81fb56e401", sig)
 }
 
 func TestExtractKeyVersionFromMsgWithError(t *testing.T) {
@@ -249,7 +249,7 @@ func TestVerifyMsg(t *testing.T) {
 	assert.Empty(t, err)
 	assert.False(t, res)
 
-	res, err = VerifyMessage(keyPair, "00000001b29b643d232313afbbad00d6b10e23aa82e09b3183d619046de42cf56d9acc24411f8547fa761b416cc4804539ca859c3b4681b86cf0158a880668514855089000",
+	res, err = VerifyMessage(keyPair, "00000001bdd77115f300b426df33c322cd3965a0364df78c91223425392a79eb8ab2208424699bf270ad27f358de16ab9249c07bc095be86d239eac2392228bf81fb56e401",
 		CopiedClientEstablishmentResponse{
 			messageType:     CopiedClientEstablishmentResponseType,
 			ProtocolVersion: 1,
