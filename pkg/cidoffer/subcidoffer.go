@@ -55,7 +55,7 @@ type subCIDOfferJson struct {
 // subCIDOfferSigning is used to generate and verify signature.
 type subCIDOfferSigning struct {
 	ProviderID nodeid.NodeID `json:"provider_id"`
-	MerkleRoot string        `json:"merkle_proof"`
+	MerkleRoot string        `json:"merkle_root"`
 	Price      uint64        `json:"price"`
 	Expiry     int64         `json:"expiry"`
 	QoS        uint64        `json:"qos"`
@@ -186,17 +186,4 @@ func (c *SubCIDOffer) MarshalToSign() ([]byte, error) {
 		Expiry:     c.expiry,
 		QoS:        c.qos,
 	})
-}
-
-func (c *SubCIDOffer) Sign(privKey *fcrcrypto.KeyPair, keyVer *fcrcrypto.KeyVersion) error {
-	raw, err := c.MarshalToSign()
-	if err != nil {
-		return err
-	}
-	sig, err := fcrcrypto.SignMessage(privKey, keyVer, raw)
-	if err != nil {
-		return err
-	}
-	c.signature = sig
-	return nil
 }

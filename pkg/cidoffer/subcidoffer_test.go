@@ -120,9 +120,6 @@ func TestSubOfferVerify(t *testing.T) {
 	assert.Empty(t, err)
 	assert.NotEmpty(t, subOffer)
 
-	err = subOffer.Sign(privKey, fcrcrypto.InitialKeyVersion())
-	assert.Empty(t, err)
-
 	pubKey, err := fcrcrypto.DecodePublicKey(PubKey)
 	assert.Empty(t, err)
 	assert.Empty(t, subOffer.Verify(pubKey))
