@@ -356,7 +356,7 @@ func init() {
           "description": "Retrieval provider Root Signing Public Key.",
           "type": "string"
         },
-        "sigingKey": {
+        "signingKey": {
           "description": "Used for signing CID Group Offers and Single CID Offers.",
           "type": "string"
         }
@@ -397,7 +397,7 @@ func init() {
           "description": "Retrieval provider Root Signing Public Key.",
           "type": "string"
         },
-        "sigingKey": {
+        "signingKey": {
           "description": "Used for signing CID Group Offers and Single CID Offers.",
           "type": "string"
         }
@@ -744,7 +744,7 @@ func init() {
           "description": "Retrieval provider Root Signing Public Key.",
           "type": "string"
         },
-        "sigingKey": {
+        "signingKey": {
           "description": "Used for signing CID Group Offers and Single CID Offers.",
           "type": "string"
         }
@@ -785,7 +785,7 @@ func init() {
           "description": "Retrieval provider Root Signing Public Key.",
           "type": "string"
         },
-        "sigingKey": {
+        "signingKey": {
           "description": "Used for signing CID Group Offers and Single CID Offers.",
           "type": "string"
         }
