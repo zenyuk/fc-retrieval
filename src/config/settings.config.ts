@@ -28,7 +28,7 @@ const defaultTopUpAmount = new BN("100000000000000000")
 export class Settings {
   establishmentTTL: number
   registerURL: string
-  client: NodeID
+  clientId: NodeID
   logLevel: string
   logTarget: string
   logServiceName: string
@@ -45,7 +45,7 @@ export class Settings {
   constructor({
     establishmentTTL = defaultEstablishmentTTL,
     registerURL,
-    client,
+    clientId,
     logLevel = defaultLogLevel,
     logTarget = defaultLogTarget,
     logServiceName = defaultLogServiceName,
@@ -61,7 +61,7 @@ export class Settings {
   }: any) {
     this.establishmentTTL = establishmentTTL
     this.registerURL = registerURL
-    this.client = client
+    this.clientId = clientId
     this.logLevel = logLevel
     this.logTarget = logTarget
     this.logServiceName = logServiceName
