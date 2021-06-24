@@ -61,7 +61,8 @@
     "merkle-tree-solidity": "^1.0.8",
     "merkletreejs": "^0.2.18",
     "qs": "^6.10.1",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "tslint": "^6.1.3"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
