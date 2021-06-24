@@ -58,7 +58,7 @@ func (c *Client) RequestStandardDiscoverV2(
 	}
 
 	// Decode the response, TODO deal with funded payment channels and found
-	cID, nonceRecv, _, offerDigests, _, err := fcrmessages.DecodeClientStandardDiscoverResponseV2(response)
+	cID, nonceRecv, _, offerDigests, _, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientStandardDiscoverResponseV2(response)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding Client Standard Discover Response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
 	}
@@ -67,6 +67,9 @@ func (c *Client) RequestStandardDiscoverV2(
 	}
 	if nonce != nonceRecv {
 		return nil, fmt.Errorf("error validating nonce for Client Standard Discover Response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, nonceRecv)
+	}
+	if paymentRequired {
+		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 	}
 
 	return offerDigests, nil

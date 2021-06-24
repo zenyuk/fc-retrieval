@@ -17,6 +17,7 @@ package clientapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
@@ -60,7 +61,7 @@ func (c *Client) RequestStandardDiscoverOffer(
 	}
 
 	// Decode the response, TODO deal with fundedpayment channels and found
-	cID, nonceRecv, _, offers, _, err := fcrmessages.DecodeClientStandardDiscoverOfferResponse(response)
+	cID, nonceRecv, _, offers, _, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientStandardDiscoverOfferResponse(response)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +70,9 @@ func (c *Client) RequestStandardDiscoverOffer(
 	}
 	if nonce != nonceRecv {
 		return nil, errors.New("nonce mismatch")
+	}
+	if paymentRequired {
+		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 	}
 
 	return offers, nil

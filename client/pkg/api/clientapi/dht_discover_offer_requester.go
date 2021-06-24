@@ -70,18 +70,24 @@ func (c *Client) RequestDHTOfferDiscover(
 		return nil, errors.New("verification failed")
 	}
 
-	_, _, gatewayIDs, fcrMessages, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
+	_, _, gatewayIDs, fcrMessages, paymentRequiredCl, paymentChannelAddrToTopupCl, err := fcrmessages.DecodeClientDHTDiscoverOfferResponse(response)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding client DHT discover offer response %s", err.Error())
 	}
 	if len(gatewayIDs) != len(fcrMessages) {
 		return nil, fmt.Errorf("error decoding client DHT discover offer response, lengths of gateway IDs = %d and FCR messages = %d do not match", len(gatewayIDs), len(fcrMessages))
 	}
+	if paymentRequiredCl {
+		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopupCl)
+	}
 	var result []GatewaySubOffers
 	for idx, fcrMessage := range fcrMessages {
-		_, _, found, subCIDOffers, _, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
+		_, _, found, subCIDOffers, _,  paymentRequired, paymentChannelAddrToTopup, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverOfferResponse(&fcrMessage)
 		if decodeErr != nil {
 			logging.Error("error decoding gateway DHT discover offer response %s", decodeErr.Error())
+		}
+		if paymentRequired {
+			return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 		}
 		// return first good one
 		if found && len(subCIDOffers) > 0 {
