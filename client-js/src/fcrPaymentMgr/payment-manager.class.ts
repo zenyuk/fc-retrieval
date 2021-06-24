@@ -1,5 +1,4 @@
 import { FilecoinRPC } from './types'
-import { payResponse } from '../FilecoinRetrievalClient'
 import { BigNumber } from "bignumber.js";
 
 const filecoin_signer = require('@zondax/filecoin-signing-tools')
@@ -31,15 +30,15 @@ export class ChannelState {
 }
 
 export class FCRPaymentMgr {
-  privateKey: any
   recoveredKey: any
   filRPC: any
   header: any
 
   outboundChs: Map<string, ChannelState>
 
-  constructor(privateKey: string, lotusAPIAddr: string, authToken: string) {
-    this.recoveredKey = filecoin_signer.keyRecover(privateKey)
+  // Make sure the private key provided is in hex string
+  constructor(privateKeyHex: string, lotusAPIAddr: string, authToken: string) {
+    this.recoveredKey = filecoin_signer.keyRecover(Buffer.from(privateKeyHex, 'hex').toString('base64'))
     this.filRPC = new FilecoinRPC({url: lotusAPIAddr, token: authToken})
     this.header = { 'Authorization': `Bearer ${authToken}` }
     
@@ -48,7 +47,6 @@ export class FCRPaymentMgr {
 
   async topup(recipient: string, amount: BigNumber) {
     if (this.outboundChs.has(recipient)) {
-      console.log("I'm here now.")
       // There is an existing channel, TODO. Topup
       var nonce = await this.filRPC.getNonce(this.recoveredKey.address)
       nonce = nonce.result
@@ -57,14 +55,13 @@ export class FCRPaymentMgr {
         to: this.outboundChs.get(recipient)?.addr,
         nonce: nonce,
         value: amount.toString(10),
-        GasLimit: '0',
-        GasFeeCap: '0',
-        GasPremium: '0',
+        gaslimit: 0,
+        gasfeecap: '0',
+        gaspremium: '0',
         Method: 0,
-        Params: ""
+        Params: ''
       } as any
       topup = await this.filRPC.getGasEstimation(topup)
-      console.log(topup)
       if ('result' in topup) {
         topup = topup.result
       } else {
@@ -72,11 +69,7 @@ export class FCRPaymentMgr {
         return 1
       }
       var signedMessage = JSON.parse(filecoin_signer.transactionSignLotus(topup, this.recoveredKey.private_base64))// Send message
-      console.log("I'm here.1")
-      console.log(signedMessage)
       var res = await this.filRPC.sendSignedMessage(signedMessage)
-      // TODO
-      console.log(res)
       var cs = this.outboundChs.get(recipient)
       if (cs != undefined) {
         cs.balance = cs.balance.plus(amount)
@@ -109,29 +102,83 @@ export class FCRPaymentMgr {
 
       // Success, add a new entry to the out bound channels
       var cAddr = String(res.result.ReturnDec.RobustAddress)
-      console.log(cAddr)
       this.outboundChs.set(recipient, new ChannelState(cAddr, amount))
     }
     return 0
   }
 
   pay(recipient: string, lane: number, amount: BigNumber) {
-    return { paychAddrs: '', voucher: '', topup: false } as payResponse
+    var cs = this.outboundChs.get(recipient)
+    if (cs == null) {
+      // Channel not existed
+      return {paychAddr: '', voucher: '', topup: true, error: 0} as any
+    }
+    
+    // Check if balance is enough
+    if (cs.balance.lt(cs.redeemed.plus(amount))) {
+      // Balance not enough
+      return {paychAddr: '', voucher: '', topup: true, error: 0} as any
+    }
+
+    // Balance enough
+    var ls = cs.laneStates.get(lane)
+    if (ls == null) {
+      // Need to create a lane state
+      ls = new LaneState()
+      cs.laneStates.set(lane, ls)
+    }
+    
+    // Create a voucher
+    var voucher = filecoin_signer.createVoucher(cs.addr, '0', '0', ls.redeemed.plus(amount).toString(), lane.toString(), ls.nonce.toString(), '0')
+    voucher = filecoin_signer.signVoucher(voucher, this.recoveredKey.private_base64)
+    if (voucher == null) {
+      // Fail to generate a voucher
+      return {paychAddr: '', voucher: '', topup: false, error: 1} as any
+    }
+    // This fixes a bug from the original library
+    voucher = voucher.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '')
+    // Update lane state and channel state
+    ls.nonce++
+    ls.redeemed = ls.redeemed.plus(amount)
+    ls.vouchers.push(voucher)
+    cs.redeemed = cs.redeemed.plus(amount)
+    return {paychAddr: cs.addr, voucher: voucher, topup: false, error: 0} as any
   }
 }
 
 async function test() {
   var lotusAPIAddr = "http://127.0.0.1:1234/rpc/v0"
   var lotusToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.lYpknouVX5M_BJOEbHZrdcHdxHkfu0ih1W0NCTFlJz0"
+  var privKey = "d54193a9668ae59befa59498cdee16b78cdc8228d43814442a64588fd1648a29"
+  var recipient = "t1hd2pytcieodijlg7u2nh6e3xjov776i7qtvldgi"
   // Private key: d54193a9668ae59befa59498cdee16b78cdc8228d43814442a64588fd1648a29
   // addr: f12yybez3cfe2yb2nsartagpwkk23q5hmmiluqafi
-  var base64String = Buffer.from("d54193a9668ae59befa59498cdee16b78cdc8228d43814442a64588fd1648a29", 'hex').toString('base64')
 
-  var mgr = new FCRPaymentMgr(base64String, lotusAPIAddr, lotusToken)
-  await mgr.topup("t1cldh4eiwlx47wkjgf2j37piatb5xevjgld4vjua", new BigNumber(1000000))
-  console.log(mgr.outboundChs)
-  await mgr.topup("t1cldh4eiwlx47wkjgf2j37piatb5xevjgld4vjua", new BigNumber(1000000))
-  console.log(mgr.outboundChs)  
+  // Initialise a payment manager
+  var mgr = new FCRPaymentMgr(privKey, lotusAPIAddr, lotusToken)
+
+  var res = mgr.pay(recipient, 0, new BigNumber(10000))
+  console.log(res)
+
+
+  // Do topup
+  await mgr.topup(recipient, new BigNumber(1000000))
+
+  // Pay 1st
+  res = mgr.pay(recipient, 0, new BigNumber(10000))
+  console.log(res)
+
+  // Pay 2nd
+  res = mgr.pay(recipient, 0, new BigNumber(10000))
+  console.log(res)
+
+  // Pay 3rd
+  res = mgr.pay(recipient, 0, new BigNumber(10000))
+  console.log(res)
+
+  // Pay 4th
+  res = mgr.pay(recipient, 0, new BigNumber(10000))
+  console.log(res)
 }
 
 test()

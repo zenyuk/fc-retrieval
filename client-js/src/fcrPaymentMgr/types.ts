@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { BigNumber } from "bignumber.js";
 
 export type Address = any;
 
@@ -72,19 +71,6 @@ class FilecoinRPC {
   
       return response.data
     }
-  }
-
-  export declare class Message {
-    Version?: number;
-    To: string;
-    From: string;
-    Nonce: number;
-    Value: BigNumber;
-    GasLimit: number;
-    GasFeeCap: BigNumber;
-    GasPremium: BigNumber;
-    Method: number;
-    Params: string;
 }
 
 export {FilecoinRPC}
