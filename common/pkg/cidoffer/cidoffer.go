@@ -28,12 +28,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/cbergoon/merkletree"
-
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/cbergoon/merkletree"
 )
 
 const CIDOfferDigestSize = sha512.Size256
@@ -64,11 +63,11 @@ type cidOfferJson struct {
 
 // cidOfferSigning is used to generate and verify signature.
 type cidOfferSigning struct {
-	providerID nodeid.NodeID
-	merkleRoot string
-	price      uint64
-	expiry     int64
-	qos        uint64
+	ProviderID nodeid.NodeID `json:"provider_id"`
+	MerkleRoot string        `json:"merkle_root"` // this field is missing in json struct
+	Price      uint64        `json:"price"`
+	Expiry     int64         `json:"expiry"`
+	QoS        uint64        `json:"qos"`
 }
 
 // NewCidOffer creates an unsigned CID Offer.
@@ -144,13 +143,11 @@ func (c *CIDOffer) HasExpired() bool {
 
 // Sign is used to sign the offer with a given private key and a key version.
 func (c *CIDOffer) Sign(privKey *fcrcrypto.KeyPair, keyVer *fcrcrypto.KeyVersion) error {
-	sig, err := fcrcrypto.SignMessage(privKey, keyVer, cidOfferSigning{
-		providerID: *c.providerID,
-		merkleRoot: c.merkleRoot,
-		price:      c.price,
-		expiry:     c.expiry,
-		qos:        c.qos,
-	})
+	raw, err := c.MarshalToSign()
+	if err != nil {
+		return err
+	}
+	sig, err := fcrcrypto.SignMessage(privKey, keyVer, raw)
 	if err != nil {
 		return err
 	}
@@ -160,13 +157,11 @@ func (c *CIDOffer) Sign(privKey *fcrcrypto.KeyPair, keyVer *fcrcrypto.KeyVersion
 
 // Verify is used to verify the offer with a given public key.
 func (c *CIDOffer) Verify(pubKey *fcrcrypto.KeyPair) error {
-	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, cidOfferSigning{
-		providerID: *c.providerID,
-		merkleRoot: c.merkleRoot,
-		price:      c.price,
-		expiry:     c.expiry,
-		qos:        c.qos,
-	})
+	raw, err := c.MarshalToSign()
+	if err != nil {
+		return err
+	}
+	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, raw)
 	if err != nil {
 		return err
 	}
@@ -214,6 +209,17 @@ func (c CIDOffer) MarshalJSON() ([]byte, error) {
 		Expiry:     c.expiry,
 		QoS:        c.qos,
 		Signature:  c.signature,
+	})
+}
+
+// MarshalJSON is used to marshal offer into bytes.
+func (c CIDOffer) MarshalToSign() ([]byte, error) {
+	return json.Marshal(cidOfferSigning{
+		ProviderID: *c.providerID,
+		MerkleRoot: c.merkleRoot,
+		Price:      c.price,
+		Expiry:     c.expiry,
+		QoS:        c.qos,
 	})
 }
 

@@ -54,11 +54,11 @@ type subCIDOfferJson struct {
 
 // subCIDOfferSigning is used to generate and verify signature.
 type subCIDOfferSigning struct {
-	providerID nodeid.NodeID
-	merkleRoot string
-	price      uint64
-	expiry     int64
-	qos        uint64
+	ProviderID nodeid.NodeID `json:"provider_id"`
+	MerkleRoot string        `json:"merkle_root"`
+	Price      uint64        `json:"price"`
+	Expiry     int64         `json:"expiry"`
+	QoS        uint64        `json:"qos"`
 }
 
 // NewSubCIDOffer creates a sub CID Offer.
@@ -124,13 +124,11 @@ func (c *SubCIDOffer) HasExpired() bool {
 
 // Verify is used to verify the offer with a given public key.
 func (c *SubCIDOffer) Verify(pubKey *fcrcrypto.KeyPair) error {
-	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, subCIDOfferSigning{
-		providerID: *c.providerID,
-		merkleRoot: c.merkleRoot,
-		price:      c.price,
-		expiry:     c.expiry,
-		qos:        c.qos,
-	})
+	raw, err := c.MarshalToSign()
+	if err != nil {
+		return err
+	}
+	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, raw)
 	if err != nil {
 		return err
 	}
@@ -178,4 +176,14 @@ func (c *SubCIDOffer) UnmarshalJSON(p []byte) error {
 	c.qos = cJson.QoS
 	c.signature = cJson.Signature
 	return nil
+}
+
+func (c *SubCIDOffer) MarshalToSign() ([]byte, error) {
+	return json.Marshal(subCIDOfferSigning{
+		ProviderID: *c.providerID,
+		MerkleRoot: c.merkleRoot,
+		Price:      c.price,
+		Expiry:     c.expiry,
+		QoS:        c.qos,
+	})
 }

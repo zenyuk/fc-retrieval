@@ -3,7 +3,6 @@ package fcrcrypto
 import (
 	"encoding/hex"
 	"errors"
-	"reflect"
 )
 
 /**
@@ -37,8 +36,8 @@ const (
 
 // SignMessage signs a message using the specified private key.
 // Note that the struct must contain a field "Signature"
-func SignMessage(pKey *KeyPair, keyVersion *KeyVersion, msg interface{}) (string, error) {
-	rawSig, err := pKey.Sign(getToBeSigned(msg))
+func SignMessage(pKey *KeyPair, keyVersion *KeyVersion, msg []byte) (string, error) {
+	rawSig, err := pKey.Sign(msg)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +57,7 @@ func ExtractKeyVersionFromMessage(signature string) (*KeyVersion, error) {
 
 // VerifyMessage verifies a message using the specified public key.
 // Note that the struct must contain a field "Signature"
-func VerifyMessage(pubKey *KeyPair, signature string, msg interface{}) (bool, error) {
+func VerifyMessage(pubKey *KeyPair, signature string, msg []byte) (bool, error) {
 	sigBytes, err := hex.DecodeString(signature)
 	if err != nil {
 		return false, err
@@ -68,21 +67,5 @@ func VerifyMessage(pubKey *KeyPair, signature string, msg interface{}) (bool, er
 		err := errors.New("sigBytes is empty, unable to verify, please check signature")
 		return false, err
 	}
-	return pubKey.Verify(sigBytes[sigOfsRawSig:], getToBeSigned(msg))
-}
-
-func getToBeSigned(msg interface{}) []byte {
-	var v reflect.Value
-	if reflect.ValueOf(msg).Type().Kind() == reflect.Ptr {
-		v = reflect.ValueOf(msg).Elem()
-	} else {
-		v = reflect.ValueOf(msg)
-	}
-
-	var allFields string
-	for i := 0; i < v.NumField(); i++ {
-		fieldAsString := v.Field(i).String()
-		allFields = allFields + fieldAsString
-	}
-	return []byte(allFields)
+	return pubKey.Verify(sigBytes[sigOfsRawSig:], msg)
 }

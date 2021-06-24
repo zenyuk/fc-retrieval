@@ -121,7 +121,7 @@ func TestSigning(t *testing.T) {
 	assert.Empty(t, err)
 	cids := []cid.ContentID{*aCid}
 	price := uint64(5)
-	expiry := time.Now().Add(12 * time.Hour).Unix()
+	expiry := int64(9_223_372_030_000_000_000)
 	qos := uint64(5)
 	offer, err := NewCIDOffer(aNodeID, cids, price, expiry, qos)
 	assert.Empty(t, err)
@@ -129,7 +129,7 @@ func TestSigning(t *testing.T) {
 	assert.Empty(t, err)
 	err = offer.Sign(privKey, fcrcrypto.InitialKeyVersion())
 	assert.Empty(t, err)
-	assert.Equal(t, "000000011cd8038e8ae437ce74f78e60cb000d761354cd3e0d458d7b29e6e0b15576e8801811fb7fd7b0600b1c106694277141dc11bbe4d9f6171c218ec0fe3f7184a88a00", offer.GetSignature())
+	assert.Equal(t, "000000011445d8467f41ecc6c452f5dbb0a3a0fa2dacc24f0b3dd3a110713541c4fa8b3a2582b7724eb13ffad92dd0c312150bc196cc3eb981aa9a332dc7871cb0da18eb01", offer.GetSignature())
 
 	pubKey, err := fcrcrypto.DecodePublicKey(PubKey)
 	assert.Empty(t, err)

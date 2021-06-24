@@ -1,9 +1,11 @@
 package fcrmessages
 
 import (
+	"fmt"
 	"testing"
-	"github.com/stretchr/testify/assert"
+
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -17,11 +19,11 @@ func TestFCRMessage(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
@@ -41,16 +43,16 @@ func TestSign(t *testing.T) {
 	mockPrivKey, _ := fcrcrypto.DecodePrivateKey(PrivKey)
 	mockKeyVer := fcrcrypto.InitialKeyVersion()
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"00000001595e1c39d5334601e160c77a786ef088cb254a56de2669ab0534640d3d7d79bf2b2ef1fb5ac7b0ce4bc3e960cfdf3c40a0efbe95c3b0756fe931721be6098e1b01",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "00000001faa9487c9e61d6ba0d05df6bca3ddcbc9f67abe62f4646630c6cea4012058cb61e66f4f65c72b0f2f8f0dffb66797427f178209c1a9491dc7b84fc3bc798e75801",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	msg.Sign(mockPrivKey, mockKeyVer)
-
+	fmt.Println(msg.GetSignature())
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, msg.GetSignature(), validMsg.GetSignature())
 }
@@ -63,17 +65,17 @@ func TestVerify(t *testing.T) {
 	mockPubKey, _ := fcrcrypto.DecodePublicKey(PubKey)
 	mockKeyVer := fcrcrypto.InitialKeyVersion()
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"00000001595e1c39d5334601e160c77a786ef088cb254a56de2669ab0534640d3d7d79bf2b2ef1fb5ac7b0ce4bc3e960cfdf3c40a0efbe95c3b0756fe931721be6098e1b01",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "00000001faa9487c9e61d6ba0d05df6bca3ddcbc9f67abe62f4646630c6cea4012058cb61e66f4f65c72b0f2f8f0dffb66797427f178209c1a9491dc7b84fc3bc798e75801",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	msg.Sign(mockPrivKey, mockKeyVer)
 	err := msg.Verify(mockPubKey)
-
+	fmt.Println(msg.GetSignature())
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, msg.GetSignature(), validMsg.GetSignature())
 	assert.Empty(t, err)
@@ -84,17 +86,17 @@ func TestFCRMsgDump(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 	validDump := validMsg.DumpMessage()
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	dump := msg.DumpMessage()
-	
+
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, dump, validDump)
 }
@@ -104,17 +106,17 @@ func TestFCRMsgToBytes(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 	validFCRMsgToBytes, _ := validMsg.FCRMsgToBytes()
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	FCRMsgToBytes, _ := msg.FCRMsgToBytes()
-	
+
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, FCRMsgToBytes, validFCRMsgToBytes)
 }
@@ -124,17 +126,17 @@ func TestFCRMsgFromBytes(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	FCRMsgToBytes, _ := msg.FCRMsgToBytes()
 	FCRMsgFromBytes, _ := FCRMsgFromBytes(FCRMsgToBytes)
-	
+
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, FCRMsgFromBytes, validMsg)
 }
@@ -144,17 +146,17 @@ func TestMarshalJSON(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 	validJson, _ := validMsg.MarshalJSON()
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
 	json, _ := msg.MarshalJSON()
-	
+
 	assert.Equal(t, msg, validMsg)
 	assert.Equal(t, json, validJson)
 }
@@ -164,11 +166,11 @@ func TestUnmarshalJSON(t *testing.T) {
 	mockMsgType := int32(203)
 	mockMsgBody := []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`)
 	validMsg := &FCRMessage{
-		messageType:203,
-		protocolVersion:1,
-		protocolSupported:[]int32{1, 1},
-		messageBody:[]byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`), 
-		signature:"",
+		messageType:       203,
+		protocolVersion:   1,
+		protocolSupported: []int32{1, 1},
+		messageBody:       []byte(`{"gateway_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=","piece_cid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=","nonce":42,"ttl":43,"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-"}`),
+		signature:         "",
 	}
 
 	msg := CreateFCRMessage(mockMsgType, mockMsgBody)
