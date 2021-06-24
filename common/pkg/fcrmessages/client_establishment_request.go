@@ -24,9 +24,9 @@ import (
 
 // clientEstablishmentRequest is the request from client to gateway to establish connection
 type clientEstablishmentRequest struct {
-	ClientID  nodeid.NodeID `json:"client_id"`
-	Challenge string        `json:"challenge"`
-	TTL       int64         `json:"ttl"`
+	ClientID  string `json:"client_id"`
+	Challenge string `json:"challenge"`
+	TTL       int64  `json:"ttl"`
 }
 
 // EncodeClientEstablishmentRequest is used to get the FCRMessage of clientEstablishmentRequest
@@ -36,7 +36,7 @@ func EncodeClientEstablishmentRequest(
 	ttl int64,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientEstablishmentRequest{
-		ClientID:  *clientID,
+		ClientID:  clientID.ToString(),
 		Challenge: challenge,
 		TTL:       ttl,
 	})
@@ -61,5 +61,6 @@ func DecodeClientEstablishmentRequest(fcrMsg *FCRMessage) (
 	if err != nil {
 		return nil, "", 0, err
 	}
-	return &msg.ClientID, msg.Challenge, msg.TTL, nil
+	clientID, _ := nodeid.NewNodeIDFromHexString(msg.ClientID)
+	return clientID, msg.Challenge, msg.TTL, nil
 }
