@@ -40,10 +40,10 @@ export const encodeClientStandardDiscoverOfferRequest = (
 }
 
 export const decodeClientStandardDiscoverOfferResponse = (fcrMsg: FCRMessage): ClientStandardDiscoverOfferResponse => {
-	if (fcrMsg.messageType !== FCRMessageType.ClientStandardDiscoverOfferResponseType) {
+	if (fcrMsg.message_type !== FCRMessageType.ClientStandardDiscoverOfferResponseType) {
     throw Error("Message type mismatch")
 	}
-	const msg = JSON.parse(fcrMsg.messageBody)
+	const msg = JSON.parse(fcrMsg.message_body)
   // TODO: handle errors
 	// if err != nil {
 	// 	return nil, 0, false, nil, nil, err
