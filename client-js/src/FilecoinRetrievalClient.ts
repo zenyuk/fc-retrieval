@@ -1,19 +1,20 @@
 import { Settings } from './config/settings.config';
 import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class';
-import { GatewaysToUse } from './gateway/gateway.interface';
 import { ContentID } from './cid/cid.interface';
 import { NodeID } from './nodeid/nodeid.interface';
 import { SubCIDOffer } from './cidoffer/subcidoffer.class';
-import { getGatewayByID, getProviderByID } from './register/register.class';
+import { getGatewayByID, getProviderByID } from './register/register.service';
 import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester';
 import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2';
-import { GatewayRegister, validateProviderInfo, validateGatewayInfo } from './register/register.class';
+import { GatewayRegister } from './register/register.class';
 import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester';
 import { verifyMessage } from './fcrcrypto/msg_signing';
 import { decodeProviderPublishDHTOfferResponse } from './fcrMessages/provider_publish_dht_offer';
 import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2';
 import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover';
 import BN from 'bn.js';
+import crypto from 'crypto'
+import { requestEstablishment } from './clientapi/establishment_requester';
 
 export interface payResponse {
   paychAddrs: string;
@@ -24,40 +25,93 @@ export interface payResponse {
 
 export class FilecoinRetrievalClient {
   settings: Settings;
-  activeGateways: GatewaysToUse;
-  gatewaysToUse: GatewaysToUse;
+  activeGateways: Map<string, GatewayRegister>;
+  gatewaysToUse: Map<string, GatewayRegister>;
   paymentMgr: FCRPaymentMgr;
 
   constructor(settings: Settings) {
     this.settings = Object.assign({}, settings);
-    this.activeGateways = {} as GatewaysToUse;
-    this.gatewaysToUse = {} as GatewaysToUse;
+    this.activeGateways = new Map();
+    this.gatewaysToUse = new Map();
     this.paymentMgr = {} as FCRPaymentMgr;
   }
 
-  // AddActiveGateways adds one or more gateways to active gateway map.
-  // Returns the number of gateways added.
-  AddGatewaysToUse(): number {
-    //
-    return 42;
+  /**
+   * Add one or more gateways to gateways to use map
+   * Returns: the number of gateways added
+   * 
+   * @param {NodeID[]} gatewayIDs
+   * @returns {Promise<number>}
+   */
+  async addGatewaysToUse(gatewayIDs: NodeID[]): Promise<number> {
+    let numAdded = 0
+    for (const gatewayID of gatewayIDs) {
+      const _gatewayID = gatewayID.toString()
+      if (this.gatewaysToUse.has(_gatewayID)) {
+        continue
+      }
+      try {
+        const gateway = await getGatewayByID(this.settings.registerURL, _gatewayID)
+        gateway.validateInfo()
+        this.gatewaysToUse.set(_gatewayID, gateway)
+        numAdded++
+      } catch (e) {
+        console.log(`Add gateways to use failed for gatewayID=${_gatewayID}:`, e)
+        continue
+      }
+    }
+    return numAdded;
   }
 
-  // AddActiveGateways adds one or more gateways to active gateway map.
-  // Returns the number of gateways added.
-  AddActiveGateways(gatewayIDs: NodeID[]): number {
-    //
-    return 42;
+  /**
+   * Add one or more gateways to active gateways map
+   * Returns: the number of gateways added
+   * 
+   * @param {NodeID[]} gatewayIDs
+   * @returns {Promise<number>}
+   */
+  async addActiveGateways(gatewayIDs: NodeID[]): Promise<number> {
+    let numAdded = 0
+    for (const gatewayID of gatewayIDs) {
+      const _gatewayID = gatewayID.toString()
+      if (this.activeGateways.has(_gatewayID)) {
+        continue
+      }
+      const gatewayInfo =  this.gatewaysToUse.get(_gatewayID)
+      if (!gatewayInfo) {
+        console.log(`gatewayID=${_gatewayID} does not exist in gateways to use. Consider add the gateway first`)
+        continue
+      }
+      try {
+        const challenge = crypto.randomBytes(32)
+        const ttl = new Date().getTime() + this.settings.establishmentTTL
+        const done = await requestEstablishment(gatewayInfo, challenge, this.settings.clientId, ttl)
+        if (!done) {
+          console.log(`Error in initial establishment: gatewayID=${_gatewayID}`)
+          continue
+        }
+        this.activeGateways.set(_gatewayID, gatewayInfo)
+        numAdded++
+      } catch (e) {
+        console.log(`Add active gateways failed for gatewayID=${_gatewayID}:`, e)
+        continue
+      }
+    }
+    return numAdded;
   }
 
-  findOffersDHTDiscoveryV2(
+  async findOffersDHTDiscoveryV2(
     contentID: ContentID,
     gatewayID: NodeID,
     numDHT: number,
     offersNumberLimit: number,
-  ): Map<string, SubCIDOffer[]> {
+  ): Promise<Map<string, SubCIDOffer[]>> {
     const offersMap = new Map<string, SubCIDOffer[]>();
 
-    const gw = this.activeGateways[gatewayID.id];
+    const gw = this.activeGateways.get(gatewayID.id);
+    if (!gw) {
+      return offersMap
+    }
 
     const defaultPaymentLane = new BN(0);
     const initialRequestPaymentAmount = new BN(numDHT).mul(this.settings.searchPrice);
@@ -86,17 +140,17 @@ export class FilecoinRetrievalClient {
       payResponse.voucher,
     );
     let addedSubOffersCount = 0;
-    let offersDigestsFromAllGateways: string[][] = [[]];
+    const offersDigestsFromAllGateways: string[][] = [[]];
 
     for (let i = 0; i < request.contactedResp.length; i++) {
       const contactedGatewayID = request.contactedGateways[i];
       const resp = request.contactedResp[i];
-      const gatewayInfo = getGatewayByID(this.settings.registerURL, contactedGatewayID);
+      const gatewayInfo = await getGatewayByID(this.settings.registerURL, contactedGatewayID.toString());
       if (!this.validateGatewayInfo(gatewayInfo)) {
         // logging.Error("Gateway register info not valid.")
         continue;
       }
-      const pubKey = gatewayInfo.getSigningKey();
+      const pubKey = gatewayInfo.signingKey;
       if (pubKey == undefined) {
         //logging.Error('Fail to obtain public key.')
         continue;
@@ -154,7 +208,7 @@ export class FilecoinRetrievalClient {
       payResponse.voucher,
     );
 
-    for (let entry of gatewaySubOffers) {
+    for (const entry of gatewaySubOffers) {
       offersMap.set(entry.gatewayID.id, entry.subOffers);
     }
 
@@ -166,9 +220,9 @@ export class FilecoinRetrievalClient {
   };
 
   async FindDHTOfferAck(contentID: ContentID, gatewayID: NodeID, providerID: NodeID): Promise<boolean> {
-    const provider = getProviderByID(this.settings.registerURL, providerID.id);
+    const provider = await getProviderByID(this.settings.registerURL, providerID.id);
 
-    const pvalidation = validateProviderInfo(provider);
+    const pvalidation = provider.validateInfo();
     if (!pvalidation) {
       throw new Error('Invalid register info');
     }
@@ -178,15 +232,15 @@ export class FilecoinRetrievalClient {
       return false;
     }
 
-    const gateway = getGatewayByID(this.settings.registerURL, gatewayID);
+    const gateway = await getGatewayByID(this.settings.registerURL, gatewayID.toString());
 
-    const gvalidation = validateGatewayInfo(gateway);
+    const gvalidation = gateway.validateInfo();
     if (!gvalidation) {
       throw new Error('Invalid register info');
     }
 
-    const gwPubKey = gateway.getSigningKey();
-    const pvdPubKey = provider.getSigningKey();
+    const gwPubKey = gateway.signingKey;
+    const pvdPubKey = provider.signingKey;
 
     dhtOfferAckResponse.offerRequest.verify(pvdPubKey);
 
@@ -212,12 +266,15 @@ export class FilecoinRetrievalClient {
 
   // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
   async findOffersStandardDiscoveryV2(cid: ContentID, gatewayID: NodeID, maxOffers: number) {
-    const gw = this.activeGateways[gatewayID.id];
+    const gw = this.activeGateways.get(gatewayID.id);
+    if (!gw) {
+      return
+    }
 
     let payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice);
 
     if (payResponse.topup == true) {
-      this.paymentMgr.topup(gw.nodeID, this.settings.topUpAmount);
+      this.paymentMgr.topup(gw.nodeId, this.settings.topUpAmount);
       payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice);
     }
 
@@ -242,7 +299,7 @@ export class FilecoinRetrievalClient {
 
     const validOffers = [] as SubCIDOffer[];
     for (const offer of offers) {
-      const providerInfo = getProviderByID(this.settings.registerURL, offer.getProviderID());
+      const providerInfo = await getProviderByID(this.settings.registerURL, offer.getProviderID());
       const pubKey = providerInfo.signingKey;
       if (offer.verify(pubKey) != null) {
         // console.log('Offer signature fail to verify.')

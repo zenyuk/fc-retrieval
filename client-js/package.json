@@ -9,6 +9,7 @@
     "test-e2e-watch": "jest --config jestconfig.e2e.json --watchAll --verbose --silent=false",
     "test-e2e": "jest --config jestconfig.e2e.json",
     "test": "jest --config jestconfig.json --setupFiles=./.env.js",
+    "test:dev": "jest --config jestconfig.json --setupFiles=./.env.js --watchAll --coverage=false --detectOpenHandles",
     "build": "tsc",
     "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write && git status",
     "lint": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
@@ -62,7 +63,13 @@
     "filecoin.js": "^0.0.5-alpha",
     "qs": "^6.10.1",
     "tsc": "^2.0.3",
-    "utf8-encoding": "^0.1.2"
+    "utf8-encoding": "^0.1.2",
+    "blake2b": "^2.1.3",
+    "ethereumjs-util": "^7.0.10",
+    "merkle-tree-solidity": "^1.0.8",
+    "merkletreejs": "^0.2.18",
+    "secp256k1": "^4.0.2",
+    "tslint": "^6.1.3"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

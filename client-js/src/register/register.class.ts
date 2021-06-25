@@ -1,55 +1,131 @@
-import { NodeID } from '../nodeid/nodeid.interface'
+import { KeyPair } from "../fcrcrypto/key_pair.class"
+import { NodeID } from "../nodeid/nodeid.interface"
 
-export class Register {}
+export abstract class Register {
+  nodeId: string
+  address: string
+  regionCode: string
+  signingKey: string
+  rootSigningKey: string
 
-export class GatewayRegister {
-  nodeID: string = ''
-  address: string = ''
-  rootSigningKey: string = ''
-  signingKey: string = ''
-  regionCode: string = ''
-  networkInfoGateway: string = ''
-  networkInfoProvider: string = ''
-  networkInfoClient: string = ''
-  networkInfoAdmin: string = ''
+  constructor({
+    nodeId,
+    address,
+    regionCode,
+    signingKey,
+    rootSigningKey,
+  }: any) {
+    this.nodeId = nodeId
+    this.address = address
+    this.regionCode = regionCode
+    this.signingKey = signingKey
+    this.rootSigningKey = rootSigningKey
+  }
 
-  getSigningKey(): string {
-    return ''
+  /**
+   * Get node ID
+   * 
+   * @returns {NodeID}
+   */
+  getNodeID(): NodeID {
+    return {} as NodeID
+  }
+
+  /**
+   * Get signing key pair
+   * 
+   * @returns {KeyPair}
+   */
+  getSigningKeyPair(): KeyPair {
+    return {} as KeyPair
+  }
+
+  /**
+   * Get root signing key pair
+   * 
+   * @returns {KeyPair}
+   */
+  getRootSigningKeyPair(): KeyPair {
+    return {} as KeyPair
+  }
+
+  /**
+   * Validate registration information
+   * 
+   * @returns {boolean}
+   */
+  public validateInfo(): boolean {
+    for (const property of Object.getOwnPropertyNames(this)) {
+      const value = (this as any)[property]
+      if (!value || value.trim().length === 0) {
+        throw Error(`Registration issue: ${property} not set`)
+      }
+    }
+    if (!this.getSigningKeyPair()) {
+      throw Error(`Registration issue: Signing Public Key error`)
+    }
+    if (!this.getRootSigningKeyPair()) {
+      throw Error(`Registration issue: Root Signing Public Key error`)
+    }
+    return true
   }
 }
 
-export class ProviderRegister {
-  nodeID: string = ''
-  address: string = ''
-  rootSigningKey: string = ''
-  signingKey: string = ''
-  regionCode: string = ''
-  networkInfoGateway: string = ''
-  networkInfoProvider: string = ''
-  networkInfoClient: string = ''
-  networkInfoAdmin: string = ''
+export class ProviderRegister extends Register {
+  networkInfoGateway: string
+  networkInfoClient: string
+  networkInfoAdmin: string
 
-  getSigningKey(): string {
-    return ''
+  constructor({
+    nodeId,
+    address,
+    regionCode,
+    signingKey,
+    rootSigningKey,
+    networkInfoGateway,
+    networkInfoClient,
+    networkInfoAdmin,
+  }: any) {
+    super({
+      nodeId,
+      address,
+      regionCode,
+      signingKey,
+      rootSigningKey,
+    })
+    this.networkInfoGateway = networkInfoGateway
+    this.networkInfoClient = networkInfoClient
+    this.networkInfoAdmin = networkInfoAdmin
   }
 }
 
-export const getGatewayByID = (registerURL: string, nodeID: NodeID): GatewayRegister => {
-  //
-  return {} as GatewayRegister
-}
+export class GatewayRegister extends Register {
+  networkInfoGateway: string
+  networkInfoProvider: string
+  networkInfoClient: string
+  networkInfoAdmin: string
 
-export const getProviderByID = (registerURL: string, nodeID: string): ProviderRegister => {
-  //
-  return {} as ProviderRegister
-}
-
-export const validateProviderInfo = (register: ProviderRegister): boolean => {
-  //
-  return {} as boolean
-}
-
-export const validateGatewayInfo = (register: GatewayRegister): boolean => {
-  //
-  return {} as boolean
+  constructor({
+    nodeId,
+    address,
+    regionCode,
+    signingKey,
+    rootSigningKey,
+    networkInfoGateway,
+    networkInfoProvider,
+    networkInfoClient,
+    networkInfoAdmin,
+  }: any) {
+    super({
+      nodeId,
+      address,
+      regionCode,
+      signingKey,
+      rootSigningKey,
+    })
+    this.networkInfoGateway = networkInfoGateway
+    this.networkInfoProvider = networkInfoProvider
+    this.networkInfoClient = networkInfoClient
+    this.networkInfoAdmin = networkInfoAdmin
+  }
 }

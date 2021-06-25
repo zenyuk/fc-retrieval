@@ -1,25 +1,22 @@
 import axios from 'axios'
-import qs = require('qs')
-
 import { FCRMessage } from '../fcrMessages/fcrMessage.class'
-import { GatewayRegister } from '../register/register.class'
 
-// getGateways retrives the gateways list
-export const getGateways = async (url: string): Promise<GatewayRegister[]> => {
-  try {
-    const response = await axios.get(url)
-    return response.data as GatewayRegister[]
-  } catch (error) {
-    throw error
-  }
-}
-
-// SendMessage send a message and get a response message
+/**
+ * Send a FCR message
+ * 
+ * @param {string} url 
+ * @param {FCRMessage} message 
+ * @returns {Promise<FCRMessage>} 
+ */
 export const sendMessage = async (url: string, message: FCRMessage): Promise<FCRMessage> => {
-  try {
-    const response = await axios.post(url, qs.stringify(message))
-    return response.data as FCRMessage
-  } catch (error) {
-    throw error
+  const response = await axios.post<FCRMessage>(url, message, {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
+    }
+  })
+  if (response.status != 200) {
+    throw Error("Send message failed")
   }
+  return response.data
 }
