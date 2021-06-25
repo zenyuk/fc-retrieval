@@ -17,6 +17,7 @@ package clientapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
@@ -60,7 +61,7 @@ func (c *Client) RequestDHTDiscover(
 		return nil, nil, nil, errors.New("verification failed")
 	}
 
-	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponse(response)
+	contacted, contactedResp, uncontactable, recvNonce, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientDHTDiscoverResponse(response)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -69,6 +70,9 @@ func (c *Client) RequestDHTDiscover(
 	}
 	if len(contacted) != len(contactedResp) {
 		return nil, nil, nil, errors.New("length mismatch")
+	}
+	if paymentRequired {
+		return nil, nil, nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 	}
 
 	return contacted, contactedResp, uncontactable, nil

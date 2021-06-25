@@ -58,7 +58,7 @@ func (c *Client) RequestDHTDiscoverV2(
 		return nil, nil, nil, fmt.Errorf("DHT discover response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
 	}
 
-	contacted, contactedResp, uncontactable, recvNonce, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
+	contacted, contactedResp, uncontactable, recvNonce, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error decoding DHT discover response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
 	}
@@ -67,6 +67,9 @@ func (c *Client) RequestDHTDiscoverV2(
 	}
 	if len(contacted) != len(contactedResp) {
 		return nil, nil, nil, fmt.Errorf("length mismatch error during DHT discover response validation for gateway ID: %s", gatewayRegistrar.GetNodeID())
+	}
+	if paymentRequired {
+		return nil, nil, nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 	}
 
 	return contacted, contactedResp, uncontactable, nil
