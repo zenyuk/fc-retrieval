@@ -6,7 +6,10 @@ import { FCRMessage } from '../fcrMessages/fcrMessage.class'
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
-const mockedGatewayMessageRequest = new FCRMessage(205, JSON.stringify({ nonce: 42, isAlive: true }))
+const mockedGatewayMessageRequest = new FCRMessage({
+  message_type: 205,
+  message_body: Buffer.from(JSON.stringify({ nonce: 42, isAlive: true })).toString('base64'),
+})
 
 const mockedGatewayResponse: AxiosResponse = {
   data: [
@@ -32,7 +35,7 @@ describe('Request', () => {
     it('send message request and get message response', async () => {
       mockedAxios.post.mockResolvedValue(mockedGatewayResponse)
       const gateways = await sendMessage(mockedGatewayUrl, mockedGatewayMessageRequest)
-      expect(gateways).toEqual(mockedGatewayResponse.data)
+      expect(gateways).toEqual(new FCRMessage(mockedGatewayResponse.data))
     })
   })
   describe('when Gateway returns error', () => {

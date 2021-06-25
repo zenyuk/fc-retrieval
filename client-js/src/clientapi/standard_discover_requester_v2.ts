@@ -17,7 +17,7 @@ export const requestStandardDiscoverV2 = async (
 
   const response = await sendMessage(gatewayInfo.networkInfoClient, request)
 
-  const pubKey = gatewayInfo.signingKey
+  const pubKey = gatewayInfo.getRootSigningKeyPair()
 
   response.verify(pubKey)
 
@@ -49,5 +49,8 @@ export const encodeClientStandardDiscoverRequestV2 = (
 ): FCRMessage => {
   let body = ''
 
-  return new FCRMessage(FCRMessageType.ClientStandardDiscoverRequestV2Type, body)
+  return new FCRMessage({
+    message_type: FCRMessageType.ClientStandardDiscoverRequestV2Type,
+    message_body: Buffer.from(body).toString('base64'),
+  })
 }

@@ -1,35 +1,27 @@
-import { secp256k1Sign } from './secp256k1.service';
-const blake2b = require('blake2b');
+import { secp256k1Sign } from './secp256k1.service'
 
-export const SigAlgEcdsaSecP256K1Blake2b: KeySigAlg = { algorithm: 1 } as KeySigAlg;
+export const SigAlgEcdsaSecP256K1Blake2b: KeySigAlg = { algorithm: 1 } as KeySigAlg
 
 export type KeySigAlg = {
-  algorithm: number;
-};
+  algorithm: number
+}
 
 export class KeyPair {
-  pKey: Uint8Array;
-  pubKey: Uint8Array | undefined;
-  alg: KeySigAlg;
+  pKey: Uint8Array
+  pubKey: Uint8Array
+  alg: KeySigAlg
 
-  constructor(alg: KeySigAlg, pKey: Uint8Array, pubKey: Uint8Array | undefined) {
-    this.pKey = pKey;
-    this.pubKey = pubKey;
-    this.alg = alg;
+  constructor({ alg, pKey = new Uint8Array(), pubKey = new Uint8Array() }: any) {
+    this.pKey = pKey
+    this.pubKey = pubKey
+    this.alg = alg
   }
 
   sign(toBeSigned: Uint8Array): Uint8Array {
     if (this.alg !== SigAlgEcdsaSecP256K1Blake2b) {
-      throw new Error('unsupported key algorithm: ' + this.alg.algorithm);
+      throw new Error('unsupported key algorithm: ' + this.alg.algorithm)
     }
-    const digest = retrievalV1Hash(toBeSigned);
 
-    return secp256k1Sign(this.pKey, digest);
+    return secp256k1Sign(this.pKey, toBeSigned)
   }
 }
-
-// RetrievalV1Hash message digests some data using the algorithm used by version one of the
-// Filecoin retrieval protocol.
-export const retrievalV1Hash = (data: Uint8Array): Uint8Array => {
-  return blake2b(32).update(data).digest('binary');
-};

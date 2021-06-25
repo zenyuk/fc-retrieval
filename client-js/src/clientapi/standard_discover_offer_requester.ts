@@ -31,7 +31,7 @@ export const requestStandardDiscoverOffer = async (
   // }
 
   // Get the gateway's public key
-  const pubKey = gatewayInfo.signingKey
+  const pubKey = gatewayInfo.getRootSigningKeyPair()
   // TODO: handle errors
   // if err != nil {
   // 	return nil, err
