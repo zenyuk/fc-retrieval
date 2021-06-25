@@ -492,10 +492,13 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			logging.Error("Fail to verify sub response.")
 			continue
 		}
-		_, _, found, offerDigests, _, err := fcrmessages.DecodeGatewayDHTDiscoverResponseV2(&resp)
+		_, _, found, offerDigests, _, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeGatewayDHTDiscoverResponseV2(&resp)
 		if err != nil {
 			logging.Error("Fail to decode response")
 			continue
+		}
+		if paymentRequired {
+			return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
 		}
 		if !found {
 			return offersMap, nil
@@ -620,7 +623,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 		return false, err
 	}
 	// Verify ack against request
-	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request)
+	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request.GetMessageBody())
 	if err != nil {
 		return false, err
 	}
