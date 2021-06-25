@@ -623,7 +623,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 		return false, err
 	}
 	// Verify ack against request
-	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request)
+	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request.GetMessageBody())
 	if err != nil {
 		return false, err
 	}
