@@ -1,30 +1,30 @@
 import { FilecoinRPC } from './types'
-import { BigNumber } from "bignumber.js";
+import BN from 'bn.js';
 
 const filecoin_signer = require('@zondax/filecoin-signing-tools')
 
 export class LaneState {
   nonce: number
-  redeemed: BigNumber
+  redeemed: BN
   vouchers: string[]
 
   constructor() {
     this.nonce = 0
-    this.redeemed = new BigNumber(0)
+    this.redeemed = new BN(0)
     this.vouchers = new Array()
   }
 }
 
 export class ChannelState {
   addr: string
-  balance: BigNumber
-  redeemed: BigNumber
+  balance: BN
+  redeemed: BN
   laneStates: Map<number, LaneState>
 
-  constructor(addr: string, balance: BigNumber) {
+  constructor(addr: string, balance: BN) {
     this.addr = addr
     this.balance = balance
-    this.redeemed = new BigNumber(0)
+    this.redeemed = new BN(0)
     this.laneStates = new Map<number, LaneState>()
   }
 }
@@ -45,7 +45,7 @@ export class FCRPaymentMgr {
     this.outboundChs = new Map<string, ChannelState>()
   }
 
-  async topup(recipient: string, amount: BigNumber) {
+  async topup(recipient: string, amount: BN) {
     if (this.outboundChs.has(recipient)) {
       // There is an existing channel, TODO. Topup
       var nonce = await this.filRPC.getNonce(this.recoveredKey.address)
@@ -72,7 +72,7 @@ export class FCRPaymentMgr {
       var res = await this.filRPC.sendSignedMessage(signedMessage)
       var cs = this.outboundChs.get(recipient)
       if (cs != undefined) {
-        cs.balance = cs.balance.plus(amount)
+        cs.balance = cs.balance.add(amount)
       } else {
         console.log("Internal error")
         return 1
@@ -107,7 +107,7 @@ export class FCRPaymentMgr {
     return 0
   }
 
-  pay(recipient: string, lane: number, amount: BigNumber) {
+  pay(recipient: string, lane: number, amount: BN) {
     var cs = this.outboundChs.get(recipient)
     if (cs == null) {
       // Channel not existed
@@ -115,7 +115,7 @@ export class FCRPaymentMgr {
     }
     
     // Check if balance is enough
-    if (cs.balance.lt(cs.redeemed.plus(amount))) {
+    if (cs.balance.lt(cs.redeemed.add(amount))) {
       // Balance not enough
       return {paychAddr: '', voucher: '', topup: true, error: 0} as any
     }
@@ -129,7 +129,7 @@ export class FCRPaymentMgr {
     }
     
     // Create a voucher
-    var voucher = filecoin_signer.createVoucher(cs.addr, '0', '0', ls.redeemed.plus(amount).toString(), lane.toString(), ls.nonce.toString(), '0')
+    var voucher = filecoin_signer.createVoucher(cs.addr, '0', '0', ls.redeemed.add(amount).toString(), lane.toString(), ls.nonce.toString(), '0')
     voucher = filecoin_signer.signVoucher(voucher, this.recoveredKey.private_base64)
     if (voucher == null) {
       // Fail to generate a voucher
@@ -139,9 +139,9 @@ export class FCRPaymentMgr {
     voucher = voucher.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '')
     // Update lane state and channel state
     ls.nonce++
-    ls.redeemed = ls.redeemed.plus(amount)
+    ls.redeemed = ls.redeemed.add(amount)
     ls.vouchers.push(voucher)
-    cs.redeemed = cs.redeemed.plus(amount)
+    cs.redeemed = cs.redeemed.add(amount)
     return {paychAddr: cs.addr, voucher: voucher, topup: false, error: 0} as any
   }
 }
