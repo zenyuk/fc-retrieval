@@ -20,6 +20,8 @@ package provider_admin
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -34,7 +36,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
@@ -113,13 +114,12 @@ func TestMain(m *testing.M) {
 func TestGetProviderAdminVersion(t *testing.T) {
 	versionInfo := fcrclient.GetVersion()
 	// Verify that the client version is an integer number.
-	_, err := strconv.Atoi(versionInfo.Version)
+	actualVersion, err := strconv.Atoi(versionInfo.Version)
 	if err != nil {
 		panic(err)
 	}
 
-	// The version must be 1 or more.
-	assert.LessOrEqual(t, 0, 0)
+	assert.GreaterOrEqualf(t, actualVersion, 1, "version must be 1 or more")
 }
 
 func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
@@ -128,48 +128,51 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	logging.Info("/*******************************************************/")
 	logging.Error("Wait two seconds for the provider to deploy and be ready for requests")
 
+	// Main key used across the chain
 	blockchainPrivateKey, err := fcrcrypto.GenerateBlockchainKeyPair()
 	if err != nil {
-		logging.ErrorAndPanic(err.Error())
+		logging.Error("error generating blockchain key: %s", err.Error())
+		t.FailNow()
 	}
 
-	// Gateway
-	gwConfBuilder := fcrgatewayadmin.CreateSettings()
-	gwConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gwConfBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
-	gwConf := gwConfBuilder.Build()
-
-	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gwConf)
-
-	gatewayRootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	logging.Info("gatewayRootKey: %v", gatewayRootKey)
-	if err != nil {
-		panic(err)
-	}
-	gatewayRootSigningKey, err := gatewayRootKey.EncodePublicKey()
-	logging.Info("gatewayRootSigningKey: %s", gatewayRootSigningKey)
-	if err != nil {
-		panic(err)
-	}
-	gatewayRetrievalPrivateKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	logging.Info("gatewayRetrievalPrivateKey: %v", gatewayRetrievalPrivateKey)
-	if err != nil {
-		panic(err)
-	}
-	gatewayRetrievalSigningKey, err := gatewayRetrievalPrivateKey.EncodePublicKey()
-	logging.Info("gatewayRetrievalSigningKey: %s", gatewayRetrievalSigningKey)
-	if err != nil {
-		panic(err)
-	}
-
-	var registerMgr = fcrregistermgr.NewFCRRegisterMgr(providerTestProviderConfig.GetString("REGISTER_API_URL"), true, true, 10*time.Second)
-	if err := registerMgr.Start(); err != nil {
+	// Create and start register manager
+	var rm = fcrregistermgr.NewFCRRegisterMgr(providerTestProviderConfig.GetString("REGISTER_API_URL"), true, true, 2*time.Second)
+	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
+		t.FailNow()
+	}
+	defer rm.ShutdownAndWait()
+
+	// Configure gateway admin
+	gConfBuilder := fcrgatewayadmin.CreateSettings()
+	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	gConfBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
+	gConf := gConfBuilder.Build()
+	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
+
+	// Configure provider admin
+	pConfBuilder := fcrprovideradmin.CreateSettings()
+	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	pConfBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
+	conf := pConfBuilder.Build()
+	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
+
+	// Configure client
+	clientConfBuilder := fcrclient.CreateSettings()
+	clientConfBuilder.SetEstablishmentTTL(101)
+	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	clientConfBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
+	clientConf := clientConfBuilder.Build()
+
+	// Create client
+	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf, rm)
+	if err != nil {
+		logging.Error("error creating retrieval client: %s", err.Error())
+		t.FailNow()
 	}
 
-	// gatewayRootSigningKey := "0104d799bc7141b058b4c9d819ba8d8fa1e87b2ee9132f5b59d3a91edcd72c08cd64d2fd44f99f8d4a0159a65a0c8c0409f646712793ab4fb7b6151654b6e00ca69f"
-	// gatewayRetrievalSigningKey := "01041ee440cab4f5e92803e29de7079d317a332b206b21df612fe0d1c34b585df4f44180aa9a75e4c95116ac341256333d7356d42704be43efd8828293ef013d9139"
-	// gatewayID, err := nodeid.NewRandomNodeID()
+	// Initialise gateway
+	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
 	gatewayID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
 		logging.Error("error generating gateway id")
@@ -178,74 +181,59 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfigGatewayConfig.GetString("GATEWAY_ADDRESS"),
-		gatewayRootSigningKey,
-		gatewayRetrievalSigningKey,
+		gatewayRootPubKey,
+		gatewayRetrievalPubKey,
 		gatewayConfigGatewayConfig.GetString("GATEWAY_REGION_CODE"),
 		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
 		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
 		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_CLIENT"),
 		gatewayConfigGatewayConfig.GetString("NETWORK_INFO_ADMIN"),
-		request.NewHttpCommunicator(),
 	)
-
 	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		panic(err)
 	}
 
-	// Provider
-	confBuilder := fcrprovideradmin.CreateSettings()
-	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(providerTestProviderConfig.GetString("REGISTER_API_URL"))
-	conf := confBuilder.Build()
-
-	pvadmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
-
-	providerRootKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	logging.Info("providerRootKey: %v", providerRootKey)
-	if err != nil {
-		panic(err)
+	if err = rm.RegisterGateway(gatewayRegistrar); err != nil {
+		t.Errorf("can't register gateway")
 	}
-	providerRootSigningKey, err := providerRootKey.EncodePublicKey()
-	logging.Info("providerRootSigningKey: %s", providerRootSigningKey)
-	if err != nil {
-		panic(err)
+	// Add the gateways to the passive list
+	added := client.AddGatewaysToUse([]*nodeid.NodeID{gatewayID})
+	if !assert.Equal(t, 1, added, "32 gateways should be added") {
+		t.FailNow()
+	}
+	// Make the gateways active, this involves doing an establishment
+	addedActive := client.AddActiveGateways([]*nodeid.NodeID{gatewayID})
+	if !assert.Equal(t, 1, addedActive, "32 gateways should be activated") {
+		t.FailNow()
 	}
 
-	providerPrivKey, err := fcrcrypto.GenerateRetrievalV1KeyPair()
-	if err != nil {
-		logging.Error("can't generate retrieval key pair: %s", err.Error())
-		os.Exit(1)
-	}
-	logging.Info("providerPrivKey: %v", providerPrivKey)
-
-	providerSigningKey, err := providerPrivKey.EncodePublicKey()
-	logging.Info("providerSigningKey: %s", providerSigningKey)
-	if err != nil {
-		logging.ErrorAndPanic(err.Error())
-	}
+	// Initialise provider
+	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
 	providerID, err := nodeid.NewNodeIDFromHexString("ebc134a429ba7dc4811bf64ccb67057f5bd57ca4676800e2f71731cbcc5eb518")
 	if err != nil {
 		logging.Error("can't generate provider ID: %s", err.Error())
 		os.Exit(1)
 	}
-
 	providerRegistrar := register.NewProviderRegister(
 		providerID.ToString(),
 		providerTestProviderConfig.GetString("PROVIDER_ADDRESS"),
-		gatewayRootSigningKey,
-		gatewayRetrievalSigningKey,
+		providerRootPubKey,
+		providerRetrievalPubKey,
 		providerTestProviderConfig.GetString("PROVIDER_REGION_CODE"),
 		providerTestProviderConfig.GetString("NETWORK_INFO_GATEWAY"),
 		providerTestProviderConfig.GetString("NETWORK_INFO_CLIENT"),
 		providerTestProviderConfig.GetString("NETWORK_INFO_ADMIN"),
-		request.NewHttpCommunicator(),
 	)
-
-	// Initialise provider
-	err = pvadmin.InitialiseProvider(providerRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	// Initialise the provider using provider admin
+	err = pAdmin.InitialiseProvider(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
+	}
+	// Enroll the provider in the Register srv.
+	if err := rm.RegisterProvider(providerRegistrar); err != nil {
+		logging.Error("error registering provider: %s", err.Error())
+		t.FailNow()
 	}
 
 	// Generate random cid offer
@@ -255,7 +243,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
 	// Force update
-	err = pvadmin.ForceUpdate(providerID)
+	err = pAdmin.ForceUpdate(providerID)
 	if err != nil {
 		panic(err)
 	}
@@ -265,7 +253,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 
 	// Publish Group CID
-	err = pvadmin.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
+	err = pAdmin.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -274,7 +262,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	var gatewayIDs []nodeid.NodeID
 	gatewayIDs = make([]nodeid.NodeID, 0)
 	logging.Info("Get all offers")
-	_, cidgroupInfo, err := pvadmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err := pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -282,7 +270,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Get all offers should be found")
 
 	// Get offers by gatewayIDs real
-	gateways := registerMgr.GetAllGateways()
+	gateways := rm.GetAllGateways()
 	if gateways == nil {
 		logging.ErrorAndPanic("expecting list of gateways, got nil")
 	}
@@ -294,7 +282,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	}
 	gatewayIDs = append(gatewayIDs, *realNodeID) // Add a gateway
 	logging.Info("Get offers by real gatewayID=%s", realNodeID.ToString())
-	_, cidgroupInfo, err = pvadmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -305,7 +293,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	fakeNodeID, _ := nodeid.NewNodeIDFromHexString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
 	gatewayIDs[0] = *fakeNodeID
 	logging.Info("Get offers by fake gatewayID=%s", fakeNodeID.ToString())
-	_, cidgroupInfo, err = pvadmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
 	if err != nil {
 		logging.ErrorAndPanic(err.Error())
 	}
@@ -318,4 +306,34 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 	logging.Info("/*******************************************************/")
 	logging.Info("/*      End TestInitProviderAdminNoRetrievalKey	       */")
 	logging.Info("/*******************************************************/")
+}
+
+// Helper function to generate set of keys
+func generateKeys() (rootPubKey string, retrievalPubKey string, retrievalPrivateKey *fcrcrypto.KeyPair, err error) {
+	rootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
+	if err != nil {
+		return "", "", nil, fmt.Errorf("error generating blockchain key: %s", err.Error())
+	}
+	if rootKey == nil {
+		return "", "", nil, errors.New("error generating blockchain key")
+	}
+
+	rootPubKey, err = rootKey.EncodePublicKey()
+	if err != nil {
+		return "", "", nil, fmt.Errorf("error encoding public key: %s", err.Error())
+	}
+
+	retrievalPrivateKey, err = fcrcrypto.GenerateRetrievalV1KeyPair()
+	if err != nil {
+		return "", "", nil, fmt.Errorf("error generating retrieval key: %s", err.Error())
+	}
+	if retrievalPrivateKey == nil {
+		return "", "", nil, errors.New("error generating retrieval key")
+	}
+
+	retrievalPubKey, err = retrievalPrivateKey.EncodePublicKey()
+	if err != nil {
+		return "", "", nil, fmt.Errorf("error encoding retrieval pub key: %s", err.Error())
+	}
+	return
 }

@@ -55,10 +55,16 @@ lbuild:
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-gateway
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-init
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer_ack
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer_new_gateway
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_group_offer
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_new_gateway
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2js
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
 	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
-	
+	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus-full-node
+
 
 # Test all packages, skipping lotus-full-node on CircleCI
 itestlocal:
