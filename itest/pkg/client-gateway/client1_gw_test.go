@@ -32,7 +32,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
 	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval-itest/config"
 	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
@@ -127,8 +126,12 @@ func TestOneGateway(t *testing.T) {
 		panic(err)
 	}
 
-	gatewayID := nodeid.NewRandomNodeID()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, true, time.Second)
+	if err := rm.Start(); err != nil {
+		logging.Error("error starting Register Manager: %s", err.Error())
+	}
 
+	gatewayID := nodeid.NewRandomNodeID()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
@@ -139,17 +142,14 @@ func TestOneGateway(t *testing.T) {
 		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
 		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
 		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
-		request.NewHttpCommunicator(),
 	)
 
-	var rm = fcrregistermgr.NewFCRRegisterMgr(conf.RegisterURL(), false, true, 10*time.Second)
-	if err := rm.Start(); err != nil {
-		logging.Error("error starting Register Manager: %s", err.Error())
+	if err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1)); err != nil {
+		t.Errorf("can't initialise gateway")
 	}
 
-	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
-	if err != nil {
-		panic(err)
+	if err = rm.RegisterGateway(gatewayRegistrar); err != nil {
+		t.Errorf("can't register gateway")
 	}
 
 	logging.Info("Adding to client config gateway: %s", gatewayID.ToString())
@@ -169,12 +169,12 @@ func TestOneGateway(t *testing.T) {
 	newGatewaysToBeAdded := make([]*nodeid.NodeID, 0)
 	newGatewaysToBeAdded = append(newGatewaysToBeAdded, gatewayID)
 	numAdded := client.AddGatewaysToUse(newGatewaysToBeAdded)
-	assert.Equal(t, 1, numAdded)
+	assert.Equal(t, 1, numAdded, "expecting the new Gateway be added to the list of gateways this client can potentially use")
 	gws := client.GetGatewaysToUse()
 	assert.Equal(t, 1, len(gws))
 
 	numAdded = client.AddActiveGateways(newGatewaysToBeAdded)
-	assert.Equal(t, 1, numAdded)
+	assert.Equal(t, 1, numAdded, "expecting the new Gateway be added to the list of gateways in use")
 	ga := client.GetActiveGateways()
 	assert.Equal(t, 1, len(ga))
 }
