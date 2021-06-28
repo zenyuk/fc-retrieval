@@ -31,7 +31,7 @@ export abstract class Register {
    *
    * @returns {KeyPair}
    */
-  getSigningKeyPair(): KeyPair {
+  getRootSigningKeyPair(): KeyPair {
     return {} as KeyPair
   }
 
@@ -40,8 +40,8 @@ export abstract class Register {
    *
    * @returns {KeyPair}
    */
-  getRootSigningKeyPair(): KeyPair {
-    return decodePublicKey(this.rootSigningKey)
+  getSigningKeyPair(): KeyPair {
+    return decodePublicKey(this.signingKey)
   }
 
   /**
@@ -56,7 +56,7 @@ export abstract class Register {
     //     throw Error(`Registration issue: ${property} not set`)
     //   }
     // }
-    if (!this.getRootSigningKeyPair()) {
+    if (!this.getSigningKeyPair()) {
       throw Error(`Registration issue: Root Signing Public Key error`)
     }
     return true

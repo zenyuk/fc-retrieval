@@ -23,7 +23,8 @@ export const decodeSecP256K1PrivateKey = (keyBytes: Uint8Array): KeyPair => {
 
 export const secp256k1Verify = (signature: Uint8Array, msg: string, pubKey: Uint8Array): boolean => {
   try {
-    const digest = blake2b(32).update(msg).digest('binary')
+    const digest = blake2b(32).update(Buffer.from(msg)).digest('binary')
+
     return secp256k1.ecdsaVerify(signature, digest, pubKey)
   } catch (e) {
     console.error(`Signature verify ${e}`)

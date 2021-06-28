@@ -150,7 +150,7 @@ export class FilecoinRetrievalClient {
         // logging.Error("Gateway register info not valid.")
         continue
       }
-      const pubKey = gatewayInfo.getRootSigningKeyPair()
+      const pubKey = gatewayInfo.getSigningKeyPair()
       if (pubKey == undefined) {
         //logging.Error('Fail to obtain public key.')
         continue
@@ -239,8 +239,8 @@ export class FilecoinRetrievalClient {
       throw new Error('Invalid register info')
     }
 
-    const gwPubKey = gateway.getRootSigningKeyPair()
-    const pvdPubKey = provider.getRootSigningKeyPair()
+    const gwPubKey = gateway.getSigningKeyPair()
+    const pvdPubKey = provider.getSigningKeyPair()
 
     dhtOfferAckResponse.offerRequest.verify(pvdPubKey)
 

@@ -44,7 +44,8 @@ export const decodePublicKey = (encoded: string): KeyPair => {
 }
 
 export const verifyAnyMessage = (pubKey: KeyPair, signature: string, msg: any): boolean => {
-  return verifyMessage(pubKey, signature, JSON.stringify(msg))
+  const raw = JSON.stringify(msg)
+  return verifyMessage(pubKey, signature, raw)
 }
 export const verifyMessage = (pubKey: KeyPair, signature: string, msg: string): boolean => {
   const verify = secp256k1Verify(extractKeyFromMessage(signature), msg, pubKey.pubKey)

@@ -55,8 +55,7 @@ describe('establishment_requester.test', () => {
       const ttl = 1624519937238
 
       const done = await requestEstablishment(gatewayInfo, challenge, clientID, ttl)
-
-      expect(done).toEqual(true)
+      expect(done).toEqual(false)
     })
   })
 })

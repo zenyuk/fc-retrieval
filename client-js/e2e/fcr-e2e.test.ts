@@ -44,12 +44,12 @@ describe('Client', () => {
       const client = new FilecoinRetrievalClient(
         new Settings({
           clientId: '101112131415161718191A1B1C1D1E3F',
-          registerURL: 'http://localhost:9020',
+          registerURL: process.env.FCR_REGISTER_API_URL,
         }),
       )
 
-      // const gateways: string[] = (process.env.FCR_GATEWAYS as string).split(',')
-      const nodeIDS = [new NodeID('101112131415161718191A1B1C1D1E3F202122232425262728292A2B2C2D2E1F')]
+      const gateways: string[] = (process.env.FCR_GATEWAYS as string).split(',')
+      const nodeIDS = [new NodeID(gateways[1])]
       const used = await client.addGatewaysToUse(nodeIDS)
       const active = await client.addActiveGateways(nodeIDS)
 

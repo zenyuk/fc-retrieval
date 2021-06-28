@@ -17,7 +17,7 @@ export const requestStandardDiscoverV2 = async (
 
   const response = await sendMessage(gatewayInfo.networkInfoClient, request)
 
-  const pubKey = gatewayInfo.getRootSigningKeyPair()
+  const pubKey = gatewayInfo.getSigningKeyPair()
 
   response.verify(pubKey)
 

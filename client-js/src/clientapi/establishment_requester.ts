@@ -29,7 +29,7 @@ export const requestEstablishment = async (
 
   const response = await sendMessage(`http://${gatewayInfo.networkInfoClient}/v1`, request)
 
-  if (!response.verify(gatewayInfo.getRootSigningKeyPair())) {
+  if (!response.verify(gatewayInfo.getSigningKeyPair())) {
     throw Error('Fail to verify response')
   }
   const { gateway_id, challenge: recvChallenge } = decodeClientEstablishmentResponse(response)

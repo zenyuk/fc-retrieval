@@ -1,15 +1,19 @@
 import { decodePrivateKey, decodePublicKey, getToBeSigned, signMessage, verifyMessage } from './msg_signing'
 
 import { KeyVersion } from './key_version.class'
+
 const privKey = '015ed053eab6fdf18c03954373ff7f89089992017d56beb8b05305b19800d6afe0'
 const pubKey =
   '01047799f37b014564e23578447d718e5c70a786b0e4e58ca25cb2a086b822434594d910b9b8c0fcbfe9f4c2db321e874819e0614be5b57fbb5080accd69adb2eaad'
 
 describe('Client msg_signing', () => {
   it('TestVerifyMsgShortSig', async () => {
-    const keyPair = decodePublicKey(pubKey)
-    const out = verifyMessage(keyPair, '0x12', '{}')
-    expect(out).toBeFalsy()
+    const t = () => {
+      const keyPair = decodePublicKey(pubKey)
+      const out = verifyMessage(keyPair, '0x12', '{}')
+      expect(out).toBeFalsy()
+    }
+    expect(t).toThrow(Error)
   })
 
   it('TestVerifyMsg false', async () => {
@@ -29,22 +33,34 @@ describe('Client msg_signing', () => {
     expect(out).toEqual(false)
   })
 
-  it('TestVerifyMsg true', async () => {
-    const keyPair = decodePublicKey(pubKey)
-    const raw = JSON.stringify({
-      message_type: 1,
-      protocol_version: 1,
-      gateway_id: '1234567890abcdef01234567890abcdef01234567890abcdef01234567890abcdef0',
-      challenge: 'a4b2345654665646461234567890abcdef01234567890abcdef01234567890abcdef',
-    })
-
-    const out = verifyMessage(
-      keyPair,
-      '000000017989a43a3545120d9e9134b592653b582b230f80c6eb18aa18847e0ba47f7518261cac7232388ea18a977718e5f0f81e78c89fc60f7132bed878ac3fccf7063d00',
-      raw,
+  it('TestVerifyMsg true runtime', async () => {
+    const keyPair = decodePublicKey(
+      '010472e9ab95ed0171cc9f07e9ac0cde6ad23040a97f079ac5702c39867c59149c7c071415ca41c565ef7dda4ebf3cfeb4d52703329e06234720c2e3d25211737ad5',
+      // decodeHexArrayAsString(
+      //   new Uint8Array([
+      //     4, 114, 233, 171, 149, 237, 1, 113, 204, 159, 7, 233, 172, 12, 222, 106, 210, 48, 64, 169, 127, 7, 154, 197,
+      //     112, 44, 57, 134, 124, 89, 20, 156, 124, 7, 20, 21, 202, 65, 197, 101, 239, 125, 218, 78, 191, 60, 254, 180,
+      //     213, 39, 3, 50, 158, 6, 35, 71, 32, 194, 227, 210, 82, 17, 115, 122, 213,
+      //   ]),
+      // ),
     )
+    let raw = JSON.stringify({
+      message_type: 101,
+      protocol_version: 1,
+      protocol_supported: [1, 1],
+      message_body:
+        'eyJnYXRld2F5X2lkIjoiMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImNoYWxsZW5nZSI6ImFudXF2Rm1uY2dtSWN6YzhORDFUUzRSQ0xQRE8yaVUxL0dOblpIa0l2Qk09In0=',
+      message_signature: '',
+    })
+    raw = `{"message_type":101,"protocol_version":1,"protocol_supported":[1,1],"message_body":"eyJnYXRld2F5X2lkIjoiMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImNoYWxsZW5nZSI6Ik1lZitXMGJKR2w3OW8zcjRmNXN1OUdZSGpDd3RtY2pGUmQ2aXNmRk1kMU09In0=","message_signature":""}`
+
+    const signature =
+      '0000000106ccdf77b9f655f7f61ca64a219b91891799bbce0373402b2aba763694aed6834b7b369efb39717370d689ac1ac25b45b760cc777653b56fcef6854527e28e2e01'
+
+    const out = verifyMessage(keyPair, signature, raw)
     expect(out).toEqual(true)
   })
+
   it('getToBeSigned', async () => {
     const out = getToBeSigned({
       MessageType: 1,

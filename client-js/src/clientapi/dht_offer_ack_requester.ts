@@ -17,7 +17,7 @@ export const requestDHTOfferAck = async (
 
   const response = await sendMessage(providerInfo.networkInfoClient, request)
 
-  const pubKey = providerInfo.getRootSigningKeyPair()
+  const pubKey = providerInfo.getSigningKeyPair()
 
   response.verify(pubKey)
 
