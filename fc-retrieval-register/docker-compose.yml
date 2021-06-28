@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  fc-retrieval-register:
+    image: consensys/fc-retrieval-register:dev
+    container_name: register
+    networks:
+      - shared
+    ports:
+      - "9020:9020"
+    env_file:
+      - .env
+
+  fc-retrieval-redis:
+    image: "redis:alpine"
+    container_name: redis
+    networks:
+      - shared
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+networks:
+  shared:
+    name: shared
+    external: true
