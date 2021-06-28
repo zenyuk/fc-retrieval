@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  provider:
+    image: consensys/fc-retrieval-provider:dev
+    container_name: provider
+    networks:
+      - shared
+    ports:
+      - "${BIND_REST_API}:${BIND_REST_API}"
+      - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
+      - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
+    volumes:
+      - ./logs:${LOG_DIR}
+    env_file:
+      - .env
+     
+networks:
+  shared:
+    name: shared
+    external: true
