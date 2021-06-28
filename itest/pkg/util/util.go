@@ -185,7 +185,7 @@ func StartLotusFullNode(ctx context.Context, network string, verbose bool) tc.Co
 		Networks:       []string{network},
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"lotus-full-node"}},
-		WaitingFor:     wait.ForLog(lotusFullNodeWaitFor).WithStartupTimeout(3 * time.Minute),
+		WaitingFor:     wait.ForLog(lotusFullNodeWaitFor).WithStartupTimeout(10 * time.Minute),
 		ExposedPorts:   []string{"1234", "2345"},
 		AutoRemove:     true,
 		// --cpus=<value>
