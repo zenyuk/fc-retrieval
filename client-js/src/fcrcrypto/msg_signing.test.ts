@@ -36,23 +36,8 @@ describe('Client msg_signing', () => {
   it('TestVerifyMsg true runtime', async () => {
     const keyPair = decodePublicKey(
       '010472e9ab95ed0171cc9f07e9ac0cde6ad23040a97f079ac5702c39867c59149c7c071415ca41c565ef7dda4ebf3cfeb4d52703329e06234720c2e3d25211737ad5',
-      // decodeHexArrayAsString(
-      //   new Uint8Array([
-      //     4, 114, 233, 171, 149, 237, 1, 113, 204, 159, 7, 233, 172, 12, 222, 106, 210, 48, 64, 169, 127, 7, 154, 197,
-      //     112, 44, 57, 134, 124, 89, 20, 156, 124, 7, 20, 21, 202, 65, 197, 101, 239, 125, 218, 78, 191, 60, 254, 180,
-      //     213, 39, 3, 50, 158, 6, 35, 71, 32, 194, 227, 210, 82, 17, 115, 122, 213,
-      //   ]),
-      // ),
     )
-    let raw = JSON.stringify({
-      message_type: 101,
-      protocol_version: 1,
-      protocol_supported: [1, 1],
-      message_body:
-        'eyJnYXRld2F5X2lkIjoiMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImNoYWxsZW5nZSI6ImFudXF2Rm1uY2dtSWN6YzhORDFUUzRSQ0xQRE8yaVUxL0dOblpIa0l2Qk09In0=',
-      message_signature: '',
-    })
-    raw = `{"message_type":101,"protocol_version":1,"protocol_supported":[1,1],"message_body":"eyJnYXRld2F5X2lkIjoiMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImNoYWxsZW5nZSI6Ik1lZitXMGJKR2w3OW8zcjRmNXN1OUdZSGpDd3RtY2pGUmQ2aXNmRk1kMU09In0=","message_signature":""}`
+    const raw = `{"message_type":101,"protocol_version":1,"protocol_supported":[1,1],"message_body":"eyJnYXRld2F5X2lkIjoiMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImNoYWxsZW5nZSI6Ik1lZitXMGJKR2w3OW8zcjRmNXN1OUdZSGpDd3RtY2pGUmQ2aXNmRk1kMU09In0=","message_signature":""}`
 
     const signature =
       '0000000106ccdf77b9f655f7f61ca64a219b91891799bbce0373402b2aba763694aed6834b7b369efb39717370d689ac1ac25b45b760cc777653b56fcef6854527e28e2e01'
