@@ -1,0 +1,86 @@
+version: "3.8"
+services:
+  lotus:
+    image: consensys/lotus-full-node:latest
+    container_name: lotus
+    ports:
+      - "1234:1234"
+      - "2345:2345"
+    networks:
+      - shared
+    restart: unless-stopped
+
+  provider:
+    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval/provider:dev}
+    container_name: provider
+    networks:
+      - shared
+    ports:
+      - "9030:9030"
+      - "9031:9031"
+      - "9032:9032"
+      - "9033:9033"
+    env_file:
+      - .env.provider
+    depends_on:
+      - register
+      - gateway
+      - lotus
+
+  gateway:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway:dev}
+    container_name: gateway
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "9010:9010"
+      - "9011:9011"
+      - "9012:9012"
+      - "9013:9013"
+    depends_on:
+      - register
+      - lotus
+
+  register:
+    image: ${REGISTER_IMAGE:-consensys/fc-retrieval/register:dev}
+    container_name: register
+    ports:
+      - "9020:9020"
+    networks:
+      - shared
+    restart: unless-stopped
+    env_file:
+      - .env.register
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    networks:
+      - shared
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    restart: always
+
+  itest:
+    image: ${ITEST_IMAGE:-consensys/fc-retrieval/itest:dev}
+    container_name: itest
+    volumes:
+      - ../fc-retrieval/gateway-admin:/go/src/github.com/ConsenSys/fc-retrieval/gateway-admin
+      - ../fc-retrieval/provider-admin:/go/src/github.com/ConsenSys/fc-retrieval/provider-admin
+    networks:
+      - shared
+    depends_on:
+      - register
+      - gateway
+      - provider
+
+networks:
+  shared:
+    name: shared
+    external: true

@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  itest:
+    container_name: itest
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./:/go/src/app
+      - ./go.local.mod:/go/src/app/go.mod
+      - ../fc-retrieval/provider-admin:/go/src/fc-retrieval/provider-admin
+      - ../fc-retrieval/gateway-admin:/go/src/fc-retrieval/gateway-admin
+      - ../fc-retrieval/common:/go/src/fc-retrieval/common
+      - ../fc-retrieval/client:/go/src/fc-retrieval/client
+    networks:
+      - shared
+networks:
+  shared:
+    name: shared
+    external: true

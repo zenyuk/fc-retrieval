@@ -1,0 +1,27 @@
+version: "3"
+services:
+  provider:
+    container_name: fc-retrieval/provider
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
+    ports:
+      - "${BIND_REST_API}:${BIND_REST_API}"
+      - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
+      - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
+    volumes:
+      - ./logs:${LOG_DIR}
+      - ./:/go/src/app
+      - ./go.local.mod:/go/src/app/go.mod
+      - ../fc-retrieval/common:/go/src/fc-retrieval/common
+      - ../fc-retrieval/register:/go/src/fc-retrieval/register
+    environment:
+      - REGISTER_API_URL=http://register:9020
+    networks:
+      - shared
+    restart: unless-stopped
+
+networks:
+  shared:
+    name: shared
+    external: true

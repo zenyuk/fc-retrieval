@@ -1,0 +1,145 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2.1
+commands:
+  getrepobranch:
+    description: "Get correct branch on repo"
+    parameters:
+      repo:
+        type: string
+      workdir:
+        type: string
+    steps:
+      # git clone the repos and switch to a branch which matches the 
+      # name of the branch on the Client repo. If no such branch exists, just use main
+      - run: 
+          name: "Git clone repo"
+          command: |
+              git clone << parameters.repo >>
+          working_directory: /go/src/github.com/ConsenSys/
+      - run: 
+          name: "Git get correct branch for << parameters.repo >>"
+          #head=$(git --git-dir=fc-retrieval/gateway/.git rev-parse HEAD)
+          #git --git-dir=fc-retrieval/gateway/.git reset --hard "$head"
+          command: |
+              echo Circle Branch "$CIRCLE_BRANCH"
+              if [ -z "$CIRCLE_BRANCH" ]; then
+                echo client repo is using main
+              else 
+                existed_in_local=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+                if [ -z "$existed_in_local" ]; then 
+                  echo << parameters.repo >> repo branch is main
+                else 
+                  echo << parameters.repo >> branch is "$CIRCLE_BRANCH"
+                  git fetch
+                  git checkout "$CIRCLE_BRANCH"
+                fi
+              fi
+              # echo to the screen the git hash
+              git rev-parse HEAD
+          working_directory: << parameters.workdir >>
+jobs:
+  release:
+    docker:
+      - image: circleci/golang:1.16
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/client/
+    steps:
+      # git clone the Client and change to the correct branch.
+      - checkout
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval/itest"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval/itest"
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval/gateway"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval/gateway"
+      # Ensure go.mod is configured correctly
+      - run: make detectmisconfig
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - run: 
+          name: Make Client
+          command: make release
+  triggerItest:
+    docker:
+      - image: circleci/golang:1.16
+    steps:
+      - getrepobranch:
+          repo: "https://github.com/ConsenSys/fc-retrieval/itest"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval/itest"
+      - run:
+          name: Trigger the Build Job
+          command: |
+            BRANCH=$CIRCLE_BRANCH
+            branch_exists_on_itest=$(git branch -r --list origin/"$CIRCLE_BRANCH")
+            if [ -z "$branch_exists_on_itest" ]; then 
+              BRANCH=main
+            fi
+            ORGANIZATION=ConsenSys
+            PROJECT=fc-retrieval/itest
+            printf "Triggering a $PROJECT build on the $BRANCH branch, with repo-branch: $CIRCLE_BRANCH\n\n"
+            # This works, but with hard wired branch. Any attempt to have a programmatic branch has failed.
+            BUILD_INFO=$(curl  -u $APIKEY: -X POST \
+              --header 'Content-Type: application/json' \
+              -d '{"parameters":{"repox-branch":"pr-itest-trigger"}}' \
+              https://circleci.com/api/v2/project/gh/$ORGANIZATION/$PROJECT/pipeline )
+            printf "\n\nCircle CI call returned: \n$BUILD_INFO\n"
+            printf "\n\nBuild triggered\n\n"
+            printf "Follow the progress of the build on \nhttps://app.circleci.com/pipelines/github/$ORGANIZATION/$PROJECT?branch=$BRANCH"
+          workdir: "/go/src/github.com/ConsenSys/fc-retrieval/itest"
+
+  utest:
+    docker:
+      # specify the version
+      - image: circleci/golang:1.16
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+    #### TEMPLATE_NOTE: go expects specific checkout path representing url
+    #### expecting it in the form of
+    ####   /go/src/github.com/circleci/go-tool
+    ####   /go/src/bitbucket.org/circleci/go-tool
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/client/
+    steps:
+      - checkout
+      # git clone the Gateway and Provider so that they are available for the 
+      # detect mis-configuration script.
+      - run: 
+          name: "Git clone Gateway, and Provider"
+          command: |
+              git clone https://github.com/ConsenSys/fc-retrieval/gateway
+              git clone https://github.com/ConsenSys/fc-retrieval/provider
+          working_directory: /go/src/github.com/ConsenSys/
+      # Ensure go.mod is configured correctly
+      - run: make detectmisconfig
+      # Run unit tests
+      - run: make utest
+  
+  coverage:
+    environment:
+      CODE_COVERAGE: 0
+    docker:
+      - image: circleci/golang:1.16
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/client/
+    steps:
+      - checkout
+      - run:
+          name: Check code coverage
+          command: |
+            make coverage COV=$CODE_COVERAGE
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - utest
+      - coverage:
+          requires:
+            - utest
+
+#      - triggerItest:
+#          requires:
+#            - utest
+#            - release
