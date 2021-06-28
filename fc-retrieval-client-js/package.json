@@ -1,0 +1,85 @@
+{
+  "name": "fc-retrieval-client-js",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "description": "Filecoin Secondary Retrieval Market Javascript client library.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test-e2e-watch": "jest --config jestconfig.e2e.json --watchAll --verbose --silent=false",
+    "test-e2e": "jest --config jestconfig.e2e.json",
+    "test": "jest --config jestconfig.json --setupFiles=./.env.js",
+    "test:dev": "jest --config jestconfig.json --setupFiles=./.env.js --watchAll --coverage=false --detectOpenHandles",
+    "build": "tsc",
+    "format": "prettier \"**/*.ts\" --ignore-path ./.prettierignore --write && git status",
+    "lint": "eslint 'src/**/*.ts' -c '.eslintrc.js'",
+    "lint:fix": "eslint 'src/**/*.ts' -c '.eslintrc.js' --fix",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run test"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js}": [
+      "eslint . --fix",
+      "git add"
+    ],
+    "src/**/*.{ts,json}": [
+      "prettier --ignore-path ./.prettierignore --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/consensys/fc-retrieval-client-js.git"
+  },
+  "keywords": [
+    "Filecoin",
+    "Retrieval",
+    "Client"
+  ],
+  "bugs": {
+    "url": "https://github.com/consensys/fc-retrieval-client-js/issues"
+  },
+  "homepage": "https://github.com/consensys/fc-retrieval-client-js#readme",
+  "files": [
+    "src/**/*"
+  ],
+  "dependencies": {
+    "@types/qs": "^6.9.6",
+    "acorn": "^8.3.0",
+    "axios": "^0.21.1",
+    "blake2b": "^2.1.3",
+    "bn.js": "^5.2.0",
+    "ethereumjs-util": "^7.0.10",
+    "merkle-tree-solidity": "^1.0.8",
+    "merkletreejs": "^0.2.18",
+    "qs": "^6.10.1",
+    "secp256k1": "^4.0.2",
+    "tslint": "^6.1.3"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "axios-mock-adapter": "^1.19.0",
+    "codecov": "^3.8.2",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.2",
+    "husky": "^6.0.0",
+    "jest": "^27.0.4",
+    "lint-staged": "^11.0.0",
+    "prettier": "2.3.0",
+    "ts-jest": "^27.0.0",
+    "typescript": "^4.3.2"
+  }
+}
