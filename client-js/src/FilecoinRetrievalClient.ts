@@ -1,17 +1,16 @@
-import { Settings } from './config/settings.config'
-import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class'
-import { ContentID } from './cid/cid.interface'
-import { NodeID } from './nodeid/nodeid.interface'
-import { SubCIDOffer } from './cidoffer/subcidoffer.class'
-import { getGatewayByID, getProviderByID } from './register/register.service'
-import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester'
-import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2'
-import { GatewayRegister } from './register/register.class'
-import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester'
-import { decodeProviderPublishDHTOfferResponse } from './fcrMessages/provider_publish_dht_offer'
-import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
-import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
-import BN from 'bn.js'
+import { Settings } from './config/settings.config';
+import { FCRPaymentMgr } from './fcrPaymentMgr/payment-manager.class';
+import { ContentID } from './cid/cid.interface';
+import { NodeID } from './nodeid/nodeid.interface';
+import { SubCIDOffer } from './cidoffer/subcidoffer.class';
+import { getGatewayByID, getProviderByID } from './register/register.service';
+import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offer_requester';
+import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2';
+import { GatewayRegister } from './register/register.class';
+import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester';
+import { decodeProviderPublishDHTOfferResponse } from './fcrMessages/provider_publish_dht_offer';
+import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2';
+import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover';
 import crypto from 'crypto'
 import { requestEstablishment } from './clientapi/establishment_requester'
 import { verifyAnyMessage } from './fcrcrypto/msg_signing'
@@ -113,9 +112,9 @@ export class FilecoinRetrievalClient {
       return offersMap
     }
 
-    const defaultPaymentLane = new BN(0)
-    const initialRequestPaymentAmount = new BN(numDHT).mul(this.settings.searchPrice)
-    let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+    const defaultPaymentLane = 0;
+    const initialRequestPaymentAmount = new BigNumber(numDHT).multipliedBy(this.settings.searchPrice);
+    let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount);
 
     if (payResponse.topup) {
       this.paymentMgr.topup(gw.address, this.settings.topUpAmount)
@@ -271,11 +270,11 @@ export class FilecoinRetrievalClient {
       return
     }
 
-    let payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
+    let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeId, this.settings.topUpAmount)
-      payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice)
+      payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
     }
 
     const offerDigests = await requestStandardDiscoverV2(
