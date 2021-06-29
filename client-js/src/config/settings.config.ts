@@ -1,28 +1,28 @@
-import { BigNumber } from "bignumber.js";
+import BN from 'bn.js'
 import { NodeID } from '../nodeid/nodeid.interface'
 
 // DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
 const defaultEstablishmentTTL = 100
 
 // DefaultLogLevel is the default amount of logging to show.
-const defaultLogLevel = "trace"
+const defaultLogLevel = 'trace'
 
 // DefaultLogTarget is the default output location of log output.
-const defaultLogTarget = "STDOUT"
+const defaultLogTarget = 'STDOUT'
 
 // DefaultLogServiceName is the default service name of logging.
-const defaultLogServiceName = "client"
+const defaultLogServiceName = 'client'
 
 // defaultSearchPrice is the default search price.
-const defaultSearchPrice = new BigNumber("1000000000000000")
+const defaultSearchPrice = new BN('1000000000000000')
 // const defaultSearchPrice = 1_000_000_000_000_000
 
 // defaultOfferPrice is the default offer price.
-const defaultOfferPrice = new BigNumber("1000000000000000")
+const defaultOfferPrice = new BN('1000000000000000')
 // const defaultOfferPrice = 1_000_000_000_000_000
 
 // defaultTopUpAmount is the default top up amount.
-const defaultTopUpAmount = new BigNumber("100000000000000000")
+const defaultTopUpAmount = new BN('100000000000000000')
 // const defaultTopUpAmount = 100_000_000_000_000_000
 
 export class Settings {
@@ -38,9 +38,9 @@ export class Settings {
   walletPrivateKey: string
   lotusAP: string
   lotusAuthToken: string
-  searchPrice: BigNumber
-  offerPrice: BigNumber
-  topUpAmount: BigNumber
+  searchPrice: BN
+  offerPrice: BN
+  topUpAmount: BN
 
   constructor({
     establishmentTTL = defaultEstablishmentTTL,
@@ -82,11 +82,11 @@ export const buildSettings = (registerURL: string) => {
   return new Settings({
     blockchainPrivateKey: undefined,
     client: {} as NodeID,
-    lotusAP: "",
-    lotusAuthToken: "",
+    lotusAP: '',
+    lotusAuthToken: '',
     registerURL,
     retrievalPrivateKey: undefined,
     retrievalPrivateKeyVer: undefined,
-    walletPrivateKey: "",
+    walletPrivateKey: '',
   })
 }
