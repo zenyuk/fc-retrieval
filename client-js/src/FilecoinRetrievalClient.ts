@@ -14,6 +14,7 @@ import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
 import crypto from 'crypto'
 import { requestEstablishment } from './clientapi/establishment_requester'
 import { verifyAnyMessage } from './fcrcrypto/msg_signing'
+import { BigNumber } from "bignumber.js";
 
 export interface payResponse {
   paychAddrs: string
