@@ -1,4 +1,4 @@
-import { FilecoinRPC } from '../filecoin/filecoin-rpc.class'
+import { FilecoinRPC } from '../filecoin/filecoin_rpc.class'
 import BN from 'bn.js'
 
 const filecoin_signer = require('@zondax/filecoin-signing-tools')
@@ -39,7 +39,7 @@ export class FCRPaymentMgr {
   // Make sure the private key provided is in hex string
   constructor(privateKeyHex: string, lotusAPIAddr: string, authToken: string) {
     this.recoveredKey = filecoin_signer.keyRecover(Buffer.from(privateKeyHex, 'hex').toString('base64'))
-    this.filRPC = new FilecoinRPC({ url: lotusAPIAddr, token: authToken })
+    this.filRPC = new FilecoinRPC(lotusAPIAddr, authToken)
     this.header = { Authorization: `Bearer ${authToken}` }
 
     this.outboundChs = new Map<string, ChannelState>()
@@ -81,7 +81,8 @@ export class FCRPaymentMgr {
     }
     const topup = topupRes.result
     const signedMessage = JSON.parse(filecoin_signer.transactionSignLotus(topup, this.recoveredKey.private_base64))
-    await this.filRPC.sendSignedMessage(signedMessage)
+    const cid = await this.filRPC.sendSignedMessage(signedMessage)
+    await this.filRPC.waitMessage(cid)
     const cs = this.outboundChs.get(recipient)
     if (cs != undefined) {
       cs.balance = cs.balance.add(amount)
@@ -124,7 +125,8 @@ export class FCRPaymentMgr {
       filecoin_signer.transactionSignLotus(create_channel, this.recoveredKey.private_base64),
     )
     // Send message
-    const res = await this.filRPC.sendSignedMessage(signedMessage)
+    const cid = await this.filRPC.sendSignedMessage(signedMessage)
+    const res = await this.filRPC.waitMessage(cid)
     if (res.result.ReturnDec.IDAddress == undefined) {
       throw new Error('Error in creating payment channel')
       return 1

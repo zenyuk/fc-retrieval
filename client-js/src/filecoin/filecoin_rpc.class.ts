@@ -35,7 +35,7 @@ class FilecoinRPC {
    * @returns
    */
   async sendSignedMessage(signedMessage: any) {
-    let response = await this.requester.post('', {
+    const response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolPush',
       id: 1,
@@ -47,8 +47,16 @@ class FilecoinRPC {
     }
 
     let cid = response.data.result
+    return cid
+  }
 
-    response = await this.requester.post('', {
+  /**
+   * Wait for message response
+   * @param cid
+   * @returns
+   */
+  async waitMessage(cid: string) {
+    const response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.StateWaitMsg',
       id: 1,

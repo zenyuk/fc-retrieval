@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 
-import { FilecoinRPC } from './filecoin-rpc.class'
+import { FilecoinRPC } from './filecoin_rpc.class'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -8,6 +8,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 const mockedFilecoinUrl = 'http://filecoin'
 const mockedToken = 'eyJub25jZSI6NDIsImlzQWxpdmUiOnRydWV9'
 const mockedAddress = 'eyJub25jZSI6NDIsImlzQWxpdmUiOnRydWV9'
+const mockedCid = 'eyJub25jZSI6NDIsImlzQWxpdmUiOnRydWV9'
 const mockedNonceResponse: AxiosResponse = {
   data: [
     {
@@ -21,11 +22,11 @@ const mockedNonceResponse: AxiosResponse = {
 }
 
 const mockedMpoolPushResponse: AxiosResponse = {
-  data: [
-    {
+  data: {
+    result: {
       cid: '987654321',
     },
-  ],
+  },
   status: 200,
   statusText: 'OK',
   headers: {},
@@ -44,17 +45,17 @@ const mockedMpoolPushErrorResponse: AxiosResponse = {
   config: {},
 }
 
-// const mockedSignedMessageResponse: AxiosResponse = {
-//   data: [
-//     {
-//       result: 42,
-//     },
-//   ],
-//   status: 200,
-//   statusText: 'OK',
-//   headers: {},
-//   config: {},
-// }
+const mockedWaitMessageResponse: AxiosResponse = {
+  data: [
+    {
+      result: 42,
+    },
+  ],
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {},
+}
 
 const mockedGasEstimationResponse: AxiosResponse = {
   data: [
@@ -98,7 +99,7 @@ describe('FilecoinRPC', () => {
         const filecoinRPC = new FilecoinRPC(mockedFilecoinUrl, mockedToken)
         mockedAxios.post.mockResolvedValue(mockedMpoolPushResponse)
         const nonceData = await filecoinRPC.sendSignedMessage(mockedAddress)
-        expect(nonceData).toEqual(mockedMpoolPushResponse.data)
+        expect(nonceData).toEqual(mockedMpoolPushResponse.data.result)
       })
     })
     describe('sendSignedMessage error', () => {
@@ -107,6 +108,15 @@ describe('FilecoinRPC', () => {
         mockedAxios.post.mockResolvedValue(mockedMpoolPushErrorResponse)
         await expect(filecoinRPC.sendSignedMessage(mockedAddress)).rejects.toThrow(Error)
       })
+    })
+  })
+
+  describe('waitMessage', () => {
+    it('wait for message response', async () => {
+      const filecoinRPC = new FilecoinRPC(mockedFilecoinUrl, mockedToken)
+      mockedAxios.post.mockResolvedValue(mockedWaitMessageResponse)
+      const nonceData = await filecoinRPC.waitMessage(mockedCid)
+      expect(nonceData).toEqual(mockedWaitMessageResponse.data)
     })
   })
 
