@@ -1,5 +1,6 @@
-import { KeyPair } from "../fcrcrypto/key_pair.class"
-import { NodeID } from "../nodeid/nodeid.interface"
+import { KeyPair } from '../fcrcrypto/key_pair.class'
+import { NodeID } from '../nodeid/nodeid.interface'
+import { decodePublicKey } from '../fcrcrypto/msg_signing'
 
 export abstract class Register {
   nodeId: string
@@ -8,13 +9,7 @@ export abstract class Register {
   signingKey: string
   rootSigningKey: string
 
-  constructor({
-    nodeId,
-    address,
-    regionCode,
-    signingKey,
-    rootSigningKey,
-  }: any) {
+  constructor({ nodeId, address, regionCode, signingKey, rootSigningKey }: any) {
     this.nodeId = nodeId
     this.address = address
     this.regionCode = regionCode
@@ -24,25 +19,16 @@ export abstract class Register {
 
   /**
    * Get node ID
-   * 
+   *
    * @returns {NodeID}
    */
   getNodeID(): NodeID {
-    return {} as NodeID
+    return new NodeID(this.nodeId)
   }
 
   /**
    * Get signing key pair
-   * 
-   * @returns {KeyPair}
-   */
-  getSigningKeyPair(): KeyPair {
-    return {} as KeyPair
-  }
-
-  /**
-   * Get root signing key pair
-   * 
+   *
    * @returns {KeyPair}
    */
   getRootSigningKeyPair(): KeyPair {
@@ -50,21 +36,27 @@ export abstract class Register {
   }
 
   /**
+   * Get root signing key pair
+   *
+   * @returns {KeyPair}
+   */
+  getSigningKeyPair(): KeyPair {
+    return decodePublicKey(this.signingKey)
+  }
+
+  /**
    * Validate registration information
-   * 
+   *
    * @returns {boolean}
    */
   public validateInfo(): boolean {
-    for (const property of Object.getOwnPropertyNames(this)) {
-      const value = (this as any)[property]
-      if (!value || value.trim().length === 0) {
-        throw Error(`Registration issue: ${property} not set`)
-      }
-    }
+    // for (const property of Object.getOwnPropertyNames(this)) {
+    //   const value = (this as any)[property]
+    //   if (!value || value.trim().length === 0) {
+    //     throw Error(`Registration issue: ${property} not set`)
+    //   }
+    // }
     if (!this.getSigningKeyPair()) {
-      throw Error(`Registration issue: Signing Public Key error`)
-    }
-    if (!this.getRootSigningKeyPair()) {
       throw Error(`Registration issue: Root Signing Public Key error`)
     }
     return true

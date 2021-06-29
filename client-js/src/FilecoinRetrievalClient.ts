@@ -8,13 +8,13 @@ import { requestStandardDiscoverOffer } from './clientapi/standard_discover_offe
 import { requestStandardDiscoverV2 } from './clientapi/standard_discover_requester_v2'
 import { GatewayRegister } from './register/register.class'
 import { requestDHTOfferAck } from './clientapi/dht_offer_ack_requester'
-import { verifyMessage } from './fcrcrypto/msg_signing'
 import { decodeProviderPublishDHTOfferResponse } from './fcrMessages/provider_publish_dht_offer'
 import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2'
 import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
 import BN from 'bn.js'
 import crypto from 'crypto'
 import { requestEstablishment } from './clientapi/establishment_requester'
+import { verifyAnyMessage } from "./fcrcrypto/msg_signing";
 
 export interface payResponse {
   paychAddrs: string
@@ -56,7 +56,7 @@ export class FilecoinRetrievalClient {
         this.gatewaysToUse.set(_gatewayID, gateway)
         numAdded++
       } catch (e) {
-        console.log(`Add gateways to use failed for gatewayID=${_gatewayID}:`, e)
+        console.error(`Add gateways to use failed for gatewayID=${_gatewayID}:`, e)
         continue
       }
     }
@@ -150,7 +150,7 @@ export class FilecoinRetrievalClient {
         // logging.Error("Gateway register info not valid.")
         continue
       }
-      const pubKey = gatewayInfo.signingKey
+      const pubKey = gatewayInfo.getSigningKeyPair()
       if (pubKey == undefined) {
         //logging.Error('Fail to obtain public key.')
         continue
@@ -239,8 +239,8 @@ export class FilecoinRetrievalClient {
       throw new Error('Invalid register info')
     }
 
-    const gwPubKey = gateway.signingKey
-    const pvdPubKey = provider.signingKey
+    const gwPubKey = gateway.getSigningKeyPair()
+    const pvdPubKey = provider.getSigningKeyPair()
 
     dhtOfferAckResponse.offerRequest.verify(pvdPubKey)
 
@@ -259,7 +259,7 @@ export class FilecoinRetrievalClient {
     }
 
     const dhtOfferResponse = decodeProviderPublishDHTOfferResponse(dhtOfferAckResponse.offerResponse)
-    verifyMessage(gwPubKey, dhtOfferResponse.signature, dhtOfferAckResponse.offerRequest)
+    verifyAnyMessage(gwPubKey, dhtOfferResponse.signature, dhtOfferAckResponse.offerRequest)
 
     return true
   }
