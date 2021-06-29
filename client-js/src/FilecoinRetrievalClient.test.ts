@@ -16,6 +16,8 @@ jest.mock('./register/register.service', () => {
           networkInfoProvider: '127.0.0.1:80',
           regionCode: 'FR',
           rootSigningKey: '0xABCDE123456789',
+          signingKey:
+            '01047799f37b014564e23578447d718e5c70a786b0e4e58ca25cb2a086b822434594d910b9b8c0fcbfe9f4c2db321e874819e0614be5b57fbb5080accd69adb2eaad',
         }),
       ),
     ),

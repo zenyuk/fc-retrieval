@@ -14,6 +14,7 @@ import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover'
 import BN from 'bn.js'
 import crypto from 'crypto'
 import { requestEstablishment } from './clientapi/establishment_requester'
+import { verifyAnyMessage } from "./fcrcrypto/msg_signing";
 
 export interface payResponse {
   paychAddrs: string
