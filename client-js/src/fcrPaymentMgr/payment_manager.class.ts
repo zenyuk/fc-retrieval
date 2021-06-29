@@ -47,20 +47,19 @@ export class FCRPaymentMgr {
 
   async topup(recipient: string, amount: BN) {
     if (this.outboundChs.has(recipient)) {
-      this.hasRecipient(recipient, amount)
+      return this.updateExistingChannelState(recipient, amount)
     } else {
-      this.hasNoRecipient(recipient, amount)
+      return this.createNewChannelState(recipient, amount)
     }
-    return 0
   }
 
   /**
-   * Has recipient
+   * Update existing Channel state
    * @param recipient
    * @param amount
    * @returns
    */
-  async hasRecipient(recipient: string, amount: BN) {
+  async updateExistingChannelState(recipient: string, amount: BN) {
     const nonceRes = await this.filRPC.getNonce(this.recoveredKey.address)
     const nonce = nonceRes.result
     const topupQuery = {
@@ -89,15 +88,16 @@ export class FCRPaymentMgr {
     } else {
       throw new Error('Internal error')
     }
+    return cs
   }
 
   /**
-   * Has no recipient
+   * Create new Channel state
    * @param recipient
    * @param amount
    * @returns
    */
-  async hasNoRecipient(recipient: string, amount: BN) {
+  async createNewChannelState(recipient: string, amount: BN) {
     // Need to create a channel
     // Get nonce
     const nonceRes = await this.filRPC.getNonce(this.recoveredKey.address)
@@ -118,8 +118,7 @@ export class FCRPaymentMgr {
     if ('result' in create_channel) {
       create_channel = create_channel.result
     } else {
-      console.log('Error in estimating gas cost')
-      return 1
+      throw new Error('Error in estimating gas cost')
     }
     const signedMessage = JSON.parse(
       filecoin_signer.transactionSignLotus(create_channel, this.recoveredKey.private_base64),
@@ -129,12 +128,14 @@ export class FCRPaymentMgr {
     const res = await this.filRPC.waitMessage(cid)
     if (res.result.ReturnDec.IDAddress == undefined) {
       throw new Error('Error in creating payment channel')
-      return 1
     }
 
     // Success, add a new entry to the out bound channels
     const cAddr = String(res.result.ReturnDec.RobustAddress)
-    this.outboundChs.set(recipient, new ChannelState(cAddr, amount))
+    const cs = new ChannelState(cAddr, amount)
+    this.outboundChs.set(recipient, cs)
+
+    return cs
   }
 
   pay(recipient: string, lane: number, amount: BN) {
