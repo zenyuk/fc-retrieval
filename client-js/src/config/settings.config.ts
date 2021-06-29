@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import { BigNumber } from "bignumber.js";
 import { NodeID } from '../nodeid/nodeid.interface'
 
 // DefaultEstablishmentTTL is the default Time To Live used with Client - Gateway estalishment messages.
@@ -14,15 +14,15 @@ const defaultLogTarget = "STDOUT"
 const defaultLogServiceName = "client"
 
 // defaultSearchPrice is the default search price.
-const defaultSearchPrice = new BN("1000000000000000")
+const defaultSearchPrice = new BigNumber("1000000000000000")
 // const defaultSearchPrice = 1_000_000_000_000_000
 
 // defaultOfferPrice is the default offer price.
-const defaultOfferPrice = new BN("1000000000000000")
+const defaultOfferPrice = new BigNumber("1000000000000000")
 // const defaultOfferPrice = 1_000_000_000_000_000
 
 // defaultTopUpAmount is the default top up amount.
-const defaultTopUpAmount = new BN("100000000000000000")
+const defaultTopUpAmount = new BigNumber("100000000000000000")
 // const defaultTopUpAmount = 100_000_000_000_000_000
 
 export class Settings {
@@ -38,9 +38,9 @@ export class Settings {
   walletPrivateKey: string
   lotusAP: string
   lotusAuthToken: string
-  searchPrice: BN
-  offerPrice: BN
-  topUpAmount: BN
+  searchPrice: BigNumber
+  offerPrice: BigNumber
+  topUpAmount: BigNumber
 
   constructor({
     establishmentTTL = defaultEstablishmentTTL,

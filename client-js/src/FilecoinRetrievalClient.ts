@@ -113,9 +113,15 @@ export class FilecoinRetrievalClient {
       return offersMap
     }
 
+<<<<<<< HEAD
     const defaultPaymentLane = 0
     const initialRequestPaymentAmount = new BN(numDHT).mul(this.settings.searchPrice)
     let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount)
+=======
+    const defaultPaymentLane = 0;
+    const initialRequestPaymentAmount = new BigNumber(numDHT).multipliedBy(this.settings.searchPrice);
+    let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount);
+>>>>>>> main
 
     if (payResponse.topup) {
       this.paymentMgr.topup(gw.address, this.settings.topUpAmount)
@@ -271,11 +277,19 @@ export class FilecoinRetrievalClient {
       return
     }
 
+<<<<<<< HEAD
     let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeId, this.settings.topUpAmount)
       payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice)
+=======
+    let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice);
+
+    if (payResponse.topup == true) {
+      this.paymentMgr.topup(gw.nodeId, this.settings.topUpAmount);
+      payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice);
+>>>>>>> main
     }
 
     const offerDigests = await requestStandardDiscoverV2(
