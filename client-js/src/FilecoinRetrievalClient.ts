@@ -12,7 +12,7 @@ import { verifyMessage } from './fcrcrypto/msg_signing';
 import { decodeProviderPublishDHTOfferResponse } from './fcrMessages/provider_publish_dht_offer';
 import { decodeGatewayDHTDiscoverResponseV2, requestDHTDiscoverV2 } from './clientapi/find_offers_dht_discovery_v2';
 import { requestDHTOfferDiscover } from './clientapi/request_dht_offer_discover';
-import BN from 'bn.js';
+import { BigNumber } from "bignumber.js";
 import crypto from 'crypto'
 import { requestEstablishment } from './clientapi/establishment_requester';
 
@@ -113,8 +113,8 @@ export class FilecoinRetrievalClient {
       return offersMap
     }
 
-    const defaultPaymentLane = new BN(0);
-    const initialRequestPaymentAmount = new BN(numDHT).mul(this.settings.searchPrice);
+    const defaultPaymentLane = 0;
+    const initialRequestPaymentAmount = new BigNumber(numDHT).multipliedBy(this.settings.searchPrice);
     let payResponse = this.paymentMgr.pay(gw.address, defaultPaymentLane, initialRequestPaymentAmount);
 
     if (payResponse.topup) {
@@ -271,11 +271,11 @@ export class FilecoinRetrievalClient {
       return
     }
 
-    let payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice);
+    let payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice);
 
     if (payResponse.topup == true) {
       this.paymentMgr.topup(gw.nodeId, this.settings.topUpAmount);
-      payResponse = this.paymentMgr.pay(gw.address, new BN(0), this.settings.searchPrice);
+      payResponse = this.paymentMgr.pay(gw.address, 0, this.settings.searchPrice);
     }
 
     const offerDigests = await requestStandardDiscoverV2(
