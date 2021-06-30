@@ -51,19 +51,16 @@ jobs:
           command: make coverage
 
       - run:
-          name: Create lotus images with docker layer cache
+          name: "make lotus-images # Create lotus images with docker layer caching"
           command: |
-            docker image ls | egrep '^REPOSITORY|consensys'
-            echo
-            cd itest
-            make lotusbase lotusdaemon lotusfullnode
+            make lotus-images
 
       - run:
           name: "make build-servers-test # Build test binary for provider, gateway, register"
           command: make build-servers-test
 
-      - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
-      - run: make LAST_GATEWAY_NO=1 itest-poc2js clean
+      - run: make itest-poc1
+      - run: make itest-poc2js
 
       - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
 
