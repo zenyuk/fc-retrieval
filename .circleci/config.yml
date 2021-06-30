@@ -39,19 +39,19 @@ jobs:
             - ~/.cache/go-build
 
       - run:
-          name: Build binary for provider, gateway, register
+          name: "make build-servers # Build binary for provider, gateway, register"
           command: make build-servers
 
       - run:
-          name: Build docker images for provider, gateway, register
+          name: "make micro-images # Build docker images for provider, gateway, register"
           command: make micro-images
 
       - run:
-          name: Verify coverage
+          name: "make coverage # Verify coverage"
           command: make coverage
 
       - run:
-          name: Create lotus images if not exist
+          name: Create lotus images with docker layer cache
           command: |
             docker image ls | egrep '^REPOSITORY|consensys'
             echo
@@ -59,7 +59,7 @@ jobs:
             make lotusbase lotusdaemon lotusfullnode
 
       - run:
-          name: Build test binary for provider, gateway, register
+          name: "make build-servers-test # Build test binary for provider, gateway, register"
           command: make build-servers-test
 
       - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
