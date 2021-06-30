@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -404,7 +405,17 @@ func TestClientJS(t *testing.T) {
 	privateKeys = privateKeys[1:]
 	accountAddrs = accountAddrs[1:]
 
-	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken)
+	var gtws []string
+	for _, d := range gwIDs {
+		gtws = append(gtws, d.ToString())
+	}
+
+	var provs []string
+	for _, d := range pIDs {
+		provs = append(provs, d.ToString())
+	}
+
+	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken, strings.Join(gtws, ","), strings.Join(provs, ","))
 	if err != nil {
 		logging.Error("error calling JS client E2E: %s", err.Error())
 		t.FailNow()
