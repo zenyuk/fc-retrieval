@@ -1,6 +1,7 @@
 
 # make micro docker images
 micro-images: register/main provider/main gateway/main
+	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	set -xe; \
 	for d in register provider gateway; \
 	do \
