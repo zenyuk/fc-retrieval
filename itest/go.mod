@@ -3,8 +3,11 @@ module github.com/ConsenSys/fc-retrieval/itest
 go 1.16
 
 replace github.com/ConsenSys/fc-retrieval/common => ../common
+
 replace github.com/ConsenSys/fc-retrieval/client => ../client
+
 replace github.com/ConsenSys/fc-retrieval/gateway-admin => ../gateway-admin
+
 replace github.com/ConsenSys/fc-retrieval/provider-admin => ../provider-admin
 
 require (
@@ -12,6 +15,7 @@ require (
 	github.com/ConsenSys/fc-retrieval/common v0.0.0-00010101000000-000000000000
 	github.com/ConsenSys/fc-retrieval/gateway-admin v0.0.0-00010101000000-000000000000
 	github.com/ConsenSys/fc-retrieval/provider-admin v0.0.0-00010101000000-000000000000
+	github.com/c-bata/go-prompt v0.2.6 // indirect
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/filecoin-project/go-address v0.0.5
 	github.com/filecoin-project/go-jsonrpc v0.1.4-0.20210217175800-45ea43ac2bec
@@ -23,4 +27,3 @@ require (
 	github.com/testcontainers/testcontainers-go v0.10.0
 	github.com/wcgcyx/testcontainers-go v0.10.1-0.20210511154849-504eecefabe0
 )
-
