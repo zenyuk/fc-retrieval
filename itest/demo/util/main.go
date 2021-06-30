@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
