@@ -1,5 +1,5 @@
 
-build: timed-deps build-common build-servers build-test-binary build-servers-test
+build: timed-deps coverage build-servers build-test-binary build-servers-test
 
 deps:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
@@ -29,11 +29,11 @@ timed-deps:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	/usr/bin/time -vv make deps
 
-build-common:
+coverage:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	set -e; \
 	cd common; \
-	make coverage COV=50
+	make coverage COV=62
 
 build-servers:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"

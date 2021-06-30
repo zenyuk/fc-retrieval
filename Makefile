@@ -1,4 +1,3 @@
-# Need rename to Makefile when using
 
 default:
 

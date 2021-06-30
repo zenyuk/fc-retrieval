@@ -11,6 +11,7 @@ jobs:
       COLORTERM: 24bit
     steps:
       - checkout
+
       - run:
           name: Verify checkout and create cache.sum
           command: |
@@ -19,33 +20,48 @@ jobs:
             go version >cache.sum
             (shasum go.sum || true) >>cache.sum
             shasum */go.sum >>cache.sum
+
       # ref: https://github.com/ipfs/go-ipfs/blob/master/.circleci/config.yml
       - restore_cache:
           keys:
             - go-mod-5-{{ checksum "cache.sum" }}
             - go-mod-5-
             - go-mod-
+
       - run:
-          name: Run unit test, build cmd binaries, and build test binaries
-          command: |
-            make build
+          name: "make deps # Check dependency"
+          command: make deps
+
       - save_cache:
           key: go-mod-5-{{ checksum "cache.sum" }}
           paths:
             - ~/.go_workspace/pkg/mod
             - ~/.cache/go-build
+
       - run:
-          name: Create lotus images if not exist
+          name: "make build-servers # Build binary for provider, gateway, register"
+          command: make build-servers
+
+      - run:
+          name: "make micro-images # Build docker images for provider, gateway, register"
+          command: make micro-images
+
+      - run:
+          name: "make coverage # Verify coverage"
+          command: make coverage
+
+      - run:
+          name: "make lotus-images # Create lotus images with docker layer caching"
           command: |
-            docker image ls
-            echo
-            cd itest
-            make lotusbase lotusdaemon lotusfullnode
+            make lotus-images
 
-      - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
-      - run: make LAST_GATEWAY_NO=1 itest-poc2js clean
+      - run:
+          name: "make build-servers-test # Build test binary for provider, gateway, register"
+          command: make build-servers-test
 
-      - run: make micro-images
+      - run: make itest-poc1
+      - run: make itest-poc2js
+
       - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
 
       - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
