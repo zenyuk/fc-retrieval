@@ -45,7 +45,7 @@ jobs:
       - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
       - run: make LAST_GATEWAY_NO=1 itest-poc2js clean
 
-      - run: micro-images
+      - run: make micro-images
       - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
 
       - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
