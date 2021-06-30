@@ -542,7 +542,7 @@ func CallClientJsE2E(key string, walletKey string, registerAPI string, lotusAP s
 	if os.Getenv("RELOAD_JS_TESTS") == "yes" {
 		cmd = exec.Command("npm", "run", "test-e2e-watch")
 	}
-	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js"
+	cmd.Dir = "/usr/src/github.com/ConsenSys/client-js"
 
 	cmd.Env = append(os.Environ(),
 		"ESTABLISHMENT_TTL=101",
