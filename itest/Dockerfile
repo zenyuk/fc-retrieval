@@ -3,8 +3,10 @@ FROM golang:1.16-alpine
 
 RUN apk add --no-cache make gcc musl-dev linux-headers git nodejs npm
 
-WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/itest
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval
 COPY . .
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/itest
+
 # Remove any cached dependancies. TODO is this really needed?
 RUN go clean -modcache
 

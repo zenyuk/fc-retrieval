@@ -1,21 +1,28 @@
-version: "3.8"
+version: "3.7"
 
 services:
   gateway:
-    image: consensys/fc-retrieval/gateway:dev
-    container_name: gateway
-    networks:
-      - shared
+    container_name: fc-retrieval-gateway
+    build:
+      dockerfile: gateway/Dockerfile
+      context: ..
     ports:
-      - "${BIND_REST_API}:${BIND_REST_API}"
-      - "${BIND_PROVIDER_API}:${BIND_PROVIDER_API}"
-      - "${BIND_GATEWAY_API}:${BIND_GATEWAY_API}"
-      - "${BIND_ADMIN_API}:${BIND_ADMIN_API}"
+      - "9010:9010"
+      - "9011:9011"
+      - "9012:9012"
+      - "9013:9013"
     volumes:
-      - ./logs:${LOG_DIR}
+#      - ./logs:${LOG_DIR}
+      - ./common:/go/src/github.com/ConsenSys/fc-retrieval/common
+      - ./gateway:/go/src/github.com/ConsenSys/fc-retrieval/gateway
     env_file:
       - .env
-     
+    environment:
+      - REGISTER_API_URL=http://register:9020
+    networks:
+      - shared
+    restart: unless-stopped
+
 networks:
   shared:
     name: shared

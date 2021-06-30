@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "strict": true,
+    // "esModuleInterop": true,
+    // "declaration": true,
+    // "noImplicitAny": true,
+    // "noUnusedLocals": true,
+    // "removeComments": true,
+    "noLib": false,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "target": "es6",
+    "sourceMap": true,
+    "allowJs": true,
+    "outDir": "dist",
+    "lib": ["es2017"],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@data/*": ["data/*"]
+    }
+  },
+  // "include": ["src/**/*"],
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

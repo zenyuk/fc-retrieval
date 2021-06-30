@@ -1,5 +1,5 @@
 {
-  "name": "fc-retrieval/client-js",
+  "name": "client-js",
   "version": "0.0.1",
   "license": "Apache-2.0",
   "description": "Filecoin Secondary Retrieval Market Javascript client library.",

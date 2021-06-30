@@ -1,0 +1,82 @@
+version: 2.1
+jobs:
+  build-and-test:
+    machine:
+      docker_layer_caching: true
+      image: ubuntu-2004:202104-01 # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+    resource_class: 2xlarge
+    working_directory: ~/fc-retrieval
+    environment:
+      TERM: xterm-256color
+      COLORTERM: 24bit
+    steps:
+      - checkout
+      - run:
+          name: Verify checkout and create cache.sum
+          command: |
+            date -Is
+            echo; git -P reflog --date=iso
+            go version >cache.sum
+            (shasum go.sum || true) >>cache.sum
+            shasum */go.sum >>cache.sum
+      # ref: https://github.com/ipfs/go-ipfs/blob/master/.circleci/config.yml
+      - restore_cache:
+          keys:
+            - go-mod-5-{{ checksum "cache.sum" }}
+            - go-mod-5-
+            - go-mod-
+      - run:
+          name: Run unit test, build cmd binaries, and build test binaries
+          command: |
+            make build
+      - save_cache:
+          key: go-mod-5-{{ checksum "cache.sum" }}
+          paths:
+            - ~/.go_workspace/pkg/mod
+            - ~/.cache/go-build
+      - run:
+          name: Create lotus images if not exist
+          command: |
+            docker image ls
+            echo
+            cd itest
+            make lotusbase lotusdaemon lotusfullnode
+
+      - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
+      - run: make LAST_GATEWAY_NO=1 itest-poc2js clean
+
+      - run: docker build -t consensys/fc-retrieval/gateway -f gateway/Dockerfile .
+      - run: docker build -t consensys/fc-retrieval/provider -f provider/Dockerfile .
+      - run: docker build -t consensys/fc-retrieval/register -f register/Dockerfile .
+      - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
+
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-init
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/provider-admin
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/poc1
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/lotus
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/poc2js
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_dht_offer_ack
+      - run: cd itest; go test -v github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_dht_offer_new_gateway
+
+      - run:
+          when: always
+          name: Check resource usage
+          command: |
+            echo; free -h
+            echo; uptime
+            echo; cat /proc/cpuinfo | egrep "^processor|^model name|^cpu MHz|^cache size" | tail -4
+            echo; uname -a
+            echo; go version
+            echo; git version
+            echo; go env
+            echo; df -h
+            echo; pwd
+            echo; echo TERM=$TERM
+            echo; echo PATH=$PATH
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - build-and-test

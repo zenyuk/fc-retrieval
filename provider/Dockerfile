@@ -1,8 +1,11 @@
 # Copyright (C) 2020 ConsenSys Software Inc
 FROM golang:1.16-alpine as builder
 RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git
-WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/provider/
-COPY . .
+
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval
+COPY common common
+COPY provider provider
+WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/provider
 
 # Get all dependancies, but don't install.
 RUN go get -d -v github.com/ConsenSys/fc-retrieval/provider/cmd/provider

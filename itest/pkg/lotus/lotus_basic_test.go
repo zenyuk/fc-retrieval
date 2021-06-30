@@ -50,7 +50,6 @@ func TestMain(m *testing.M) {
 	}
 	// Env is not set, we are calling from host
 	// We need a lotus
-	tag := util.GetCurrentBranch()
 
 	// Create shared net
 	bgCtx := context.Background()
@@ -62,7 +61,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
+	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
 
 	// Block until done.
 	if <-done {
@@ -77,7 +76,7 @@ func TestMain(m *testing.M) {
 	if err := lotusContainer.Terminate(ctx); err != nil {
 		logging.Error("error while terminating test container: %s", err.Error())
 	}
-	if err :=  (*network).Remove(ctx); err != nil {
+	if err := (*network).Remove(ctx); err != nil {
 		logging.Error("error while terminating test container network: %s", err.Error())
 	}
 }

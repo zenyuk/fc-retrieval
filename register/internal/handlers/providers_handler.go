@@ -65,7 +65,7 @@ func GetProviderRegisters(_ op.GetProviderRegistersParams) middleware.Responder 
 		payload = append(payload, &registerData)
 		debugOutputSb.WriteString(fmt.Sprintf("%s, ", registerData.NodeID))
 	}
-	log.Debug("total provider register records: %d; IDs: %s", len(providerRegisters), debugOutputSb.String())
+	//log.Debug("total provider register records: %d; IDs: %s", len(providerRegisters), debugOutputSb.String())
 
 	return op.NewGetProviderRegistersOK().WithPayload(payload)
 }

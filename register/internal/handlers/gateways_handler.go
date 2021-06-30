@@ -65,7 +65,7 @@ func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 		payload = append(payload, &registerData)
 		debugOutputSb.WriteString(fmt.Sprintf("%s, ", registerData.NodeID))
 	}
-	log.Debug("total gateway register records: %d; IDs: %s", len(gatewayRegisters), debugOutputSb.String())
+	//log.Debug("total gateway register records: %d; IDs: %s", len(gatewayRegisters), debugOutputSb.String())
 
 	return op.NewGetGatewayRegistersOK().WithPayload(payload)
 }

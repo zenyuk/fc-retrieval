@@ -1,25 +1,33 @@
 version: "3.8"
 
 services:
-  fc-retrieval/register:
-    image: consensys/fc-retrieval/register:dev
-    container_name: register
+  register:
+    container_name: fc-retrieval-register
+    build:
+      dockerfile: register/Dockerfile
+      context: ..
     networks:
       - shared
     ports:
       - "9020:9020"
+    volumes:
+      - ./common:/go/src/github.com/ConsenSys/fc-retrieval/common
+      - ./register:/go/src/github.com/ConsenSys/fc-retrieval/register
+
     env_file:
       - .env
+    restart: unless-stopped
 
-  fc-retrieval-redis:
+  redis:
     image: "redis:alpine"
-    container_name: redis
+    container_name: fc-retrieval-redis
     networks:
       - shared
     ports:
       - "6379:6379"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
+    restart: always
 
 networks:
   shared:

@@ -51,38 +51,6 @@ const lotusDaemonWaitFor = "retrieval client"
 const lotusFullNodeWaitFor = "starting winning PoSt warmup"
 const networkMode = "default"
 
-// GetCurrentBranch gets the current branch of this repo
-func GetCurrentBranch() string {
-	cmd := exec.Command("git", "symbolic-ref", "--short", "HEAD")
-	stdout, err := cmd.Output()
-	if err != nil {
-		panic(err)
-	}
-	tag := string(stdout[:len(stdout)-1])
-	return tag
-}
-
-// GetImageTag gets the image tag of a given repo and tag
-func GetImageTag(repo, tag string) string {
-	localImageTag := fmt.Sprintf("%v:develop-%v", repo, tag)
-	localImageMain := fmt.Sprintf("%v:develop-main", repo)
-	remoteImage := fmt.Sprintf("%v:dev", repo)
-
-	cmd := exec.Command("docker", "image", "inspect", localImageTag)
-	_, err := cmd.Output()
-	if err == nil {
-		return localImageTag
-	}
-
-	cmd = exec.Command("docker", "image", "inspect", localImageMain)
-	_, err = cmd.Output()
-	if err == nil {
-		return localImageMain
-	}
-
-	return remoteImage
-}
-
 // GetLotusToken gets the lotus token and the super account from the lotus container
 func GetLotusToken() (string, string) {
 	cmd := exec.Command("docker", "ps", "--filter", "ancestor=consensys/lotus-full-node:latest", "--format", "{{.ID}}")
@@ -239,10 +207,10 @@ func StartRedis(ctx context.Context, network string, verbose bool) tc.Container 
 }
 
 // StartRegister - starts the register
-func StartRegister(ctx context.Context, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
+func StartRegister(ctx context.Context, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a register container
 	req := tc.ContainerRequest{
-		Image:          GetImageTag("consensys/fc-retrieval/register", tag),
+		Image:          "consensys/fc-retrieval/register:latest",
 		Networks:       []string{network},
 		Env:            env,
 		NetworkMode:    container.NetworkMode(networkMode),
@@ -268,11 +236,11 @@ func StartRegister(ctx context.Context, tag string, network string, color string
 	return registerC
 }
 
-// StartGateway - start a gateway of specific id, tag, network, log color and env
-func StartGateway(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
+// StartGateway - start a gateway of specific id, network, log color and env
+func StartGateway(ctx context.Context, id string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a gateway container
 	req := tc.ContainerRequest{
-		Image:          GetImageTag("consensys/fc-retrieval/gateway", tag),
+		Image:          "consensys/fc-retrieval/gateway:latest",
 		Networks:       []string{network},
 		Env:            env,
 		NetworkMode:    container.NetworkMode(networkMode),
@@ -298,11 +266,11 @@ func StartGateway(ctx context.Context, id string, tag string, network string, co
 	return gatewayC
 }
 
-// StartProvider - start a provider of specific id, tag, network, log color and env
-func StartProvider(ctx context.Context, id string, tag string, network string, color string, env map[string]string, verbose bool) tc.Container {
+// StartProvider - start a provider of specific id, network, log color and env
+func StartProvider(ctx context.Context, id string, network string, color string, env map[string]string, verbose bool) tc.Container {
 	// Start a provider container
 	req := tc.ContainerRequest{
-		Image:          GetImageTag("consensys/fc-retrieval/provider", tag),
+		Image:          "consensys/fc-retrieval/provider:latest",
 		Networks:       []string{network},
 		Env:            env,
 		NetworkMode:    container.NetworkMode(networkMode),
@@ -329,7 +297,7 @@ func StartProvider(ctx context.Context, id string, tag string, network string, c
 }
 
 // StartItest - start the itest, must only be called in host
-func StartItest(ctx context.Context, tag string, network string, color string, lotusToken string, superAcct string, done chan bool, verbose bool, reloadJsTests string) tc.Container {
+func StartItest(ctx context.Context, network string, color string, lotusToken string, superAcct string, done chan bool, verbose bool, reloadJsTests string) tc.Container {
 	// Start a itest container
 	// Mount testdir
 	absPath, err := filepath.Abs(".")
@@ -337,36 +305,36 @@ func StartItest(ctx context.Context, tag string, network string, color string, l
 		panic(err)
 	}
 	// Mount common, client, gw-admin, pvd-admin
-	commonPath, err := filepath.Abs("../../../fc-retrieval/common/pkg")
+	commonPath, err := filepath.Abs("../../../common/pkg")
 	if err != nil {
 		panic(err)
 	}
-	clientPath, err := filepath.Abs("../../../fc-retrieval/client/pkg")
+	clientPath, err := filepath.Abs("../../../client/pkg")
 	if err != nil {
 		panic(err)
 	}
-	gwAdminPath, err := filepath.Abs("../../../fc-retrieval/gateway-admin/pkg")
+	gwAdminPath, err := filepath.Abs("../../../gateway-admin/pkg")
 	if err != nil {
 		panic(err)
 	}
-	pvdAdminPath, err := filepath.Abs("../../../fc-retrieval/provider-admin/pkg")
+	pvdAdminPath, err := filepath.Abs("../../../provider-admin/pkg")
 	if err != nil {
 		panic(err)
 	}
-	clientJsPath, err := filepath.Abs("../../../fc-retrieval/client-js")
+	clientJsPath, err := filepath.Abs("../../../client-js")
 	if err != nil {
 		panic(err)
 	}
 
 	req := tc.ContainerRequest{
-		Image:          GetImageTag("consensys/fc-retrieval/itest", tag),
+		Image:          "consensys/fc-retrieval/itest",
 		Name:           "itest",
 		Networks:       []string{network},
 		Env:            map[string]string{"ITEST_CALLING_FROM_CONTAINER": "yes", "LOTUS_TOKEN": lotusToken, "SUPER_ACCT": superAcct, "RELOAD_JS_TESTS": reloadJsTests},
 		NetworkMode:    container.NetworkMode(networkMode),
 		NetworkAliases: map[string][]string{network: {"itest"}},
 		BindMounts: map[string]string{
-			clientJsPath: "/usr/src/github.com/ConsenSys/fc-retrieval/client-js/",
+			clientJsPath: "/go/src/github.com/ConsenSys/fc-retrieval/client-js/",
 			absPath:      "/go/src/github.com/ConsenSys/fc-retrieval/itest/pkg/temp/",
 			commonPath:   "/go/src/github.com/ConsenSys/fc-retrieval/common/pkg/",
 			clientPath:   "/go/src/github.com/ConsenSys/fc-retrieval/client/pkg/",
@@ -562,7 +530,7 @@ func waitReceipt(cid *cid.Cid, api *apistruct.FullNodeStruct) *types.MessageRece
 
 func CallClientJsInstall() error {
 	cmd := exec.Command("npm", "install")
-	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval/client-js/"
+	cmd.Dir = "../../../client-js/"
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -574,7 +542,7 @@ func CallClientJsE2E(key string, walletKey string, registerAPI string, lotusAP s
 	if os.Getenv("RELOAD_JS_TESTS") == "yes" {
 		cmd = exec.Command("npm", "run", "test-e2e-watch")
 	}
-	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval/client-js/"
+	cmd.Dir =  "../../../client-js"
 
 	cmd.Env = append(os.Environ(),
 		"ESTABLISHMENT_TTL=101",

@@ -50,7 +50,6 @@ func TestMain(m *testing.M) {
 	}
 	// Env is not set, we are calling from host
 	// We don't need any running instance
-	tag := util.GetCurrentBranch()
 
 	// Create shared net
 	ctx := context.Background()
@@ -58,7 +57,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
+	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
 
 	// Block until done.
 	if <-done {

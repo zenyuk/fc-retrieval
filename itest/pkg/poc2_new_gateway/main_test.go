@@ -39,7 +39,6 @@ func TestMain(m *testing.M) {
 	}
 	// Env is not set, we are calling from host
 	// We need a redis, a register, 17 gateways and 3 providers
-	tag := util.GetCurrentBranch()
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -54,19 +53,19 @@ func TestMain(m *testing.M) {
 	redisContainer := util.StartRedis(ctx, networkName, true)
 
 	// Start register
-	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
+	registerContainer := util.StartRegister(ctx, networkName, util.ColorYellow, rgEnv, true)
 
 	// Start 3 providers
 	var providerContainers []*tc.Container
 	for i := 0; i < 3; i++ {
-		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), tag, networkName, util.ColorBlue, pvEnv, true)
+		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), networkName, util.ColorBlue, pvEnv, true)
 		providerContainers = append(providerContainers, &c)
 	}
 
 	// Start 33 gateways
 	var gatewayContainers []*tc.Container
 	for i := 0; i < 33; i++ {
-		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), tag, networkName, util.ColorCyan, gwEnv, true)
+		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), networkName, util.ColorCyan, gwEnv, true)
 		gatewayContainers = append(gatewayContainers, &c)
 	}
 
@@ -80,7 +79,7 @@ func TestMain(m *testing.M) {
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, lotusToken, superAcct, done, true, "")
+	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, lotusToken, superAcct, done, true, "")
 	// Block until done.
 	if <-done {
 		logging.Info("Tests passed, shutdown...")

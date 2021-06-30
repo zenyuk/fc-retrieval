@@ -57,7 +57,6 @@ func TestMain(m *testing.M) {
 	}
 	// Env is not set, we are calling from host
 	// We need a redis, a register, a gateway and a provider
-	tag := util.GetCurrentBranch()
 
 	// Get env
 	rgEnv := util.GetEnvMap("../../.env.register")
@@ -72,17 +71,17 @@ func TestMain(m *testing.M) {
 	redisContainer := util.StartRedis(ctx, networkName, true)
 
 	// Start register
-	registerContainer := util.StartRegister(ctx, tag, networkName, util.ColorYellow, rgEnv, true)
+	registerContainer := util.StartRegister(ctx, networkName, util.ColorYellow, rgEnv, true)
 
 	// Start gateway
-	gatewayContainer := util.StartGateway(ctx, "gateway", tag, networkName, util.ColorBlue, gwEnv, true)
+	gatewayContainer := util.StartGateway(ctx, "gateway", networkName, util.ColorBlue, gwEnv, true)
 
 	// Start provider
-	providerContainer := util.StartProvider(ctx, "provider", tag, networkName, util.ColorPurple, pvEnv, true)
+	providerContainer := util.StartProvider(ctx, "provider", networkName, util.ColorPurple, pvEnv, true)
 
 	// Start itest
 	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, tag, networkName, util.ColorGreen, "", "", done, true, "")
+	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
 
 	// Block until done.
 	if <-done {
