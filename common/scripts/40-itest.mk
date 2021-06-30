@@ -1,26 +1,18 @@
 .PHONY: test itest
 
-# client-gateway  client-init  lotus  lotus-full-node  poc1  poc2_dht_offer  poc2_dht_offer_ack  poc2_dht_offer_new_gateway  poc2_group_offer  poc2js  poc2_new_gateway  provider-admin  util
-#                                     lotus-full-node                                      :x    poc2_dht_offer_new_gateway  poc2_group_offer  poc2js  poc2_new_gateway                  util
-#
-quick-itest test:
-	@echo " \\e[01;32m \\n#run: $@\\e[m"
-	$(MAKE) LAST_GATEWAY_NO=0 itest-client-gateway
-	$(MAKE) LAST_GATEWAY_NO=0 itest-client-init
-	$(MAKE) LAST_GATEWAY_NO=0 itest-provider-admin
-	$(MAKE) LAST_GATEWAY_NO=0 itest-poc1
-	true $(MAKE) LAST_GATEWAY_NO=0 itest-lotus
-	true $(MAKE) LAST_GATEWAY_NO=0 itest-lotus-full-node
-	true $(MAKE) LAST_GATEWAY_NO=0
+quick-itest test: itest-poc1
 
+itest-poc1:
+	$(MAKE) LAST_GATEWAY_NO=0 _mk_itest-poc1 clean
 
+itest-poc2js:
+	$(MAKE) LAST_GATEWAY_NO=1 _mk_itest-poc2js clean
 
-itest-% \
+_mk_itest-% \
 :
-	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	set -e; \
 	make docker-clean docker-restart; \
-	DIR=$(subst itest-,,$@); \
+	DIR=$(subst _mk_itest-,,$@); \
 	cd itest; \
 	. ./env-LOTUS_KEYS.out; \
 	cd pkg/$$DIR; \
