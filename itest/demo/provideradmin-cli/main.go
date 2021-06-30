@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 	"github.com/c-bata/go-prompt"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -127,7 +127,7 @@ func executor(in string) {
 		fmt.Println("Providers currently in use:")
 		pAdmin.ActiveProvidersLock.RLock()
 		for _, pvd := range pAdmin.ActiveProviders {
-			fmt.Println(pvd.NodeID)
+			fmt.Println(pvd.GetNodeID())
 		}
 		pAdmin.ActiveProvidersLock.RUnlock()
 	case "publish-offer-from-file":

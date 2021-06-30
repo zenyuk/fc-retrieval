@@ -14,7 +14,7 @@ services:
       driver: "none"
 
   provider:
-    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval-provider:dev}
+    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval/provider}
     container_name: provider
     networks:
       - shared
@@ -30,7 +30,7 @@ services:
       - lotus
 
   gateway0:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway0
     networks:
       - shared
@@ -45,7 +45,7 @@ services:
       - provider
 
   gateway1:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway1
     networks:
       - shared
@@ -60,7 +60,7 @@ services:
       - gateway0
 
   gateway2:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway2
     networks:
       - shared
@@ -75,7 +75,7 @@ services:
       - gateway1
 
   gateway3:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway3
     networks:
       - shared
@@ -90,7 +90,7 @@ services:
       - gateway2
 
   gateway4:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway4
     networks:
       - shared
@@ -105,7 +105,7 @@ services:
       - gateway3
 
   gateway5:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway5
     networks:
       - shared
@@ -120,7 +120,7 @@ services:
       - gateway4
 
   gateway6:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway6
     networks:
       - shared
@@ -135,7 +135,7 @@ services:
       - gateway5
 
   gateway7:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway7
     networks:
       - shared
@@ -150,7 +150,7 @@ services:
       - gateway6
 
   gateway8:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway8
     networks:
       - shared
@@ -165,7 +165,7 @@ services:
       - gateway7
 
   gateway9:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway9
     networks:
       - shared
@@ -180,7 +180,7 @@ services:
       - gateway8
 
   gateway10:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway10
     networks:
       - shared
@@ -195,7 +195,7 @@ services:
       - gateway9
 
   gateway11:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway11
     networks:
       - shared
@@ -210,7 +210,7 @@ services:
       - gateway10
 
   gateway12:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway12
     networks:
       - shared
@@ -225,7 +225,7 @@ services:
       - gateway11
 
   gateway13:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway13
     networks:
       - shared
@@ -240,7 +240,7 @@ services:
       - gateway12
 
   gateway14:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway14
     networks:
       - shared
@@ -255,7 +255,7 @@ services:
       - gateway13
 
   gateway15:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway15
     networks:
       - shared
@@ -270,7 +270,7 @@ services:
       - gateway14
 
   gateway16:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway16
     networks:
       - shared
@@ -285,7 +285,7 @@ services:
       - gateway15
 
   gateway17:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway17
     networks:
       - shared
@@ -300,7 +300,7 @@ services:
       - gateway16
 
   gateway18:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway18
     networks:
       - shared
@@ -315,7 +315,7 @@ services:
       - gateway17
 
   gateway19:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
     container_name: gateway19
     networks:
       - shared
@@ -330,7 +330,7 @@ services:
       - gateway18
 
   register:
-    image: ${REGISTER_IMAGE:-consensys/fc-retrieval-register:dev}
+    image: ${REGISTER_IMAGE:-consensys/fc-retrieval/register}
     container_name: register
     ports:
       - "9020:9020"
