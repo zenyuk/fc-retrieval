@@ -537,12 +537,12 @@ func CallClientJsInstall() error {
 	return err
 }
 
-func CallClientJsE2E(key string, walletKey string, registerAPI string, lotusAP string, lotusToken string) error {
+func CallClientJsE2E(key string, walletKey string, registerAPI string, lotusAP string, lotusToken string, gtws string, prvs string) error {
 	cmd := exec.Command("npm", "run", "test-e2e")
 	if os.Getenv("RELOAD_JS_TESTS") == "yes" {
 		cmd = exec.Command("npm", "run", "test-e2e-watch")
 	}
-	cmd.Dir =  "../../../client-js"
+	cmd.Dir = "/usr/src/github.com/ConsenSys/fc-retrieval-client-js"
 
 	cmd.Env = append(os.Environ(),
 		"ESTABLISHMENT_TTL=101",
@@ -551,6 +551,8 @@ func CallClientJsE2E(key string, walletKey string, registerAPI string, lotusAP s
 		fmt.Sprintf("FCR_WALLET_PRIVATE_KEY=%s", walletKey),
 		fmt.Sprintf("FCR_LOTUS_AP=%s", lotusAP),
 		fmt.Sprintf("FCR_LOTUS_AUTH_TOKEN=%s", lotusToken),
+		fmt.Sprintf("FCR_GATEWAYS=%s", gtws),
+		fmt.Sprintf("FCR_PROVIDERS=%s", prvs),
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
