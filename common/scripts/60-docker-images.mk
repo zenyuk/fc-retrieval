@@ -5,8 +5,8 @@ micro-images: register/main provider/main gateway/main
 	for d in register provider gateway; \
 	do \
 		cd $$d/micro-docker; \
-		docker rmi consensys/fc-retrieval/$$d 2>/dev/null || true; \
 		cp -uv ../main .; \
+		docker rmi consensys/fc-retrieval/$$d 2>/dev/null || true; \
 		docker build --no-cache -t consensys/fc-retrieval/$$d . ; \
 		cd ../../; \
 	done;
