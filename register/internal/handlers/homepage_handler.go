@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/ConsenSys/fc-retrieval-register/models"
-	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
+	"github.com/ConsenSys/fc-retrieval/register/models"
+	op "github.com/ConsenSys/fc-retrieval/register/restapi/operations/homepage"
 )
 
 // HomepageHandler handler

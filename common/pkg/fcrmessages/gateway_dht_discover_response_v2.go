@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 )
 
 // gatewayDHTDiscoverResponseV2 is the response to gatewayDHTDiscoverRequest

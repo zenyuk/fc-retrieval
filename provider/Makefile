@@ -1,6 +1,6 @@
 PORT ?= 9030
 VERSION?=dev
-IMAGE?=consensys/fc-retrieval-provider
+IMAGE?=consensys/fc-retrieval/provider
 COV?=80
 
 .PHONY: build build-dev start start-dev stop utest coverage
@@ -11,7 +11,7 @@ build:
 	docker build -t $(IMAGE):$(VERSION) .
 
 buildlocal:
-	cd ..; docker build -f ./fc-retrieval-provider/Dockerfile.local -t ${IMAGE}:${VERSION} .
+	cd ..; docker build -f ./fc-retrieval/provider/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 build-dev:
 	go build -v cmd/provider/main.go
@@ -44,7 +44,7 @@ coverage:
 	bash ./scripts/coverage.sh $(COV)
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
 	go mod tidy
 
 useremote:

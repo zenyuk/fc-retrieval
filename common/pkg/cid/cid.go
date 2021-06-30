@@ -28,7 +28,7 @@ import (
 
 	"github.com/cbergoon/merkletree"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
 
 const WordSize = 32 // the ContentID length is 32 bytes.

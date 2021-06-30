@@ -22,8 +22,8 @@ package fcrgatewayadmin
  */
 
 import (
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
 // SettingsBuilder holds the library configuration

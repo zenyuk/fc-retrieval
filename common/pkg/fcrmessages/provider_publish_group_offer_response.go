@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // providerPublishGroupOfferResponse is the response to providerPublishGroupOfferRequest

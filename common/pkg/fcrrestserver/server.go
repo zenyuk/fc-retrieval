@@ -25,8 +25,8 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
 // FCRRESTServer represents a REST server handling http requests.

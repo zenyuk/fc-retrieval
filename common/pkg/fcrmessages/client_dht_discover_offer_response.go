@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // clientDHTDiscoverOfferResponse is the response to clientDHTDiscoverOfferRequest

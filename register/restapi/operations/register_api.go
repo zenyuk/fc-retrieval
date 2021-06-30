@@ -19,9 +19,9 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/gateway"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/homepage"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/provider"
 )
 
 // NewRegisterAPI creates a new Register instance

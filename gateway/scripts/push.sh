@@ -4,7 +4,7 @@ echo "*** Push docker image to Docker Hub  ***"
 echo "****************************************"
 
 # Docker image name on docker hub
-IMAGE_NAME=consensys/fc-retrieval-gateway
+IMAGE_NAME=consensys/fc-retrieval/gateway
 
 VERSION=$1
 echo "Gateway version: $VERSION"

@@ -20,11 +20,11 @@ import (
 
   "github.com/ant0ine/go-json-rest/rest"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval-gateway/internal/core"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval/gateway/internal/core"
 )
 
 // HandleGatewayAdminListDHTOffersRequest handles admin list dht offer request

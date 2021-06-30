@@ -21,7 +21,7 @@ package register
  */
 
 import (
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
 
 // ProviderRegister stores information of a registered provider

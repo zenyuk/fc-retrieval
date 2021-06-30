@@ -18,12 +18,12 @@ package adminapi
 import (
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestGetPublishedOffer checks the group offer stored in the provider for a given list of gateways.

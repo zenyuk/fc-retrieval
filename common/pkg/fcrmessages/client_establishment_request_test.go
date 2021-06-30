@@ -3,8 +3,8 @@ package fcrmessages
 import (
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/challenge"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/challenge"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval-provider:dev}
+    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval/provider:dev}
     container_name: provider
     networks:
       - shared
@@ -28,7 +28,7 @@ services:
       - lotus
 
   gateway:
-    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval-gateway:dev}
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway:dev}
     container_name: gateway
     networks:
       - shared
@@ -44,7 +44,7 @@ services:
       - lotus
 
   register:
-    image: ${REGISTER_IMAGE:-consensys/fc-retrieval-register:dev}
+    image: ${REGISTER_IMAGE:-consensys/fc-retrieval/register:dev}
     container_name: register
     ports:
       - "9020:9020"
@@ -68,11 +68,11 @@ services:
     restart: always
 
   itest:
-    image: ${ITEST_IMAGE:-consensys/fc-retrieval-itest:dev}
+    image: ${ITEST_IMAGE:-consensys/fc-retrieval/itest:dev}
     container_name: itest
     volumes:
-      - ../fc-retrieval-gateway-admin:/go/src/github.com/ConsenSys/fc-retrieval-gateway-admin
-      - ../fc-retrieval-provider-admin:/go/src/github.com/ConsenSys/fc-retrieval-provider-admin
+      - ../fc-retrieval/gateway-admin:/go/src/github.com/ConsenSys/fc-retrieval/gateway-admin
+      - ../fc-retrieval/provider-admin:/go/src/github.com/ConsenSys/fc-retrieval/provider-admin
     networks:
       - shared
     depends_on:

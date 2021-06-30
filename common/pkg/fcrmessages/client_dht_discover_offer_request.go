@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // clientDHTDiscoverOfferRequest is the requset from client to gateway to ask for cid offer via DHT

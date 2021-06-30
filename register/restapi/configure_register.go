@@ -10,17 +10,17 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/gateway"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/homepage"
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/gateway"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/homepage"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations/provider"
 
 	"github.com/rs/cors"
 
-	"github.com/ConsenSys/fc-retrieval-register/internal/handlers"
+	"github.com/ConsenSys/fc-retrieval/register/internal/handlers"
 )
 
-//go:generate swagger generate server --target ../../fc-retrieval-register --name Register --spec ../docs/swagger.yml --principal interface{}
+//go:generate swagger generate server --target ../../fc-retrieval/register --name Register --spec ../docs/swagger.yml --principal interface{}
 
 func configureFlags(_ *operations.RegisterAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

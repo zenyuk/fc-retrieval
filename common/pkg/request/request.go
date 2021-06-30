@@ -19,7 +19,7 @@ package request
  */
 
 // do not remove
-//go:generate mockgen -destination=../mocks/mock_request.go -package=mocks github.com/ConsenSys/fc-retrieval-common/pkg/request HttpCommunications
+//go:generate mockgen -destination=../mocks/mock_request.go -package=mocks github.com/ConsenSys/fc-retrieval/common/pkg/request HttpCommunications
 
 import (
 	"bytes"
@@ -31,8 +31,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
 type HttpCommunicator struct {

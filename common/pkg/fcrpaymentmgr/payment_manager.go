@@ -46,7 +46,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/minio/blake2b-simd"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
 // FCRPaymentMgr - payment manager, manages all payment related functions

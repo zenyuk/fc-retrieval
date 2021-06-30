@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // gatewayAdminGetReputationResponse is the response to gatewayAdminGetReputationRequest

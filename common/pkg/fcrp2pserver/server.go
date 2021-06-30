@@ -21,10 +21,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // FCRP2PServer represents a server handling p2p connection using tcp.

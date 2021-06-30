@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmerkletree"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // gatewayListDHTOfferRequest is the request from gateway to provider during start-up asking for dht offers

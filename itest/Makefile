@@ -5,7 +5,7 @@
 # Usage:
 #   [VERSION=v3] [REGISTRY="gcr.io/google_containers"] make build
 VERSION?=dev
-IMAGE?=consensys/fc-retrieval-itest
+IMAGE?=consensys/fc-retrieval/itest
 COMPOSE_FILE?=docker-compose.yml
 
 # Always assume these targets are out of date.
@@ -28,7 +28,7 @@ lotusfullnode:
 	docker build -t consensys/lotus-full-node lotus/lotus-full-node
 
 buildlocal:
-	cd ..; docker build -f ./fc-retrieval-itest/Dockerfile.local -t ${IMAGE}:${VERSION} .
+	cd ..; docker build -f ./fc-retrieval/itest/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 # push the image to an registry
 push:
@@ -38,10 +38,10 @@ tag:
 	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-client => ../fc-retrieval-client" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-gateway-admin => ../fc-retrieval-gateway-admin" >> go.mod
-	echo "replace github.com/ConsenSys/fc-retrieval-provider-admin => ../fc-retrieval-provider-admin" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/client => ../fc-retrieval/client" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/gateway-admin => ../fc-retrieval/gateway-admin" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/provider-admin => ../fc-retrieval/provider-admin" >> go.mod
 	go mod tidy
 
 useremote:
@@ -52,18 +52,18 @@ detectmisconfig:
 
 # Local build: make sure the test code compiles. 
 lbuild:
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-gateway
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/client-init
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc1
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer_ack
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_dht_offer_new_gateway
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_group_offer
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2_new_gateway
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/poc2js
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/provider-admin
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus
-	go test -c github.com/ConsenSys/fc-retrieval-itest/pkg/lotus-full-node
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/client-init
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc1
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_dht_offer
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_dht_offer_ack
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_dht_offer_new_gateway
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_group_offer
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2_new_gateway
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/poc2js
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/provider-admin
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/lotus
+	go test -c github.com/ConsenSys/fc-retrieval/itest/pkg/lotus-full-node
 
 
 # Test all packages, skipping lotus-full-node on CircleCI

@@ -12,8 +12,8 @@ import (
   "github.com/spf13/pflag"
   "github.com/spf13/viper"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval/gateway/internal/util/settings"
 )
 
 // NewConfig creates a new configuration

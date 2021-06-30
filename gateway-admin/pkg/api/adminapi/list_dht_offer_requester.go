@@ -18,10 +18,10 @@ package adminapi
 import (
   "errors"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestListDHTOffer asks a given gateway to list dht offer

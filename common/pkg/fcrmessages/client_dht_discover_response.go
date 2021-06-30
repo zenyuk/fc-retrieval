@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // clientDHTDiscoverResponse is the response to clientDHTDiscoverRequest

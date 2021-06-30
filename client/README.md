@@ -1,7 +1,7 @@
-# fc-retrieval-client
+# fc-retrieval/client
 Filecoin Secondary Retrieval Market client library.
 
-See also Filecoin Secondary Retrieval Market [gateway](https://github.com/ConsenSys/fc-retrieval-gateway) and [retrieval provider](https://github.com/ConsenSys/fc-retrieval-provider) repositories.
+See also Filecoin Secondary Retrieval Market [gateway](https://github.com/ConsenSys/fc-retrieval/gateway) and [retrieval provider](https://github.com/ConsenSys/fc-retrieval/provider) repositories.
 
 ## POC1
 

@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 )
 
 // providerAdminGetPublishedOfferResponse is the response to providerAdminGetPublishedOfferRequest

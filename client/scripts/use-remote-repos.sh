@@ -12,13 +12,13 @@ sed '/replace .*/d' go.mod > go.mod.temp1
 rm go.mod
 mv go.mod.temp1 go.mod
 
-CLIENT_DIR="../fc-retrieval-client"
+CLIENT_DIR="../fc-retrieval/client"
 CLIENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 echo "client repo branch: $CLIENT_BRANCH"
 
 
 # Check repo:
-# $1 is the name of the repo. fc-retrieval-client would be client.
+# $1 is the name of the repo. fc-retrieval/client would be client.
 # $2 is the relative directory of the repo
 #
 check_repo() {
@@ -53,5 +53,5 @@ check_repo() {
     fi
 }
 
-check_repo common ../fc-retrieval-common
+check_repo common ../fc-retrieval/common
 go mod tidy

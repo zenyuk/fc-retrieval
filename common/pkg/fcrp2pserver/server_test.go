@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/utest"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/utest"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -25,7 +25,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"github.com/ConsenSys/fc-retrieval-register/restapi/operations"
+	"github.com/ConsenSys/fc-retrieval/register/restapi/operations"
 )
 
 const (

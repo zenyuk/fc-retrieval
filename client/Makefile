@@ -26,7 +26,7 @@ useremote:
 	cd scripts; bash use-remote-repos.sh
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
 	go mod tidy
 
 utest:

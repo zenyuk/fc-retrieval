@@ -3,7 +3,7 @@
 # Build the Filecoin Retrieval Gateway
 
 VERSION?=dev
-IMAGE?=consensys/fc-retrieval-gateway
+IMAGE?=consensys/fc-retrieval/gateway
 COV?=80
 
 release: clean build tag
@@ -13,7 +13,7 @@ build:
 	docker build -t ${IMAGE}:${VERSION} .
 
 buildlocal:
-	cd ..; docker build -f ./fc-retrieval-gateway/Dockerfile.local -t ${IMAGE}:${VERSION} .
+	cd ..; docker build -f ./fc-retrieval/gateway/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 # push the image to an registry
 push:
@@ -26,7 +26,7 @@ useremote:
 	cd scripts; bash use-remote-repos.sh
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
 	go mod tidy
 
 utest:
@@ -41,11 +41,11 @@ clean:
 	docker rmi -f ${IMAGE}:${VERSION} || true
 
 cleanoldfiles:
-	docker rm -f fc-retrieval-gateway-builder 2> /dev/null || true
-	docker rmi -f fc-retrieval-gateway-builder || true
+	docker rm -f fc-retrieval/gateway-builder 2> /dev/null || true
+	docker rmi -f fc-retrieval/gateway-builder || true
 
 cleanoldfile:
-	docker rm -f fc-retrieval-gateway-builder 2> /dev/null || true
+	docker rm -f fc-retrieval/gateway-builder 2> /dev/null || true
 
 .PHONY: release clean build push cleanoldfiles utest coverage
 

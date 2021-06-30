@@ -22,7 +22,7 @@ package reputation
 import (
 	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // Single instance of the reputation system

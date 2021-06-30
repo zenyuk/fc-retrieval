@@ -4,7 +4,7 @@ echo "*** Tag docker image with the branch name  ***"
 echo "****************************************"
 
 # Docker image name on docker hub
-IMAGE_NAME=consensys/fc-retrieval-provider
+IMAGE_NAME=consensys/fc-retrieval/provider
 
 VERSION=$1
 echo "Register version: $VERSION"

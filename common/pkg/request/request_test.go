@@ -5,7 +5,7 @@ import (
   "net/http"
   "net/http/httptest"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
 )
 
 var c = NewHttpCommunicator()

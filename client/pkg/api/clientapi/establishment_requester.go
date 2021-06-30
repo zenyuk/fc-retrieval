@@ -19,10 +19,10 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.

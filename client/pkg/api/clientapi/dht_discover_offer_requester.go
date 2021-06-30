@@ -24,12 +24,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // GatewaySubOffers - relation between a Gateway and the Sub-Offers received through the Gateway

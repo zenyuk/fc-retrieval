@@ -5,7 +5,7 @@ echo "********************************************************"
 echo "*** Update go.mod to point to the local gateway repo ***"
 echo "********************************************************"
 
-REPLACE_TEXT="replace github.com/ConsenSys/fc-retrieval-gateway => ../fc-retrieval-gateway"
+REPLACE_TEXT="replace github.com/ConsenSys/fc-retrieval/gateway => ../fc-retrieval/gateway"
 
 sed '/replace .*/d' ../go.mod > ../go.mod.new
 rm ../go.mod

@@ -1,8 +1,8 @@
 # PoC1 Expected Test Output
 This file contains the expected output when running the following commands:
 ```
-git clone https://github.com/ConsenSys/fc-retrieval-common.git
-cd fc-retrieval-common/scripts
+git clone https://github.com/ConsenSys/fc-retrieval/common.git
+cd fc-retrieval/common/scripts
 bash clonebuildtest.sh 163-poc1-release
 ```
 
@@ -12,7 +12,7 @@ bash clonebuildtest.sh 163-poc1-release
 scripts % bash clonebuildtest.sh 163-poc1-release 
 Clone, Build, and Test for branch: 163-poc1-release
 Cloning repo: client
-Cloning into 'fc-retrieval-client'...
+Cloning into 'fc-retrieval/client'...
 remote: Enumerating objects: 4, done.
 remote: Counting objects: 100% (4/4), done.
 remote: Compressing objects: 100% (4/4), done.
@@ -22,7 +22,7 @@ Resolving deltas: 100% (445/445), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: common
-Cloning into 'fc-retrieval-common'...
+Cloning into 'fc-retrieval/common'...
 remote: Enumerating objects: 297, done.
 remote: Counting objects: 100% (297/297), done.
 remote: Compressing objects: 100% (189/189), done.
@@ -32,7 +32,7 @@ Resolving deltas: 100% (154/154), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: gateway
-Cloning into 'fc-retrieval-gateway'...
+Cloning into 'fc-retrieval/gateway'...
 remote: Enumerating objects: 317, done.
 remote: Counting objects: 100% (317/317), done.
 remote: Compressing objects: 100% (190/190), done.
@@ -42,7 +42,7 @@ Resolving deltas: 100% (1024/1024), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: gateway-admin
-Cloning into 'fc-retrieval-gateway-admin'...
+Cloning into 'fc-retrieval/gateway-admin'...
 remote: Enumerating objects: 36, done.
 remote: Counting objects: 100% (36/36), done.
 remote: Compressing objects: 100% (24/24), done.
@@ -52,7 +52,7 @@ Resolving deltas: 100% (202/202), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: itest
-Cloning into 'fc-retrieval-itest'...
+Cloning into 'fc-retrieval/itest'...
 remote: Enumerating objects: 198, done.
 remote: Counting objects: 100% (198/198), done.
 remote: Compressing objects: 100% (133/133), done.
@@ -62,7 +62,7 @@ Resolving deltas: 100% (530/530), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: provider
-Cloning into 'fc-retrieval-provider'...
+Cloning into 'fc-retrieval/provider'...
 remote: Enumerating objects: 332, done.
 remote: Counting objects: 100% (332/332), done.
 remote: Compressing objects: 100% (185/185), done.
@@ -72,7 +72,7 @@ Resolving deltas: 100% (464/464), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: provider-admin
-Cloning into 'fc-retrieval-provider-admin'...
+Cloning into 'fc-retrieval/provider-admin'...
 remote: Enumerating objects: 4, done.
 remote: Counting objects: 100% (4/4), done.
 remote: Compressing objects: 100% (4/4), done.
@@ -82,7 +82,7 @@ Resolving deltas: 100% (98/98), done.
 Branch '163-poc1-release' set up to track remote branch '163-poc1-release' from 'origin'.
 Switched to a new branch '163-poc1-release'
 Cloning repo: register
-Cloning into 'fc-retrieval-register'...
+Cloning into 'fc-retrieval/register'...
 remote: Enumerating objects: 10, done.
 remote: Counting objects: 100% (10/10), done.
 remote: Compressing objects: 100% (8/8), done.
@@ -105,8 +105,8 @@ See 'docker rm --help'.
 Usage:  docker rm [OPTIONS] CONTAINER [CONTAINER...]
 
 Remove one or more containers
-Untagged: consensys/fc-retrieval-itest:dev
-Untagged: consensys/fc-retrieval-itest:develop-163-poc1-release
+Untagged: consensys/fc-retrieval/itest:dev
+Untagged: consensys/fc-retrieval/itest:develop-163-poc1-release
 Deleted: sha256:cdb4771bf31362583ebbf4b50f20c4ef89a41e7cc4400920fa0822823c7093c5
 Deleted: sha256:39d60d46dc46687cf025ef8962ffefed0aded3f735fb0c1a4ebd544e5eef2350
 Deleted: sha256:1892af8919ca53dfebcb22196da437d8fad421a2458b44491ec490d6afe01caa
@@ -116,8 +116,8 @@ Deleted: sha256:64e43c7d8ba365e4f541b99f8cbeebb607c0fad0ad10009ddfefd3a736f83f08
 Deleted: sha256:6da219314148206c73f66a7ae67fadd8e799fe0f99818202a10ae53fbd981cc2
 Deleted: sha256:b320eb346356d3a5b13724f0805f764cc0b763478ef10446be2b16237f93ebd9
 Deleted: sha256:91d7bac8ac679540c9c0bf9b3ea101c0c7a8a75fc58fc6c2a8368eeb947654d6
-Untagged: consensys/fc-retrieval-provider:dev
-Untagged: consensys/fc-retrieval-provider:develop-163-poc1-release
+Untagged: consensys/fc-retrieval/provider:dev
+Untagged: consensys/fc-retrieval/provider:develop-163-poc1-release
 Deleted: sha256:c454a34f6c50b996ff8ec3d06d1c8303ecb56bc6d9431489980bf23ad2015ea3
 Deleted: sha256:691cedc30f983a6de202b33d095add7e43f9b39bd4e18cb84aaa24c078dee813
 Deleted: sha256:da05087b1f29a2e6eb0c2fd12cdb8d0d64bb2eb07808a7acd7b002ad8d720c05
@@ -131,8 +131,8 @@ Deleted: sha256:c0b7853e02a32ea0c15e21486ff91523a553855939add39836356dee3c7935fb
 Deleted: sha256:8f9140f17decfa8515793eb7f3066e032950515f66c94ae6ddf0f2f702d083b9
 Deleted: sha256:b8a9a76a01c9b8fc24e8eb2ec04fd8fbd5e098016b4c3ed1f11d94050d8a59c8
 Deleted: sha256:2314b137b0f53cde0f103093cf581e995d835ee63843230cc61b8d8e7f9245ee
-Untagged: consensys/fc-retrieval-gateway:dev
-Untagged: consensys/fc-retrieval-gateway:develop-163-poc1-release
+Untagged: consensys/fc-retrieval/gateway:dev
+Untagged: consensys/fc-retrieval/gateway:develop-163-poc1-release
 Deleted: sha256:190d19922ca37a264b5f762dbf0cdf9a30ce5bb4fc921b44170a617c392079c8
 Deleted: sha256:31e71e438b28d36ea27508c88a198a726b64a81f6b7955845950ef347197d89f
 Deleted: sha256:95ff137d539c659a3f4a68ade7141f7e762b1a3745d0a9741162dbabfdf247cb
@@ -148,8 +148,8 @@ Deleted: sha256:5b755a361302add3a598c07dedf3a410c3aaaf609b03166da4fba21a8e7a42b0
 Deleted: sha256:02baa6122fe1a15738187c59ed583a9a16b28193e8ecc021901744ba7c1ee388
 Deleted: sha256:2a574b1541e5eb058eba715f39b7b02b65403f11b36aac7aebcfb5f76199fc98
 Deleted: sha256:76a90d79c2a05f3a28614faae12475c1e3e0e65f6f3d239253229777e32fd20b
-Untagged: consensys/fc-retrieval-register:dev
-Untagged: consensys/fc-retrieval-register:develop-163-poc1-release
+Untagged: consensys/fc-retrieval/register:dev
+Untagged: consensys/fc-retrieval/register:develop-163-poc1-release
 Deleted: sha256:f9f79051dd543156a182731e0fd1088e4cefe2feed9b315fa259880356cff90e
 Deleted: sha256:99cd734d9e84c6b242cb9826592cac36beefd69c3d1c3ebdcf898fccf274c76b
 Deleted: sha256:d31456d9a1b0b7e8d0bb93ff235552051ed64fb89113883669fa09c1268d7d48
@@ -201,10 +201,10 @@ cd scripts; bash use-remote-repos.sh
 *** for gateway.                                                            ***
 *******************************************************************************
 register repo branch: 163-poc1-release
-Found common repo: ../fc-retrieval-common
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 register and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
 Checking repo: client
 cd scripts; bash use-remote-repos.sh
 *******************************************************************************
@@ -212,14 +212,14 @@ cd scripts; bash use-remote-repos.sh
 *** for gateway.                                                            ***
 *******************************************************************************
 client repo branch: 163-poc1-release
-Found common repo: ../fc-retrieval-common
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 client and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
-Found register repo: ../fc-retrieval-register
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
 client and register branch match
-Calling go get to use 163-poc1-release on fc-retrieval-register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
+Calling go get to use 163-poc1-release on fc-retrieval/register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
 Checking repo: provider-admin
 cd scripts; bash use-remote-repos.sh
 *******************************************************************************
@@ -227,24 +227,24 @@ cd scripts; bash use-remote-repos.sh
 *** for gateway.                                                            ***
 *******************************************************************************
 provider-admin repo branch: 163-poc1-release
-Found client repo: ../fc-retrieval-client
+Found client repo: ../fc-retrieval/client
 client repo branch: 163-poc1-release
 gateway admin and client branch match
-Calling go get to use 163-poc1-release on fc-retrieval-client (b5a58266695e533b1c45a260b130c600ac6a6a39)
-go: github.com/ConsenSys/fc-retrieval-client b5a58266695e533b1c45a260b130c600ac6a6a39 => v0.0.0-20210315220115-b5a58266695e
-Found common repo: ../fc-retrieval-common
+Calling go get to use 163-poc1-release on fc-retrieval/client (b5a58266695e533b1c45a260b130c600ac6a6a39)
+go: github.com/ConsenSys/fc-retrieval/client b5a58266695e533b1c45a260b130c600ac6a6a39 => v0.0.0-20210315220115-b5a58266695e
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 gateway admin and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
-Found provider repo: ../fc-retrieval-provider
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Found provider repo: ../fc-retrieval/provider
 provider repo branch: 163-poc1-release
 gateway admin and provider branch match
-Calling go get to use 163-poc1-release on fc-retrieval-provider (40ceb1a5a113b14082bea6f83da3f0a9240030bd)
-go: github.com/ConsenSys/fc-retrieval-provider 40ceb1a5a113b14082bea6f83da3f0a9240030bd => v0.0.0-20210315220342-40ceb1a5a113
-Found register repo: ../fc-retrieval-register
+Calling go get to use 163-poc1-release on fc-retrieval/provider (40ceb1a5a113b14082bea6f83da3f0a9240030bd)
+go: github.com/ConsenSys/fc-retrieval/provider 40ceb1a5a113b14082bea6f83da3f0a9240030bd => v0.0.0-20210315220342-40ceb1a5a113
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
 gateway admin and register branch match
-Calling go get to use 163-poc1-release on fc-retrieval-register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
+Calling go get to use 163-poc1-release on fc-retrieval/register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
 Checking repo: gateway-admin
 cd scripts; bash use-remote-repos.sh
 *******************************************************************************
@@ -252,14 +252,14 @@ cd scripts; bash use-remote-repos.sh
 *** for gateway.                                                            ***
 *******************************************************************************
 gateway-admin repo branch: 163-poc1-release
-Found common repo: ../fc-retrieval-common
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 gateway admin and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
-Found register repo: ../fc-retrieval-register
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
 gateway admin and register branch match
-Calling go get to use 163-poc1-release on fc-retrieval-register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
+Calling go get to use 163-poc1-release on fc-retrieval/register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
 Checking repo: gateway
 cd scripts; bash use-remote-repos.sh
 *******************************************************************************
@@ -267,14 +267,14 @@ cd scripts; bash use-remote-repos.sh
 *** for client, gateway, gateway-admin, and provider-admin.                 ***
 *******************************************************************************
 gateway repo branch: 163-poc1-release
-Found common repo: ../fc-retrieval-common
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 itest and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
-Found register repo: ../fc-retrieval-register
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
 itest and register branch match
-Calling go get to use 163-poc1-release on fc-retrieval-register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
+Calling go get to use 163-poc1-release on fc-retrieval/register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
 Checking repo: provider
 cd scripts; bash use-remote-repos.sh
 *******************************************************************************
@@ -282,15 +282,15 @@ cd scripts; bash use-remote-repos.sh
 *** for gateway.                                                            ***
 *******************************************************************************
 provider repo branch: 163-poc1-release
-Found common repo: ../fc-retrieval-common
+Found common repo: ../fc-retrieval/common
 common repo branch: 163-poc1-release
 register and common branch match
-Calling go get to use 163-poc1-release on fc-retrieval-common (4caead038a43ff524b8fc68055320e7b84ff3173)
-Found register repo: ../fc-retrieval-register
+Calling go get to use 163-poc1-release on fc-retrieval/common (4caead038a43ff524b8fc68055320e7b84ff3173)
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
 register and register branch match
-Calling go get to use 163-poc1-release on fc-retrieval-register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
-docker build -f Dockerfile -t consensys/fc-retrieval-register:dev .
+Calling go get to use 163-poc1-release on fc-retrieval/register (57ff758e2e2c14443aefc4263f93cd21df64ea4d)
+docker build -f Dockerfile -t consensys/fc-retrieval/register:dev .
 Sending build context to Docker daemon  31.85MB
 Step 1/11 : FROM golang:1.15-alpine as builder
 1.15-alpine: Pulling from library/golang
@@ -335,13 +335,13 @@ Executing busybox-1.32.1-r3.trigger
 OK: 146 MiB in 35 packages
 Removing intermediate container e2411db9549a
  ---> a38f28ed7310
-Step 3/11 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-register/
+Step 3/11 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/register/
  ---> Running in 8dc0c66f97f1
 Removing intermediate container 8dc0c66f97f1
  ---> 3af7f0345679
 Step 4/11 : COPY . .
  ---> f7deee21d2cc
-Step 5/11 : RUN go get -d -v github.com/ConsenSys/fc-retrieval-register/cmd/register-server
+Step 5/11 : RUN go get -d -v github.com/ConsenSys/fc-retrieval/register/cmd/register-server
  ---> Running in 5084b4da5265
 go: downloading github.com/go-openapi/loads v0.20.2
 go: downloading github.com/jessevdk/go-flags v1.4.0
@@ -350,7 +350,7 @@ go: downloading github.com/go-openapi/errors v0.19.9
 go: downloading github.com/go-openapi/swag v0.19.14
 go: downloading github.com/go-openapi/strfmt v0.20.0
 go: downloading golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
 go: downloading github.com/go-redis/redis/v8 v8.6.0
 go: downloading github.com/go-openapi/spec v0.20.3
 go: downloading github.com/rs/cors v1.7.0
@@ -416,34 +416,34 @@ Step 11/11 : EXPOSE 9020
 Removing intermediate container 9322e2eb9f52
  ---> 948418d69acb
 Successfully built 948418d69acb
-Successfully tagged consensys/fc-retrieval-register:dev
-cd scripts; bash tag.sh dev consensys/fc-retrieval-register:dev
+Successfully tagged consensys/fc-retrieval/register:dev
+cd scripts; bash tag.sh dev consensys/fc-retrieval/register:dev
 ****************************************
 *** Push docker image to Docker Hub  ***
 ****************************************
 Register version: dev
-v image: consensys/fc-retrieval-register:dev
+v image: consensys/fc-retrieval/register:dev
 Register repo branch: 163-poc1-release
 TAG: develop-163-poc1-release
-docker build -t consensys/fc-retrieval-gateway:dev .
+docker build -t consensys/fc-retrieval/gateway:dev .
 Sending build context to Docker daemon   2.79MB
 Step 1/12 : FROM golang:1.15-alpine as builder
  ---> b8d8ad7b4ab7
 Step 2/12 : RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git
  ---> Using cache
  ---> a38f28ed7310
-Step 3/12 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-gateway
+Step 3/12 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/gateway
  ---> Running in 46b9d408da33
 Removing intermediate container 46b9d408da33
  ---> 0510391a7c03
 Step 4/12 : COPY . .
  ---> e72fb819dadb
-Step 5/12 : RUN go get -d -v github.com/ConsenSys/fc-retrieval-gateway/cmd/gateway
+Step 5/12 : RUN go get -d -v github.com/ConsenSys/fc-retrieval/gateway/cmd/gateway
  ---> Running in 3a746bbe1095
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
 go: downloading github.com/spf13/viper v1.7.1
 go: downloading github.com/joho/godotenv v1.3.0
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/spf13/pflag v1.0.5
 go: downloading gopkg.in/natefinch/lumberjack.v2 v2.0.0
 go: downloading github.com/rs/zerolog v1.20.0
@@ -490,32 +490,32 @@ Step 12/12 : EXPOSE 9010
 Removing intermediate container 1d56ea664a87
  ---> 8360536a0059
 Successfully built 8360536a0059
-Successfully tagged consensys/fc-retrieval-gateway:dev
-cd scripts; bash tag.sh dev consensys/fc-retrieval-gateway:dev
+Successfully tagged consensys/fc-retrieval/gateway:dev
+cd scripts; bash tag.sh dev consensys/fc-retrieval/gateway:dev
 ****************************************
 *** Tag docker image with branch name  ***
 ****************************************
 Gateway version: dev
-Gateway image: consensys/fc-retrieval-gateway:dev
+Gateway image: consensys/fc-retrieval/gateway:dev
 Gateway repo branch: 163-poc1-release
 TAG: develop-163-poc1-release
-docker build -t consensys/fc-retrieval-provider:dev .
+docker build -t consensys/fc-retrieval/provider:dev .
 Sending build context to Docker daemon  2.742MB
 Step 1/11 : FROM golang:1.15-alpine as builder
  ---> b8d8ad7b4ab7
 Step 2/11 : RUN apk update && apk add --no-cache make gcc musl-dev linux-headers git
  ---> Using cache
  ---> a38f28ed7310
-Step 3/11 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-provider/
+Step 3/11 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/provider/
  ---> Running in f5dd2f8c8abd
 Removing intermediate container f5dd2f8c8abd
  ---> 05b9eee8969e
 Step 4/11 : COPY . .
  ---> 5b9c6fe3705d
-Step 5/11 : RUN go get -d -v github.com/ConsenSys/fc-retrieval-provider/cmd/provider
+Step 5/11 : RUN go get -d -v github.com/ConsenSys/fc-retrieval/provider/cmd/provider
  ---> Running in d8d4edb58463
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/joho/godotenv v1.3.0
 go: downloading github.com/spf13/pflag v1.0.3
 go: downloading github.com/spf13/viper v1.7.1
@@ -562,16 +562,16 @@ Step 11/11 : EXPOSE 9030
 Removing intermediate container 868cd6d2d167
  ---> c7cc8ac646b8
 Successfully built c7cc8ac646b8
-Successfully tagged consensys/fc-retrieval-provider:dev
-cd scripts; bash tag.sh dev consensys/fc-retrieval-provider:dev
+Successfully tagged consensys/fc-retrieval/provider:dev
+cd scripts; bash tag.sh dev consensys/fc-retrieval/provider:dev
 ****************************************
 *** Tag docker image with the branch name  ***
 ****************************************
 Register version: dev
-v image: consensys/fc-retrieval-provider:dev
+v image: consensys/fc-retrieval/provider:dev
 Provider repo branch: 163-poc1-release
 TAG: develop-163-poc1-release
-docker build -t consensys/fc-retrieval-itest:dev .
+docker build -t consensys/fc-retrieval/itest:dev .
 Sending build context to Docker daemon  32.91MB
 Step 1/6 : FROM golang:1.15-alpine
  ---> b8d8ad7b4ab7
@@ -603,7 +603,7 @@ Executing busybox-1.32.1-r3.trigger
 OK: 146 MiB in 35 packages
 Removing intermediate container 20248eac925d
  ---> bc24477859f1
-Step 3/6 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval-itest
+Step 3/6 : WORKDIR /go/src/github.com/ConsenSys/fc-retrieval/itest
  ---> Running in 1a3746c60cb9
 Removing intermediate container 1a3746c60cb9
  ---> 860537b28d33
@@ -618,13 +618,13 @@ Step 6/6 : CMD go test -v ./...
 Removing intermediate container 808a3fdd43bb
  ---> a49fef1cc391
 Successfully built a49fef1cc391
-Successfully tagged consensys/fc-retrieval-itest:dev
-cd scripts; bash tag.sh dev consensys/fc-retrieval-itest:dev
+Successfully tagged consensys/fc-retrieval/itest:dev
+cd scripts; bash tag.sh dev consensys/fc-retrieval/itest:dev
 ****************************************
 *** Tag docker image with the branch name  ***
 ****************************************
 Itest version: dev
-v image: consensys/fc-retrieval-itest:dev
+v image: consensys/fc-retrieval/itest:dev
 Repo branch: 163-poc1-release
 TAG: develop-163-poc1-release
 cd scripts; bash setup-env.sh
@@ -632,22 +632,22 @@ cd scripts; bash setup-env.sh
 *** Set-up the env file  ***
 *******************************************************************************
 itest repo branch: 163-poc1-release
-Found gateway repo: ../fc-retrieval-gateway
+Found gateway repo: ../fc-retrieval/gateway
 gateway repo branch: 163-poc1-release
-/dev/clonebuildtest/163-poc1-release/fc-retrieval-itest
-Found register repo: ../fc-retrieval-register
+/dev/clonebuildtest/163-poc1-release/fc-retrieval/itest
+Found register repo: ../fc-retrieval/register
 register repo branch: 163-poc1-release
-/dev/clonebuildtest/163-poc1-release/fc-retrieval-itest
-Found provider repo: ../fc-retrieval-provider
+/dev/clonebuildtest/163-poc1-release/fc-retrieval/itest
+Found provider repo: ../fc-retrieval/provider
 provider repo branch: 163-poc1-release
-/dev/clonebuildtest/163-poc1-release/fc-retrieval-itest
-Found itest repo: ../fc-retrieval-itest
+/dev/clonebuildtest/163-poc1-release/fc-retrieval/itest
+Found itest repo: ../fc-retrieval/itest
 itest repo branch: 163-poc1-release
-/dev/clonebuildtest/163-poc1-release/fc-retrieval-itest
-GATEWAY_IMAGE=consensys/fc-retrieval-gateway:develop-163-poc1-release
-REGISTER_IMAGE=consensys/fc-retrieval-register:develop-163-poc1-release
-PROVIDER_IMAGE=consensys/fc-retrieval-provider:develop-163-poc1-release
-ITEST_IMAGE=consensys/fc-retrieval-itest:develop-163-poc1-release
+/dev/clonebuildtest/163-poc1-release/fc-retrieval/itest
+GATEWAY_IMAGE=consensys/fc-retrieval/gateway:develop-163-poc1-release
+REGISTER_IMAGE=consensys/fc-retrieval/register:develop-163-poc1-release
+PROVIDER_IMAGE=consensys/fc-retrieval/provider:develop-163-poc1-release
+ITEST_IMAGE=consensys/fc-retrieval/itest:develop-163-poc1-release
 docker network create shared || true
 Error response from daemon: network with name shared already exists
 docker-compose down
@@ -703,7 +703,7 @@ GATEWAY STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config dock
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Listening on 9012 for connections from Gateways"}
@@ -712,17 +712,17 @@ Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Filecoin Gateway Start-up Complete"}
 PROVIDER STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Running Admin API on: 9033"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Filecoin Provider Start-up Complete"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Update registered Gateways"}
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
-Creating fc-retrieval-itest_itest_run ... done
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
+Creating fc-retrieval/itest_itest_run ... done
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
 go: downloading github.com/stretchr/testify v1.7.0
-go: downloading github.com/ConsenSys/fc-retrieval-client v0.0.0-20210315220115-b5a58266695e
+go: downloading github.com/ConsenSys/fc-retrieval/client v0.0.0-20210315220115-b5a58266695e
 go: downloading github.com/rs/zerolog v1.20.0
 go: downloading gopkg.in/natefinch/lumberjack.v2 v2.0.0
 go: downloading github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52
@@ -732,7 +732,7 @@ go: downloading golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 go: downloading gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 go: downloading github.com/davecgh/go-spew v1.1.1
 go: downloading github.com/cbergoon/merkletree v0.2.0
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/pmezard/go-difflib v1.0.0
 go: downloading github.com/tatsushid/go-fastping v0.0.0-20160109021039-d7bb493dee3e
 go: downloading github.com/magiconair/properties v1.8.1
@@ -771,7 +771,7 @@ ok  	command-line-arguments	0.540s
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 PROVIDER LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:35:33Z","message":"Running Admin API on: 9033"}
@@ -781,7 +781,7 @@ GATEWAY LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:35:33Z","message":"Listening on 9012 for connections from Gateways"}
@@ -792,7 +792,7 @@ Stopping provider ... done
 Stopping gateway  ... done
 Stopping register ... done
 Stopping redis    ... done
-Removing fc-retrieval-itest_itest_run_dff7a79d87b3 ... done
+Removing fc-retrieval/itest_itest_run_dff7a79d87b3 ... done
 Removing provider                                  ... done
 Removing gateway                                   ... done
 Removing register                                  ... done
@@ -818,7 +818,7 @@ GATEWAY STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config dock
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Listening on 9012 for connections from Gateways"}
@@ -827,20 +827,20 @@ Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Filecoin Gateway Start-up Complete"}
 PROVIDER STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Running Admin API on: 9033"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Update registered Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Filecoin Provider Start-up Complete"}
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
-Creating fc-retrieval-itest_itest_run ... done
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
+Creating fc-retrieval/itest_itest_run ... done
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
 go: downloading github.com/spf13/viper v1.7.1
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/stretchr/testify v1.7.0
-go: downloading github.com/ConsenSys/fc-retrieval-client v0.0.0-20210315220115-b5a58266695e
-go: downloading github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
+go: downloading github.com/ConsenSys/fc-retrieval/client v0.0.0-20210315220115-b5a58266695e
+go: downloading github.com/ConsenSys/fc-retrieval/gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
 go: downloading golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 go: downloading github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52
 go: downloading github.com/rs/zerolog v1.20.0
@@ -891,7 +891,7 @@ ok  	command-line-arguments	0.056s
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 PROVIDER LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:36:57Z","message":"Running Admin API on: 9033"}
@@ -901,7 +901,7 @@ GATEWAY LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:36:57Z","message":"Listening on 9012 for connections from Gateways"}
@@ -918,7 +918,7 @@ Stopping provider ... done
 Stopping gateway  ... done
 Stopping register ... done
 Stopping redis    ... done
-Removing fc-retrieval-itest_itest_run_6dfe03825da5 ... done
+Removing fc-retrieval/itest_itest_run_6dfe03825da5 ... done
 Removing provider                                  ... done
 Removing gateway                                   ... done
 Removing register                                  ... done
@@ -944,7 +944,7 @@ GATEWAY STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config dock
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Listening on 9012 for connections from Gateways"}
@@ -953,20 +953,20 @@ Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Filecoin Gateway Start-up Complete"}
 PROVIDER STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Running Admin API on: 9033"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Update registered Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Filecoin Provider Start-up Complete"}
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
-Creating fc-retrieval-itest_itest_run ... done
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+Creating fc-retrieval/itest_itest_run ... done
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/stretchr/testify v1.7.0
-go: downloading github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210315220609-1fe0ee54f441
-go: downloading github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
-go: downloading github.com/ConsenSys/fc-retrieval-client v0.0.0-20210315220115-b5a58266695e
+go: downloading github.com/ConsenSys/fc-retrieval/provider-admin v0.0.0-20210315220609-1fe0ee54f441
+go: downloading github.com/ConsenSys/fc-retrieval/gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
+go: downloading github.com/ConsenSys/fc-retrieval/client v0.0.0-20210315220115-b5a58266695e
 go: downloading github.com/spf13/viper v1.7.1
 go: downloading github.com/davecgh/go-spew v1.1.1
 go: downloading github.com/pmezard/go-difflib v1.0.0
@@ -1099,7 +1099,7 @@ ok  	command-line-arguments	29.151s
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 PROVIDER LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:38:11Z","message":"Running Admin API on: 9033"}
@@ -1135,7 +1135,7 @@ GATEWAY LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:38:11Z","message":"Listening on 9012 for connections from Gateways"}
@@ -1164,7 +1164,7 @@ Stopping provider ... done
 Stopping gateway  ... done
 Stopping register ... done
 Stopping redis    ... done
-Removing fc-retrieval-itest_itest_run_cd905dad0468 ... done
+Removing fc-retrieval/itest_itest_run_cd905dad0468 ... done
 Removing provider                                  ... done
 Removing gateway                                   ... done
 Removing register                                  ... done
@@ -1190,7 +1190,7 @@ GATEWAY STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config dock
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Listening on 9012 for connections from Gateways"}
@@ -1199,21 +1199,21 @@ Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Filecoin Gateway Start-up Complete"}
 PROVIDER STARTUP Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Running Admin API on: 9033"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Update registered Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Filecoin Provider Start-up Complete"}
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
-Creating fc-retrieval-itest_itest_run ... done
+Creating fc-retrieval/itest_itest_run ... done
 go: downloading github.com/stretchr/testify v1.7.0
-go: downloading github.com/ConsenSys/fc-retrieval-gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
-go: downloading github.com/ConsenSys/fc-retrieval-provider-admin v0.0.0-20210315220609-1fe0ee54f441
-go: downloading github.com/ConsenSys/fc-retrieval-client v0.0.0-20210315220115-b5a58266695e
+go: downloading github.com/ConsenSys/fc-retrieval/gateway-admin v0.0.0-20210315220816-bbffc7dae1f2
+go: downloading github.com/ConsenSys/fc-retrieval/provider-admin v0.0.0-20210315220609-1fe0ee54f441
+go: downloading github.com/ConsenSys/fc-retrieval/client v0.0.0-20210315220115-b5a58266695e
 go: downloading github.com/spf13/viper v1.7.1
-go: downloading github.com/ConsenSys/fc-retrieval-common v0.0.0-20210312151557-4caead038a43
-go: downloading github.com/ConsenSys/fc-retrieval-register v0.0.0-20210315215728-57ff758e2e2c
+go: downloading github.com/ConsenSys/fc-retrieval/common v0.0.0-20210312151557-4caead038a43
+go: downloading github.com/ConsenSys/fc-retrieval/register v0.0.0-20210315215728-57ff758e2e2c
 go: downloading github.com/bitly/go-simplejson v0.5.0
 go: downloading gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 go: downloading github.com/rs/zerolog v1.20.0
@@ -1297,7 +1297,7 @@ ok  	command-line-arguments	27.120s
 Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 PROVIDER LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-compose.dev.yml docker-compose.yml docs go.local.mod go.mod go.sum internal scripts
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Filecoin Provider Start-up: Started"}
-{"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
+{"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Settings: {BindRestAPI:9030 BindGatewayAPI:9032 BindAdminAPI:9033 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/provider LogFile:provider.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true ProviderID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F ProviderSigAlg:1 RegisterAPIURL:http://register:9020 ProviderAddress:f0121345 ProviderRootSigningKey:0xABCDE123456789 ProviderSigningKey:0x987654321EDCBA ProviderRegionCode:US NetworkInfoClient:127.0.0.1: NetworkInfoGateway:127.0.0.1: NetworkInfoAdmin:127.0.0.1:}"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Running REST API on: 9030"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Listening on 9032 for connections from Gateways"}
 {"level":"info","service":"provider","time":"2021-03-16T02:40:06Z","message":"Running Admin API on: 9033"}
@@ -1333,7 +1333,7 @@ GATEWAY LOGS Dockerfile Dockerfile.dev LICENSE Makefile README.md config docker-
 Container IP: 172.18.0.4
 Starting service ...
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Filecoin Gateway Start-up: Started"}
-{"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval-gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
+{"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Settings: {BindRestAPI:9010 BindProviderAPI:9011 BindGatewayAPI:9012 BindAdminAPI:9013 LogLevel:debug LogTarget:STDOUT LogDir:/var/log/fc-retrieval/fc-retrieval/gateway LogFile:gateway.log LogMaxBackups:3 LogMaxAge:28 LogMaxSize:500 LogCompress:true GatewayID:101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F RegisterAPIURL:http://register:9020 GatewayAddress:f0121345 NetworkInfoGateway:172.18.0.4:9012 GatewayRegionCode:US GatewayRootSigningKey:0xABCDE123456789 GatewaySigningKey:0x987654321EDCBA NetworkInfoClient:172.18.0.4:9010 NetworkInfoProvider:172.18.0.4:9011 NetworkInfoAdmin:172.18.0.4:9013}"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"All registered gateways: []"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Running REST API on: 9010"}
 {"level":"info","service":"gateway","time":"2021-03-16T02:40:05Z","message":"Listening on 9012 for connections from Gateways"}
@@ -1357,7 +1357,7 @@ Stopping provider ... done
 Stopping gateway  ... done
 Stopping register ... done
 Stopping redis    ... done
-Removing fc-retrieval-itest_itest_run_235f13dc2daf ... done
+Removing fc-retrieval/itest_itest_run_235f13dc2daf ... done
 Removing provider                                  ... done
 Removing gateway                                   ... done
 Removing register                                  ... done

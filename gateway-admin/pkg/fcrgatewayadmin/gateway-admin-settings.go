@@ -16,7 +16,7 @@ package fcrgatewayadmin
  */
 
 import (
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
 
 // GatewayAdminSettings holds the library configuration

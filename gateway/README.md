@@ -1,4 +1,4 @@
-# fc-retrieval-gateway
+# fc-retrieval/gateway
 
 Filecoin Retrieval Gateway
 

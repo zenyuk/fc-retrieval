@@ -1,5 +1,5 @@
 VERSION?=dev
-IMAGE?=consensys/fc-retrieval-register
+IMAGE?=consensys/fc-retrieval/register
 COV?=80
 
 default: clean build tag
@@ -20,7 +20,7 @@ build:
 	docker build -f Dockerfile -t ${IMAGE}:${VERSION} .
 
 buildlocal:
-	cd ..; docker build -f ./fc-retrieval-register/Dockerfile.local -t ${IMAGE}:${VERSION} .
+	cd ..; docker build -f ./fc-retrieval/register/Dockerfile.local -t ${IMAGE}:${VERSION} .
 
 build-dev:
 	go build -v cmd/register-server/main.go
@@ -32,7 +32,7 @@ tag:
 	cd scripts; bash tag.sh ${VERSION} ${IMAGE}:${VERSION}
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
 	go mod tidy
 
 useremote:

@@ -15,7 +15,7 @@ package fcrprovideradmin
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+import "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 
 // ProviderAdminSettings holds the library configuration
 type ProviderAdminSettings struct {

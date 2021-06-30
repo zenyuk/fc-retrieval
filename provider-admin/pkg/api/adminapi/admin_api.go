@@ -1,12 +1,12 @@
 package adminapi
 
 import (
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/request"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/request"
 )
 
 type Admin struct {

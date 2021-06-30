@@ -4,7 +4,7 @@ echo "*** Push docker image to Docker Hub  ***"
 echo "****************************************"
 
 # Docker image name on docker hub
-IMAGE_NAME=consensys/fc-retrieval-itest
+IMAGE_NAME=consensys/fc-retrieval/itest
 
 VERSION=$1
 echo "Integration Tests version: $VERSION"

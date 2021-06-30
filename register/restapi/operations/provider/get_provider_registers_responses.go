@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/ConsenSys/fc-retrieval-register/models"
+	"github.com/ConsenSys/fc-retrieval/register/models"
 )
 
 // GetProviderRegistersOKCode is the HTTP code returned for type GetProviderRegistersOK

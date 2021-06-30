@@ -19,10 +19,10 @@ build:
 
 # push the image to an registry
 push:
-#	gcloud docker -- push ${REGISTRY}/fc-retrieval-gateway-admin:${VERSION}
+#	gcloud docker -- push ${REGISTRY}/fc-retrieval/gateway-admin:${VERSION}
 
 uselocal:
-	echo "replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common" >> go.mod
+	echo "replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common" >> go.mod
 	go mod tidy
 
 useremote:
@@ -48,9 +48,9 @@ itest:
 # remove previous images and containers
 clean:
 #	rm -f /etc/gateway-admin/
-	docker rm -f ${REGISTRY}fc-retrieval-gateway-admin-builder 2> /dev/null || true
-	docker rmi -f ${REGISTRY}fc-retrieval-gateway-admin-builder || true
-	docker rmi -f "${REGISTRY}fc-retrieval-gateway-admin:${VERSION}" || true
+	docker rm -f ${REGISTRY}fc-retrieval/gateway-admin-builder 2> /dev/null || true
+	docker rmi -f ${REGISTRY}fc-retrieval/gateway-admin-builder || true
+	docker rmi -f "${REGISTRY}fc-retrieval/gateway-admin:${VERSION}" || true
 
 # Alays assume these targets are out of date.
 .PHONY: clean itest utest coverage build release push detectmisconfig detectlocal uselocal

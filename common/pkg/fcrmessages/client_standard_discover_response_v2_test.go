@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 )
 
 // TestEncodeClientStandardDiscoverResponseV2 success test

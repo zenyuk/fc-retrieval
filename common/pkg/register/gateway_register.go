@@ -6,7 +6,7 @@ Retrieval Register is a central node, holding information about Retrieval Gatewa
 package register
 
 import (
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
 
 // GatewayRegister stores information of a registered gateway

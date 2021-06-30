@@ -6,7 +6,7 @@ WORKDIR /go/src/
 
 COPY . .
 
-WORKDIR /go/src/fc-retrieval-register/
+WORKDIR /go/src/fc-retrieval/register/
 
 RUN go mod download -x
 

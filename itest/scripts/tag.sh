@@ -4,7 +4,7 @@ echo "*** Tag docker image with the branch name  ***"
 echo "****************************************"
 
 # Docker image name on docker hub
-IMAGE_NAME=consensys/fc-retrieval-itest
+IMAGE_NAME=consensys/fc-retrieval/itest
 
 VERSION=$1
 echo "Itest version: $VERSION"

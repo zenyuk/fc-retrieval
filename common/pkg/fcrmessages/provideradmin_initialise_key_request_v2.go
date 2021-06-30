@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // providerAdminInitialiseKeyRequestV2 is the request from a provider admin to a provider to initialise with a key pair,

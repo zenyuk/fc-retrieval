@@ -3,7 +3,7 @@ package fcrmessages
 import (
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/stretchr/testify/assert"
 )
 

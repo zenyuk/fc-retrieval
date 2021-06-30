@@ -43,14 +43,14 @@ build_tag() {
 }
 
 
-#git clone https://github.com/ConsenSys/fc-retrieval-client.git
-#git clone https://github.com/ConsenSys/fc-retrieval-common.git
-#git clone https://github.com/ConsenSys/fc-retrieval-gateway.git
-#git clone https://github.com/ConsenSys/fc-retrieval-gateway-admin.git
-#git clone https://github.com/ConsenSys/fc-retrieval-itest.git
-#git clone https://github.com/ConsenSys/fc-retrieval-provider.git
-#git clone https://github.com/ConsenSys/fc-retrieval-provider-admin.git
-#git clone https://github.com/ConsenSys/fc-retrieval-register.git
+#git clone https://github.com/ConsenSys/fc-retrieval/client.git
+#git clone https://github.com/ConsenSys/fc-retrieval/common.git
+#git clone https://github.com/ConsenSys/fc-retrieval/gateway.git
+#git clone https://github.com/ConsenSys/fc-retrieval/gateway-admin.git
+#git clone https://github.com/ConsenSys/fc-retrieval/itest.git
+#git clone https://github.com/ConsenSys/fc-retrieval/provider.git
+#git clone https://github.com/ConsenSys/fc-retrieval/provider-admin.git
+#git clone https://github.com/ConsenSys/fc-retrieval/register.git
 
 clone_on_branch client
 clone_on_branch common
@@ -62,7 +62,7 @@ clone_on_branch provider-admin
 clone_on_branch register
 
 # Make sure the branch exists on itest.
-cd fc-retrieval-itest
+cd fc-retrieval/itest
 git checkout $BRANCH
 ITEST_REPO_BRANCH=`git rev-parse --abbrev-ref HEAD`
 if [ $ITEST_REPO_BRANCH != $BRANCH ]; then 
@@ -71,7 +71,7 @@ if [ $ITEST_REPO_BRANCH != $BRANCH ]; then
 fi
 
 
-cd ../fc-retrieval-common
+cd ../fc-retrieval/common
 bash scripts/dockerclean.sh
 git checkout $BRANCH
 #check_deps common

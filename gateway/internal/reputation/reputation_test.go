@@ -21,7 +21,7 @@ import (
 
   "github.com/stretchr/testify/assert"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 func TestClientRepInitial(t *testing.T) {

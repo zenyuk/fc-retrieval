@@ -16,11 +16,11 @@ package providerapi
  */
 
 import (
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/core"
+	"github.com/ConsenSys/fc-retrieval/gateway/internal/core"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
 // HandleProviderPublishGroupOfferRequest handles the provider publish group offer request

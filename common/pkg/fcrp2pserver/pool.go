@@ -26,9 +26,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // Constants for identifying the correct access point

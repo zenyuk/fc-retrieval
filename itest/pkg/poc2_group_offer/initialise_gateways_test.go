@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
+	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
 func TestInitialiseGateways(t *testing.T) {

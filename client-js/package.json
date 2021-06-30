@@ -1,5 +1,5 @@
 {
-  "name": "fc-retrieval-client-js",
+  "name": "fc-retrieval/client-js",
   "version": "0.0.1",
   "license": "Apache-2.0",
   "description": "Filecoin Secondary Retrieval Market Javascript client library.",
@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/consensys/fc-retrieval-client-js.git"
+    "url": "git+https://github.com/consensys/fc-retrieval/client-js.git"
   },
   "keywords": [
     "Filecoin",
@@ -46,9 +46,9 @@
     "Client"
   ],
   "bugs": {
-    "url": "https://github.com/consensys/fc-retrieval-client-js/issues"
+    "url": "https://github.com/consensys/fc-retrieval/client-js/issues"
   },
-  "homepage": "https://github.com/consensys/fc-retrieval-client-js#readme",
+  "homepage": "https://github.com/consensys/fc-retrieval/client-js#readme",
   "files": [
     "src/**/*"
   ],

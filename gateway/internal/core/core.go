@@ -23,18 +23,18 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
-	fcroffermgr "github.com/ConsenSys/fc-retrieval-common/pkg/offermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmerkletree"
+	fcroffermgr "github.com/ConsenSys/fc-retrieval/common/pkg/offermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrrestserver"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/reputation"
-	"github.com/ConsenSys/fc-retrieval-gateway/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval/gateway/internal/reputation"
+	"github.com/ConsenSys/fc-retrieval/gateway/internal/util/settings"
 )
 
 const (

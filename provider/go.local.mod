@@ -1,9 +1,9 @@
-module github.com/ConsenSys/fc-retrieval-provider
+module github.com/ConsenSys/fc-retrieval/provider
 
 go 1.16
 
 require (
-	github.com/ConsenSys/fc-retrieval-common v0.0.0-20210620225211-a70265b55386
+	github.com/ConsenSys/fc-retrieval/common v0.0.0-20210620225211-a70265b55386
 	github.com/ant0ine/go-json-rest v3.3.2+incompatible
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/joho/godotenv v1.3.0
@@ -12,4 +12,4 @@ require (
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 )
 
-replace github.com/ConsenSys/fc-retrieval-common => ../fc-retrieval-common
+replace github.com/ConsenSys/fc-retrieval/common => ../fc-retrieval/common

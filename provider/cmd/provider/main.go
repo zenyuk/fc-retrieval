@@ -29,19 +29,19 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrp2pserver"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrrestserver"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrp2pserver"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrrestserver"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 
-	"github.com/ConsenSys/fc-retrieval-provider/config"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/api/adminapi"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/api/clientapi"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/api/gatewayapi"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/api/providerapi"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/core"
-	"github.com/ConsenSys/fc-retrieval-provider/internal/util"
+	"github.com/ConsenSys/fc-retrieval/provider/config"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/api/adminapi"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/api/clientapi"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/api/gatewayapi"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/api/providerapi"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/core"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/util"
 )
 
 // Start Provider service

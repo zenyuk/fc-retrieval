@@ -7,7 +7,7 @@ E.g. - get an updated list of gateways, including just recently enrolled ones
 package handlers
 
 import (
-	"github.com/ConsenSys/fc-retrieval-register/config"
+	"github.com/ConsenSys/fc-retrieval/register/config"
 )
 
 var apiconfig = config.Config()

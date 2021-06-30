@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 
-	"github.com/ConsenSys/fc-retrieval-register/models"
+	"github.com/ConsenSys/fc-retrieval/register/models"
 )
 
 // NewAddProviderRegisterParams creates a new AddProviderRegisterParams object

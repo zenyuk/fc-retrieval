@@ -7,7 +7,7 @@ jobs:
   utest:
     docker:
       - image: circleci/golang:1.16
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider-admin/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/provider-admin/
     steps:
       - checkout
       - run: make utest
@@ -17,7 +17,7 @@ jobs:
       CODE_COVERAGE: 0
     docker:
       - image: circleci/golang:1.16
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-provider-admin/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/provider-admin/
     steps:
       - checkout
       - run:

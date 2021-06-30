@@ -3,7 +3,7 @@ package poc2_group_offer
 import (
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
 func TestNewAccounts(t *testing.T) {

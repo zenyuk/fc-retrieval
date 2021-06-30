@@ -15,7 +15,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/gateway/
     steps:
       - checkout
       - setup_remote_docker:
@@ -25,7 +25,7 @@ jobs:
 
   publishDocker:
     environment:
-      IMAGE_NAME: consensys/fc-retrieval-gateway
+      IMAGE_NAME: consensys/fc-retrieval/gateway
       IMAGE_VERSION: dev
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -54,7 +54,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/gateway/
     steps:
       - checkout
       - run: make utest
@@ -64,7 +64,7 @@ jobs:
       CODE_COVERAGE: 4
     docker:
       - image: circleci/golang:1.16
-    working_directory: /go/src/github.com/ConsenSys/fc-retrieval-gateway/
+    working_directory: /go/src/github.com/ConsenSys/fc-retrieval/gateway/
     steps:
       - checkout
       - run:

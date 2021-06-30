@@ -6,13 +6,13 @@ echo "**************************************************************************
 
 cd ..
 
-ITEST_DIR="../fc-retrieval-itest"
+ITEST_DIR="../fc-retrieval/itest"
 ITEST_BRANCH=`git rev-parse --abbrev-ref HEAD`
 echo "itest repo branch: $ITEST_BRANCH"
 
 
 # Check repo:
-# $1 is the name of the repo. fc-retrieval-client would be client.
+# $1 is the name of the repo. fc-retrieval/client would be client.
 # $2 is the relative directory of the repo
 #
 check_repo() {
@@ -44,9 +44,9 @@ check_repo() {
 
 rm -f .env
 
-check_repo gateway ../fc-retrieval-gateway GATEWAY
-check_repo register ../fc-retrieval-register REGISTER
-check_repo provider ../fc-retrieval-provider PROVIDER
-check_repo itest ../fc-retrieval-itest ITEST
+check_repo gateway ../fc-retrieval/gateway GATEWAY
+check_repo register ../fc-retrieval/register REGISTER
+check_repo provider ../fc-retrieval/provider PROVIDER
+check_repo itest ../fc-retrieval/itest ITEST
 
 cat .env

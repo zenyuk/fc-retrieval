@@ -1,11 +1,11 @@
-# fc-retrieval-itest
+# fc-retrieval/itest
 
 Filecoin Secondary Retrieval Market Integration and End-To-End Tests
 
 See also Filecoin Secondary Retrieval Market
-[client library](https://github.com/ConsenSys/fc-retrieval-client)
-[gateway](https://github.com/ConsenSys/fc-retrieval-gateway) and
-[retrieval provider](https://github.com/ConsenSys/fc-retrieval-provider) repositories.
+[client library](https://github.com/ConsenSys/fc-retrieval/client)
+[gateway](https://github.com/ConsenSys/fc-retrieval/gateway) and
+[retrieval provider](https://github.com/ConsenSys/fc-retrieval/provider) repositories.
 
 ## Run tests on a local Devnet
 

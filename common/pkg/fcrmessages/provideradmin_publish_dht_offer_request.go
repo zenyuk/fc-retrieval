@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 )
 
 // providerAdminPublishDHTOfferRequest is the request to publish dht CID

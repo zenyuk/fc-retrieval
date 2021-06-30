@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // gatewayAdminGetReputationRequest is the request from an admin client to a gateway to discover a client's reputation

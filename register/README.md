@@ -139,5 +139,5 @@ swagger generate server -f docs/swagger.yml -A register
 When generating swagger command, it the error `target must reside inside a location in the $GOPATH/src or be a module` appaers, execute:
 
 ```
-go mod init github.com/ConsenSys/fc-retrieval-register
+go mod init github.com/ConsenSys/fc-retrieval/register
 ```

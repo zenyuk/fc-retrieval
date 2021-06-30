@@ -12,13 +12,13 @@ sed '/replace .*/d' go.mod > go.mod.temp1
 rm go.mod
 mv go.mod.temp1 go.mod
 
-REG_DIR="../fc-retrieval-register"
+REG_DIR="../fc-retrieval/register"
 REG_BRANCH=`git rev-parse --abbrev-ref HEAD`
 echo "register repo branch: $REG_BRANCH"
 
 
 # Check repo:
-# $1 is the name of the repo. fc-retrieval-client would be client.
+# $1 is the name of the repo. fc-retrieval/client would be client.
 # $2 is the relative directory of the repo
 #
 check_repo() {
@@ -53,5 +53,5 @@ check_repo() {
 }
 
 
-check_repo common ../fc-retrieval-common
+check_repo common ../fc-retrieval/common
 go mod tidy

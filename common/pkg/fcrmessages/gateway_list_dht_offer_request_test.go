@@ -6,9 +6,9 @@ import (
 	"github.com/cbergoon/merkletree"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmerkletree"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmerkletree"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // TestEncodeGatewayListDHTOfferRequest success test

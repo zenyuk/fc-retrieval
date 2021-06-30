@@ -9,10 +9,10 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-redis/redis/v8"
 
-	log "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
+	log "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 
-	"github.com/ConsenSys/fc-retrieval-register/models"
-	op "github.com/ConsenSys/fc-retrieval-register/restapi/operations/provider"
+	"github.com/ConsenSys/fc-retrieval/register/models"
+	op "github.com/ConsenSys/fc-retrieval/register/restapi/operations/provider"
 )
 
 // AddProviderRegister to create a provider register

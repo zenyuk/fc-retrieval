@@ -1,14 +1,14 @@
 LEGAL.txt
 Copyright (c) 2021 ConsenSys Software Inc.
 
-Project: fc-retrieval-provider-admin
+Project: fc-retrieval/provider-admin
 
 This file lists dependencies used by this project, and provides
 attribution to open source software projects.
 ---------------------------------------------------------------
 
-Project: https://github.com/ConsenSys/fc-retrieval-common/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-common/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/common/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/common/master/LICENSE
 License type: Apache License
 
 Project: https://github.com/cbergoon/merkletree/
@@ -35,8 +35,8 @@ Project: https://github.com/stretchr/testify/
 License URL: https://raw.githubusercontent.com/stretchr/testify/master/LICENSE
 License type: MIT License
 
-Project: https://github.com/ConsenSys/fc-retrieval-gateway/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-gateway/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/gateway/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/gateway/master/LICENSE
 License type: Apache License
 
 Project: https://github.com/ant0ine/go-json-rest/
@@ -51,19 +51,19 @@ Project: https://github.com/spf13/pflag/
 License URL: https://raw.githubusercontent.com/spf13/pflag/master/LICENSE
 License type: BSD-style License
 
-Project: https://github.com/ConsenSys/fc-retrieval-gateway-admin/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-gateway-admin/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/gateway-admin/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/gateway-admin/master/LICENSE
 License type: Apache License
 
 Project: https://github.com/bitly/go-simplejson/
 License URL: https://raw.githubusercontent.com/bitly/go-simplejson/master/LICENSE
 License type: BSD-style License
 
-Project: https://github.com/ConsenSys/fc-retrieval-provider/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-provider/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/provider/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/provider/master/LICENSE
 License type: Apache License
 
-Project: https://github.com/ConsenSys/fc-retrieval-provider-admin/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-provider-admin/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/provider-admin/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/provider-admin/master/LICENSE
 License type: Apache License
 

@@ -39,7 +39,7 @@ func TestGeneratePrivateRandomBytes(t *testing.T) {
 func TestNewPrivatePRNG(t *testing.T) {
 	b := make([]byte, 32)
 	zeroBytes := make([]byte, 32)
-	securityDomain := []byte("fc-retrieval-client-keys")
+	securityDomain := []byte("fc-retrieval/client-keys")
 	rand := NewPrivatePRNG(securityDomain)
 	rand.ReadBytes(b)
 	assert.NotEqual(t, b, zeroBytes, "Random bytes all zero")

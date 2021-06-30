@@ -20,10 +20,10 @@ import (
 
   "github.com/ant0ine/go-json-rest/rest"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrpaymentmgr"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval-provider/internal/core"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+  "github.com/ConsenSys/fc-retrieval/provider/internal/core"
 )
 
 // HandleProviderAdminInitialiseKeyRequestV2 handles provider admin initialise key request

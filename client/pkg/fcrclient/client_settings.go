@@ -18,8 +18,8 @@ package fcrclient
 import (
 	"math/big"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // ClientSettings holds the library configuration

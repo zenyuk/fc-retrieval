@@ -27,12 +27,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
 // Tests in this file use the Client API, but don't need the rest of the system to be

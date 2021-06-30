@@ -29,17 +29,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ConsenSys/fc-retrieval-client/pkg/fcrclient"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
-	"github.com/ConsenSys/fc-retrieval-provider-admin/pkg/fcrprovideradmin"
+	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
+	"github.com/ConsenSys/fc-retrieval/itest/config"
+	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
 // Test the Provider Admin API.

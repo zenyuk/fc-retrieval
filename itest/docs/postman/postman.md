@@ -18,6 +18,6 @@ Import `filecoin-retrieval.postman_environment.json`
 
 ## Use collection
 
-Before using the collection, the `fc-retrieval-register` service should started on `localhost:9020`.
+Before using the collection, the `fc-retrieval/register` service should started on `localhost:9020`.
 
 To use the collection, select `Filecoin Retrieval` environment on the upper right of Postman, then select and execute queries from the `Filecoin Retrieval` collection on the left column.

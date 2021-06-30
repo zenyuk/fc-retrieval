@@ -1,8 +1,8 @@
 version: "3.8"
 
 services:
-  fc-retrieval-register:
-    image: consensys/fc-retrieval-register:dev
+  fc-retrieval/register:
+    image: consensys/fc-retrieval/register:dev
     container_name: register
     networks:
       - shared

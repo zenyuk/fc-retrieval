@@ -29,7 +29,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
 
 const WordSize = 32 // the NodeID length is 32 bytes.

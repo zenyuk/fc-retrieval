@@ -34,7 +34,7 @@ func TestPRNGEntropyKickOnlyPrivate(t *testing.T) {
 }
 
 func TestPRNGEntropyKickOnlySeparate(t *testing.T) {
-	securityDomain := []byte("fc-retrieval-client-keys")
+	securityDomain := []byte("fc-retrieval/client-keys")
 	NewPrivatePRNG(securityDomain)
 	PRNGEntropyKick()
 }
@@ -48,7 +48,7 @@ func TestPRNGEntropyKickTwo(t *testing.T) {
 func TestPRNGEntropyKickThree(t *testing.T) {
 	GetPublicPRNG()
 	GetPrivatePRNG()
-	securityDomain := []byte("fc-retrieval-client-keys")
+	securityDomain := []byte("fc-retrieval/client-keys")
 	NewPrivatePRNG(securityDomain)
 	PRNGEntropyKick()
 }
@@ -56,9 +56,9 @@ func TestPRNGEntropyKickThree(t *testing.T) {
 func TestPRNGEntropyKickFour(t *testing.T) {
 	GetPublicPRNG()
 	GetPrivatePRNG()
-	securityDomain := []byte("fc-retrieval-client-keys")
+	securityDomain := []byte("fc-retrieval/client-keys")
 	NewPrivatePRNG(securityDomain)
-	securityDomain2 := []byte("fc-retrieval-client-secrets")
+	securityDomain2 := []byte("fc-retrieval/client-secrets")
 	NewPrivatePRNG(securityDomain2)
 	PRNGEntropyKick()
 }

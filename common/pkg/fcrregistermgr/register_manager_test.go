@@ -10,9 +10,9 @@ import (
   "github.com/golang/mock/gomock"
   "github.com/stretchr/testify/assert"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/mocks"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/mocks"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 const fakeRegisterAPIURL = "fakeRegisterAPIURL"
 var rm = NewFCRRegisterMgr(fakeRegisterAPIURL, false, false, 1*time.Second)

@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   gateway:
-    container_name: fc-retrieval-gateway
+    container_name: fc-retrieval/gateway
     build:
       dockerfile: Dockerfile.dev
       context: .
@@ -15,8 +15,8 @@ services:
       - ./logs:${LOG_DIR}
       - ./:/go/src/app
       - ./go.local.mod:/go/src/app/go.mod
-      - ../fc-retrieval-common:/go/src/fc-retrieval-common
-      - ../fc-retrieval-register:/go/src/fc-retrieval-register
+      - ../fc-retrieval/common:/go/src/fc-retrieval/common
+      - ../fc-retrieval/register:/go/src/fc-retrieval/register
     env_file:
       - .env
     environment:

@@ -118,7 +118,7 @@ if [[ " ${args[0]} " == *"-u"* || " ${args[0]} " == *"-h"* ]]; then
 	echo -e "\t$0 [one or more short repository names]"
 	echo -e "\t\tProcess only named repositories, e.g."
 	echo -e "\t\t$0 common gateway # Process only the "
-	echo -e "\t\tfc-retrieval-common and fc-retrieval-gateway repositories"
+	echo -e "\t\tfc-retrieval/common and fc-retrieval/gateway repositories"
 	echo
 	echo -e "Available repository short names:"
 	for shortname in "${shortrepositories[@]}"

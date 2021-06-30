@@ -4,7 +4,7 @@ echo "*** Tag docker image with branch name  ***"
 echo "****************************************"
 
 # Docker image name on docker hub
-IMAGE_NAME=consensys/fc-retrieval-client-js
+IMAGE_NAME=consensys/fc-retrieval/client-js
 
 VERSION=$1
 echo "Client-js version: $VERSION"

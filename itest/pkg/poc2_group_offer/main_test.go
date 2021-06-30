@@ -12,10 +12,10 @@ import (
 
 	tc "github.com/wcgcyx/testcontainers-go"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval-common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval-itest/config"
-	"github.com/ConsenSys/fc-retrieval-itest/pkg/util"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/itest/config"
+	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
 const lotusAP = "http://lotus-full-node:1234/rpc/v0"

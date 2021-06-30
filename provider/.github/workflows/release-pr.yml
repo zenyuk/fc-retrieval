@@ -4,7 +4,7 @@ on:
     branches: [main]
 env:
   docker_registry: docker.pkg.github.com
-  docker_image_name: fc-retrieval-provider
+  docker_image_name: fc-retrieval/provider
   docker_image_version: pr-${{ github.event.number }}
 jobs:
   push_to_registry:

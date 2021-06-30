@@ -19,7 +19,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
 )
 
 // FCRServerWriter stores the connection to write to.

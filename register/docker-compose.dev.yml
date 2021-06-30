@@ -2,17 +2,17 @@ version: "3.8"
 
 services:
   register:
-    container_name: fc-retrieval-register
+    container_name: fc-retrieval/register
     build:
-      dockerfile: ./fc-retrieval-register/Dockerfile.dev
+      dockerfile: ./fc-retrieval/register/Dockerfile.dev
       context: ../
     networks:
       - shared
     ports:
       - "9020:9020"
     volumes:
-      - ../fc-retrieval-register:/go/src/fc-retrieval-register
-      - ../fc-retrieval-register/${GO_MOD}:/go/src/fc-retrieval-register/go.mod
+      - ../fc-retrieval/register:/go/src/fc-retrieval/register
+      - ../fc-retrieval/register/${GO_MOD}:/go/src/fc-retrieval/register/go.mod
     env_file:
       - .env
     restart: unless-stopped

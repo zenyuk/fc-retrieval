@@ -19,11 +19,11 @@ import (
   "errors"
   "sync"
 
-  "github.com/ConsenSys/fc-retrieval-common/pkg/cidoffer"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval-common/pkg/register"
-  "github.com/ConsenSys/fc-retrieval-gateway-admin/pkg/api/adminapi"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+  "github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/api/adminapi"
 )
 
 // FilecoinRetrievalGatewayAdmin is an example implementation using the api,

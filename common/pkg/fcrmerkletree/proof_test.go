@@ -20,7 +20,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/cbergoon/merkletree"
 	"github.com/stretchr/testify/assert"
 )

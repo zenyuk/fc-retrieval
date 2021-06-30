@@ -1,14 +1,14 @@
 LEGAL.txt
 Copyright (c) 2021 ConsenSys Software Inc.
 
-Project: fc-retrieval-common
+Project: fc-retrieval/common
 
 This file lists dependencies used by this project, and provides
 attribution to open source software projects.
 ---------------------------------------------------------------
 
-Project: https://github.com/ConsenSys/fc-retrieval-common/
-License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval-common/master/LICENSE
+Project: https://github.com/ConsenSys/fc-retrieval/common/
+License URL: https://raw.githubusercontent.com/ConsenSys/fc-retrieval/common/master/LICENSE
 License type: Apache License
 
 Project: https://github.com/cbergoon/merkletree/

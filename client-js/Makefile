@@ -1,5 +1,5 @@
 VERSION?=dev
-IMAGE?=consensys/fc-retrieval-client-js
+IMAGE?=consensys/fc-retrieval/client-js
 
 .PHONY: build clean tag
 

@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval-common/pkg/cid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 )
 
 // clientStandardDiscoverRequestV2 is the request from client to gateway to ask for cid offer
