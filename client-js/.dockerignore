@@ -1,0 +1,29 @@
+# IDEs
+.editorconfig
+.jsbeautifyrc
+.prettierrc
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Dotenv
+.env*
+
+# DevOps
+.circleci
+.dockerignore
+*docker-compose*
+*Dockerfile*
+
+# Node
+lib
+node_modules
+
+# Others
+coverage
+logs
+Makefile
+README.md
+scripts
