@@ -29,7 +29,7 @@ jobs:
             - go-mod-
 
       - run:
-          name: Check dependency
+          name: "make deps # Check dependency"
           command: make deps
 
       - save_cache:
