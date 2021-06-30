@@ -3,8 +3,11 @@ module github.com/ConsenSys/fc-retrieval/itest
 go 1.16
 
 replace github.com/ConsenSys/fc-retrieval/common => ../common
+
 replace github.com/ConsenSys/fc-retrieval/client => ../client
+
 replace github.com/ConsenSys/fc-retrieval/gateway-admin => ../gateway-admin
+
 replace github.com/ConsenSys/fc-retrieval/provider-admin => ../provider-admin
 
 require (
@@ -23,4 +26,3 @@ require (
 	github.com/testcontainers/testcontainers-go v0.10.0
 	github.com/wcgcyx/testcontainers-go v0.10.1-0.20210511154849-504eecefabe0
 )
-

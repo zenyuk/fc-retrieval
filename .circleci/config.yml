@@ -53,10 +53,14 @@ jobs:
       - run:
           name: Create lotus images if not exist
           command: |
-            docker image ls
+            docker image ls | egrep '^REPOSITORY|consensys'
             echo
             cd itest
             make lotusbase lotusdaemon lotusfullnode
+
+      - run:
+          name: Build test binary for provider, gateway, register
+          command: make build-servers-test
 
       - run: make LAST_GATEWAY_NO=0 itest-poc1 clean
       - run: make LAST_GATEWAY_NO=1 itest-poc2js clean
