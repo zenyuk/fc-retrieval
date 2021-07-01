@@ -6,23 +6,8 @@ First, get all the repositories, and checkout `264-lotus-upgrade` branch.
 
 To get all the repositories, execute:
 ```
-git clone https://github.com/ConsenSys/fc-retrieval-itest.git
-git clone https://github.com/ConsenSys/fc-retrieval-common.git
-git clone https://github.com/ConsenSys/fc-retrieval-provider.git
-git clone https://github.com/ConsenSys/fc-retrieval-gateway.git
-git clone https://github.com/ConsenSys/fc-retrieval-client.git
-git clone https://github.com/ConsenSys/fc-retrieval-register.git
-```
-
-To checkout the `264-lotus-upgrade` branch, execute:
-
-```
-cd fc-retrieval-itest/ && git checkout 264-lotus-upgrade && cd ..
-cd fc-retrieval-common/ && git checkout 264-lotus-upgrade && cd ..
-cd fc-retrieval-provider/ && git checkout 264-lotus-upgrade && cd ..
-cd fc-retrieval-gateway/ && git checkout 264-lotus-upgrade && cd ..
-cd fc-retrieval-client/ && git checkout 264-lotus-upgrade && cd ..
-cd fc-retrieval-register/ && git checkout 264-lotus-upgrade && cd ..
+git clone https://github.com/ConsenSys/fc-retrieval.git
+cd fc-retrieval
 ```
 
 ## 2. Build and setup demo
@@ -31,9 +16,7 @@ cd fc-retrieval-register/ && git checkout 264-lotus-upgrade && cd ..
 
 To build  Provider, Gateway and Register images, execute:
 ```
-cd fc-retrieval-provider/ && make buildlocal tag && cd ..
-cd fc-retrieval-gateway/ && make buildlocal tag && cd ..
-cd fc-retrieval-register/ && make buildlocal tag && cd ..
+make build-servers micro-images
 ```
 
 ### Build lotus node image
@@ -41,15 +24,7 @@ cd fc-retrieval-register/ && make buildlocal tag && cd ..
 To build a Lotus node image, go to Itest folder:
 
 ```
-cd fc-retrieval-itest/
-```
-
-And execute the build commands:
-
-```
-make lotusbase
-make lotusdaemon
-make lotusfullnode
+make lotus-images
 ```
 
 It can be very long, `lotusbase` needs 52 blocks to complete.
@@ -63,11 +38,8 @@ docker network create shared
 
 ## 3. Start demo
 
-In `fc-retrieval-itest`, checkout the `demo` branch:
-
 ```
-git checkout demo
-cd demo
+cd itest/demo
 ```
 
 Open 4 terminals on `fc-retrieval-itest/demo` folder, and execute:
