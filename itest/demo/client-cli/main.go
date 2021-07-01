@@ -16,8 +16,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/c-bata/go-prompt"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -30,6 +30,8 @@ var lotusAP = "http://127.0.0.1:1234/rpc/v0"
 var client *fcrclient.FilecoinRetrievalClient
 var offerMap map[string]*cidoffer.SubCIDOffer
 var initialised bool
+var registerURL = "http://127.0.0.1:9020"
+var rm = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
@@ -75,12 +77,16 @@ func executor(in string) {
 		confBuilder := fcrclient.CreateSettings()
 		confBuilder.SetEstablishmentTTL(101)
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-		confBuilder.SetRegisterURL("http://127.0.0.1:9020")
 		confBuilder.SetWalletPrivateKey(key)
 		confBuilder.SetLotusAP(lotusAP)
 		confBuilder.SetLotusAuthToken(token)
 		conf := confBuilder.Build()
-		client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+		err = rm.Start()
+		if err != nil {
+			fmt.Printf("Fail to start rm for client: %s\n", err.Error())
+			return
+		}
+		client, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
 		if err != nil {
 			fmt.Printf("Fail to initialise client: %s\n", err.Error())
 			return
@@ -97,14 +103,10 @@ func executor(in string) {
 			fmt.Println("Client hasn't been initialised yet.")
 			return
 		}
-		gws, err := register.GetRegisteredGateways("http://127.0.0.1:9020")
-		if err != nil {
-			fmt.Printf("Error in getting registered gateways: %s\n", err.Error())
-			return
-		}
+		gws := rm.GetAllGateways()
 		fmt.Println("Registered gateways:")
 		for _, gw := range gws {
-			fmt.Printf("%v\n", gw.NodeID)
+			fmt.Printf("%v\n", gw.GetNodeID())
 		}
 
 	case "ls-active":
@@ -137,8 +139,8 @@ func executor(in string) {
 			fmt.Println("Fail to use gateway.")
 			return
 		}
-		info, _ := register.GetGatewayByID("http://127.0.0.1:9020", id)
-		err = client.PaymentMgr().Topup(info.Address, client.Settings.TopUpAmount())
+		info := rm.GetGateway(id)
+		err = client.PaymentMgr().Topup(info.GetAddress(), client.Settings.TopUpAmount())
 		if err != nil {
 			fmt.Println("Error in creating payment channel to given gateway")
 			return
@@ -229,6 +231,7 @@ func executor(in string) {
 		}
 		fmt.Println("Fast retrieve hasn't been implemented yet.")
 	case "exit":
+		rm.Shutdown()
 		fmt.Println("Bye!")
 		os.Exit(0)
 	default:
