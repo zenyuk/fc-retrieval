@@ -83,7 +83,7 @@ func executor(in string) {
 		conf := confBuilder.Build()
 		err = rm.Start()
 		if err != nil {
-			fmt.Printf("Fail to start rm for client: %s\n", err.Error())
+			fmt.Printf("Fail to start register manager for client: %s\n", err.Error())
 			return
 		}
 		client, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
