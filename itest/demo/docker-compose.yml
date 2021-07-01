@@ -1,0 +1,361 @@
+version: "3.8"
+services:
+
+  lotus:
+    image: consensys/lotus-full-node:latest
+    container_name: lotus
+    ports:
+      - "1234:1234"
+      - "2345:2345"
+    networks:
+      - shared
+    restart: unless-stopped
+    logging:
+      driver: "none"
+
+  provider:
+    image: ${PROVIDER_IMAGE:-consensys/fc-retrieval/provider}
+    container_name: provider
+    networks:
+      - shared
+    ports:
+      - "9030:9030"
+      - "9031:9031"
+      - "9032:9032"
+      - "9033:9033"
+    env_file:
+      - .env.provider
+    depends_on:
+      - register
+      - lotus
+
+  gateway0:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway0
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8018:9018"
+      - "7013:9013"
+    depends_on:
+      - register
+      - lotus
+      - provider
+
+  gateway1:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway1
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8019:9018"
+      - "7014:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway0
+
+  gateway2:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway2
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8020:9018"
+      - "7015:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway1
+
+  gateway3:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway3
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8021:9018"
+      - "7016:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway2
+
+  gateway4:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway4
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8022:9018"
+      - "7017:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway3
+
+  gateway5:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway5
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8023:9018"
+      - "7018:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway4
+
+  gateway6:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway6
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8024:9018"
+      - "7019:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway5
+
+  gateway7:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway7
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8025:9018"
+      - "7020:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway6
+
+  gateway8:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway8
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8026:9018"
+      - "7021:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway7
+
+  gateway9:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway9
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8027:9018"
+      - "7022:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway8
+
+  gateway10:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway10
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8028:9018"
+      - "7023:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway9
+
+  gateway11:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway11
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8029:9018"
+      - "7024:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway10
+
+  gateway12:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway12
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8030:9018"
+      - "7025:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway11
+
+  gateway13:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway13
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8031:9018"
+      - "7026:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway12
+
+  gateway14:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway14
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8032:9018"
+      - "7027:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway13
+
+  gateway15:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway15
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8033:9018"
+      - "7028:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway14
+
+  gateway16:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway16
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8034:9018"
+      - "7029:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway15
+
+  gateway17:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway17
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8035:9018"
+      - "7030:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway16
+
+  gateway18:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway18
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8036:9018"
+      - "7031:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway17
+
+  gateway19:
+    image: ${GATEWAY_IMAGE:-consensys/fc-retrieval/gateway}
+    container_name: gateway19
+    networks:
+      - shared
+    env_file:
+      - .env.gateway
+    ports:
+      - "8037:9018"
+      - "7032:9013"
+    depends_on:
+      - register
+      - lotus
+      - gateway18
+
+  register:
+    image: ${REGISTER_IMAGE:-consensys/fc-retrieval/register}
+    container_name: register
+    ports:
+      - "9020:9020"
+    networks:
+      - shared
+    restart: unless-stopped
+    env_file:
+      - .env.register
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    networks:
+      - shared
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    command: 
+      redis-server --requirepass xxxx
+    restart: always
+
+networks:
+  shared:
+    name: shared
+    external: true
