@@ -31,7 +31,7 @@ var client *fcrclient.FilecoinRetrievalClient
 var offerMap map[string]*cidoffer.SubCIDOffer
 var initialised bool
 var registerURL = "http://127.0.0.1:9020"
-var rm = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
+var registerMgr = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
@@ -81,12 +81,12 @@ func executor(in string) {
 		confBuilder.SetLotusAP(lotusAP)
 		confBuilder.SetLotusAuthToken(token)
 		conf := confBuilder.Build()
-		err = rm.Start()
+		err = registerMgr.Start()
 		if err != nil {
 			fmt.Printf("Fail to start register manager for client: %s\n", err.Error())
 			return
 		}
-		client, err = fcrclient.NewFilecoinRetrievalClient(*conf, rm)
+		client, err = fcrclient.NewFilecoinRetrievalClient(*conf, registerMgr)
 		if err != nil {
 			fmt.Printf("Fail to initialise client: %s\n", err.Error())
 			return
@@ -103,7 +103,7 @@ func executor(in string) {
 			fmt.Println("Client hasn't been initialised yet.")
 			return
 		}
-		gws := rm.GetAllGateways()
+		gws := registerMgr.GetAllGateways()
 		fmt.Println("Registered gateways:")
 		for _, gw := range gws {
 			fmt.Printf("%v\n", gw.GetNodeID())
@@ -139,7 +139,7 @@ func executor(in string) {
 			fmt.Println("Fail to use gateway.")
 			return
 		}
-		info := rm.GetGateway(id)
+		info := registerMgr.GetGateway(id)
 		err = client.PaymentMgr().Topup(info.GetAddress(), client.Settings.TopUpAmount())
 		if err != nil {
 			fmt.Println("Error in creating payment channel to given gateway")
@@ -231,7 +231,7 @@ func executor(in string) {
 		}
 		fmt.Println("Fast retrieve hasn't been implemented yet.")
 	case "exit":
-		rm.Shutdown()
+		registerMgr.Shutdown()
 		fmt.Println("Bye!")
 		os.Exit(0)
 	default:
