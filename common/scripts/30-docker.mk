@@ -148,11 +148,14 @@ docker-hosts:
 docker-itest-env:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	cd itest; \
-	docker exec  lotus-full-node bash -c \
-	  'echo export LOTUS_TOKEN=$$(cat ~/.lotus/token); echo; echo export SUPER_ACCT=$$(/app/lotus/lotus wallet default)' > \
-	  env-LOTUS_KEYS.out; \
-	echo export ITEST_CALLING_FROM_CONTAINER=yes >> env-LOTUS_KEYS.out; \
+	echo export ITEST_CALLING_FROM_CONTAINER=yes > env-LOTUS_KEYS.out; \
+	echo export HOSTALIASES=`realpath hosts.out` >> env-LOTUS_KEYS.out; \
 	echo export LOG_LEVEL=debug >> env-LOTUS_KEYS.out; \
 	echo export LOG_TARGET=STDOUT >> env-LOTUS_KEYS.out; \
 	echo export LOG_SERVICE_NAME=itest >> env-LOTUS_KEYS.out; \
-	echo export HOSTALIASES=`realpath hosts.out` >> env-LOTUS_KEYS.out;
+	docker exec lotus bash -c \
+	  'echo export LOTUS_TOKEN=$$(cat ~/.lotus/token); echo; echo export SUPER_ACCT=$$(/app/lotus/lotus wallet default)' >> \
+	  env-LOTUS_KEYS.out || true; \
+	docker exec lotus-full-node bash -c \
+	  'echo export LOTUS_TOKEN=$$(cat ~/.lotus/token); echo; echo export SUPER_ACCT=$$(/app/lotus/lotus wallet default)' >> \
+	  env-LOTUS_KEYS.out || true;
