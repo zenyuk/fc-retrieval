@@ -27,7 +27,7 @@ import (
 	cid2 "github.com/ipfs/go-cid"
 )
 
-var lotusAP = "http://127.0.0.1:1234/rpc/v0"
+var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
 var client *fcrclient.FilecoinRetrievalClient
 var offerMap map[string]*cidoffer.SubCIDOffer
 var initialised bool
@@ -62,7 +62,7 @@ func executor(in string) {
 		}
 		fmt.Println("Initialise client (dev)...")
 		token, acct := getLotusToken()
-		keys, addresses, err := generateAccount(lotusAP, token, acct, 1)
+		keys, addresses, err := generateAccount(localLotusAP, token, acct, 1)
 		if err != nil {
 			fmt.Printf("Fail to initialise client: %s\n", err.Error())
 			return
@@ -79,7 +79,7 @@ func executor(in string) {
 		confBuilder.SetEstablishmentTTL(101)
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 		confBuilder.SetWalletPrivateKey(key)
-		confBuilder.SetLotusAP(lotusAP)
+		confBuilder.SetLotusAP(localLotusAP)
 		confBuilder.SetLotusAuthToken(token)
 		conf := confBuilder.Build()
 		err = registerMgr.Start()
@@ -281,11 +281,11 @@ func getLotusToken() (string, string) {
 }
 
 // The following helper method is used to generate a new filecoin account with 10 filecoins of balance
-func generateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
+func generateAccount(localLotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
 	headers := http.Header{"Authorization": []string{"Bearer " + token}}
-	closer, err := jsonrpc.NewMergeClient(context.Background(), lotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
+	closer, err := jsonrpc.NewMergeClient(context.Background(), localLotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
 	if err != nil {
 		return nil, nil, err
 	}

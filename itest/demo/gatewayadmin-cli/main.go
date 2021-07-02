@@ -25,7 +25,8 @@ import (
 	cid2 "github.com/ipfs/go-cid"
 )
 
-var lotusAP = "http://127.0.0.1:1234/rpc/v0"
+var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
+var networkLotusAP = "http://lotus:1234/rpc/v0"
 var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdmin
 var initialised bool
 var registerURL = "http://127.0.0.1:9020"
@@ -60,7 +61,6 @@ func executor(in string) {
 		}
 		confBuilder := fcrgatewayadmin.CreateSettings()
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-		confBuilder.SetRegisterURL("http://127.0.0.1:9020")
 		conf := confBuilder.Build()
 		err = registerMgr.Start()
 		gwAdmin = fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
@@ -73,7 +73,7 @@ func executor(in string) {
 		}
 		fmt.Println("Initialise gateway (dev)")
 		token, acct := getLotusToken()
-		keys, addresses, err := generateAccount(lotusAP, token, acct, 20)
+		keys, addresses, err := generateAccount(localLotusAP, token, acct, 20)
 		if err != nil {
 			fmt.Printf("Fail to initialise gateway: %s\n", err.Error())
 			return
@@ -122,7 +122,7 @@ func executor(in string) {
 				fmt.Sprintf("127.0.0.1:%v", 8018+i),
 				fmt.Sprintf("127.0.0.1:%v", 7013+i),
 			)
-			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, "http://lotus:1234/rpc/v0", token)
+			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
 			if err != nil {
 				fmt.Printf("Fail to initialise gateway: %s\n", err.Error())
 				return
@@ -195,11 +195,11 @@ func getLotusToken() (string, string) {
 }
 
 // The following helper method is used to generate a new filecoin account with 10 filecoins of balance
-func generateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
+func generateAccount(localLotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
 	headers := http.Header{"Authorization": []string{"Bearer " + token}}
-	closer, err := jsonrpc.NewMergeClient(context.Background(), lotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
+	closer, err := jsonrpc.NewMergeClient(context.Background(), localLotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
 	if err != nil {
 		return nil, nil, err
 	}
