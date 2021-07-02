@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -147,6 +148,13 @@ func executor(in string) {
 
 func main() {
 	initialised = false
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			debug.PrintStack()
+		}
+		handleExit()
+	}()
 	p := prompt.New(
 		executor,
 		completer,
@@ -317,4 +325,16 @@ func generateKeyPair() ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 	return privateKey, publicKey, err
+}
+
+// handleExit fixes the problem of broken terminal when exit in Linux
+// ref: https://www.gitmemory.com/issue/c-bata/go-prompt/228/820639887
+func handleExit() {
+	if _, err := os.Stat("/bin/stty"); os.IsNotExist(err) {
+		return
+	}
+	rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
+	rawModeOff.Stdin = os.Stdin
+	_ = rawModeOff.Run()
+	rawModeOff.Wait()
 }
