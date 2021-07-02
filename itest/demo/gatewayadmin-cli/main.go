@@ -14,6 +14,7 @@ import (
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/c-bata/go-prompt"
@@ -27,6 +28,8 @@ import (
 var lotusAP = "http://127.0.0.1:1234/rpc/v0"
 var gwAdmin *fcrgatewayadmin.FilecoinRetrievalGatewayAdmin
 var initialised bool
+var registerURL = "http://127.0.0.1:9020"
+var registerMgr = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
@@ -59,6 +62,7 @@ func executor(in string) {
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
 		confBuilder.SetRegisterURL("http://127.0.0.1:9020")
 		conf := confBuilder.Build()
+		err = registerMgr.Start()
 		gwAdmin = fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 		initialised = true
 		fmt.Println("Done.")
@@ -107,24 +111,27 @@ func executor(in string) {
 			} else {
 				idStr = fmt.Sprintf("%X800000000000000000000000000000000000000000000000000000000000000", i/2)
 			}
-
-			gatewayRegister := &register.GatewayRegister{
-				NodeID:              idStr,
-				Address:             address,
-				RootSigningKey:      gatewayRootSigningKey,
-				SigningKey:          gatewayRetrievalSigningKey,
-				RegionCode:          "au",
-				NetworkInfoGateway:  fmt.Sprintf("gateway%v:9012", i),
-				NetworkInfoProvider: fmt.Sprintf("gateway%v:9011", i),
-				NetworkInfoClient:   fmt.Sprintf("127.0.0.1:%v", 8018+i),
-				NetworkInfoAdmin:    fmt.Sprintf("127.0.0.1:%v", 7013+i),
-			}
-			err = gwAdmin.InitialiseGatewayV2(gatewayRegister, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, "http://lotus:1234/rpc/v0", token)
+			gatewayRegistrar := register.NewGatewayRegister(
+				idStr,
+				address,
+				gatewayRootSigningKey,
+				gatewayRetrievalSigningKey,
+				"au",
+				fmt.Sprintf("gateway%v:9012", i),
+				fmt.Sprintf("gateway%v:9011", i),
+				fmt.Sprintf("127.0.0.1:%v", 8018+i),
+				fmt.Sprintf("127.0.0.1:%v", 7013+i),
+			)
+			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, "http://lotus:1234/rpc/v0", token)
 			if err != nil {
 				fmt.Printf("Fail to initialise gateway: %s\n", err.Error())
 				return
 			}
-			fmt.Printf("Successfully initialised gateway: %v\n", gatewayRegister.NodeID)
+			// Enroll the gateway in the Register srv.
+			if err = registerMgr.RegisterGateway(gatewayRegistrar); err != nil {
+				fmt.Printf("Error registering gateway: %s", err.Error())
+			}
+			fmt.Printf("Successfully initialised gateway: %v\n", gatewayRegistrar.GetNodeID())
 		}
 	case "inspect-gw-offer-traffic":
 		if !initialised {
@@ -139,6 +146,7 @@ func executor(in string) {
 		}
 		fmt.Println("Hasn't been implemented yet.")
 	case "exit":
+		registerMgr.Shutdown()
 		fmt.Println("Bye!")
 		os.Exit(0)
 	default:
