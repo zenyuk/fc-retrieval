@@ -16,6 +16,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
@@ -27,9 +28,12 @@ import (
 	cid2 "github.com/ipfs/go-cid"
 )
 
-var lotusAP = "http://127.0.0.1:1234/rpc/v0"
+var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
+var networkLotusAP = "http://lotus:1234/rpc/v0"
 var pAdmin *fcrprovideradmin.FilecoinRetrievalProviderAdmin
 var initialised bool
+var registerURL = "http://127.0.0.1:9020"
+var registerMgr = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
@@ -63,8 +67,8 @@ func executor(in string) {
 		}
 		confBuilder := fcrprovideradmin.CreateSettings()
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-		confBuilder.SetRegisterURL("http://127.0.0.1:9020")
 		conf := confBuilder.Build()
+		err = registerMgr.Start()
 		pAdmin = fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
 		initialised = true
 		fmt.Println("Done.")
@@ -75,7 +79,7 @@ func executor(in string) {
 		}
 		fmt.Println("Initialise provider (dev)")
 		token, acct := getLotusToken()
-		keys, addresses, err := generateAccount(lotusAP, token, acct, 1)
+		keys, addresses, err := generateAccount(localLotusAP, token, acct, 1)
 		if err != nil {
 			fmt.Printf("Fail to initialise provider: %s\n", err.Error())
 			return
@@ -104,22 +108,26 @@ func executor(in string) {
 			fmt.Printf("Fail to initialise provider: %s\n", err.Error())
 			return
 		}
-		providerRegister := &register.ProviderRegister{
-			NodeID:             nodeid.NewRandomNodeID().ToString(),
-			Address:            address,
-			RootSigningKey:     providerRootSigningKey,
-			SigningKey:         providerRetrievalSigningKey,
-			RegionCode:         "au",
-			NetworkInfoGateway: "provider:9032",
-			NetworkInfoClient:  "127.0.0.1:9030",
-			NetworkInfoAdmin:   "127.0.0.1:9033",
-		}
-		err = pAdmin.InitialiseProviderV2(providerRegister, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, "http://lotus:1234/rpc/v0", token)
+		providerRegistrar := register.NewProviderRegister(
+			nodeid.NewRandomNodeID().ToString(),
+			address,
+			providerRootSigningKey,
+			providerRetrievalSigningKey,
+			"au", // RegionCode
+			"provider:9032", // NetworkInfoGateway
+			"127.0.0.1:9030", // NetworkInfoClient
+			"127.0.0.1:9033", // NetworkInfoAdmin
+		)
+		err = pAdmin.InitialiseProviderV2(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
 		if err != nil {
 			fmt.Printf("Fail to initialise provider: %s\n", err.Error())
 			return
 		}
-		fmt.Printf("Successfully initialised provider: %v\n", providerRegister.NodeID)
+		// Enroll the gateway in the Register srv.
+		if err = registerMgr.RegisterProvider(providerRegistrar); err != nil {
+			fmt.Printf("Error registering provider: %s", err.Error())
+		}
+		fmt.Printf("Successfully initialised and registered provider: %v\n", providerRegistrar.GetNodeID())
 	case "list-pvds":
 		if !initialised {
 			fmt.Println("Admin hasn't been initialised yet.")
@@ -226,6 +234,7 @@ func executor(in string) {
 		}
 		fmt.Printf("Published DHT offer for cid: [\n%v\n]\n", ccid.ToString())
 	case "exit":
+		registerMgr.Shutdown()
 		fmt.Println("Bye!")
 		os.Exit(0)
 	default:
@@ -274,11 +283,11 @@ func getLotusToken() (string, string) {
 }
 
 // The following helper method is used to generate a new filecoin account with 10 filecoins of balance
-func generateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
+func generateAccount(localLotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
 	headers := http.Header{"Authorization": []string{"Bearer " + token}}
-	closer, err := jsonrpc.NewMergeClient(context.Background(), lotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
+	closer, err := jsonrpc.NewMergeClient(context.Background(), localLotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
 	if err != nil {
 		return nil, nil, err
 	}
