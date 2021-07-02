@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -16,8 +17,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/c-bata/go-prompt"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
@@ -26,10 +27,12 @@ import (
 	cid2 "github.com/ipfs/go-cid"
 )
 
-var lotusAP = "http://127.0.0.1:1234/rpc/v0"
+var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
 var client *fcrclient.FilecoinRetrievalClient
 var offerMap map[string]*cidoffer.SubCIDOffer
 var initialised bool
+var registerURL = "http://127.0.0.1:9020"
+var registerMgr = fcrregistermgr.NewFCRRegisterMgr(registerURL, true, true, 2*time.Second)
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
@@ -59,7 +62,7 @@ func executor(in string) {
 		}
 		fmt.Println("Initialise client (dev)...")
 		token, acct := getLotusToken()
-		keys, addresses, err := generateAccount(lotusAP, token, acct, 1)
+		keys, addresses, err := generateAccount(localLotusAP, token, acct, 1)
 		if err != nil {
 			fmt.Printf("Fail to initialise client: %s\n", err.Error())
 			return
@@ -75,12 +78,16 @@ func executor(in string) {
 		confBuilder := fcrclient.CreateSettings()
 		confBuilder.SetEstablishmentTTL(101)
 		confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-		confBuilder.SetRegisterURL("http://127.0.0.1:9020")
 		confBuilder.SetWalletPrivateKey(key)
-		confBuilder.SetLotusAP(lotusAP)
+		confBuilder.SetLotusAP(localLotusAP)
 		confBuilder.SetLotusAuthToken(token)
 		conf := confBuilder.Build()
-		client, err = fcrclient.NewFilecoinRetrievalClient(*conf)
+		err = registerMgr.Start()
+		if err != nil {
+			fmt.Printf("Fail to start register manager for client: %s\n", err.Error())
+			return
+		}
+		client, err = fcrclient.NewFilecoinRetrievalClient(*conf, registerMgr)
 		if err != nil {
 			fmt.Printf("Fail to initialise client: %s\n", err.Error())
 			return
@@ -97,14 +104,10 @@ func executor(in string) {
 			fmt.Println("Client hasn't been initialised yet.")
 			return
 		}
-		gws, err := register.GetRegisteredGateways("http://127.0.0.1:9020")
-		if err != nil {
-			fmt.Printf("Error in getting registered gateways: %s\n", err.Error())
-			return
-		}
+		gws := registerMgr.GetAllGateways()
 		fmt.Println("Registered gateways:")
 		for _, gw := range gws {
-			fmt.Printf("%v\n", gw.NodeID)
+			fmt.Printf("%v\n", gw.GetNodeID())
 		}
 
 	case "ls-active":
@@ -137,8 +140,8 @@ func executor(in string) {
 			fmt.Println("Fail to use gateway.")
 			return
 		}
-		info, _ := register.GetGatewayByID("http://127.0.0.1:9020", id)
-		err = client.PaymentMgr().Topup(info.Address, client.Settings.TopUpAmount())
+		info := registerMgr.GetGateway(id)
+		err = client.PaymentMgr().Topup(info.GetAddress(), client.Settings.TopUpAmount())
 		if err != nil {
 			fmt.Println("Error in creating payment channel to given gateway")
 			return
@@ -229,6 +232,7 @@ func executor(in string) {
 		}
 		fmt.Println("Fast retrieve hasn't been implemented yet.")
 	case "exit":
+		registerMgr.Shutdown()
 		fmt.Println("Bye!")
 		os.Exit(0)
 	default:
@@ -238,6 +242,13 @@ func executor(in string) {
 
 func main() {
 	initialised = false
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			debug.PrintStack()
+		}
+		handleExit()
+	}()
 	p := prompt.New(
 		executor,
 		completer,
@@ -270,11 +281,11 @@ func getLotusToken() (string, string) {
 }
 
 // The following helper method is used to generate a new filecoin account with 10 filecoins of balance
-func generateAccount(lotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
+func generateAccount(localLotusAP string, token string, superAcct string, num int) ([]string, []string, error) {
 	// Get API
 	var api apistruct.FullNodeStruct
 	headers := http.Header{"Authorization": []string{"Bearer " + token}}
-	closer, err := jsonrpc.NewMergeClient(context.Background(), lotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
+	closer, err := jsonrpc.NewMergeClient(context.Background(), localLotusAP, "Filecoin", []interface{}{&api.Internal, &api.CommonStruct.Internal}, headers)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -408,4 +419,16 @@ func generateKeyPair() ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 	return privateKey, publicKey, err
+}
+
+// handleExit fixes the problem of broken terminal when exit in Linux
+// ref: https://www.gitmemory.com/issue/c-bata/go-prompt/228/820639887
+func handleExit() {
+	if _, err := os.Stat("/bin/stty"); os.IsNotExist(err) {
+		return
+	}
+	rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
+	rawModeOff.Stdin = os.Stdin
+	_ = rawModeOff.Run()
+	rawModeOff.Wait()
 }
