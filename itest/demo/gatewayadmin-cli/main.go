@@ -117,10 +117,10 @@ func executor(in string) {
 				gatewayRootSigningKey,
 				gatewayRetrievalSigningKey,
 				"au",
-				fmt.Sprintf("gateway%v:9012", i),
-				fmt.Sprintf("gateway%v:9011", i),
-				fmt.Sprintf("127.0.0.1:%v", 8018+i),
-				fmt.Sprintf("127.0.0.1:%v", 7013+i),
+				fmt.Sprintf("gateway%v:9012", i), // NetworkInfoGateway
+				fmt.Sprintf("gateway%v:9011", i), // NetworkInfoProvider
+				fmt.Sprintf("127.0.0.1:%v", 8018+i), // NetworkInfoClient
+				fmt.Sprintf("127.0.0.1:%v", 7013+i), // NetworkInfoAdmin
 			)
 			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
 			if err != nil {
