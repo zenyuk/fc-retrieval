@@ -2,8 +2,8 @@
 .PHONY:     lotus-full-node-image docker-clean docker-restart
 docker-all: lotus-full-node-image docker-clean docker-restart
 
-.PHONY:         docker-network docker-lotus-full-node docker-redis docker-register docker-provider-test docker-gateway-test docker-hosts docker-itest-env
-docker-restart: docker-network docker-lotus-full-node docker-redis docker-register docker-provider-test docker-gateway-test docker-hosts docker-itest-env
+.PHONY:         docker-network docker-lotus-full-node docker-redis docker-register docker-provider docker-gateway docker-hosts docker-itest-env
+docker-restart: docker-network docker-lotus-full-node docker-redis docker-register docker-provider docker-gateway docker-hosts docker-itest-env
 
 lotus-base-image:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
