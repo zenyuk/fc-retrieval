@@ -55,10 +55,6 @@ jobs:
           command: |
             make lotus-images
 
-      - run:
-          name: "make build-servers-test # Build test binary for provider, gateway, register"
-          command: make build-servers-test
-
       - run: make itest-poc1
       - run: make itest-poc2js
 

@@ -81,11 +81,12 @@ docker-provider:
 		redhat/ubi8-micro sh -c "./main >$$dname.out 2>&1"; \
 	done
 
+LAST_GATEWAY_NO?=32
 docker-gateway:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	cd gateway; \
 	cp -u .env.example .env; \
-	for I in "" `seq 0 32| sed 's/^/-/'`; \
+	for I in "" `seq 0 $(LAST_GATEWAY_NO)| sed 's/^/-/'`; \
 	do \
 	dname=gateway$$I; \
 	docker run -d \
@@ -118,7 +119,6 @@ docker-provider-test:
 		redhat/ubi8-micro sh -c "./main.test -test.coverprofile $$dname.cov >$$dname.out 2>&1"; \
 	done
 
-LAST_GATEWAY_NO?=32
 docker-gateway-test:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	cd gateway; \
