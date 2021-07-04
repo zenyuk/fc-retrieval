@@ -6,7 +6,7 @@ ci-1 : deps build-servers micro-images coverage
 
 ci-2 : lotus-images
 
-ci-3 : build-servers-test
+ci-3 :
 
 ci-4 : itest-poc1
 

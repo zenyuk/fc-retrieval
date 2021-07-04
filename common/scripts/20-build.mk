@@ -33,7 +33,8 @@ coverage:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
 	set -e; \
 	cd common; \
-	make coverage COV=62
+	make coverage COV=62; \
+	make utest
 
 build-servers:
 	@echo " \\e[01;32m \\n#run: $@\\e[m"
