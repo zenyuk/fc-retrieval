@@ -7,17 +7,21 @@ deps:
 	for DIR in $(wildcard */go.mod); \
 	do \
 	  cd $$(dirname $$DIR); \
-	  go mod tidy; \
+	  echo running go mod tidy in dir:; \
 	  pwd; \
-	  echo; \
+	  go mod tidy; \
 	  cd ..; \
 	done; \
+	echo; \
+	echo go.sum below should be updated: ; \
 	for DIR in $(wildcard */go.mod); \
 	do \
 	  cd $$(dirname $$DIR); \
 	  git -P diff -U0 --exit-code go.sum || pwd; \
 	  cd ..; \
 	done; \
+	echo; \
+	echo go.mod below should be updated: ; \
 	for DIR in $(wildcard */go.mod); \
 	do \
 	  cd $$(dirname $$DIR); \
