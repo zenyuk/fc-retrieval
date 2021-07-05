@@ -1,6 +1,7 @@
 package poc2_group_offer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
@@ -17,8 +18,9 @@ func TestInitialiseProviders(t *testing.T) {
 	t.Log("/*             Start TestInitialiseProviders           */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}

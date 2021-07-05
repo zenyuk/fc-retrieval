@@ -13,6 +13,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/c-bata/go-prompt"
+	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-jsonrpc"
+	"github.com/filecoin-project/lotus/api/apistruct"
+	"github.com/filecoin-project/lotus/chain/types"
+	cid2 "github.com/ipfs/go-cid"
+
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
@@ -20,12 +27,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
-	"github.com/c-bata/go-prompt"
-	"github.com/filecoin-project/go-address"
-	"github.com/filecoin-project/go-jsonrpc"
-	"github.com/filecoin-project/lotus/api/apistruct"
-	"github.com/filecoin-project/lotus/chain/types"
-	cid2 "github.com/ipfs/go-cid"
 )
 
 var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
@@ -113,12 +114,12 @@ func executor(in string) {
 			address,
 			providerRootSigningKey,
 			providerRetrievalSigningKey,
-			"au", // RegionCode
-			"provider:9032", // NetworkInfoGateway
+			"au",             // RegionCode
+			"provider:9032",  // NetworkInfoGateway
 			"127.0.0.1:9030", // NetworkInfoClient
 			"127.0.0.1:9033", // NetworkInfoAdmin
 		)
-		err = pAdmin.InitialiseProviderV2(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
+		err = pAdmin.InitialiseProviderV2("127.0.0.1:9033", providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
 		if err != nil {
 			fmt.Printf("Fail to initialise provider: %s\n", err.Error())
 			return
@@ -164,7 +165,7 @@ func executor(in string) {
 		cid3 := cid.NewRandomContentID()
 		expiryDate := time.Now().Local().Add(time.Hour * 24).Unix()
 		price := rand.Intn(100-1) + 1
-		err = pAdmin.PublishGroupCID(id, []cid.ContentID{*cid1, *cid2, *cid3}, uint64(price), expiryDate, 42)
+		err = pAdmin.PublishGroupCID("127.0.0.1:9033", id, []cid.ContentID{*cid1, *cid2, *cid3}, uint64(price), expiryDate, 42)
 		if err != nil {
 			fmt.Println("Error in publishing offer.")
 			return
@@ -201,7 +202,7 @@ func executor(in string) {
 		}
 		expiryDate := time.Now().Local().Add(time.Hour * 24).Unix()
 		price := 44
-		err = pAdmin.PublishGroupCID(id, []cid.ContentID{*cid1, *cid2, *cid3}, uint64(price), expiryDate, 42)
+		err = pAdmin.PublishGroupCID("127.0.0.1:9033", id, []cid.ContentID{*cid1, *cid2, *cid3}, uint64(price), expiryDate, 42)
 		if err != nil {
 			fmt.Println("Error in publishing offer.")
 			return
@@ -227,7 +228,7 @@ func executor(in string) {
 			return
 		}
 		expiryDate := time.Now().Local().Add(time.Hour * 24).Unix()
-		err = pAdmin.PublishDHTCID(id, []cid.ContentID{*ccid}, []uint64{45}, []int64{expiryDate}, []uint64{43})
+		err = pAdmin.PublishDHTCID("127.0.0.1:9033", id, []cid.ContentID{*ccid}, []uint64{45}, []int64{expiryDate}, []uint64{43})
 		if err != nil {
 			fmt.Println("Error in publishing DHT offer.")
 			return

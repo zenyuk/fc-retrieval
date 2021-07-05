@@ -1,6 +1,7 @@
 package poc2_group_offer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -14,7 +15,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	cr "github.com/ConsenSys/fc-retrieval/itest/pkg/util/crypto-facade"
+	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
@@ -23,8 +25,9 @@ func TestForceUpdate(t *testing.T) {
 	t.Log("/*                Start TestForceUpdate                */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +63,7 @@ func TestForceUpdate(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 		var idStr string
 		if i%2 == 0 {
 			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
@@ -94,7 +97,7 @@ func TestForceUpdate(t *testing.T) {
 		}
 		// Enroll the gateway in the Register srv.
 		if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-			logging.Error("error registering gateway: %s", err.Error())
+			logging.Error("gateway registering error: %s", err.Error())
 			t.FailNow()
 		}
 	}
@@ -112,7 +115,7 @@ func TestForceUpdate(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
+		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 		providerID := nodeid.NewRandomNodeID()
 		pIDs = append(pIDs, providerID)
 

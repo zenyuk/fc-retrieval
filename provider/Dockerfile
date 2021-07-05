@@ -14,9 +14,11 @@ RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o /go/bin/provider 
 
 # Pull build provider into a second stage deploy alpine container
 FROM alpine:latest
-COPY --from=builder /go/bin/provider /provider
+COPY --from=builder /go/bin/provider /main
+COPY provider/docker-entrypoint.sh /docker-entrypoint.sh
 
 # Run the binary when the container starts.
 WORKDIR /
 CMD ["/provider"]
+CMD ["./docker-entrypoint.sh"]
 EXPOSE 9030

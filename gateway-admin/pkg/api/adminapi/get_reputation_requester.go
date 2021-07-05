@@ -16,18 +16,19 @@ package adminapi
  */
 
 import (
-  "errors"
+	"errors"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestGetReputation gets the reputation for a given client id
 func (a *Admin) RequestGetReputation(
-  gatewayRegistrar register.GatewayRegistrar,
+	adminApiEndpoint string,
+	gatewayRegistrar register.GatewayRegistrar,
 	clientID *nodeid.NodeID,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion,
@@ -50,7 +51,7 @@ func (a *Admin) RequestGetReputation(
 		return 0, errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return 0, err

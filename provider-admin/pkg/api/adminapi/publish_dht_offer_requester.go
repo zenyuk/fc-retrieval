@@ -27,6 +27,7 @@ import (
 
 // RequestPublishDHTOffer publish a dht offer to a given provider
 func (a *Admin) RequestPublishDHTOffer(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	cids []cid.ContentID,
 	price []uint64,
@@ -52,7 +53,7 @@ func (a *Admin) RequestPublishDHTOffer(
 		return errors.New("can't sign PublishDHTOffer request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

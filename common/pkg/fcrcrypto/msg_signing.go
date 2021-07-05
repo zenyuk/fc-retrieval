@@ -3,6 +3,7 @@ package fcrcrypto
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 )
 
 /**
@@ -60,7 +61,7 @@ func ExtractKeyVersionFromMessage(signature string) (*KeyVersion, error) {
 func VerifyMessage(pubKey *KeyPair, signature string, msg []byte) (bool, error) {
 	sigBytes, err := hex.DecodeString(signature)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error decoding signature during message verification: %s", err.Error())
 	}
 
 	if len(sigBytes) < sigOfsRawSig {

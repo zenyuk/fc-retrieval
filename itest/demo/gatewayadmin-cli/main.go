@@ -12,17 +12,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
-	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/c-bata/go-prompt"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/filecoin-project/lotus/chain/types"
 	cid2 "github.com/ipfs/go-cid"
+
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 )
 
 var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
@@ -117,12 +118,12 @@ func executor(in string) {
 				gatewayRootSigningKey,
 				gatewayRetrievalSigningKey,
 				"au",
-				fmt.Sprintf("gateway%v:9012", i), // NetworkInfoGateway
-				fmt.Sprintf("gateway%v:9011", i), // NetworkInfoProvider
+				fmt.Sprintf("gateway%v:9012", i),    // NetworkInfoGateway
+				fmt.Sprintf("gateway%v:9011", i),    // NetworkInfoProvider
 				fmt.Sprintf("127.0.0.1:%v", 8018+i), // NetworkInfoClient
 				fmt.Sprintf("127.0.0.1:%v", 7013+i), // NetworkInfoAdmin
 			)
-			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
+			err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar.GetNetworkInfoAdmin(), gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), key, networkLotusAP, token)
 			if err != nil {
 				fmt.Printf("Fail to initialise gateway: %s\n", err.Error())
 				return

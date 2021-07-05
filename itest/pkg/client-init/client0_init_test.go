@@ -25,6 +25,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/testcontainers/testcontainers-go"
+
+	"github.com/ConsenSys/fc-retrieval/itest/config"
+	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
@@ -32,46 +37,30 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
 // Tests in this file use the Client API, but don't need the rest of the system to be
 // configured. These tests need to be run prior to the other client tests.
 var fClient *fcrclient.FilecoinRetrievalClient
 
+var containers tc.AllContainers
+
 func TestMain(m *testing.M) {
-	// Need to make sure this env is not set in host machine
-	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
-
-	if itestEnv != "" {
-		// Env is set, we are calling from docker container
-		m.Run()
-		return
-	}
-	// Env is not set, we are calling from host
-	// We don't need any running instance
-
-	// Create shared net
+	const testName = "client-init"
 	ctx := context.Background()
-	network, networkName := util.CreateNetwork(ctx)
-
-	// Start itest
-	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
-
-	// Block until done.
-	if <-done {
-		logging.Info("Tests passed, shutdown...")
-	} else {
-		logging.Error("Tests failed, shutdown...")
+	var gatewayConfig = config.NewConfig(".env.gateway")
+	var providerConfig = config.NewConfig(".env.provider")
+	var registerConfig = config.NewConfig(".env.register")
+	var network *testcontainers.Network
+	var err error
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, gatewayConfig, providerConfig, registerConfig)
+	if err != nil {
+		logging.Error("%s failed, container starting error: %s", testName, err.Error())
+		tc.StopContainers(ctx, testName, containers, network)
+		os.Exit(1)
 	}
-
-	if err := itestContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := (*network).Remove(ctx); err != nil {
-		logging.Error("error while terminating test container network: %s", err.Error())
-	}
+	defer tc.StopContainers(ctx, testName, containers, network)
+	m.Run()
 }
 
 func TestGetClientVersion(t *testing.T) {

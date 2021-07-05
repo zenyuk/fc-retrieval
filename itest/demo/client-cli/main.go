@@ -12,6 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/c-bata/go-prompt"
+	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-jsonrpc"
+	"github.com/filecoin-project/lotus/api/apistruct"
+	"github.com/filecoin-project/lotus/chain/types"
+	cid2 "github.com/ipfs/go-cid"
+
 	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
@@ -19,12 +26,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrpaymentmgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-	"github.com/c-bata/go-prompt"
-	"github.com/filecoin-project/go-address"
-	"github.com/filecoin-project/go-jsonrpc"
-	"github.com/filecoin-project/lotus/api/apistruct"
-	"github.com/filecoin-project/lotus/chain/types"
-	cid2 "github.com/ipfs/go-cid"
 )
 
 var localLotusAP = "http://127.0.0.1:1234/rpc/v0"
@@ -135,7 +136,7 @@ func executor(in string) {
 			return
 		}
 		client.AddGatewaysToUse([]*nodeid.NodeID{id})
-		added := client.AddActiveGateways([]*nodeid.NodeID{id})
+		added := client.AddActiveGateways("127.0.0.1:9010", []*nodeid.NodeID{id})
 		if added != 1 {
 			fmt.Println("Fail to use gateway.")
 			return
@@ -164,7 +165,7 @@ func executor(in string) {
 		temp := make(map[string]*cidoffer.SubCIDOffer)
 		gws := client.GetActiveGateways()
 		for _, gw := range gws {
-			res, err := client.FindOffersStandardDiscoveryV2(id, gw, 5)
+			res, err := client.FindOffersStandardDiscoveryV2("127.0.0.1:9010", id, gw, 5)
 			if err != nil {
 				fmt.Printf("Error querying gateway %v: %v\n", gw.ToString(), err.Error())
 				continue
@@ -197,7 +198,7 @@ func executor(in string) {
 			fmt.Printf("Invalid contentID: %s\n", blocks[2])
 			return
 		}
-		res, err := client.FindOffersDHTDiscoveryV2(id, node, 4, 4)
+		res, err := client.FindOffersDHTDiscoveryV2("127.0.0.1:9010", id, node, 4, 4)
 		if err != nil {
 			fmt.Printf("Error in dht discovery: %s\n", err.Error())
 			return

@@ -15,23 +15,26 @@ type Admin struct {
 
 type AdminApi interface {
 	RequestForceRefresh(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		signingPrivkey *fcrcrypto.KeyPair,
 		signingPrivKeyVer *fcrcrypto.KeyVersion,
 	) error
 
 	RequestGetPublishedOffer(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		gatewayIDs []nodeid.NodeID,
 		signingPrivkey *fcrcrypto.KeyPair,
 		signingPrivKeyVer *fcrcrypto.KeyVersion,
 	) (
-		bool,                // found
+		bool, // found
 		[]cidoffer.CIDOffer, // offers
-		error,               // error
+		error, // error
 	)
 
 	RequestInitialiseKey(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		providerPrivKey *fcrcrypto.KeyPair,
 		providerPrivKeyVer *fcrcrypto.KeyVersion,
@@ -40,6 +43,7 @@ type AdminApi interface {
 	) error
 
 	RequestInitialiseKeyV2(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		providerPrivKey *fcrcrypto.KeyPair,
 		providerPrivKeyVer *fcrcrypto.KeyVersion,
@@ -51,6 +55,7 @@ type AdminApi interface {
 	) error
 
 	RequestPublishDHTOffer(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		cids []cid.ContentID,
 		price []uint64,
@@ -61,6 +66,7 @@ type AdminApi interface {
 	) error
 
 	RequestPublishGroupOffer(
+		adminApiEndpoint string,
 		providerRegistrar register.ProviderRegistrar,
 		cids []cid.ContentID,
 		price uint64,

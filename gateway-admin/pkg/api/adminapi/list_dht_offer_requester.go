@@ -16,17 +16,18 @@ package adminapi
  */
 
 import (
-  "errors"
+	"errors"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestListDHTOffer asks a given gateway to list dht offer
 func (a *Admin) RequestListDHTOffer(
-  gatewayRegistrar register.GatewayRegistrar,
+	adminApiEndpoint string,
+	gatewayRegistrar register.GatewayRegistrar,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
@@ -47,7 +48,7 @@ func (a *Admin) RequestListDHTOffer(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

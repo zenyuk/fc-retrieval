@@ -5,16 +5,19 @@ package poc1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
 
 	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
+	cr "github.com/ConsenSys/fc-retrieval/itest/pkg/util/crypto-facade"
+	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
+
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
@@ -22,7 +25,6 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval/itest/config"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
@@ -43,70 +45,22 @@ import (
 
 var gatewayConfig = config.NewConfig(".env.gateway")
 var providerConfig = config.NewConfig(".env.provider")
+var registerConfig = config.NewConfig(".env.register")
+var containers tc.AllContainers
 
 func TestMain(m *testing.M) {
-	// Need to make sure this env is not set in host machine
-	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
-
-	if itestEnv != "" {
-		// Env is set, we are calling from docker container
-		// This logging should be only called after all tests finished.
-		m.Run()
-		return
-	}
-	// Env is not set, we are calling from host
-	// We need a redis, a register, a gateway and a provider
-
-	// Get env
-	rgEnv := util.GetEnvMap("../../.env.register")
-	gwEnv := util.GetEnvMap("../../.env.gateway")
-	pvEnv := util.GetEnvMap("../../.env.provider")
-
-	// Create shared net
+	const testName = "poc1"
 	ctx := context.Background()
-	network, networkName := util.CreateNetwork(ctx)
-
-	// Start redis
-	redisContainer := util.StartRedis(ctx, networkName, true)
-
-	// Start register
-	registerContainer := util.StartRegister(ctx, networkName, util.ColorYellow, rgEnv, true)
-
-	// Start gateway
-	gatewayContainer := util.StartGateway(ctx, "gateway", networkName, util.ColorBlue, gwEnv, true)
-
-	// Start provider
-	providerContainer := util.StartProvider(ctx, "provider", networkName, util.ColorPurple, pvEnv, true)
-
-	// Start itest
-	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
-
-	// Block until done.
-	if <-done {
-		logging.Info("Tests passed, shutdown...")
-	} else {
-		logging.Error("Tests failed, shutdown...")
+	var network *testcontainers.Network
+	var err error
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, gatewayConfig, providerConfig, registerConfig)
+	if err != nil {
+		logging.Error("%s failed, container starting error: %s", testName, err.Error())
+		tc.StopContainers(ctx, testName, containers, network)
+		os.Exit(1)
 	}
-
-	if err := itestContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := providerContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := gatewayContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := registerContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := redisContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := (*network).Remove(ctx); err != nil {
-		logging.Error("error while terminating test container network: %s", err.Error())
-	}
+	defer tc.StopContainers(ctx, testName, containers, network)
+	m.Run()
 }
 
 func TestInitialiseGateway(t *testing.T) {
@@ -122,7 +76,8 @@ func TestInitialiseGateway(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), false, true, 10*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, false, true, 10*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -132,37 +87,39 @@ func TestInitialiseGateway(t *testing.T) {
 	// Configure gateway admin
 	confBuilder := fcrgatewayadmin.CreateSettings()
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL("http://" + containers.Register.GetRegisterHostApiEndpoint())
 	conf := confBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
 	// Configure gateway register
-	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	gatewayID := nodeid.NewRandomNodeID()
+	gatewayName := "gateway-0"
+	_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
 		gatewayRootPubKey,
 		gatewayRetrievalPubKey,
 		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 	)
 	// Initialise the gateway using gateway admin
-	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
-		logging.Error("error initialising gateway: %s", err.Error())
+		logging.Error("gateway initialising error: %s", err.Error())
 		t.FailNow()
 	}
 	// Enroll the gateway in the Register srv.
 	if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-		logging.Error("error registering gateway: %s", err.Error())
+		logging.Error("gateway registering error: %s", err.Error())
 		t.FailNow()
 	}
 
@@ -184,7 +141,8 @@ func TestInitialiseProvider(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, 2*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, 2*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -194,30 +152,32 @@ func TestInitialiseProvider(t *testing.T) {
 	// Configure provider admin
 	confBuilder := fcrprovideradmin.CreateSettings()
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL(registerApiEndpoint)
 	conf := confBuilder.Build()
 	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*conf)
 
 	// Configure provider register
-	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
+	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	providerID := nodeid.NewRandomNodeID()
+	providerName := "provider-0"
+	_, _, adminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
 	providerRegistrar := register.NewProviderRegister(
 		providerID.ToString(),
 		providerConfig.GetString("PROVIDER_ADDRESS"),
 		providerRootPubKey,
 		providerRetrievalPubKey,
 		providerConfig.GetString("PROVIDER_REGION_CODE"),
-		providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		providerConfig.GetString("NETWORK_INFO_ADMIN"),
+		providerName+":"+providerConfig.GetString("BIND_GATEWAY_API"),
+		providerName+":"+providerConfig.GetString("BIND_REST_API"),
+		providerName+":"+providerConfig.GetString("BIND_ADMIN_API"),
 	)
 
 	// Initialise the provider using provider admin
-	err = pAdmin.InitialiseProvider(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = pAdmin.InitialiseProvider(adminApiEndpoint, providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		logging.Error("error initialising provider: %s", err.Error())
 		t.FailNow()
@@ -247,7 +207,8 @@ func TestPublishGroupCID(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -257,63 +218,67 @@ func TestPublishGroupCID(t *testing.T) {
 	// Configure gateway admin
 	gConfBuilder := fcrgatewayadmin.CreateSettings()
 	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
 	gConf := gConfBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
 
 	// Configure provider admin
 	pConfBuilder := fcrprovideradmin.CreateSettings()
 	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	pConfBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+	pConfBuilder.SetRegisterURL(registerApiEndpoint)
 	pConf := pConfBuilder.Build()
 	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*pConf)
 
 	// Configure gateway register
-	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	gatewayID := nodeid.NewRandomNodeID()
+	gatewayName := "gateway-0"
+	_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
 		gatewayRootPubKey,
 		gatewayRetrievalPubKey,
 		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 	)
-	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
-		logging.Error("error initialising gateway: %s", err.Error())
+		logging.Error("gateway initialising error: %s", err.Error())
 		t.FailNow()
 	}
 	if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-		logging.Error("error registering gateway: %s", err.Error())
+		logging.Error("gateway registering error: %s", err.Error())
 		t.FailNow()
 	}
 
 	// Configure provider register
-	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
+	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	providerID := nodeid.NewRandomNodeID()
+	providerName := "provider-0"
+	_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
 	providerRegistrar := register.NewProviderRegister(
 		providerID.ToString(),
 		providerConfig.GetString("PROVIDER_ADDRESS"),
 		providerRootPubKey,
 		providerRetrievalPubKey,
 		providerConfig.GetString("PROVIDER_REGION_CODE"),
-		providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		providerConfig.GetString("NETWORK_INFO_ADMIN"),
+		providerName+":"+providerConfig.GetString("BIND_GATEWAY_API"),
+		providerName+":"+providerConfig.GetString("BIND_REST_API"),
+		providerName+":"+providerConfig.GetString("BIND_ADMIN_API"),
 	)
-	err = pAdmin.InitialiseProvider(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = pAdmin.InitialiseProvider(providerAdminApiEndpoint, providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		logging.Error("error initialising provider: %s", err.Error())
 		t.FailNow()
@@ -324,12 +289,12 @@ func TestPublishGroupCID(t *testing.T) {
 	}
 
 	// Force provider and gateway to update
-	err = pAdmin.ForceUpdate(providerID)
+	err = pAdmin.ForceUpdate(providerAdminApiEndpoint, providerID)
 	if err != nil {
 		logging.Error("error forcing update provider: %s", err.Error())
 		t.FailNow()
 	}
-	err = gwAdmin.ForceUpdate(gatewayID)
+	err = gwAdmin.ForceUpdate(gatewayAdminApiEndpoint, gatewayID)
 	if err != nil {
 		logging.Error("error forcing update gateway: %s", err.Error())
 		t.FailNow()
@@ -343,7 +308,7 @@ func TestPublishGroupCID(t *testing.T) {
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
 	// Publish Group CID
-	err = pAdmin.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providerID, pieceCIDs, 42, expiryDate, 42)
 	if err != nil {
 		logging.Error("error publishing group CID: %s", err.Error())
 		t.FailNow()
@@ -352,18 +317,19 @@ func TestPublishGroupCID(t *testing.T) {
 	// Test get all offers
 	gatewayIDs := make([]nodeid.NodeID, 0)
 	logging.Info("Get all offers")
-	_, cidgroupInfo, err := pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err := pAdmin.GetGroupCIDOffer(providerAdminApiEndpoint, providerID, gatewayIDs)
 	if err != nil {
 		logging.Error("error getting group CID offer: %s", err.Error())
 		t.FailNow()
 	}
+	fmt.Printf("<<<<<<<<<<<<< cidgroupInfo: %#v", cidgroupInfo)
 	if !assert.GreaterOrEqual(t, len(cidgroupInfo), 1, "Offers should be found") {
 		t.FailNow()
 	}
 	// Add a gateway and  verify
 	gatewayIDs = append(gatewayIDs, *gatewayID)
 	logging.Info("Get offers by gatewayID=%s", gatewayID.ToString())
-	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerAdminApiEndpoint, providerID, gatewayIDs)
 	if err != nil {
 		logging.Error("error getting group CID offer: %s", err.Error())
 		t.FailNow()
@@ -376,7 +342,7 @@ func TestPublishGroupCID(t *testing.T) {
 	fakeNodeID, _ := nodeid.NewNodeIDFromHexString("101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2DFA43")
 	gatewayIDs[0] = *fakeNodeID
 	logging.Info("Get offers by gatewayID=%s", fakeNodeID.ToString())
-	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerID, gatewayIDs)
+	_, cidgroupInfo, err = pAdmin.GetGroupCIDOffer(providerAdminApiEndpoint, providerID, gatewayIDs)
 	if err != nil {
 		logging.Error("error getting group CID offer: %s", err.Error())
 		t.FailNow()
@@ -401,7 +367,8 @@ func TestInitClient(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), false, false, 2*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, false, false, 2*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -412,7 +379,7 @@ func TestInitClient(t *testing.T) {
 	confBuilder := fcrclient.CreateSettings()
 	confBuilder.SetEstablishmentTTL(101)
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL(registerApiEndpoint)
 	conf := confBuilder.Build()
 
 	// Create client and verify
@@ -440,7 +407,8 @@ func TestClientAddGateway(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 	}
@@ -449,7 +417,7 @@ func TestClientAddGateway(t *testing.T) {
 	// Configure gateway admin
 	gConfBuilder := fcrgatewayadmin.CreateSettings()
 	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
 	gConf := gConfBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
 
@@ -457,7 +425,7 @@ func TestClientAddGateway(t *testing.T) {
 	confBuilder := fcrclient.CreateSettings()
 	confBuilder.SetEstablishmentTTL(101)
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL(registerApiEndpoint)
 	conf := confBuilder.Build()
 	client, err := fcrclient.NewFilecoinRetrievalClient(*conf, rm)
 	if err != nil {
@@ -466,30 +434,32 @@ func TestClientAddGateway(t *testing.T) {
 	}
 
 	// Configure gateway register
-	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	gatewayID := nodeid.NewRandomNodeID()
+	gatewayName := "gateway-0"
+	_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
 		gatewayRootPubKey,
 		gatewayRetrievalPubKey,
 		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 	)
-	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
-		logging.Error("error initialising gateway: %s", err.Error())
+		logging.Error("gateway initialising error: %s", err.Error())
 		t.FailNow()
 	}
 	if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-		logging.Error("error registering gateway: %s", err.Error())
+		logging.Error("gateway registering error: %s", err.Error())
 		t.FailNow()
 	}
 
@@ -499,7 +469,7 @@ func TestClientAddGateway(t *testing.T) {
 		t.FailNow()
 	}
 	// Make the gateway active, this involves doing an establishment
-	added = client.AddActiveGateways([]*nodeid.NodeID{gatewayID})
+	added = client.AddActiveGateways(gatewayClientApiEndpoint, []*nodeid.NodeID{gatewayID})
 	assert.Equal(t, 1, added, "One gateway should be added")
 
 	logging.Info("/*******************************************************/")
@@ -520,7 +490,8 @@ func TestClientStdContentDiscover(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 	}
@@ -529,63 +500,67 @@ func TestClientStdContentDiscover(t *testing.T) {
 	// Configure gateway admin
 	gConfBuilder := fcrgatewayadmin.CreateSettings()
 	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
 	gConf := gConfBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
 
 	// Configure provider admin
 	pConfBuilder := fcrprovideradmin.CreateSettings()
 	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	pConfBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+	pConfBuilder.SetRegisterURL(registerApiEndpoint)
 	pConf := pConfBuilder.Build()
 	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*pConf)
 
 	// Configure gateway register
-	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+	gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	gatewayID := nodeid.NewRandomNodeID()
+	gatewayName := "gateway-0"
+	_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
 		gatewayRootPubKey,
 		gatewayRetrievalPubKey,
 		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 	)
-	err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = gwAdmin.InitialiseGateway(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
-		logging.Error("error initialising gateway: %s", err.Error())
+		logging.Error("gateway initialising error: %s", err.Error())
 		t.FailNow()
 	}
 	if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-		logging.Error("error registering gateway: %s", err.Error())
+		logging.Error("gateway registering error: %s", err.Error())
 		t.FailNow()
 	}
 
 	// Configure provider register
-	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
+	providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 	if err != nil {
 		logging.Error("can't generate key pairs %s", err.Error())
 		t.FailNow()
 	}
 	providerID := nodeid.NewRandomNodeID()
+	providerName := "provider-0"
+	_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
 	providerRegistrar := register.NewProviderRegister(
 		providerID.ToString(),
 		providerConfig.GetString("PROVIDER_ADDRESS"),
 		providerRootPubKey,
 		providerRetrievalPubKey,
 		providerConfig.GetString("PROVIDER_REGION_CODE"),
-		providerConfig.GetString("NETWORK_INFO_GATEWAY"),
-		providerConfig.GetString("NETWORK_INFO_CLIENT"),
-		providerConfig.GetString("NETWORK_INFO_ADMIN"),
+		providerName+":"+providerConfig.GetString("BIND_GATEWAY_API"),
+		providerName+":"+providerConfig.GetString("BIND_REST_API"),
+		providerName+":"+providerConfig.GetString("BIND_ADMIN_API"),
 	)
-	err = pAdmin.InitialiseProvider(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
+	err = pAdmin.InitialiseProvider(providerAdminApiEndpoint, providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1))
 	if err != nil {
 		logging.Error("error initialising provider: %s", err.Error())
 		t.FailNow()
@@ -599,7 +574,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 	clientConfBuilder := fcrclient.CreateSettings()
 	clientConfBuilder.SetEstablishmentTTL(101)
 	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	clientConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	clientConfBuilder.SetRegisterURL(registerApiEndpoint)
 	clientConf := clientConfBuilder.Build()
 	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf, rm)
 	if err != nil {
@@ -612,16 +587,16 @@ func TestClientStdContentDiscover(t *testing.T) {
 		t.FailNow()
 	}
 	// Make the gateway active, this involves doing an establishment
-	added = client.AddActiveGateways([]*nodeid.NodeID{gatewayID})
+	added = client.AddActiveGateways(gatewayClientApiEndpoint, []*nodeid.NodeID{gatewayID})
 	assert.Equal(t, 1, added, "One gateway should be added")
 
 	// Force provider and gateway to update
-	err = pAdmin.ForceUpdate(providerID)
+	err = pAdmin.ForceUpdate(providerAdminApiEndpoint, providerID)
 	if err != nil {
 		logging.Error("error forcing update provider: %s", err.Error())
 		t.FailNow()
 	}
-	err = gwAdmin.ForceUpdate(gatewayID)
+	err = gwAdmin.ForceUpdate(gatewayAdminApiEndpoint, gatewayID)
 	if err != nil {
 		logging.Error("error forcing update gateway: %s", err.Error())
 		t.FailNow()
@@ -635,14 +610,14 @@ func TestClientStdContentDiscover(t *testing.T) {
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
 
 	// Publish Group CID
-	err = pAdmin.PublishGroupCID(providerID, pieceCIDs, 42, expiryDate, 42)
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providerID, pieceCIDs, 42, expiryDate, 42)
 	if err != nil {
 		logging.Error("error publishing group CID: %s", err.Error())
 		t.FailNow()
 	}
 
 	// Find published offers
-	offers, err := client.FindOffersStandardDiscovery(&(pieceCIDs[0]), gatewayID)
+	offers, err := client.FindOffersStandardDiscovery(gatewayClientApiEndpoint, &(pieceCIDs[0]), gatewayID)
 	if err != nil {
 		logging.Error("error finding offer via standard discovery: %s", err.Error())
 		t.FailNow()
@@ -651,7 +626,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(pieceCIDs[1]), gatewayID)
+	offers, err = client.FindOffersStandardDiscovery(gatewayClientApiEndpoint, &(pieceCIDs[1]), gatewayID)
 	if err != nil {
 		logging.Error("error finding offer via standard discovery: %s", err.Error())
 		t.FailNow()
@@ -660,7 +635,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscovery(&(pieceCIDs[2]), gatewayID)
+	offers, err = client.FindOffersStandardDiscovery(gatewayClientApiEndpoint, &(pieceCIDs[2]), gatewayID)
 	if err != nil {
 		logging.Error("error finding offer via standard discovery: %s", err.Error())
 		t.FailNow()
@@ -671,7 +646,7 @@ func TestClientStdContentDiscover(t *testing.T) {
 
 	// Negative test using random content ID
 	randomCID := cid.NewRandomContentID()
-	offers, err = client.FindOffersStandardDiscovery(randomCID, gatewayID)
+	offers, err = client.FindOffersStandardDiscovery(gatewayClientApiEndpoint, randomCID, gatewayID)
 	if err != nil {
 		logging.Error("error finding offer for random content ID via standard discovery: %s", err.Error())
 		t.FailNow()
@@ -681,34 +656,4 @@ func TestClientStdContentDiscover(t *testing.T) {
 	logging.Info("/*******************************************************/")
 	logging.Info("/*        End TestClientStdContentDiscover     	     */")
 	logging.Info("/*******************************************************/")
-}
-
-// Helper function to generate set of keys
-func generateKeys() (rootPubKey string, retrievalPubKey string, retrievalPrivateKey *fcrcrypto.KeyPair, err error) {
-	rootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error generating blockchain key: %s", err.Error())
-	}
-	if rootKey == nil {
-		return "", "", nil, errors.New("error generating blockchain key")
-	}
-
-	rootPubKey, err = rootKey.EncodePublicKey()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error encoding public key: %s", err.Error())
-	}
-
-	retrievalPrivateKey, err = fcrcrypto.GenerateRetrievalV1KeyPair()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error generating retrieval key: %s", err.Error())
-	}
-	if retrievalPrivateKey == nil {
-		return "", "", nil, errors.New("error generating retrieval key")
-	}
-
-	retrievalPubKey, err = retrievalPrivateKey.EncodePublicKey()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error encoding retrieval pub key: %s", err.Error())
-	}
-	return
 }

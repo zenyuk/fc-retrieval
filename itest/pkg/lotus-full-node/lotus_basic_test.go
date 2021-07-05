@@ -30,59 +30,39 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	"github.com/testcontainers/testcontainers-go"
+
+	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
+
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api/apistruct"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 )
 
+var containers tc.AllContainers
+
 func TestMain(m *testing.M) {
-	// Need to make sure this env is not set in host machine
-	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
-
-	if itestEnv != "" {
-		// Env is set, we are calling from docker container
-		m.Run()
-		return
+	const testName = "lotus-connectivity"
+	ctx := context.Background()
+	var network *testcontainers.Network
+	var err error
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, nil, nil, nil)
+	if err != nil {
+		logging.Error("%s test failed, container starting error: %s", testName, err.Error())
+		tc.StopContainers(ctx, testName, containers, network)
+		os.Exit(1)
 	}
-	// Env is not set, we are calling from host
-	// We need a lotus
-
-	// Create shared net
-	bgCtx := context.Background()
-	ctx, _ := context.WithTimeout(bgCtx, time.Minute*2)
-	network, networkName := util.CreateNetwork(ctx)
-
-	// Start lotus
-	lotusContainer := util.StartLotusFullNode(ctx, networkName, true)
-
-	// Start itest
-	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
-	// Block until done.
-	if <-done {
-		logging.Info("Tests passed, shutdown...")
-	} else {
-		logging.Error("Tests failed, shutdown...")
-	}
-
-	if err := itestContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := lotusContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := (*network).Remove(ctx); err != nil {
-		logging.Error("error while terminating test container network: %s", err.Error())
-	}
+	defer tc.StopContainers(ctx, testName, containers, network)
+	m.Run()
 }
 
 func TestLotusFullNodeConnectivityHttp(t *testing.T) {
-
 	method := "Filecoin.ChainHead"
 	id := 1
-	lotusUrl := "http://lotus-full-node:1234/rpc/v0"
+	lotusDaemonEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	lotusUrl := "http://" + lotusDaemonEndpoint + "/rpc/v0"
 	requestBody := `{
 		"jsonrpc": "2.0",
 		"method": "` + method + `",
@@ -93,6 +73,7 @@ func TestLotusFullNodeConnectivityHttp(t *testing.T) {
 	resp, err := http.Post(lotusUrl, "application/json", bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
 		t.Errorf("Can't establish connection to Lotus %s", lotusUrl)
+		t.FailNow()
 	}
 	defer resp.Body.Close()
 
@@ -100,11 +81,13 @@ func TestLotusFullNodeConnectivityHttp(t *testing.T) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("Can't read response from Lotus, method: %s", method)
+		t.FailNow()
 	}
 	var fields map[string]interface{}
 	err = json.Unmarshal(body, &fields)
 	if err != nil {
 		t.Errorf("Can't parse json response from Lotus, method: %s", method)
+		t.FailNow()
 	}
 
 	assert.Equal(t, float64(id), fields["id"])
@@ -115,9 +98,10 @@ func TestLotusFullNodeConnectivityWs(t *testing.T) {
 	bgCtx := context.Background()
 	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
 
+	lotusDaemonEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
 	clientClose, err := jsonrpc.NewMergeClient(
 		ctx,
-		"ws://lotus-full-node:1234/rpc/v0",
+		"ws://"+lotusDaemonEndpoint+"/rpc/v0",
 		"Filecoin",
 		[]interface{}{
 			&lotusApi.CommonStruct.Internal,
@@ -126,12 +110,14 @@ func TestLotusFullNodeConnectivityWs(t *testing.T) {
 		http.Header{})
 	if err != nil {
 		t.Errorf("Can't construct a Lotus client, error: %s", err.Error())
+		t.FailNow()
 	}
 	defer clientClose()
 
 	head, err := lotusApi.ChainHead(context.Background())
 	if err != nil {
 		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
+		t.FailNow()
 	}
 	assert.Greater(t, len(head.Cids()), 0)
 	assert.NotEqualf(t, "", head.Cids()[0].KeyString(), "Head CID Key is empty")
@@ -142,9 +128,10 @@ func TestLotusMinerConnectivityWs(t *testing.T) {
 	bgCtx := context.Background()
 	ctx, _ := context.WithTimeout(bgCtx, time.Minute*3)
 
+	_, lotusMinerEndpoint := containers.Lotus.GetLostHostApiEndpoints()
 	clientClose, err := jsonrpc.NewMergeClient(
 		ctx,
-		"ws://lotus-full-node:2345/rpc/v0",
+		"ws://"+lotusMinerEndpoint+"/rpc/v0",
 		"Filecoin",
 		[]interface{}{
 			&lotusApi.CommonStruct.Internal,
@@ -159,6 +146,7 @@ func TestLotusMinerConnectivityWs(t *testing.T) {
 	id, err := lotusApi.ID(context.Background())
 	if err != nil {
 		t.Errorf("Can't call method ChainHead of Lotus API, error: %s", err.Error())
+		t.FailNow()
 	}
 	assert.NotNil(t, id)
 }

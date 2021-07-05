@@ -1,6 +1,7 @@
 package poc2_dht_offer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -15,7 +16,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	cr "github.com/ConsenSys/fc-retrieval/itest/pkg/util/crypto-facade"
+	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
@@ -26,8 +28,17 @@ func TestPublishDHTOffer(t *testing.T) {
 	t.Log("/*              Start TestPublishDHTOffer              */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
+
+	lotusToken, superAcct := fil.GetLotusToken()
+	logging.Info("Lotus token is: %s", lotusToken)
+	logging.Info("Super Acct is %s", superAcct)
+
+	lotusDaemonEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	lotusAP := "http://" + lotusDaemonEndpoint + "/rpc/v0"
+
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,108 +50,16 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
+	registerHostPort := containers.Register.GetRegisterHostApiEndpoint()
+	registerApiEndpoint := "http://" + registerHostPort
+
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, 10*time.Second)
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, 10*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
 	}
 	defer rm.ShutdownAndWait()
-
-	// Configure gateway admin
-	gConfBuilder := fcrgatewayadmin.CreateSettings()
-	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
-	gConf := gConfBuilder.Build()
-	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
-
-	// Initialise gateways
-	var gwIDs []*nodeid.NodeID
-	// Only initialise 32 gateways, with one extra to initialise later to test list single cid offer
-	for i := 0; i < 32; i++ {
-		walletKey := privateKeys[0]
-		walletAddress := accountAddrs[0]
-		privateKeys = privateKeys[1:]
-		accountAddrs = accountAddrs[1:]
-
-		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
-		var idStr string
-		if i%2 == 0 {
-			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
-		} else {
-			idStr = fmt.Sprintf("%X800000000000000000000000000000000000000000000000000000000000000", i/2)
-		}
-		t.Log(idStr)
-
-		gatewayID, err := nodeid.NewNodeIDFromHexString(idStr)
-		if err != nil {
-			panic(err)
-		}
-		gwIDs = append(gwIDs, gatewayID)
-
-		identifier := fmt.Sprintf("-%v", i)
-		gatewayRegistrar := register.NewGatewayRegister(
-			gatewayID.ToString(),
-			walletAddress,
-			gatewayRootPubKey,
-			gatewayRetrievalPubKey,
-			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-			gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
-		)
-
-		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
-		if err != nil {
-			panic(err)
-		}
-		// Enroll the gateway in the Register srv.
-		if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-			logging.Error("error registering gateway: %s", err.Error())
-			t.FailNow()
-		}
-	}
-
-	// Initialise providers
-	pConfBuilder := fcrprovideradmin.CreateSettings()
-	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	pConfBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
-	pConf := pConfBuilder.Build()
-	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*pConf)
-	var pIDs []*nodeid.NodeID
-	for i := 0; i < 3; i++ {
-		walletKey := privateKeys[0]
-		walletAddress := accountAddrs[0]
-		privateKeys = privateKeys[1:]
-		accountAddrs = accountAddrs[1:]
-
-		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
-		providerID := nodeid.NewRandomNodeID()
-		pIDs = append(pIDs, providerID)
-
-		identifier := fmt.Sprintf("-%v", i)
-		providerRegistrar := register.NewProviderRegister(
-			providerID.ToString(),
-			walletAddress,
-			providerRootPubKey,
-			providerRetrievalPubKey,
-			providerConfig.GetString("PROVIDER_REGION_CODE"),
-			providerConfig.GetString("NETWORK_INFO_GATEWAY")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_GATEWAY")[8:],
-			providerConfig.GetString("NETWORK_INFO_CLIENT")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_CLIENT")[8:],
-			providerConfig.GetString("NETWORK_INFO_ADMIN")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_ADMIN")[8:],
-		)
-		// Initialise the provider using provider admin
-		err = pAdmin.InitialiseProviderV2(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
-		if err != nil {
-			panic(err)
-		}
-		// Enroll the provider in the Register srv.
-		if err := rm.RegisterProvider(providerRegistrar); err != nil {
-			logging.Error("error registering provider: %s", err.Error())
-			t.FailNow()
-		}
-	}
 
 	walletKey := privateKeys[0]
 	// walletAddress := accountAddrs[0]
@@ -151,7 +70,7 @@ func TestPublishDHTOffer(t *testing.T) {
 	clientConfBuilder := fcrclient.CreateSettings()
 	clientConfBuilder.SetEstablishmentTTL(101)
 	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	clientConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	clientConfBuilder.SetRegisterURL(registerApiEndpoint)
 	clientConfBuilder.SetWalletPrivateKey(walletKey)
 	clientConfBuilder.SetLotusAP(lotusAP)
 	clientConfBuilder.SetLotusAuthToken(lotusToken)
@@ -165,26 +84,134 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	added := client.AddGatewaysToUse(gwIDs)
-	if !assert.Equal(t, 32, added, "32 gateways should be added") {
-		t.FailNow()
+	// Configure gateway admin
+	gConfBuilder := fcrgatewayadmin.CreateSettings()
+	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
+	gConf := gConfBuilder.Build()
+	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
+
+	// Initialise gateways
+
+	// map between gateway ID and gateway name
+	var gateways = make(map[string]*nodeid.NodeID)
+	// Only initialise 32 gateways, with one extra to initialise later to test list single cid offer
+	for i := 0; i < 32; i++ {
+		walletKey := privateKeys[0]
+		walletAddress := accountAddrs[0]
+		privateKeys = privateKeys[1:]
+		accountAddrs = accountAddrs[1:]
+
+		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
+		var idStr string
+		if i%2 == 0 {
+			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
+		} else {
+			idStr = fmt.Sprintf("%X800000000000000000000000000000000000000000000000000000000000000", i/2)
+		}
+		t.Log(idStr)
+
+		gatewayID, err := nodeid.NewNodeIDFromHexString(idStr)
+		if err != nil {
+			logging.Error("node ID generation error: %s", err.Error())
+			t.FailNow()
+		}
+		fmt.Printf("+++ TestPublishDHTOffer, new gatewayID %+v %+v\n", gatewayID, *gatewayID)
+
+		gatewayName := fmt.Sprintf("gateway-%v", i)
+		gateways[gatewayName] = gatewayID
+		_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
+
+		gatewayRegistrar := register.NewGatewayRegister(
+			gatewayID.ToString(),
+			walletAddress,
+			gatewayRootPubKey,
+			gatewayRetrievalPubKey,
+			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
+		)
+
+		err = gwAdmin.InitialiseGatewayV2(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		if err != nil {
+			panic(err)
+		}
+		// Enroll the gateway in the Register srv.
+		if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
+			logging.Error("gateway registering error: %s", err.Error())
+			t.FailNow()
+		}
+
+		// add to client
+		added := client.AddGatewaysToUse([]*nodeid.NodeID{gatewayID})
+		if !assert.Equal(t, 1, added, "1 gateway should be added") {
+			t.FailNow()
+		}
+		activatedCount := client.AddActiveGateways(gatewayClientApiEndpoint, []*nodeid.NodeID{gatewayID})
+		if !assert.Equal(t, 1, activatedCount, "1 gateway should be active") {
+			t.FailNow()
+		}
 	}
 
-	added = client.AddActiveGateways(gwIDs)
-	if !assert.Equal(t, 32, added, "32 gateways should be active") {
-		t.FailNow()
+	// Initialise providers
+	pConfBuilder := fcrprovideradmin.CreateSettings()
+	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	pConfBuilder.SetRegisterURL(registerApiEndpoint)
+	pConf := pConfBuilder.Build()
+	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*pConf)
+
+	// map between provider ID and provider name
+	var providers = make(map[string]*nodeid.NodeID)
+	for i := 0; i < 3; i++ {
+		walletKey := privateKeys[0]
+		walletAddress := accountAddrs[0]
+		privateKeys = privateKeys[1:]
+		accountAddrs = accountAddrs[1:]
+
+		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
+		providerID := nodeid.NewRandomNodeID()
+
+		providerName := fmt.Sprintf("provider-%v", i)
+		providers[providerName] = providerID
+		// get endpoint for Docker host
+		_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
+
+		providerRegistrar := register.NewProviderRegister(
+			providerID.ToString(),
+			walletAddress,
+			providerRootPubKey,
+			providerRetrievalPubKey,
+			providerConfig.GetString("PROVIDER_REGION_CODE"),
+			providerName+":"+providerConfig.GetString("BIND_GATEWAY_API"),
+			providerName+":"+providerConfig.GetString("BIND_REST_API"),
+			providerName+":"+providerConfig.GetString("BIND_ADMIN_API"),
+		)
+		// Initialise the provider using provider admin
+		err = pAdmin.InitialiseProviderV2(providerAdminApiEndpoint, providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		if err != nil {
+			panic(err)
+		}
+		// Enroll the provider in the Register srv.
+		if err := rm.RegisterProvider(providerRegistrar); err != nil {
+			logging.Error("error registering provider: %s", err.Error())
+			t.FailNow()
+		}
 	}
 
 	// Force providers and gateways to update
-	for _, p := range pIDs {
-		err := pAdmin.ForceUpdate(p)
+	for providerName, providerID := range providers {
+		_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
+		err := pAdmin.ForceUpdate(providerAdminApiEndpoint, providerID)
 		if err != nil {
 			logging.Error("provider update error: %s", err)
 			t.FailNow()
 		}
 	}
-	for _, g := range gwIDs {
-		err := gwAdmin.ForceUpdate(g)
+	for gatewayName, gatewayID := range gateways {
+		_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
+		err := gwAdmin.ForceUpdate(gatewayAdminApiEndpoint, gatewayID)
 		if err != nil {
 			logging.Error("gateway update error: %s", err)
 			t.FailNow()
@@ -205,7 +232,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishGroupCID(pIDs[0], []cid.ContentID{*contentID01, *contentID02, *contentID03}, 42, expiryDate, 42)
+	_, _, providerAdminApiEndpoint := containers.Providers["provider-0"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providers["provider-0"], []cid.ContentID{*contentID01, *contentID02, *contentID03}, 42, expiryDate, 42)
 	if err != nil {
 		logging.Error("error to publish group offer for content IDs: %s, %s, %s; error: %s", contentID01.ToString(), contentID02.ToString(), contentID03.ToString(), err.Error())
 		t.FailNow()
@@ -225,7 +253,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate = time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishGroupCID(pIDs[1], []cid.ContentID{*contentID11, *contentID12, *contentID13}, 42, expiryDate, 42)
+	_, _, providerAdminApiEndpoint = containers.Providers["provider-1"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providers["provider-1"], []cid.ContentID{*contentID11, *contentID12, *contentID13}, 42, expiryDate, 42)
 	if err != nil {
 		logging.Error("error to publish group offer for content IDs: %s, %s, %s; error: %s", contentID11.ToString(), contentID12.ToString(), contentID13.ToString(), err.Error())
 		t.FailNow()
@@ -238,7 +267,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate = time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishDHTCID(pIDs[0], []cid.ContentID{*contentID0}, []uint64{42}, []int64{expiryDate}, []uint64{42})
+	_, _, providerAdminApiEndpoint = containers.Providers["provider-0"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishDHTCID(providerAdminApiEndpoint, providers["provider-0"], []cid.ContentID{*contentID0}, []uint64{42}, []int64{expiryDate}, []uint64{42})
 	if err != nil {
 		logging.Error("error to publish DHT offer for content ID: %s; error: %s", contentID0.ToString(), err.Error())
 		t.FailNow()
@@ -251,14 +281,16 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate = time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishDHTCID(pIDs[0], []cid.ContentID{*contentID1}, []uint64{42}, []int64{expiryDate}, []uint64{42})
+	_, _, providerAdminApiEndpoint = containers.Providers["provider-0"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishDHTCID(providerAdminApiEndpoint, providers["provider-0"], []cid.ContentID{*contentID1}, []uint64{42}, []int64{expiryDate}, []uint64{42})
 	if err != nil {
 		logging.Error("error to publish DHT offer for content ID: %s; error: %s", contentID1.ToString(), err.Error())
 		t.FailNow()
 	}
 
 	// Try Standard Discovery for contentID0
-	offers, err := client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[5], 1)
+	_, _, gatewayClientApiEndpoint, _ := containers.Gateways["gateway-5"].GetGatewayHostApiEndpoints()
+	offers, err := client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-5"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,7 +298,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.Fatal()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[6], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-6"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-6"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,7 +307,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[12], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-12"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-12"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,7 +316,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[21], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-21"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-21"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -290,7 +325,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[22], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-22"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-22"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -299,7 +335,8 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 
 	// Try Standard Discovery for contentID1
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[24], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-24"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-24"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -307,7 +344,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[25], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-25"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-25"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -315,7 +353,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[31], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-31"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-31"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +362,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[0], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-0"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-0"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -331,7 +371,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[8], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-8"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-8"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -339,7 +380,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[9], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-9"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-9"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -348,7 +390,8 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 
 	// Try DHT Search for content 0
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID0, gwIDs[0], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-0"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-0"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -356,7 +399,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offersMap, err := client.FindOffersDHTDiscoveryV2(contentID0, gwIDs[0], 4, 4)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-0"].GetGatewayHostApiEndpoints()
+	offersMap, err := client.FindOffersDHTDiscoveryV2(gatewayClientApiEndpoint, contentID0, gateways["gateway-0"], 4, 4)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -365,44 +409,45 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 
 	// It should contact gateway 12, 13, 14, 15
-	_, exists := offersMap[gwIDs[12].ToString()]
+	_, exists := offersMap[gateways["gateway-12"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 12.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[12].ToString()])
+	offers = *(offersMap[gateways["gateway-12"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 12.") {
 		t.FailNow()
 	}
 
-	_, exists = offersMap[gwIDs[13].ToString()]
+	_, exists = offersMap[gateways["gateway-13"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 13.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[13].ToString()])
+	offers = *(offersMap[gateways["gateway-13"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 13.") {
 		t.FailNow()
 	}
 
-	_, exists = offersMap[gwIDs[14].ToString()]
+	_, exists = offersMap[gateways["gateway-14"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 14.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[14].ToString()])
+	offers = *(offersMap[gateways["gateway-14"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 14.") {
 		t.FailNow()
 	}
 
-	_, exists = offersMap[gwIDs[15].ToString()]
+	_, exists = offersMap[gateways["gateway-15"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 15.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[15].ToString()])
+	offers = *(offersMap[gateways["gateway-15"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 15.") {
 		t.FailNow()
 	}
 
 	// Try DHT Search for content 1
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID1, gwIDs[15], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-15"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-15"], 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +455,8 @@ func TestPublishDHTOffer(t *testing.T) {
 		t.FailNow()
 	}
 
-	offersMap, err = client.FindOffersDHTDiscoveryV2(contentID1, gwIDs[15], 3, 3)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-15"].GetGatewayHostApiEndpoints()
+	offersMap, err = client.FindOffersDHTDiscoveryV2(gatewayClientApiEndpoint, contentID1, gateways["gateway-15"], 3, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,29 +465,29 @@ func TestPublishDHTOffer(t *testing.T) {
 	}
 
 	// It should contact gateway 0, 1 and 31
-	_, exists = offersMap[gwIDs[0].ToString()]
+	_, exists = offersMap[gateways["gateway-0"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 0.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[0].ToString()])
+	offers = *(offersMap[gateways["gateway-0"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 0.") {
 		t.FailNow()
 	}
 
-	_, exists = offersMap[gwIDs[1].ToString()]
+	_, exists = offersMap[gateways["gateway-1"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 1.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[1].ToString()])
+	offers = *(offersMap[gateways["gateway-1"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 1.") {
 		t.FailNow()
 	}
 
-	_, exists = offersMap[gwIDs[31].ToString()]
+	_, exists = offersMap[gateways["gateway-31"].ToString()]
 	if !assert.True(t, exists, "Should query gateway 31.") {
 		t.FailNow()
 	}
-	offers = *(offersMap[gwIDs[31].ToString()])
+	offers = *(offersMap[gateways["gateway-31"].ToString()])
 	if !assert.Equal(t, 1, len(offers), "Should find offer with cid 0 from gateway 31.") {
 		t.FailNow()
 	}

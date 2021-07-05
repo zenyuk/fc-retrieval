@@ -15,6 +15,7 @@ type Client struct {
 
 type ClientApi interface {
 	RequestDHTOfferDiscover(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		gatewayIDs []nodeid.NodeID,
 		contentID *cid.ContentID,
@@ -25,6 +26,7 @@ type ClientApi interface {
 	) ([]GatewaySubOffers, error)
 
 	RequestDHTDiscover(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		contentID *cid.ContentID,
 		nonce int64,
@@ -36,6 +38,7 @@ type ClientApi interface {
 	) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error)
 
 	RequestDHTDiscoverV2(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		contentID *cid.ContentID,
 		nonce int64,
@@ -47,12 +50,14 @@ type ClientApi interface {
 	) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, bool, string, error)
 
 	RequestDHTOfferAck(
+		clientApiEndpoint string,
 		providerInfo register.ProviderRegistrar,
 		contentID *cid.ContentID,
 		gatewayID *nodeid.NodeID,
 	) (bool, *fcrmessages.FCRMessage, *fcrmessages.FCRMessage, error)
 
 	RequestEstablishment(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		challenge []byte,
 		clientID *nodeid.NodeID,
@@ -60,6 +65,7 @@ type ClientApi interface {
 	) error
 
 	RequestStandardDiscoverOffer(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		contentID *cid.ContentID,
 		nonce int64,
@@ -70,6 +76,7 @@ type ClientApi interface {
 	) ([]cidoffer.SubCIDOffer, error)
 
 	RequestStandardDiscover(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		contentID *cid.ContentID,
 		nonce int64,
@@ -79,6 +86,7 @@ type ClientApi interface {
 	) ([]cidoffer.SubCIDOffer, error)
 
 	RequestStandardDiscoverV2(
+		clientApiEndpoint string,
 		gatewayInfo register.GatewayRegistrar,
 		contentID *cid.ContentID,
 		nonce int64,

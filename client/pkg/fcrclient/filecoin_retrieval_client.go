@@ -210,7 +210,7 @@ func (c *FilecoinRetrievalClient) GetGatewaysToUse() []*nodeid.NodeID {
 
 // AddActiveGateways adds one or more gateways to active gateway map.
 // Returns the number of gateways added.
-func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) int {
+func (c *FilecoinRetrievalClient) AddActiveGateways(clientApiEndpoint string, gwNodeIDs []*nodeid.NodeID) int {
 	numAdded := 0
 	for _, gwToAddID := range gwNodeIDs {
 		c.ActiveGatewaysLock.RLock()
@@ -230,7 +230,7 @@ func (c *FilecoinRetrievalClient) AddActiveGateways(gwNodeIDs []*nodeid.NodeID) 
 		challenge := make([]byte, 32)
 		rand.Read(challenge)
 		ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-		err := c.clientApi.RequestEstablishment(gatewayRegistrar, challenge, c.Settings.ClientID(), ttl)
+		err := c.clientApi.RequestEstablishment(clientApiEndpoint, gatewayRegistrar, challenge, c.Settings.ClientID(), ttl)
 		if err != nil {
 			logging.Error("Error in initial establishment: %v", err.Error())
 			continue
@@ -291,7 +291,7 @@ func (c *FilecoinRetrievalClient) GetActiveGateways() []*nodeid.NodeID {
 }
 
 // FindOffersStandardDiscovery finds offer using standard discovery from given gateways
-func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID) ([]cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(clientApiEndpoint string, contentID *cid.ContentID, gatewayID *nodeid.NodeID) ([]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
@@ -300,7 +300,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 		return make([]cidoffer.SubCIDOffer, 0), errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	offers, err := c.clientApi.RequestStandardDiscover(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
+	offers, err := c.clientApi.RequestStandardDiscover(clientApiEndpoint, gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), "", "")
 	if err != nil {
 		logging.Warn("GatewayStdDiscovery error. Gateway: %s, Error: %s", gw.GetNodeID(), err)
 		return make([]cidoffer.SubCIDOffer, 0), errors.New("error in requesting standard discovery")
@@ -340,7 +340,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscovery(contentID *cid.Con
 }
 
 // FindOffersDHTDiscovery finds offer using dht discovery from given gateways
-func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) (map[string]*[]cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(clientApiEndpoint string, contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64) (map[string]*[]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
@@ -351,7 +351,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 		return offersMap, errors.New("given gatewayID is not in active nodes map")
 	}
 	// TODO need to do nonce management
-	contacted, contactedResp, uncontactable, err := c.clientApi.RequestDHTDiscover(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
+	contacted, contactedResp, uncontactable, err := c.clientApi.RequestDHTDiscover(clientApiEndpoint, gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), numDHT, false, "", "")
 	if err != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", gw.GetNodeID(), err)
 		return offersMap, errors.New("error in requesting dht discovery")
@@ -428,7 +428,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscovery(contentID *cid.ContentI
 
 // FindOffersDHTDiscoveryV2 finds offer using dht discovery from given gateway with maximum number of offers
 // offersNumberLimit - maximum number of offers the client asking to have
-func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) (map[string]*[]cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(clientApiEndpoint string, contentID *cid.ContentID, gatewayID *nodeid.NodeID, numDHT int64, offersNumberLimit int) (map[string]*[]cidoffer.SubCIDOffer, error) {
 	offersMap := make(map[string]*[]cidoffer.SubCIDOffer)
 
 	c.ActiveGatewaysLock.RLock()
@@ -456,7 +456,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	// TODO need to do nonce management
 	nonce := rand.Int63()
 	ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-	contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr := c.clientApi.RequestDHTDiscoverV2(entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
+	contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr := c.clientApi.RequestDHTDiscoverV2(clientApiEndpoint, entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
 	if discoverErr != nil {
 		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGateway.GetNodeID(), discoverErr)
 		return nil, fmt.Errorf("error in requesting dht discovery: %s", discoverErr.Error())
@@ -467,7 +467,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			return nil, fmt.Errorf("topup error while requesting DHT discovery: %s", err.Error())
 		}
 		// retry
-		contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr = c.clientApi.RequestDHTDiscoverV2(entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
+		contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr = c.clientApi.RequestDHTDiscoverV2(clientApiEndpoint, entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
 		if discoverErr != nil {
 			logging.Warn("gateway DHT discovery problem; gateway: %s, error: %s", entryGateway.GetNodeID(), discoverErr)
 			return nil, fmt.Errorf("error in requesting dht discovery: %s", discoverErr.Error())
@@ -551,7 +551,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	}
 	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
 
-	allGatewaysOffers, discoverError := c.clientApi.RequestDHTOfferDiscover(entryGateway, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
+	allGatewaysOffers, discoverError := c.clientApi.RequestDHTOfferDiscover(clientApiEndpoint, entryGateway, contactedGateways, contentID, nonce, offersDigestsFromAllGateways, paymentChannel, voucher)
 	if discoverError != nil {
 		return nil, fmt.Errorf("error getting sub-offers from their digests: %s", discoverError)
 	}
@@ -563,7 +563,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 }
 
 // FindDHTOfferAck finds offer ack for a cid, gateway pair
-func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gatewayID *nodeid.NodeID, providerID *nodeid.NodeID) (bool, error) {
+func (c *FilecoinRetrievalClient) FindDHTOfferAck(clientApiEndpoint string, contentID *cid.ContentID, gatewayID *nodeid.NodeID, providerID *nodeid.NodeID) (bool, error) {
 	provider := c.registerMgr.GetProvider(providerID)
 	if provider == nil {
 		logging.Error("Error getting registered provider %v", providerID)
@@ -574,7 +574,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 		return false, errors.New("invalid register info")
 	}
 
-	found, request, ack, err := c.clientApi.RequestDHTOfferAck(provider, contentID, gatewayID)
+	found, request, ack, err := c.clientApi.RequestDHTOfferAck(clientApiEndpoint, provider, contentID, gatewayID)
 	if err != nil {
 		return false, err
 	}
@@ -644,7 +644,7 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 }
 
 // FindOffersStandardDiscoveryV2 finds offer using standard discovery from given gateways
-func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.ContentID, gatewayID *nodeid.NodeID, maxOffers int) ([]cidoffer.SubCIDOffer, error) {
+func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(clientApiEndpoint string, contentID *cid.ContentID, gatewayID *nodeid.NodeID, maxOffers int) ([]cidoffer.SubCIDOffer, error) {
 	c.ActiveGatewaysLock.RLock()
 	defer c.ActiveGatewaysLock.RUnlock()
 
@@ -673,7 +673,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	// It pays for the first request to get a list of offer digests.
 	// TODO need to do nonce management
-	offerDigests, paymentRequired, _, discoverErr := c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
+	offerDigests, paymentRequired, _, discoverErr := c.clientApi.RequestStandardDiscoverV2(clientApiEndpoint, gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
 	if discoverErr != nil {
 		return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), discoverErr.Error())
 	}
@@ -683,7 +683,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 			return nil, fmt.Errorf("topup error while requesting standard discovery: %s", err.Error())
 		}
 		// retry
-		offerDigests, paymentRequired, _, err = c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
+		offerDigests, paymentRequired, _, err = c.clientApi.RequestStandardDiscoverV2(clientApiEndpoint, gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
 		if err != nil {
 			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), err.Error())
 		}
@@ -718,7 +718,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 		}
 	}
 
-	offers, err := c.clientApi.RequestStandardDiscoverOffer(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), offerDigests, paychAddr, voucher)
+	offers, err := c.clientApi.RequestStandardDiscoverOffer(clientApiEndpoint, gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), offerDigests, paychAddr, voucher)
 
 	var validOffers []cidoffer.SubCIDOffer
 	// Verify the offer one by one

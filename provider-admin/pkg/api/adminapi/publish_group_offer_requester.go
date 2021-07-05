@@ -27,6 +27,7 @@ import (
 
 // RequestPublishGroupOffer publish a group cid offer to a given provider
 func (a *Admin) RequestPublishGroupOffer(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	cids []cid.ContentID,
 	price uint64,
@@ -51,7 +52,7 @@ func (a *Admin) RequestPublishGroupOffer(
 		return errors.New("error signing PublishGroupOffer request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

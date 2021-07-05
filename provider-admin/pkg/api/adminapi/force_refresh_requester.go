@@ -28,7 +28,8 @@ import (
 )
 
 // RequestForceRefresh forces a given provider to refresh its internal register
-func(a *Admin) RequestForceRefresh(
+func (a *Admin) RequestForceRefresh(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
@@ -50,7 +51,7 @@ func(a *Admin) RequestForceRefresh(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

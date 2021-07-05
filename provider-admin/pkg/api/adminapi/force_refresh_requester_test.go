@@ -39,7 +39,8 @@ func Test_RequestForceRefresh_Calls_RequestForceRefresh(t *testing.T) {
 
 	keyPair, _ := fcrcrypto.GenerateRetrievalV1KeyPair()
 	pubKeyStr, _ := keyPair.EncodePublicKey()
-	fakeProviderInfo  := &register.ProviderRegister{
+	fakeAdminApiEndpoint := "fakeAdminApiEndpoint"
+	fakeProviderInfo := &register.ProviderRegister{
 		NetworkInfoAdmin: "fakeNetworkInfoAdmin",
 		SigningKey:       pubKeyStr,
 	}
@@ -48,6 +49,6 @@ func Test_RequestForceRefresh_Calls_RequestForceRefresh(t *testing.T) {
 	mockHttpCommunicator.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(&fcrmessages.FCRMessage{}, nil).Times(1)
 
 	// act
-	_ = a.RequestForceRefresh(fakeProviderInfo, keyPair, fcrcrypto.DecodeKeyVersion(1))
+	_ = a.RequestForceRefresh(fakeAdminApiEndpoint, fakeProviderInfo, keyPair, fcrcrypto.DecodeKeyVersion(1))
 
 }

@@ -50,8 +50,8 @@ func NewFilecoinRetrievalProviderAdmin(settings ProviderAdminSettings) *Filecoin
 }
 
 // InitialiseProvider initialise a given provider
-func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerRegistrar register.ProviderRegistrar, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
-	err := c.AdminApiCaller.RequestInitialiseKey(providerRegistrar, providerPrivKey, providerPrivKeyVer, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(adminApiEndpoint string, providerRegistrar register.ProviderRegistrar, providerPrivKey *fcrcrypto.KeyPair, providerPrivKeyVer *fcrcrypto.KeyVersion) error {
+	err := c.AdminApiCaller.RequestInitialiseKey(adminApiEndpoint, providerRegistrar, providerPrivKey, providerPrivKeyVer, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 	if err != nil {
 		return err
 	}
@@ -65,6 +65,7 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProvider(providerRegistrar re
 
 // InitialiseProviderV2 initialise a given v2 provider
 func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	providerPrivKey *fcrcrypto.KeyPair,
 	providerPrivKeyVer *fcrcrypto.KeyVersion,
@@ -73,6 +74,7 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 	lotusAuthToken string,
 ) error {
 	err := c.AdminApiCaller.RequestInitialiseKeyV2(
+		adminApiEndpoint,
 		providerRegistrar,
 		providerPrivKey,
 		providerPrivKeyVer,
@@ -94,45 +96,45 @@ func (c *FilecoinRetrievalProviderAdmin) InitialiseProviderV2(
 }
 
 // PublishGroupCID publish a group cid offer to a given provider
-func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
+func (c *FilecoinRetrievalProviderAdmin) PublishGroupCID(adminApiEndpoint string, providerID *nodeid.NodeID, cids []cid.ContentID, price uint64, expiry int64, qos uint64) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
 	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return c.AdminApiCaller.RequestPublishGroupOffer(providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestPublishGroupOffer(adminApiEndpoint, providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // PublishDHTCID publish a dht cid offer to a given provider
-func (c *FilecoinRetrievalProviderAdmin) PublishDHTCID(providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
+func (c *FilecoinRetrievalProviderAdmin) PublishDHTCID(adminApiEndpoint string, providerID *nodeid.NodeID, cids []cid.ContentID, price []uint64, expiry []int64, qos []uint64) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
 	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return c.AdminApiCaller.RequestPublishDHTOffer(providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestPublishDHTOffer(adminApiEndpoint, providerRegistrar, cids, price, expiry, qos, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // GetGroupCIDOffer checks the group offer stored in the provider
-func (c *FilecoinRetrievalProviderAdmin) GetGroupCIDOffer(providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
+func (c *FilecoinRetrievalProviderAdmin) GetGroupCIDOffer(adminApiEndpoint string, providerID *nodeid.NodeID, gatewayIDs []nodeid.NodeID) (bool, []cidoffer.CIDOffer, error) {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
 	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return false, nil, errors.New("unable to find the provider in admin storage")
 	}
-	return c.AdminApiCaller.RequestGetPublishedOffer(providerRegistrar, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestGetPublishedOffer(adminApiEndpoint, providerRegistrar, gatewayIDs, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }
 
 // ForceUpdate forces the provider to update its internal register
-func (c *FilecoinRetrievalProviderAdmin) ForceUpdate(providerID *nodeid.NodeID) error {
+func (c *FilecoinRetrievalProviderAdmin) ForceUpdate(adminApiEndpoint string, providerID *nodeid.NodeID) error {
 	c.ActiveProvidersLock.RLock()
 	defer c.ActiveProvidersLock.RUnlock()
 	providerRegistrar, exists := c.ActiveProviders[providerID.ToString()]
 	if !exists {
 		return errors.New("unable to find the provider in admin storage")
 	}
-	return c.AdminApiCaller.RequestForceRefresh(providerRegistrar, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
+	return c.AdminApiCaller.RequestForceRefresh(adminApiEndpoint, providerRegistrar, c.Settings.providerAdminPrivateKey, c.Settings.providerAdminPrivateKeyVer)
 }

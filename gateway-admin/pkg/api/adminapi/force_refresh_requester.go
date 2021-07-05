@@ -19,17 +19,18 @@ package adminapi
  */
 
 import (
-  "errors"
+	"errors"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestForceRefresh forces a given gateway to refresh its internal register
 func (a *Admin) RequestForceRefresh(
-  gatewayRegistrar register.GatewayRegistrar,
+	adminApiEndpoint string,
+	gatewayRegistrar register.GatewayRegistrar,
 	signingPrivkey *fcrcrypto.KeyPair,
 	signingPrivKeyVer *fcrcrypto.KeyVersion) error {
 	// First, Get pubkey
@@ -50,7 +51,7 @@ func (a *Admin) RequestForceRefresh(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

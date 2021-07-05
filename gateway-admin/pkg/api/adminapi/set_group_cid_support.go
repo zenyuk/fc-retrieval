@@ -16,23 +16,24 @@ package adminapi
  */
 
 import (
-  "errors"
+	"errors"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 func (a *Admin) SetGroupCIDOfferSupportedForProviders(
-  gatewayRegistrar register.GatewayRegistrar,
-  providerIDs []nodeid.NodeID,
-  signingPrivkey *fcrcrypto.KeyPair,
-  signingPrivKeyVer *fcrcrypto.KeyVersion,
+	adminApiEndpoint string,
+	gatewayRegistrar register.GatewayRegistrar,
+	providerIDs []nodeid.NodeID,
+	signingPrivkey *fcrcrypto.KeyPair,
+	signingPrivKeyVer *fcrcrypto.KeyVersion,
 ) error {
 
-  pubKey, err := gatewayRegistrar.GetSigningKey()
+	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
 		logging.Error("Error in obtaining signing key from register info.")
 		return err
@@ -53,7 +54,7 @@ func (a *Admin) SetGroupCIDOfferSupportedForProviders(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

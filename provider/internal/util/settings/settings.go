@@ -40,7 +40,7 @@ type AppSettings struct {
 
 	LogLevel      string `mapstructure:"LOG_LEVEL"`       // Log Level: NONE, ERROR, WARN, INFO, TRACE
 	LogTarget     string `mapstructure:"LOG_TARGET"`      // Log Level: STDOUT
-	LogDir        string `mapstructure:"LOG_DIR"`         // Log Dir: /var/log/fc-retrieval/fc-retrieval/provider
+	LogDir        string `mapstructure:"LOG_DIR"`         // Log Dir: /var/log/fc-retrieval/provider
 	LogFile       string `mapstructure:"LOG_FILE"`        // Log File: provider.log
 	LogMaxBackups int    `mapstructure:"LOG_MAX_BACKUPS"` // Log max backups: 3
 	LogMaxAge     int    `mapstructure:"LOG_MAX_AGE"`     // Log max age (days): 28
