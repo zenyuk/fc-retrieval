@@ -131,6 +131,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 	mgr.outboundChsLock.RLock()
 	cs, ok := mgr.outboundChs[recipient]
 	if !ok {
+		logging.Debug("debug Topup, recipient is new")
 		// Need to create a channel
 		mgr.outboundChsLock.RUnlock()
 		mgr.outboundChsLock.Lock()
@@ -138,15 +139,18 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 		builder := paych.Message(actors.Version4, *mgr.address)
 		msg, err := builder.Create(recipientAddr, lotusbig.NewFromGo(amount))
 		if err != nil {
+			logging.Debug("error in Topup Create %s", err.Error())
 			return err
 		}
 		signedMsg, err := fillMsg(mgr.privKey, api, msg)
 		if err != nil {
+			logging.Debug("error in Topup fillMsg: %s", err.Error())
 			return err
 		}
 		// Send request to lotus
 		contentID, err := api.MpoolPush(context.Background(), signedMsg)
 		if err != nil {
+			logging.Debug("error in Topup MpoolPush: %s", err.Error())
 			return err
 		}
 		receipt := waitReceipt(&contentID, api)
@@ -169,6 +173,7 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 			laneStates: make(map[uint64]*laneState),
 		}
 	} else {
+		logging.Debug("debug Topup, recipient is known")
 		// No need to create a channel
 		defer mgr.outboundChsLock.RUnlock()
 		cs.lock.Lock()
@@ -182,11 +187,13 @@ func (mgr *FCRPaymentMgr) Topup(recipient string, amount *big.Int) error {
 		}
 		signedMsg, err := fillMsg(mgr.privKey, api, msg)
 		if err != nil {
+			logging.Debug("error in Topup fillMsg: %s", err.Error())
 			return err
 		}
 		// Send request to lotus
 		contentID, err := api.MpoolPush(context.Background(), signedMsg)
 		if err != nil {
+			logging.Debug("error in Topup MpoolPush: %s", err.Error())
 			return err
 		}
 		receipt := waitReceipt(&contentID, api)
@@ -412,28 +419,34 @@ func encodedVoucher(sv *paych.SignedVoucher) (string, error) {
 
 // fillMsg will fill the gas and sign a given message
 func fillMsg(privKey []byte, api *apistruct.FullNodeStruct, msg *types.Message) (*types.SignedMessage, error) {
+	//TODO: pass context to here?
+	ctx := context.Background()
 	// Get nonce
-	nonce, err := api.MpoolGetNonce(context.Background(), msg.From)
+	nonce, err := api.MpoolGetNonce(ctx, msg.From)
 	if err != nil {
+		logging.Debug("error in fcrpaymentmgr.fillMsg - MpoolGetNonce, msg.From=%s; error details: %s", msg.From.String(), err.Error())
 		return nil, err
 	}
 	msg.Nonce = nonce
 
 	// Calculate gas
-	limit, err := api.GasEstimateGasLimit(context.Background(), msg, types.EmptyTSK)
+	limit, err := api.GasEstimateGasLimit(ctx, msg, types.EmptyTSK)
 	if err != nil {
+		logging.Debug("error in fcrpaymentmgr.fillMsg - GasEstimateGasLimit: %s", err.Error())
 		return nil, err
 	}
 	msg.GasLimit = int64(float64(limit) * 1.25)
 
-	premium, err := api.GasEstimateGasPremium(context.Background(), 10, msg.From, msg.GasLimit, types.EmptyTSK)
+	premium, err := api.GasEstimateGasPremium(ctx, 10, msg.From, msg.GasLimit, types.EmptyTSK)
 	if err != nil {
+		logging.Debug("error in fcrpaymentmgr.fillMsg - GasEstimateGasPremium: %s", err.Error())
 		return nil, err
 	}
 	msg.GasPremium = premium
 
-	feeCap, err := api.GasEstimateFeeCap(context.Background(), msg, 20, types.EmptyTSK)
+	feeCap, err := api.GasEstimateFeeCap(ctx, msg, 20, types.EmptyTSK)
 	if err != nil {
+		logging.Debug("error in fcrpaymentmgr.fillMsg - GasEstimateFeeCap: %s", err.Error())
 		return nil, err
 	}
 	msg.GasFeeCap = feeCap
@@ -441,6 +454,7 @@ func fillMsg(privKey []byte, api *apistruct.FullNodeStruct, msg *types.Message) 
 	// Sign message
 	sig, err := sigs.Sign(crypto2.SigTypeSecp256k1, privKey, msg.Cid().Bytes())
 	if err != nil {
+		logging.Debug("error in fcrpaymentmgr.fillMsg - Sign: %s", err.Error())
 		return nil, err
 	}
 	return &types.SignedMessage{

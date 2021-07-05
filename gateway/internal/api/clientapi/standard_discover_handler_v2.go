@@ -59,21 +59,20 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 
 		for _, offer := range offers {
 			subOfferDigests = append(subOfferDigests, offer.GetMessageDigest())
+			//TODO: ? all items are always false
 			fundedPaymentChannel = append(fundedPaymentChannel, false)
 		}
 
 		// Construct response
-		response, err = fcrmessages.EncodeClientStandardDiscoverResponseV2(pieceCID, nonce, exists, subOfferDigests, fundedPaymentChannel, false, 0)
+		response, err = fcrmessages.EncodeClientStandardDiscoverResponseV2(pieceCID, nonce, exists, subOfferDigests, fundedPaymentChannel, false, "")
 	} else {
 		// Insufficient Funds Response
 		if err != nil {
-			logging.Error("PaymentMgr receive " + err.Error())
+			logging.Error("PaymentMgr receive - error:" + err.Error())
 		} else {
 			logging.Error("PaymentMgr insufficient funds received " + receive.String() + " (default: " + c.Settings.SearchPrice.String() + ")")
 		}
-		// TODO get real payment channel ID
-		var paymentChannelID = int64(42)
-		response, err = fcrmessages.EncodeClientStandardDiscoverResponseV2(pieceCID, nonce, exists, nil, nil, true, paymentChannelID)
+		response, err = fcrmessages.EncodeClientStandardDiscoverResponseV2(pieceCID, nonce, exists, nil, nil, true, paymentChannelAddress)
 	}
 
 	if err != nil {

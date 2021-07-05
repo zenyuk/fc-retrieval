@@ -101,7 +101,7 @@ func HandleClientDHTDiscoverOfferRequest(w rest.ResponseWriter, request *fcrmess
 		}
 	}
 
-	response, err := fcrmessages.EncodeClientDHTDiscoverOfferResponse(cid, nonce, contactedGateways, contactedResp, false, 0)
+	response, err := fcrmessages.EncodeClientDHTDiscoverOfferResponse(cid, nonce, contactedGateways, contactedResp, false, "")
 	if err != nil {
 		s := "Internal error: Fail to encode message, type: " + strconv.Itoa(fcrmessages.ClientDHTDiscoverOfferResponseType)
 		logging.Error(s + err.Error())

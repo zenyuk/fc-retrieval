@@ -72,7 +72,7 @@ func (c *Client) RequestDHTDiscover(
 		return nil, nil, nil, errors.New("length mismatch")
 	}
 	if paymentRequired {
-		return nil, nil, nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
+		return nil, nil, nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %s", paymentChannelAddrToTopup)
 	}
 
 	return contacted, contactedResp, uncontactable, nil

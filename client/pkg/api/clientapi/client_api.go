@@ -44,7 +44,7 @@ type ClientApi interface {
 		incrementalResult bool,
 		paychAddr string,
 		voucher string,
-	) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error)
+	) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, bool, string, error)
 
 	RequestDHTOfferAck(
 		providerInfo register.ProviderRegistrar,
@@ -85,7 +85,7 @@ type ClientApi interface {
 		ttl int64,
 		paychAddr string,
 		voucher string,
-	) ([][cidoffer.CIDOfferDigestSize]byte, error)
+	) ([][cidoffer.CIDOfferDigestSize]byte, bool, string, error)
 }
 
 func NewClientApi() ClientApi {

@@ -48,10 +48,10 @@ func GetGatewayRegisters(_ op.GetGatewayRegistersParams) middleware.Responder {
 	})
 
 	gatewayRegisters, err := rdb.HGetAll(ctx, "gateway").Result()
-
 	if err != nil {
-		log.Error("Unable to get Redis value")
-		panic(err)
+		msg := "Unable to get Redis value"
+		log.Error("%s, error: %s", msg, err.Error())
+		return op.NewGetGatewayRegistersByIDDefault(404).WithPayload(&models.Error{Message: &msg})
 	}
 
 	payload := []*models.GatewayRegister{}
@@ -111,8 +111,9 @@ func DeleteGatewayRegisters(_ op.DeleteGatewayRegisterParams) middleware.Respond
 
 	registers, err := rdb.HGetAll(ctx, registerTypeGateway).Result()
 	if err != nil {
-		log.Error("Unable to get Redis value")
-		panic(err)
+		msg := "Unable to get Redis value"
+		log.Error("%s, error: %s", msg, err.Error())
+		return op.NewGetGatewayRegistersByIDDefault(404).WithPayload(&models.Error{Message: &msg})
 	}
 
 	for index := range registers {

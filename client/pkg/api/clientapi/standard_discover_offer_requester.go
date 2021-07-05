@@ -72,7 +72,7 @@ func (c *Client) RequestStandardDiscoverOffer(
 		return nil, errors.New("nonce mismatch")
 	}
 	if paymentRequired {
-		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
+		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %s", paymentChannelAddrToTopup)
 	}
 
 	return offers, nil

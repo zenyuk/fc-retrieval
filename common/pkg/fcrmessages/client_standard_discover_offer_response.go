@@ -31,7 +31,7 @@ type clientStandardDiscoverOfferResponse struct {
 	SubCIDOffers         []cidoffer.SubCIDOffer `json:"sub_cid_offers"`
 	FundedPaymentChannel []bool                 `json:"funded_payment_channel"`
 	PaymentRequired      bool                   `json:"payment_required"` // when true means caller have to pay first, using the PaymentChannel field
-	PaymentChannel       int64                  `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
+	PaymentChannel       string                 `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
 }
 
 // EncodeClientStandardDiscoverOfferResponse is used to get the FCRMessage of clientStandardDiscoverOfferResponse
@@ -42,7 +42,7 @@ func EncodeClientStandardDiscoverOfferResponse(
 	offers []cidoffer.SubCIDOffer,
 	fundedPaymentChannel []bool,
 	paymentRequired bool,
-	paymentChannel int64,
+	paymentChannel string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientStandardDiscoverOfferResponse{
 		PieceCID:             pieceCID.ToString(),
@@ -67,16 +67,16 @@ func DecodeClientStandardDiscoverOfferResponse(fcrMsg *FCRMessage) (
 	[]cidoffer.SubCIDOffer, // sub cid offers
 	[]bool, // fundedPaymentChannel
 	bool, // paymentRequired
-	int64, // paymentChannel
+	string, // paymentChannel
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != ClientStandardDiscoverOfferResponseType {
-		return nil, 0, false, nil, nil, false, 0, errors.New("message type mismatch")
+		return nil, 0, false, nil, nil, false, "", errors.New("message type mismatch")
 	}
 	msg := clientStandardDiscoverOfferResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, 0, false, nil, nil, false, 0, err
+		return nil, 0, false, nil, nil, false, "", err
 	}
 	contentID, _ := cid.NewContentIDFromHexString(msg.PieceCID)
 	return contentID, msg.Nonce, msg.Found, msg.SubCIDOffers, msg.FundedPaymentChannel, msg.PaymentRequired, msg.PaymentChannel, nil

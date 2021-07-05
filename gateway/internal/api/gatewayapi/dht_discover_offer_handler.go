@@ -83,12 +83,10 @@ func HandleGatewayDHTOfferRequest(_ *fcrp2pserver.FCRServerReader, writer *fcrp2
 	var encodingErr error
 	if amount.Cmp(expectedAmount) < 0 {
 		logging.Error("Insufficient Funds, received " + amount.String() + ", expected: " + expectedAmount.String())
-		// TODO get real payment channel ID
-		var paymentChannelID = int64(42)
-		response, encodingErr = fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, found, subOffers, fundedPaymentChannel, true, paymentChannelID)
+		response, encodingErr = fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, found, subOffers, fundedPaymentChannel, true, paymentChannelAddress)
 	} else {
 		// Construct response
-		response, encodingErr = fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, found, subOffers, fundedPaymentChannel, false, 0)
+		response, encodingErr = fcrmessages.EncodeGatewayDHTDiscoverOfferResponse(pieceCID, nonce, found, subOffers, fundedPaymentChannel, false, "")
 	}
 	if encodingErr != nil {
 		// TODO: Do we need a response of internal error?

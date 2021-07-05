@@ -28,11 +28,11 @@ func TestEncodeClientStandardDiscoverOfferResponse(t *testing.T) {
 		messageType:       111,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offers":[{"provider_id":"0000000000000000000000000000000000000000000000000000000000000042","sub_cid":"0000000000000000000000000000000000000000000000000000000000000001","merkle_root":"c3c3a46684c07d12a9c238787df3049a6f258e7af203e5ddb66a8bd66637e108","merkle_proof":"AAAAMFsiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBRT0iXQAAAANbMV0=","price":41,"expiry":42,"qos":43,"signature":""}],"funded_payment_channel":[true],"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offers":[{"provider_id":"0000000000000000000000000000000000000000000000000000000000000042","sub_cid":"0000000000000000000000000000000000000000000000000000000000000001","merkle_root":"c3c3a46684c07d12a9c238787df3049a6f258e7af203e5ddb66a8bd66637e108","merkle_proof":"AAAAMFsiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBRT0iXQAAAANbMV0=","price":41,"expiry":42,"qos":43,"signature":""}],"funded_payment_channel":[true],"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	msg, err := EncodeClientStandardDiscoverOfferResponse(
 		mockContentID,
@@ -65,11 +65,11 @@ func TestDecodeClientStandardDiscoverOfferResponse(t *testing.T) {
 		messageType:       111,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offers":[{"provider_id":"0000000000000000000000000000000000000000000000000000000000000042","sub_cid":"0000000000000000000000000000000000000000000000000000000000000001","merkle_root":"c3c3a46684c07d12a9c238787df3049a6f258e7af203e5ddb66a8bd66637e108","merkle_proof":"AAAAMFsiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBRT0iXQAAAANbMV0=","price":41,"expiry":42,"qos":43,"signature":""}],"funded_payment_channel":[true],"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offers":[{"provider_id":"0000000000000000000000000000000000000000000000000000000000000042","sub_cid":"0000000000000000000000000000000000000000000000000000000000000001","merkle_root":"c3c3a46684c07d12a9c238787df3049a6f258e7af203e5ddb66a8bd66637e108","merkle_proof":"AAAAMFsiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBRT0iXQAAAANbMV0=","price":41,"expiry":42,"qos":43,"signature":""}],"funded_payment_channel":[true],"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	contentID, nonce, found, subOffers, FPCs, paymentRequired, paymentChannel, err := DecodeClientStandardDiscoverOfferResponse(validMsg)
 	assert.Empty(t, err)

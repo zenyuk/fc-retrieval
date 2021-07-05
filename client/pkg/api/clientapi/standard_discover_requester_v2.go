@@ -32,45 +32,44 @@ func (c *Client) RequestStandardDiscoverV2(
 	ttl int64,
 	paychAddr string,
 	voucher string,
-) ([][cidoffer.CIDOfferDigestSize]byte, error) {
+) (offerDigests [][cidoffer.CIDOfferDigestSize]byte, paymentRequired bool, paymentChannelAddrToTopup string, err error) {
 
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequestV2(contentID, nonce, ttl, paychAddr, voucher)
 	if err != nil {
-		return nil, fmt.Errorf("error encoding Client Standard Discover Request: %s", err.Error())
+		return nil, false, "", fmt.Errorf("error encoding Client Standard Discover Request: %s", err.Error())
 	}
 
 	// Send request and get response
 	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
-		return nil, fmt.Errorf("error sending message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
+		return nil, false, "", fmt.Errorf("error sending message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Get the gateway's public key
 	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
-		return nil, fmt.Errorf("error getting signing key of gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
+		return nil, false, "", fmt.Errorf("error getting signing key of gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, fmt.Errorf("response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
+		return nil, false, "", fmt.Errorf("response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
 	}
 
-	// Decode the response, TODO deal with funded payment channels and found
 	cID, nonceRecv, _, offerDigests, _, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientStandardDiscoverResponseV2(response)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding Client Standard Discover Response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
+		return nil, false, "", fmt.Errorf("error decoding Client Standard Discover Response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
 	}
 	if cID.ToString() != contentID.ToString() {
-		return nil, fmt.Errorf("error validating CID for Client Standard Discover Response for gateway ID: %s; expected CID: %s, actual CID: %s", gatewayRegistrar.GetNodeID(), contentID, cID)
+		return nil, false, "", fmt.Errorf("error validating CID for Client Standard Discover Response for gateway ID: %s; expected CID: %s, actual CID: %s", gatewayRegistrar.GetNodeID(), contentID, cID)
 	}
 	if nonce != nonceRecv {
-		return nil, fmt.Errorf("error validating nonce for Client Standard Discover Response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, nonceRecv)
+		return nil, false, "", fmt.Errorf("error validating nonce for Client Standard Discover Response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, nonceRecv)
 	}
 	if paymentRequired {
-		return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
+		return nil, true, paymentChannelAddrToTopup, nil
 	}
 
-	return offerDigests, nil
+	return offerDigests, false, "", nil
 }

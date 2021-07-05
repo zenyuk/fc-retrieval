@@ -19,13 +19,13 @@ func TestEncodeGatewayDHTDiscoverResponseV2(t *testing.T) {
 	mockSubCIDOfferDigest := [cidoffer.CIDOfferDigestSize]byte{1, 2, 4}
 	mockSubCIDOfferDigests := [][cidoffer.CIDOfferDigestSize]byte{mockSubCIDOfferDigest}
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	validMsg := &FCRMessage{
 		messageType:       208,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offer_digest":[[1,2,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true],"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offer_digest":[[1,2,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true],"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 
@@ -50,11 +50,11 @@ func TestDecodeGatewayDHTDiscoverResponseV2(t *testing.T) {
 		messageType:       208,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offer_digest":[[1,2,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true],"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"found":true,"sub_cid_offer_digest":[[1,2,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"funded_payment_channel":[true],"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	contentID, nonce, found, subCIDOfferDigest, FPCs, paymentRequired, paymentChannel, err := DecodeGatewayDHTDiscoverResponseV2(validMsg)
 	assert.Empty(t, err)

@@ -26,13 +26,13 @@ func TestEncodeClientDHTDiscoverResponse(t *testing.T) {
 
 	mockNonce := int64(42)
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	validMsg := &FCRMessage{
 		messageType:       105,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"contacted_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"nonce":42,"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"contacted_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"nonce":42,"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 
@@ -67,13 +67,13 @@ func TestDecodeClientDHTDiscoverResponse(t *testing.T) {
 
 	mockNonce := int64(42)
 	fakePaymentRequired := true
-	fakePaymentChannel := int64(43)
+	fakePaymentChannel := "43"
 
 	validMsg := &FCRMessage{
 		messageType:       105,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"contacted_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"nonce":42,"payment_required":true,"payment_channel":43}`),
+		messageBody:       []byte(`{"contacted_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"response":[{"message_type":105,"protocol_version":1,"protocol_supported":[1,1],"message_body":"","message_signature":""}],"uncontactable_gateways":["0000000000000000000000000000000000000000000000000000000000000042"],"nonce":42,"payment_required":true,"payment_channel":"43"}`),
 		signature:         "",
 	}
 

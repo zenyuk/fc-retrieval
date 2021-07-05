@@ -16,6 +16,7 @@ package clientapi
  */
 
 import (
+	"fmt"
 	"math/big"
 	"net/http"
 	"time"
@@ -27,6 +28,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/gateway/internal/core"
 )
+
+const defaultPaymentLane = 0
 
 // HandleClientDHTCIDDiscoverRequestV2 is used to handle client request for cid offer
 func HandleClientDHTCIDDiscoverRequestV2(w rest.ResponseWriter, request *fcrmessages.FCRMessage) {
@@ -86,29 +89,24 @@ func HandleClientDHTCIDDiscoverRequestV2(w rest.ResponseWriter, request *fcrmess
 			return
 		}
 		// Pay this gateway
-		paychAddr, voucher, topup, err := c.PaymentMgr.Pay(gw.GetAddress(), 0, c.Settings.SearchPrice)
+		var needTopup bool
+		paymentChannelAddress, voucher, needTopup, err = c.PaymentMgr.Pay(gw.GetAddress(), 0, c.Settings.SearchPrice)
 		if err != nil {
 			s := "Fail to pay recipient."
 			logging.Error(s + err.Error())
 			rest.Error(w, s, http.StatusBadRequest)
 			return
 		}
-		if topup {
-			if err := c.PaymentMgr.Topup(gw.GetAddress(), c.Settings.TopupAmount); err != nil {
-				s := "Fail to top up."
-				logging.Error(s + err.Error())
-				rest.Error(w, s, http.StatusBadRequest)
-				return
-			}
-			paychAddr, voucher, topup, err = c.PaymentMgr.Pay(gw.GetAddress(), 0, c.Settings.SearchPrice)
+		if needTopup {
+			paymentChannelAddress, voucher, err = topupAndPay(c, gw.GetAddress(), defaultPaymentLane, c.Settings.SearchPrice)
 			if err != nil {
-				s := "Fail to pay recipient."
+				s := "Internal error: Failure to topup the gateway: " + gw.GetAddress()
 				logging.Error(s + err.Error())
-				rest.Error(w, s, http.StatusBadRequest)
+				rest.Error(w, s, http.StatusInternalServerError)
 				return
 			}
 		}
-		res, err := c.P2PServer.RequestGatewayFromGateway(id, fcrmessages.GatewayDHTDiscoverRequestV2Type, cid, id, paychAddr, voucher)
+		res, err := c.P2PServer.RequestGatewayFromGateway(id, fcrmessages.GatewayDHTDiscoverRequestV2Type, cid, id, paymentChannelAddress, voucher)
 		if err != nil {
 			unContactable = append(unContactable, *id)
 		} else {
@@ -117,7 +115,7 @@ func HandleClientDHTCIDDiscoverRequestV2(w rest.ResponseWriter, request *fcrmess
 		}
 	}
 
-	response, err := fcrmessages.EncodeClientDHTDiscoverResponseV2(contacted, contactedResp, unContactable, nonce, false, 0)
+	response, err := fcrmessages.EncodeClientDHTDiscoverResponseV2(contacted, contactedResp, unContactable, nonce, false, "")
 	if err != nil {
 		s := "Internal error: Fail to encode message."
 		logging.Error(s + err.Error())
@@ -136,4 +134,29 @@ func HandleClientDHTCIDDiscoverRequestV2(w rest.ResponseWriter, request *fcrmess
 	if err := w.WriteJson(response); err != nil {
 		logging.Error("can't write JSON during HandleClientDHTCIDDiscoverRequestV2 %s", err.Error())
 	}
+}
+
+func topupAndPay(c *core.Core, recipient string, paymentLane uint64, amount *big.Int) (paymentChannel string, voucher string, err error) {
+	if err := c.PaymentMgr.Topup(recipient, c.Settings.TopupAmount); err != nil {
+		return "", "", fmt.Errorf("Unable to topup, error: %s ", err.Error())
+	}
+	var needTopup bool
+	paymentChannel, voucher, needTopup, err = c.PaymentMgr.Pay(recipient, paymentLane, amount)
+	if err != nil {
+		return paymentChannel, voucher, fmt.Errorf("Unable to make payment, did topup first; error: %s ", err.Error())
+	}
+	if needTopup {
+		err = c.PaymentMgr.Topup(recipient, c.Settings.TopupAmount)
+		if err != nil {
+			return paymentChannel, voucher, fmt.Errorf("Unable to topup second time, error: %s ", err.Error())
+		}
+		paymentChannel, voucher, needTopup, err = c.PaymentMgr.Pay(recipient, paymentLane, amount)
+		if err != nil {
+			return paymentChannel, voucher, fmt.Errorf("Unable to make payment, did topup 2 times; error: %s ", err.Error())
+		}
+		if needTopup {
+			return paymentChannel, voucher, fmt.Errorf("unable to make payment, it's keep saying 'need topup', tried to topup 2 times")
+		}
+	}
+	return paymentChannel, voucher, nil
 }

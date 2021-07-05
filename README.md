@@ -32,5 +32,5 @@ docker build -t consensys/lotus-full-node .
 ### execute end-to-end tests 
 ```
 cd fc-retrieval/itest
-go test -p 1 -v ./...
+go test -p 1 -count=1 -v ./...
 ```

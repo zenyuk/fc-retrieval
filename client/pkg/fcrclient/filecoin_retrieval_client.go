@@ -37,6 +37,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/client/pkg/api/clientapi"
 )
 
+const defaultPaymentLane = uint64(0)
+
 // FilecoinRetrievalClient is an example implementation using the api,
 // which holds information about the interaction of the Filecoin
 // Retrieval Client with Filecoin Retrieval Gateways.
@@ -438,19 +440,15 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 		return nil, errors.New("given gatewayID is not in active nodes map")
 	}
 
-	defaultPaymentLane := uint64(0)
 	initialRequestPaymentAmount := new(big.Int).Mul(big.NewInt(numDHT), big.NewInt(defaultSearchPrice))
-	paymentChannel, voucher, needTopup, paymentErr := c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, initialRequestPaymentAmount)
-	if paymentErr != nil {
-		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", paymentErr.Error())
+	paymentChannel, voucher, needTopup, err := c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, initialRequestPaymentAmount)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", err.Error())
 	}
 	if needTopup {
-		if err := c.PaymentMgr().Topup(entryGateway.GetAddress(), c.Settings.topUpAmount); err != nil {
-			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
-		}
-		paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, initialRequestPaymentAmount)
-		if paymentErr != nil {
-			return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
+		paymentChannel, voucher, err = c.topupAndPay(entryGateway.GetAddress(), defaultPaymentLane, initialRequestPaymentAmount)
+		if err != nil {
+			return nil, fmt.Errorf("topup error while requesting offers using DHT discovery: %s", err.Error())
 		}
 	}
 	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
@@ -458,10 +456,25 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	// TODO need to do nonce management
 	nonce := rand.Int63()
 	ttl := time.Now().Unix() + c.Settings.EstablishmentTTL()
-	contactedGateways, contactedResp, uncontactable, err := c.clientApi.RequestDHTDiscoverV2(entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
-	if err != nil {
-		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGateway.GetNodeID(), err)
-		return nil, errors.New("error in requesting dht discovery")
+	contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr := c.clientApi.RequestDHTDiscoverV2(entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
+	if discoverErr != nil {
+		logging.Warn("GatewayDHTDiscovery error. Gateway: %s, Error: %s", entryGateway.GetNodeID(), discoverErr)
+		return nil, fmt.Errorf("error in requesting dht discovery: %s", discoverErr.Error())
+	}
+	if paymentRequired {
+		paymentChannel, voucher, err = c.topupAndPay(paymentChannel, defaultPaymentLane, c.Settings.searchPrice)
+		if err != nil {
+			return nil, fmt.Errorf("topup error while requesting DHT discovery: %s", err.Error())
+		}
+		// retry
+		contactedGateways, contactedResp, uncontactable, paymentRequired, paymentChannel, discoverErr = c.clientApi.RequestDHTDiscoverV2(entryGateway, contentID, nonce, ttl, numDHT, false, paymentChannel, voucher)
+		if discoverErr != nil {
+			logging.Warn("gateway DHT discovery problem; gateway: %s, error: %s", entryGateway.GetNodeID(), discoverErr)
+			return nil, fmt.Errorf("error in requesting dht discovery: %s", discoverErr.Error())
+		}
+		if paymentRequired {
+			logging.Error("gateway DHT discovery error: received 'payment required' twice")
+		}
 	}
 	for i := 0; i < len(uncontactable); i++ {
 		logging.Warn("Gateway: %v is uncontactable.", uncontactable[i].ToString())
@@ -483,8 +496,8 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			logging.Error("Gateway register info not valid.")
 			continue
 		}
-		pubKey, err := gateway.GetSigningKey()
-		if err != nil {
+		pubKey, signErr := gateway.GetSigningKey()
+		if signErr != nil {
 			logging.Error("Fail to obtain public key.")
 			continue
 		}
@@ -492,13 +505,13 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 			logging.Error("Fail to verify sub response.")
 			continue
 		}
-		_, _, found, offerDigests, _, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeGatewayDHTDiscoverResponseV2(&resp)
-		if err != nil {
+		_, _, found, offerDigests, _, decodedPaymentRequired, paymentChannelAddrToTopup, decodeErr := fcrmessages.DecodeGatewayDHTDiscoverResponseV2(&resp)
+		if decodeErr != nil {
 			logging.Error("Fail to decode response")
 			continue
 		}
-		if paymentRequired {
-			return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
+		if decodedPaymentRequired {
+			return nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %s", paymentChannelAddrToTopup)
 		}
 		if !found {
 			return offersMap, nil
@@ -521,19 +534,19 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	for _, entry := range offersDigestsFromAllGateways {
 		unit += len(entry)
 	}
+	if unit == 0 {
+		logging.Warn("have zero offer digests from all gateways, about to pay amount of 0")
+	}
 	offerRequestPaymentAmount := new(big.Int).Mul(big.NewInt(int64(unit)), c.Settings.offerPrice)
 
-	paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, offerRequestPaymentAmount)
-	if paymentErr != nil {
-		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", paymentErr.Error())
+	paymentChannel, voucher, needTopup, err = c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, offerRequestPaymentAmount)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, error: %s ", err.Error())
 	}
 	if needTopup {
-		if err := c.PaymentMgr().Topup(entryGateway.GetAddress(), c.Settings.topUpAmount); err != nil {
-			return nil, fmt.Errorf("Unable to topup while paying for initial offer DHT discovery, error: %s ", err.Error())
-		}
-		paymentChannel, voucher, needTopup, paymentErr = c.PaymentMgr().Pay(entryGateway.GetAddress(), defaultPaymentLane, offerRequestPaymentAmount)
-		if paymentErr != nil {
-			return nil, fmt.Errorf("Unable to make payment for initial DHT offers discovery, with topup first, error: %s ", paymentErr.Error())
+		paymentChannel, voucher, err = c.topupAndPay(entryGateway.GetAddress(), defaultPaymentLane, offerRequestPaymentAmount)
+		if err != nil {
+			return nil, fmt.Errorf("topup error while requesting offers using DHT discovery: %s", err.Error())
 		}
 	}
 	logging.Info("Successful initial payment for DHT offers discovery, payment channel: %s, voucher: %s", paymentChannel, voucher)
@@ -620,12 +633,12 @@ func (c *FilecoinRetrievalClient) FindDHTOfferAck(contentID *cid.ContentID, gate
 	}
 	_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(ack)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error decoding provider publish DHT offer response: %s", err.Error())
 	}
 	// Verify ack against request
 	ok, err := fcrcrypto.VerifyMessage(gwPubKey, signature, request.GetMessageBody())
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("message verification error: %s", err.Error())
 	}
 	return ok, nil
 }
@@ -644,6 +657,7 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	// It will call the payment manager to pay for the initial request
 	paychAddr, voucher, topup, err := c.paymentMgr.Pay(gw.GetAddress(), 0, c.Settings.searchPrice)
+	logging.Debug("1 gw.GetAddress()=%+v paychAddr=%+v, voucher=%+v, topup=%+v", gw.GetAddress(), paychAddr, voucher, topup)
 	if err != nil {
 		return cidOffers, fmt.Errorf("error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
 	}
@@ -651,21 +665,31 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 	// There isn't any balance in the payment channel, need to topup (create)
 	if topup == true {
 		// If topup failed, then probably there is not enough balance, return detailed error.
-		err = c.PaymentMgr().Topup(gw.GetAddress(), c.Settings.topUpAmount)
+		paychAddr, voucher, err = c.topupAndPay(gw.GetAddress(), defaultPaymentLane, c.Settings.searchPrice)
 		if err != nil {
-			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error to topup payment channel for gateway ID: %s;  error: %s", gw.GetNodeID(), err.Error())
-		}
-		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.GetAddress(), 0, c.Settings.searchPrice)
-		if err != nil {
-			return cidOffers, fmt.Errorf("topup successed but error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
+			return nil, fmt.Errorf("topup error while requesting offers using standard discovery: %s", err.Error())
 		}
 	}
 
 	// It pays for the first request to get a list of offer digests.
 	// TODO need to do nonce management
-	offerDigests, err := c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
-	if err != nil {
-		return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), err.Error())
+	offerDigests, paymentRequired, _, discoverErr := c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
+	if discoverErr != nil {
+		return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), discoverErr.Error())
+	}
+	if paymentRequired {
+		paychAddr, voucher, err = c.topupAndPay(gw.GetAddress(), defaultPaymentLane, c.Settings.searchPrice)
+		if err != nil {
+			return nil, fmt.Errorf("topup error while requesting standard discovery: %s", err.Error())
+		}
+		// retry
+		offerDigests, paymentRequired, _, err = c.clientApi.RequestStandardDiscoverV2(gw, contentID, rand.Int63(), time.Now().Unix()+c.Settings.EstablishmentTTL(), paychAddr, voucher)
+		if err != nil {
+			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error getting offer from gateway: %s;  error: %s", gw.GetNodeID(), err.Error())
+		}
+		if paymentRequired {
+			logging.Error("find offers standard discovery - received 'payment required' twice")
+		}
 	}
 	if len(offerDigests) == 0 {
 		// No offer found
@@ -688,14 +712,9 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 
 	// There isn't any balance in the payment channel, need to topup (create)
 	if topup == true {
-		// If topup failed, then there is not enough balance, return error.
-		err = c.PaymentMgr().Topup(gw.GetAddress(), c.Settings.TopUpAmount())
+		paychAddr, voucher, err = c.topupAndPay(gw.GetAddress(), defaultPaymentLane, expectedAmount)
 		if err != nil {
-			return make([]cidoffer.SubCIDOffer, 0), fmt.Errorf("error to topup payment channel for gateway ID: %s;  error: %s", gw.GetNodeID(), err.Error())
-		}
-		paychAddr, voucher, topup, err = c.paymentMgr.Pay(gw.GetAddress(), 0, expectedAmount)
-		if err != nil {
-			return cidOffers, fmt.Errorf("topup successed but error paying gateway ID: %s; error:%s", gw.GetNodeID(), err.Error())
+			return nil, fmt.Errorf("topup error while requesting offers using standard discovery: %s", err.Error())
 		}
 	}
 
@@ -744,4 +763,29 @@ func (c *FilecoinRetrievalClient) FindOffersStandardDiscoveryV2(contentID *cid.C
 	}
 
 	return validOffers, nil
+}
+
+func (c *FilecoinRetrievalClient) topupAndPay(recipient string, paymentLane uint64, amount *big.Int) (paymentChannel string, voucher string, err error) {
+	if err := c.PaymentMgr().Topup(recipient, c.Settings.topUpAmount); err != nil {
+		return "", "", fmt.Errorf("Unable to topup, error: %s ", err.Error())
+	}
+	var needTopup bool
+	paymentChannel, voucher, needTopup, err = c.PaymentMgr().Pay(recipient, paymentLane, amount)
+	if err != nil {
+		return paymentChannel, voucher, fmt.Errorf("Unable to make payment, did topup first; error: %s ", err.Error())
+	}
+	if needTopup {
+		err = c.PaymentMgr().Topup(recipient, c.Settings.topUpAmount)
+		if err != nil {
+			return paymentChannel, voucher, fmt.Errorf("Unable to topup second time, error: %s ", err.Error())
+		}
+		paymentChannel, voucher, needTopup, err = c.PaymentMgr().Pay(recipient, paymentLane, amount)
+		if err != nil {
+			return paymentChannel, voucher, fmt.Errorf("Unable to make payment, did topup 2 times; error: %s ", err.Error())
+		}
+		if needTopup {
+			return paymentChannel, voucher, fmt.Errorf("unable to make payment, it's keep saying 'need topup', tried to topup 2 times")
+		}
+	}
+	return paymentChannel, voucher, nil
 }

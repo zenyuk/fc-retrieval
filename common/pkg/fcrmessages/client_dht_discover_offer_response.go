@@ -30,7 +30,7 @@ type clientDHTDiscoverOfferResponse struct {
 	GatewayIDs      []string     `json:"gateway_ids"`
 	Response        []FCRMessage `json:"response"`
 	PaymentRequired bool         `json:"payment_required"` // when true means caller have to pay first, using the PaymentChannel field
-	PaymentChannel  int64        `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
+	PaymentChannel  string       `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
 }
 
 // EncodeClientDHTDiscoverOfferResponse is used to get the FCRMessage of clientDHTDiscoverOfferResponse
@@ -40,7 +40,7 @@ func EncodeClientDHTDiscoverOfferResponse(
 	gatewayIDs []nodeid.NodeID,
 	response []FCRMessage,
 	paymentRequired bool,
-	paymentChannel int64,
+	paymentChannel string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(clientDHTDiscoverOfferResponse{
 		PieceCID:        pieceCID.ToString(),
@@ -63,16 +63,16 @@ func DecodeClientDHTDiscoverOfferResponse(fcrMsg *FCRMessage) (
 	[]nodeid.NodeID, // gateway ids
 	[]FCRMessage, // respones slice
 	bool, // paymentRequired
-	int64, // paymentChannel
+	string, // paymentChannel
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != ClientDHTDiscoverOfferResponseType {
-		return nil, 0, nil, nil, false, 0, errors.New("message type mismatch")
+		return nil, 0, nil, nil, false, "", errors.New("message type mismatch")
 	}
 	msg := clientDHTDiscoverOfferResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, 0, nil, nil, false, 0, err
+		return nil, 0, nil, nil, false, "", err
 	}
 	contentID, _ := cid.NewContentIDFromHexString(msg.PieceCID)
 	return contentID, msg.Nonce, nodeid.MapStringToNodeID(msg.GatewayIDs), msg.Response, msg.PaymentRequired, msg.PaymentChannel, nil

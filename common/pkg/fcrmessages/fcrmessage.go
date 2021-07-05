@@ -3,6 +3,7 @@ package fcrmessages
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 )
@@ -107,11 +108,11 @@ func (fcrMsg *FCRMessage) Verify(pubKey *fcrcrypto.KeyPair) error {
 	fcrMsg.signature = ""
 	raw, err := fcrMsg.MarshalToSign()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal message during verification, error: %s", err.Error())
 	}
 	res, err := fcrcrypto.VerifyMessage(pubKey, sig, raw)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to verify message, error: %s", err.Error())
 	}
 	if !res {
 		return errors.New("message does not pass signature verification")

@@ -87,7 +87,7 @@ func HandleClientDHTCIDDiscoverRequest(w rest.ResponseWriter, request *fcrmessag
 		}
 	}
 
-	response, err := fcrmessages.EncodeClientDHTDiscoverResponse(contacted, contactedResp, unContactable, nonce, false, 0)
+	response, err := fcrmessages.EncodeClientDHTDiscoverResponse(contacted, contactedResp, unContactable, nonce, false, "")
 	if err != nil {
 		s := "Internal error: Fail to encode message."
 		logging.Error(s + err.Error())

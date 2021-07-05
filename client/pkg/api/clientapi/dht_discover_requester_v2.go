@@ -34,43 +34,43 @@ func (c *Client) RequestDHTDiscoverV2(
 	incrementalResult bool,
 	paychAddr string,
 	voucher string,
-) ([]nodeid.NodeID, []fcrmessages.FCRMessage, []nodeid.NodeID, error) {
+) (contacted []nodeid.NodeID, message []fcrmessages.FCRMessage, uncontactable []nodeid.NodeID, paymentRequired bool, paymentChannelAddrToTopup string, err error) {
 	// Construct request
 	request, err := fcrmessages.EncodeClientDHTDiscoverRequestV2(contentID, nonce, ttl, numDHT, incrementalResult, paychAddr, voucher)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error encoding Client DHT Discover Request: %s", err.Error())
+		return nil, nil, nil, false, "", fmt.Errorf("error encoding Client DHT Discover Request: %s", err.Error())
 	}
 
 	// Send request and get response
 	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error sending DHT discover message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
+		return nil, nil, nil, false, "", fmt.Errorf("error sending DHT discover message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Get the gateway's public key
 	pubKey, err := gatewayRegistrar.GetSigningKey()
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error getting signing key of gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
+		return nil, nil, nil, false, "", fmt.Errorf("error getting signing key of gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}
 
 	// Verify the response
 	if response.Verify(pubKey) != nil {
-		return nil, nil, nil, fmt.Errorf("DHT discover response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
+		return nil, nil, nil, false, "", fmt.Errorf("DHT discover response verification failed for gateway ID: %s, message type ID: %d", gatewayRegistrar.GetNodeID(), request.GetMessageType())
 	}
 
 	contacted, contactedResp, uncontactable, recvNonce, paymentRequired, paymentChannelAddrToTopup, err := fcrmessages.DecodeClientDHTDiscoverResponseV2(response)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error decoding DHT discover response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
+		return nil, nil, nil, false, "", fmt.Errorf("error decoding DHT discover response: %s, gateway ID: %s", err.Error(), gatewayRegistrar.GetNodeID())
 	}
 	if recvNonce != nonce {
-		return nil, nil, nil, fmt.Errorf("error validating nonce for DHT discover response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, recvNonce)
+		return nil, nil, nil, false, "", fmt.Errorf("error validating nonce for DHT discover response for gateway ID: %s; expected nonce: %d, actual nonce: %d", gatewayRegistrar.GetNodeID(), nonce, recvNonce)
 	}
 	if len(contacted) != len(contactedResp) {
-		return nil, nil, nil, fmt.Errorf("length mismatch error during DHT discover response validation for gateway ID: %s", gatewayRegistrar.GetNodeID())
+		return nil, nil, nil, false, "", fmt.Errorf("length mismatch error during DHT discover response validation for gateway ID: %s", gatewayRegistrar.GetNodeID())
 	}
 	if paymentRequired {
-		return nil, nil, nil, fmt.Errorf("payment required, in order to proceed topup your balance for payment channel address: %d", paymentChannelAddrToTopup)
+		return contacted, contactedResp, uncontactable, true, paymentChannelAddrToTopup, nil
 	}
 
-	return contacted, contactedResp, uncontactable, nil
+	return contacted, contactedResp, uncontactable, false, "", nil
 }
