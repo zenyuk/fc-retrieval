@@ -2,15 +2,12 @@ package poc2v2
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	tc "github.com/wcgcyx/testcontainers-go"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrregistermgr"
@@ -19,7 +16,11 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval/itest/config"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	cr "github.com/ConsenSys/fc-retrieval/itest/pkg/util/crypto-facade"
+	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
+	js "github.com/ConsenSys/fc-retrieval/itest/pkg/util/jsclient-facade"
+	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
+
 	"github.com/ConsenSys/fc-retrieval/provider-admin/pkg/fcrprovideradmin"
 )
 
@@ -36,82 +37,20 @@ const (
 )
 
 func TestMain(m *testing.M) {
-
-	// Need to make sure this env is not set in host machine
-	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
-
-	if itestEnv != "" {
-		lotusToken = os.Getenv("LOTUS_TOKEN")
-		superAcct = os.Getenv("SUPER_ACCT")
-		// Env is set, we are calling from docker container
-		// This logging should be only called after all tests finished.
-		m.Run()
-		return
-	}
-	// Env is not set, we are calling from host
-	// We need a redis, a register, 17 gateways and 3 providers
-
-	// Get env
-	rgEnv := util.GetEnvMap("../../.env.register")
-	gwEnv := util.GetEnvMap("../../.env.gateway")
-	pvEnv := util.GetEnvMap("../../.env.provider")
-
-	// Create shared net
-	ctx := context.Background()
-	network, networkName := util.CreateNetwork(ctx)
-	defer (*network).Remove(ctx)
-
-	// Start redis
-	redisContainer := util.StartRedis(ctx, networkName, true)
-	defer redisContainer.Terminate(ctx)
-
-	// Start register
-	registerContainer := util.StartRegister(ctx, networkName, util.ColorYellow, rgEnv, true)
-	defer registerContainer.Terminate(ctx)
-	// Start providers
-	var providerContainers []*tc.Container
-	for i := 0; i < nProviderContainers; i++ {
-		c := util.StartProvider(ctx, fmt.Sprintf("provider-%v", i), networkName, util.ColorBlue, pvEnv, true)
-		providerContainers = append(providerContainers, &c)
-	}
-	defer func() {
-		for _, c := range providerContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
-	// Start gateways
-	var gatewayContainers []*tc.Container
-
-	for i := 0; i < nGateways; i++ {
-		c := util.StartGateway(ctx, fmt.Sprintf("gateway-%v", i), networkName, util.ColorCyan, gwEnv, true)
-		gatewayContainers = append(gatewayContainers, &c)
-	}
-	defer func() {
-		for _, c := range gatewayContainers {
-			(*c).Terminate(ctx)
-		}
-	}()
-
-	// Start lotus
-	lotusContainer := util.StartLotusFullNode(ctx, networkName, false)
-	defer lotusContainer.Terminate(ctx)
-
-	reloadJsTests := os.Getenv("RELOAD_JS_TESTS")
-	// Get lotus token
-	lotusToken, superAcct = util.GetLotusToken()
+	lotusToken, superAcct = fil.GetLotusToken()
 	logging.Info("Lotus token is: %s", lotusToken)
 	logging.Info("Super Acct is %s", superAcct)
 
-	// Start itest
-	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, lotusToken, superAcct, done, true, reloadJsTests)
-	defer itestContainer.Terminate(ctx)
-	// Block until done.
-	if <-done {
-		logging.Info("Tests passed, shutdown...")
-	} else {
-		logging.Fatal("Tests failed, shutdown...")
+	const testName = "poc2-new-gateway"
+	ctx := context.Background()
+	containersAndPorts, network, err := tc.StartContainers(ctx, nGateways, nProviderContainers, testName, true)
+	if err != nil {
+		logging.Error("%s failed, container starting error: %s", testName, err.Error())
+		tc.StopContainers(ctx, containersAndPorts, network)
+		os.Exit(1)
 	}
+	defer tc.StopContainers(ctx, containersAndPorts, network)
+	m.Run()
 }
 
 func TestNewAccounts(t *testing.T) {
@@ -119,8 +58,9 @@ func TestNewAccounts(t *testing.T) {
 	t.Log("/*                 Start POC2-JS TestNewAccounts               */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, nGateways+nProviderContainers+3)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, nGateways+nProviderContainers+3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,8 +78,9 @@ func TestInitialiseProviders(t *testing.T) {
 	t.Log("/*             Start  POC2-JS TestInitialiseProviders           */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,8 +153,9 @@ func TestInitialiseGateways(t *testing.T) {
 	t.Log("/*             Start  POC2-JS TestInitialiseGateways            */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,7 +179,7 @@ func TestInitialiseGateways(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 		var idStr string
 		if i%2 == 0 {
 			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
@@ -267,7 +209,7 @@ func TestInitialiseGateways(t *testing.T) {
 
 		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
-			logging.Error("error initialising gateway: %s", err.Error())
+			logging.Error("gateway initialising error: %s", err.Error())
 			t.FailNow()
 		}
 	}
@@ -283,10 +225,11 @@ func TestClientJS(t *testing.T) {
 	t.Log("/*             Start  POC2-JS TestClientJS              */")
 	t.Log("/*******************************************************/")
 
-	assert.Nil(t, util.CallClientJsInstall())
+	assert.Nil(t, js.CallClientJsInstall())
 
+	ctx := context.Background()
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -317,7 +260,7 @@ func TestClientJS(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := generateKeys()
+		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 		providerID := nodeid.NewRandomNodeID()
 		pIDs = append(pIDs, providerID)
 
@@ -358,7 +301,7 @@ func TestClientJS(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 		var idStr string
 		if i%2 == 0 {
 			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
@@ -387,12 +330,12 @@ func TestClientJS(t *testing.T) {
 		)
 		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
-			logging.Error("error initialising gateway: %s", err.Error())
+			logging.Error("gateway initialising error: %s", err.Error())
 			t.FailNow()
 		}
 		// Enroll the gateway in the Register srv.
 		if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-			logging.Error("error registering gateway: %s", err.Error())
+			logging.Error("gateway registering error: %s", err.Error())
 			t.FailNow()
 		}
 	}
@@ -405,17 +348,7 @@ func TestClientJS(t *testing.T) {
 	privateKeys = privateKeys[1:]
 	accountAddrs = accountAddrs[1:]
 
-	var gtws []string
-	for _, d := range gwIDs {
-		gtws = append(gtws, d.ToString())
-	}
-
-	var provs []string
-	for _, d := range pIDs {
-		provs = append(provs, d.ToString())
-	}
-
-	err = util.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken, strings.Join(gtws, ","), strings.Join(provs, ","))
+	err = js.CallClientJsE2E(key, walletKey, gatewayConfig.GetString("REGISTER_API_URL"), lotusAP, lotusToken)
 	if err != nil {
 		logging.Error("error calling JS client E2E: %s", err.Error())
 		t.FailNow()
@@ -424,34 +357,4 @@ func TestClientJS(t *testing.T) {
 	t.Log("/*******************************************************/")
 	t.Log("/*               End  POC2-JS TestClientJS              */")
 	t.Log("/*******************************************************/")
-}
-
-// Helper function to generate set of keys
-func generateKeys() (rootPubKey string, retrievalPubKey string, retrievalPrivateKey *fcrcrypto.KeyPair, err error) {
-	rootKey, err := fcrcrypto.GenerateBlockchainKeyPair()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error generating blockchain key: %s", err.Error())
-	}
-	if rootKey == nil {
-		return "", "", nil, errors.New("error generating blockchain key")
-	}
-
-	rootPubKey, err = rootKey.EncodePublicKey()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error encoding public key: %s", err.Error())
-	}
-
-	retrievalPrivateKey, err = fcrcrypto.GenerateRetrievalV1KeyPair()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error generating retrieval key: %s", err.Error())
-	}
-	if retrievalPrivateKey == nil {
-		return "", "", nil, errors.New("error generating retrieval key")
-	}
-
-	retrievalPubKey, err = retrievalPrivateKey.EncodePublicKey()
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error encoding retrieval pub key: %s", err.Error())
-	}
-	return
 }

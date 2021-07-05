@@ -39,6 +39,7 @@ type GatewaySubOffers struct {
 }
 
 func (c *Client) RequestDHTOfferDiscover(
+	clientApiEndpoint string,
 	gatewayRegistrar register.GatewayRegistrar,
 	gatewayIDs []nodeid.NodeID,
 	contentID *cid.ContentID,
@@ -54,7 +55,7 @@ func (c *Client) RequestDHTOfferDiscover(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
+	response, err := c.httpCommunicator.SendMessage(clientApiEndpoint, request)
 	if err != nil {
 		return nil, err
 	}

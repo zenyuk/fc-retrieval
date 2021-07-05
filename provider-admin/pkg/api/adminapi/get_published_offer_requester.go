@@ -28,6 +28,7 @@ import (
 
 // RequestGetPublishedOffer checks the group offer stored in the provider for a given list of gateways.
 func (a *Admin) RequestGetPublishedOffer(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	gatewayIDs []nodeid.NodeID,
 	signingPrivkey *fcrcrypto.KeyPair,
@@ -53,7 +54,7 @@ func (a *Admin) RequestGetPublishedOffer(
 		return false, nil, errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return false, nil, err

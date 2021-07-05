@@ -18,6 +18,7 @@ package cidoffer
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
@@ -126,14 +127,14 @@ func (c *SubCIDOffer) HasExpired() bool {
 func (c *SubCIDOffer) Verify(pubKey *fcrcrypto.KeyPair) error {
 	raw, err := c.MarshalToSign()
 	if err != nil {
-		return err
+		return fmt.Errorf("offer does not pass signature verification, marshaling error: %s", err)
 	}
 	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, raw)
 	if err != nil {
-		return err
+		return fmt.Errorf("offer does not pass signature verification, error: %s", err)
 	}
 	if !res {
-		return errors.New("Offer does not pass signature verification")
+		return errors.New("offer does not pass signature verification")
 	}
 	return nil
 }

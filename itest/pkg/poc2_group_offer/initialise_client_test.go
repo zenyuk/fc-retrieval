@@ -1,6 +1,7 @@
 package poc2_group_offer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -14,7 +15,8 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
+	cr "github.com/ConsenSys/fc-retrieval/itest/pkg/util/crypto-facade"
+	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
 )
 
 func TestInitialiseClient(t *testing.T) {
@@ -22,8 +24,12 @@ func TestInitialiseClient(t *testing.T) {
 	t.Log("/*             Start TestInitialiseClient              */")
 	t.Log("/*******************************************************/")
 
+	ctx := context.Background()
+	lotusToken, superAcct := fil.GetLotusToken()
+	lotusDaemonApiEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	var lotusAP = "http://" + lotusDaemonApiEndpoint + "/rpc/v0"
 	var err error
-	privateKeys, accountAddrs, err := util.GenerateAccount(lotusAP, lotusToken, superAcct, 37)
+	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +42,8 @@ func TestInitialiseClient(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, 10*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, false, true, 10*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -46,11 +53,13 @@ func TestInitialiseClient(t *testing.T) {
 	// Configure gateway admin
 	gConfBuilder := fcrgatewayadmin.CreateSettings()
 	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
 	gConf := gConfBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
 
-	// Initialise gateways
+	// map between gateway ID and gateway name
+	var gateways = make(map[string]*nodeid.NodeID)
+
 	var gwIDs []*nodeid.NodeID
 	// Only initialise 32 gateways, with one extra to initialise later to test list single cid offer
 	for i := 0; i < 32; i++ {
@@ -59,7 +68,7 @@ func TestInitialiseClient(t *testing.T) {
 		privateKeys = privateKeys[1:]
 		accountAddrs = accountAddrs[1:]
 
-		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := generateKeys()
+		gatewayRootPubKey, gatewayRetrievalPubKey, gatewayRetrievalPrivateKey, err := cr.GenerateKeys()
 		var idStr string
 		if i%2 == 0 {
 			idStr = fmt.Sprintf("%X000000000000000000000000000000000000000000000000000000000000000", i/2)
@@ -72,28 +81,30 @@ func TestInitialiseClient(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		gwIDs = append(gwIDs, gatewayID)
 
-		identifier := fmt.Sprintf("-%v", i)
+		gatewayName := fmt.Sprintf("gateway-%v", i)
+		gateways[gatewayName] = gatewayID
+		gwIDs = append(gwIDs, gatewayID)
+		_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 		gatewayRegistrar := register.NewGatewayRegister(
 			gatewayID.ToString(),
 			walletAddress,
 			gatewayRootPubKey,
 			gatewayRetrievalPubKey,
 			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-			gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
+			gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 		)
 
-		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		err = gwAdmin.InitialiseGatewayV2(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			panic(err)
 		}
 		// Enroll the gateway in the Register srv.
 		if err := rm.RegisterGateway(gatewayRegistrar); err != nil {
-			logging.Error("error registering gateway: %s", err.Error())
+			logging.Error("gateway registering error: %s", err.Error())
 			t.FailNow()
 		}
 	}
@@ -107,7 +118,7 @@ func TestInitialiseClient(t *testing.T) {
 	clientConfBuilder := fcrclient.CreateSettings()
 	clientConfBuilder.SetEstablishmentTTL(101)
 	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	clientConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	clientConfBuilder.SetRegisterURL(registerApiEndpoint)
 	clientConfBuilder.SetWalletPrivateKey(walletKey)
 	clientConfBuilder.SetLotusAP(lotusAP)
 	clientConfBuilder.SetLotusAuthToken(lotusToken)
@@ -126,8 +137,13 @@ func TestInitialiseClient(t *testing.T) {
 		t.Fatal()
 	}
 
-	added = client.AddActiveGateways(gwIDs)
-	assert.Equal(t, 32, added, "32 gateways should be active")
+	for gatewayName, gatewayID := range gateways {
+		_, _, gatewayClientApiEndpoint, _ := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
+		activatedCount := client.AddActiveGateways(gatewayClientApiEndpoint, []*nodeid.NodeID{gatewayID})
+		if !assert.Equal(t, 1, activatedCount, "gateway should be active") {
+			t.FailNow()
+		}
+	}
 
 	t.Log("/*******************************************************/")
 	t.Log("/*               End TestInitialiseClient              */")

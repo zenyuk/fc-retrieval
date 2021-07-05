@@ -16,18 +16,19 @@ package adminapi
  */
 
 import (
-  "errors"
+	"errors"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-  "github.com/ConsenSys/fc-retrieval/common/pkg/register"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
 
 // RequestInitialiseKeyV2 initialise a given gateway
 func (a *Admin) RequestInitialiseKeyV2(
-  gatewayRegistrar register.GatewayRegistrar,
+	adminApiEndpoint string,
+	gatewayRegistrar register.GatewayRegistrar,
 	gatewayPrivKey *fcrcrypto.KeyPair,
 	gatewayPrivKeyVer *fcrcrypto.KeyVersion,
 	signingPrivkey *fcrcrypto.KeyPair,
@@ -65,7 +66,7 @@ func (a *Admin) RequestInitialiseKeyV2(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

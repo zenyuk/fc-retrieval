@@ -21,6 +21,7 @@ package gatewayapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
@@ -134,11 +135,11 @@ func HandleGatewayListDHTOfferRequest(reader *fcrp2pserver.FCRServerReader, writ
 		// TODO: Check nonce.
 		_, signature, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(&acknowledgement)
 		if err != nil {
-			return err
+			return fmt.Errorf("error decoding provider publish DHT offer response: %s", err.Error())
 		}
 		ok, err := fcrcrypto.VerifyMessage(pubKey, signature, msgs[i].GetMessageBody())
 		if err != nil {
-			return err
+			return fmt.Errorf("verification failed with error: %s", err.Error())
 		}
 		if !ok {
 			return errors.New("verification failed")

@@ -27,6 +27,7 @@ import (
 
 // RequestInitialiseKeyV2 initialise a given provider
 func (a *Admin) RequestInitialiseKeyV2(
+	adminApiEndpoint string,
 	providerRegistrar register.ProviderRegistrar,
 	providerPrivKey *fcrcrypto.KeyPair,
 	providerPrivKeyVer *fcrcrypto.KeyVersion,
@@ -65,7 +66,7 @@ func (a *Admin) RequestInitialiseKeyV2(
 		return errors.New("error in signing the request")
 	}
 
-	response, err := a.httpCommunicator.SendMessage(providerRegistrar.GetNetworkInfoAdmin(), request)
+	response, err := a.httpCommunicator.SendMessage(adminApiEndpoint, request)
 	if err != nil {
 		logging.Error("Error in sending the message.")
 		return err

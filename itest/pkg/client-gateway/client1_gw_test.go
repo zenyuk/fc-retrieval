@@ -24,6 +24,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/testcontainers/testcontainers-go"
+
+	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ConsenSys/fc-retrieval/client/pkg/fcrclient"
@@ -34,64 +38,26 @@ import (
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 	"github.com/ConsenSys/fc-retrieval/gateway-admin/pkg/fcrgatewayadmin"
 	"github.com/ConsenSys/fc-retrieval/itest/config"
-	"github.com/ConsenSys/fc-retrieval/itest/pkg/util"
 )
 
+var containers tc.AllContainers
+
 func TestMain(m *testing.M) {
-	// Need to make sure this env is not set in host machine
-	itestEnv := os.Getenv("ITEST_CALLING_FROM_CONTAINER")
-
-	if itestEnv != "" {
-		// Env is set, we are calling from docker container
-		m.Run()
-		return
-	}
-	// Env is not set, we are calling from host
-	// We need a redis, a register and a gateway
-
-	// Get env
-	rgEnv := util.GetEnvMap("../../.env.register")
-	gwEnv := util.GetEnvMap("../../.env.gateway")
-
-	// Create shared net
+	const testName = "client-gateway"
 	ctx := context.Background()
-	network, networkName := util.CreateNetwork(ctx)
-
-	// Start redis
-	redisContainer := util.StartRedis(ctx, networkName, true)
-
-	// Start register
-	registerContainer := util.StartRegister(ctx, networkName, util.ColorYellow, rgEnv, true)
-
-	// Start gateway
-	gatewayContainer := util.StartGateway(ctx, "gateway", networkName, util.ColorBlue, gwEnv, true)
-
-	// Start itest
-	done := make(chan bool)
-	itestContainer := util.StartItest(ctx, networkName, util.ColorGreen, "", "", done, true, "")
-
-	// Block until done.
-	if <-done {
-		logging.Info("Tests passed, shutdown...")
-	} else {
-		logging.Error("Tests failed, shutdown...")
+	var gatewayConfig = config.NewConfig(".env.gateway")
+	var providerConfig = config.NewConfig(".env.provider")
+	var registerConfig = config.NewConfig(".env.register")
+	var network *testcontainers.Network
+	var err error
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, gatewayConfig, providerConfig, registerConfig)
+	if err != nil {
+		logging.Error("%s failed, container starting error: %s", testName, err.Error())
+		tc.StopContainers(ctx, testName, containers, network)
+		os.Exit(1)
 	}
-
-	if err := itestContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := gatewayContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := registerContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := redisContainer.Terminate(ctx); err != nil {
-		logging.Error("error while terminating test container: %s", err.Error())
-	}
-	if err := (*network).Remove(ctx); err != nil {
-		logging.Error("error while terminating test container network: %s", err.Error())
-	}
+	defer tc.StopContainers(ctx, testName, containers, network)
+	m.Run()
 }
 
 func TestOneGateway(t *testing.T) {
@@ -104,7 +70,7 @@ func TestOneGateway(t *testing.T) {
 
 	confBuilder := fcrgatewayadmin.CreateSettings()
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL("http://register:9020")
+	confBuilder.SetRegisterURL("http://" + containers.Register.GetRegisterHostApiEndpoint())
 	conf := confBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
@@ -131,24 +97,28 @@ func TestOneGateway(t *testing.T) {
 	}
 
 	gatewayID := nodeid.NewRandomNodeID()
+	gatewayName := "gateway-0"
+	_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
 		gatewayRootSigningKey,
 		gatewayRetrievalSigningKey,
 		gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-		gatewayConfig.GetString("NETWORK_INFO_GATEWAY"),
-		gatewayConfig.GetString("NETWORK_INFO_PROVIDER"),
-		gatewayConfig.GetString("NETWORK_INFO_CLIENT"),
-		gatewayConfig.GetString("NETWORK_INFO_ADMIN"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+		gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 	)
 
-	if err = gwAdmin.InitialiseGateway(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1)); err != nil {
-		t.Errorf("can't initialise gateway")
+	if err = gwAdmin.InitialiseGateway(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1)); err != nil {
+		logging.Error("gateway initialisation error: %s", err.Error())
+		t.FailNow()
 	}
 
 	if err = rm.RegisterGateway(gatewayRegistrar); err != nil {
-		t.Errorf("can't register gateway")
+		logging.Error("gateway registration error: %s", err.Error())
+		t.FailNow()
 	}
 
 	logging.Info("Adding to client config gateway: %s", gatewayID.ToString())
@@ -172,7 +142,7 @@ func TestOneGateway(t *testing.T) {
 	gws := client.GetGatewaysToUse()
 	assert.Equal(t, 1, len(gws))
 
-	numAdded = client.AddActiveGateways(newGatewaysToBeAdded)
+	numAdded = client.AddActiveGateways(gatewayClientApiEndpoint, newGatewaysToBeAdded)
 	assert.Equal(t, 1, numAdded, "expecting the new Gateway be added to the list of gateways in use")
 	ga := client.GetActiveGateways()
 	assert.Equal(t, 1, len(ga))

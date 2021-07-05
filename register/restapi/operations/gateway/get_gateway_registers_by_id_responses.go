@@ -6,6 +6,7 @@ package gateway
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-openapi/runtime"
@@ -110,7 +111,7 @@ func (o *GetGatewayRegistersByIDDefault) WriteResponse(rw http.ResponseWriter, p
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
+			log.Printf("error writing GetGatewayRegistersByIDDefault response: %s", err.Error())
 		}
 	}
 }

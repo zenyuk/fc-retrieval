@@ -21,6 +21,7 @@ package providerapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
@@ -88,11 +89,11 @@ func RequestProviderPublishDHTOffer(reader *fcrp2pserver.FCRServerReader, writer
 	// TODO: Check nonce
 	_, sig, err := fcrmessages.DecodeProviderPublishDHTOfferResponse(response)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding provider publish DHT offer response: %s", err.Error())
 	}
 	ok, err = fcrcrypto.VerifyMessage(pubKey, sig, request.GetMessageBody())
 	if err != nil {
-		return nil, errors.New("internal error in verifying ack")
+		return nil, fmt.Errorf("internal error in verifying ack: %s", err.Error())
 	}
 	if !ok {
 		return nil, errors.New("fail to verify the ack")

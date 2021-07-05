@@ -14,8 +14,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/provider/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/provider/internal/util/settings"
 )
 
 // NewConfig creates a new configuration
@@ -93,12 +93,13 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		RegisterRefreshDuration: registerRefreshDuration,
 
 		ProviderAddress:        conf.GetString("PROVIDER_ADDRESS"),
+		ProviderRegionCode:     conf.GetString("PROVIDER_REGION_CODE"),
 		ProviderRootSigningKey: conf.GetString("PROVIDER_ROOT_SIGNING_KEY"),
 		ProviderSigningKey:     conf.GetString("PROVIDER_SIGNING_KEY"),
-		ProviderRegionCode:     conf.GetString("PROVIDER_REGION_CODE"),
-		NetworkInfoClient:      conf.GetString("IP") + ":" + conf.GetString("NETWORK_CLIENT_INFO"),
-		NetworkInfoGateway:     conf.GetString("IP") + ":" + conf.GetString("NETWORK_GATEWAY_INFO"),
-		NetworkInfoAdmin:       conf.GetString("IP") + ":" + conf.GetString("NETWORK_ADMIN_INFO"),
+
+		NetworkInfoClient:  conf.GetString("IP") + ":" + conf.GetString("BIND_REST_API"),
+		NetworkInfoGateway: conf.GetString("IP") + ":" + conf.GetString("BIND_GATEWAY_API"),
+		NetworkInfoAdmin:   conf.GetString("IP") + ":" + conf.GetString("BIND_ADMIN_API"),
 
 		TCPInactivityTimeout:     tcpInactivityTimeout,
 		TCPLongInactivityTimeout: tcpLongInactivityTimeout,
@@ -117,9 +118,9 @@ func defineFlags(_ *viper.Viper) {
 func bindFlags(conf *viper.Viper) {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
-  if err := conf.BindPFlags(pflag.CommandLine); err != nil {
-    logging.Error("can't bind a command line flag")
-  }
+	if err := conf.BindPFlags(pflag.CommandLine); err != nil {
+		logging.Error("can't bind a command line flag")
+	}
 }
 
 func setValues(conf *viper.Viper) {

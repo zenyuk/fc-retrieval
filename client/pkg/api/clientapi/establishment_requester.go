@@ -27,6 +27,7 @@ import (
 
 // RequestEstablishment requests an establishment to a given gateway for a given challenge, client id and ttl.
 func (c *Client) RequestEstablishment(
+	clientApiEndpoint string,
 	gatewayRegistrar register.GatewayRegistrar,
 	challenge []byte,
 	clientID *nodeid.NodeID,
@@ -45,7 +46,7 @@ func (c *Client) RequestEstablishment(
 		return err
 	}
 
-	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
+	response, err := c.httpCommunicator.SendMessage(clientApiEndpoint, request)
 	if err != nil {
 		return err
 	}

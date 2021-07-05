@@ -4,16 +4,16 @@ Package config - combines operations used to setup parameters for Gateway node i
 package config
 
 import (
-  "flag"
-  "fmt"
-  "math/big"
-  "time"
+	"flag"
+	"fmt"
+	"math/big"
+	"time"
 
-  "github.com/spf13/pflag"
-  "github.com/spf13/viper"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
-  "github.com/ConsenSys/fc-retrieval/common/pkg/logging"
-  "github.com/ConsenSys/fc-retrieval/gateway/internal/util/settings"
+	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
+	"github.com/ConsenSys/fc-retrieval/gateway/internal/util/settings"
 )
 
 // NewConfig creates a new configuration
@@ -81,13 +81,13 @@ func Map(conf *viper.Viper) settings.AppSettings {
 		RegisterRefreshDuration: registerRefreshDuration,
 
 		GatewayAddress:        conf.GetString("GATEWAY_ADDRESS"),
-		NetworkInfoGateway:    conf.GetString("IP") + ":" + conf.GetString("BIND_GATEWAY_API"),
 		GatewayRegionCode:     conf.GetString("GATEWAY_REGION_CODE"),
 		GatewayRootSigningKey: conf.GetString("GATEWAY_ROOT_SIGNING_KEY"),
 		GatewaySigningKey:     conf.GetString("GATEWAY_SIGNING_KEY"),
 
 		NetworkInfoClient:   conf.GetString("IP") + ":" + conf.GetString("BIND_REST_API"),
 		NetworkInfoProvider: conf.GetString("IP") + ":" + conf.GetString("BIND_PROVIDER_API"),
+		NetworkInfoGateway:  conf.GetString("IP") + ":" + conf.GetString("BIND_GATEWAY_API"),
 		NetworkInfoAdmin:    conf.GetString("IP") + ":" + conf.GetString("BIND_ADMIN_API"),
 
 		TCPInactivityTimeout:     tcpInactivityTimeout,
@@ -99,7 +99,7 @@ func Map(conf *viper.Viper) settings.AppSettings {
 	}
 }
 
-func defineFlags(conf *viper.Viper) {
+func defineFlags(_ *viper.Viper) {
 	flag.String("host", "0.0.0.0", "help message for host")
 	flag.String("ip", "127.0.0.1", "help message for ip")
 }
@@ -108,8 +108,8 @@ func bindFlags(conf *viper.Viper) {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	if err := conf.BindPFlags(pflag.CommandLine); err != nil {
-	  logging.Error("can't bind a command line flag")
-  }
+		logging.Error("can't bind a command line flag")
+	}
 }
 
 func setValues(conf *viper.Viper) {

@@ -26,6 +26,7 @@ import (
 
 // RequestDHTDiscoverV2 requests a dht discover to a given gateway for a given contentID, nonce and ttl.
 func (c *Client) RequestDHTDiscoverV2(
+	clientApiEndpoint string,
 	gatewayRegistrar register.GatewayRegistrar,
 	contentID *cid.ContentID,
 	nonce int64,
@@ -42,7 +43,7 @@ func (c *Client) RequestDHTDiscoverV2(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
+	response, err := c.httpCommunicator.SendMessage(clientApiEndpoint, request)
 	if err != nil {
 		return nil, nil, nil, false, "", fmt.Errorf("error sending DHT discover message to gateway ID: %s, error: %s", gatewayRegistrar.GetNodeID(), err.Error())
 	}

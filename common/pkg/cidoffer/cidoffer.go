@@ -27,13 +27,15 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
+
+	"github.com/cbergoon/merkletree"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrcrypto"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmerkletree"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
-	"github.com/cbergoon/merkletree"
 )
 
 const CIDOfferDigestSize = sha512.Size256
@@ -160,14 +162,14 @@ func (c *CIDOffer) Sign(privKey *fcrcrypto.KeyPair, keyVer *fcrcrypto.KeyVersion
 func (c *CIDOffer) Verify(pubKey *fcrcrypto.KeyPair) error {
 	raw, err := c.MarshalToSign()
 	if err != nil {
-		return err
+		return fmt.Errorf("offer does not pass signature verification, marshaling error: %s", err)
 	}
 	res, err := fcrcrypto.VerifyMessage(pubKey, c.signature, raw)
 	if err != nil {
-		return err
+		return fmt.Errorf("offer does not pass signature verification, error: %s", err)
 	}
 	if !res {
-		return errors.New("Offer does not pass signature verification")
+		return errors.New("offer does not pass signature verification")
 	}
 	return nil
 }

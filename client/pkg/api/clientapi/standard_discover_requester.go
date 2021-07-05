@@ -27,6 +27,7 @@ import (
 
 // RequestStandardDiscover requests a standard discover to a given gateway for a given contentID, nonce and ttl.
 func (c *Client) RequestStandardDiscover(
+	clientApiEndpoint string,
 	gatewayRegistrar register.GatewayRegistrar,
 	contentID *cid.ContentID,
 	nonce int64,
@@ -42,7 +43,7 @@ func (c *Client) RequestStandardDiscover(
 	}
 
 	// Send request and get response
-	response, err := c.httpCommunicator.SendMessage(gatewayRegistrar.GetNetworkInfoClient(), request)
+	response, err := c.httpCommunicator.SendMessage(clientApiEndpoint, request)
 	if err != nil {
 		return nil, err
 	}
