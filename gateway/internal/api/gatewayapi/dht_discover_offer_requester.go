@@ -19,7 +19,6 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
@@ -45,7 +44,7 @@ func RequestGatewayDHTDiscoverOffer(reader *fcrp2pserver.FCRServerReader, writer
 	if !ok {
 		return nil, errors.New("wrong arguments")
 	}
-	offerDigests, ok := args[3].([][cidoffer.CIDOfferDigestSize]byte)
+	offerDigests, ok := args[3].([]string)
 	if !ok {
 		return nil, errors.New("wrong arguments")
 	}

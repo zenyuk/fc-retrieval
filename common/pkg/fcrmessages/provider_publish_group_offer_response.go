@@ -19,20 +19,19 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // providerPublishGroupOfferResponse is the response to providerPublishGroupOfferRequest
 type providerPublishGroupOfferResponse struct {
-	GatewaydID string                            `json:"gateway_id"`
-	Digest     [cidoffer.CIDOfferDigestSize]byte `json:"digest"`
+	GatewaydID string `json:"gateway_id"`
+	Digest     string `json:"digest"`
 }
 
 // EncodeProviderPublishGroupOfferResponse is used to get the FCRMessage of ProviderPublishGroupOfferResponse
 func EncodeProviderPublishGroupOfferResponse(
 	gatewayID nodeid.NodeID,
-	digest [cidoffer.CIDOfferDigestSize]byte,
+	digest string,
 ) (*FCRMessage, error) {
 	body, err := json.Marshal(providerPublishGroupOfferResponse{
 		GatewaydID: gatewayID.ToString(),
@@ -47,16 +46,16 @@ func EncodeProviderPublishGroupOfferResponse(
 // DecodeProviderPublishGroupOfferResponse is used to get the fields from FCRMessage of ProviderPublishGroupOfferResponse
 func DecodeProviderPublishGroupOfferResponse(fcrMsg *FCRMessage) (
 	*nodeid.NodeID, // gatewayID
-	[cidoffer.CIDOfferDigestSize]byte, // digest
+	string, // digest
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != ProviderPublishGroupOfferResponseType {
-		return nil, [cidoffer.CIDOfferDigestSize]byte{}, errors.New("message type mismatch")
+		return nil, "", errors.New("message type mismatch")
 	}
 	msg := providerPublishGroupOfferResponse{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, [cidoffer.CIDOfferDigestSize]byte{}, err
+		return nil, "", err
 	}
 	nodeID, _ := nodeid.NewNodeIDFromHexString(msg.GatewaydID)
 	return nodeID, msg.Digest, nil

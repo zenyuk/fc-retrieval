@@ -23,6 +23,7 @@ package cidoffer
 
 import (
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -248,4 +249,19 @@ func (c *CIDOffer) UnmarshalJSON(p []byte) error {
 	}
 	c.merkleRoot = c.merkleTree.GetMerkleRoot()
 	return nil
+}
+
+// EncodeMessageDigest encodes the message digest of this CID Group Offer
+// to base64-encoded string
+func EncodeMessageDigest(sum256 [CIDOfferDigestSize]byte) (digest string) {
+	return base64.StdEncoding.EncodeToString(sum256[:])
+}
+
+// DecodeMessageDigest decodes the message digest of this CID Group Offer
+// from base64-encoded string
+func DecodeMessageDigest(digest string) (sum256 [CIDOfferDigestSize]byte) {
+	decoded, _ := base64.StdEncoding.DecodeString(digest)
+	var ret [CIDOfferDigestSize]byte
+	copy(ret[:], decoded)
+	return ret
 }

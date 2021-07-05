@@ -18,6 +18,7 @@ package providerapi
 import (
 	"github.com/ConsenSys/fc-retrieval/gateway/internal/core"
 
+	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrp2pserver"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
@@ -67,7 +68,7 @@ func HandleProviderPublishGroupOfferRequest(_ *fcrp2pserver.FCRServerReader, wri
 	// Construct the response
 	response, err := fcrmessages.EncodeProviderPublishGroupOfferResponse(
 		*c.GatewayID,
-		offer.GetMessageDigest(),
+		cidoffer.EncodeMessageDigest(offer.GetMessageDigest()),
 	)
 	if err != nil {
 		logging.Error("Internal error in encoding message.")

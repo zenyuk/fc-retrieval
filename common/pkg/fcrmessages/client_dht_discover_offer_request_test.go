@@ -13,7 +13,7 @@ import (
 func TestEncodeClientDHTDiscoverOfferRequest(t *testing.T) {
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockNonce := int64(42)
-	mockGatewaysDigests := [][][32]byte{{{1, 2}}}
+	mockGatewaysDigests := [][]string{{"AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}}
 	mockGagewayID, _ := nodeid.NewNodeIDFromHexString("42")
 	mockPayChAddr := "t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq"
 	mockVoucher := "i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"
@@ -21,7 +21,7 @@ func TestEncodeClientDHTDiscoverOfferRequest(t *testing.T) {
 		messageType:       114,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"gateways_digests":[[[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]],"gateway_ids":["0000000000000000000000000000000000000000000000000000000000000042"],"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"gateways_digests":[["AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="]],"gateway_ids":["0000000000000000000000000000000000000000000000000000000000000042"],"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"}`),
 		signature:         "",
 	}
 
@@ -41,7 +41,7 @@ func TestEncodeClientDHTDiscoverOfferRequest(t *testing.T) {
 func TestDecodeClientDHTDiscoverOfferRequest(t *testing.T) {
 	mockContentID, _ := cid.NewContentIDFromBytes([]byte{1})
 	mockNonce := int64(42)
-	mockGatewaysDigests := [][][32]byte{{{1, 2}}}
+	mockGatewaysDigests := [][]string{{"AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}}
 	mockGatewayID, _ := nodeid.NewNodeIDFromHexString("42")
 	mockPayChAddr := "t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq"
 	mockVoucher := "i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"
@@ -49,7 +49,7 @@ func TestDecodeClientDHTDiscoverOfferRequest(t *testing.T) {
 		messageType:       114,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"gateways_digests":[[[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]],"gateway_ids":["0000000000000000000000000000000000000000000000000000000000000042"],"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"}`),
+		messageBody:       []byte(`{"piece_cid":"0000000000000000000000000000000000000000000000000000000000000001","nonce":42,"gateways_digests":[["AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="]],"gateway_ids":["0000000000000000000000000000000000000000000000000000000000000042"],"payment_channel_address":"t2twbvr2oaxqzyktxqqjrv37bh7gzfhuqonfioayq","voucher":"i1UCnYNY6cC8M4VO8IJjXfwn-bJT0g4AAED2AAFJAEVjkYJE9AAAAIBYYQK3pJLhIR8XTVSmQzsEiE7NIId2-2DPbWF396mBPBJCdoSQ_ctibPesW-YMnzKhGAEScF09H_sldF1nTfizTbsjWea9MN6R3T0Ew0Lb4znHtJnucGAkcbdlIyDAHCScOXE"}`),
 		signature:         "",
 	}
 

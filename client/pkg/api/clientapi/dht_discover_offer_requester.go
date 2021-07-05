@@ -43,7 +43,7 @@ func (c *Client) RequestDHTOfferDiscover(
 	gatewayIDs []nodeid.NodeID,
 	contentID *cid.ContentID,
 	nonce int64,
-	offersDigests [][][cidoffer.CIDOfferDigestSize]byte,
+	offersDigests [][]string,
 	paymentChannelAddr string,
 	voucher string,
 ) ([]GatewaySubOffers, error) {

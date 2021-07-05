@@ -59,7 +59,8 @@ func HandleClientStandardDiscoverOfferRequest(writer rest.ResponseWriter, reques
 		found := false
 
 		for i, digest := range offerDigests {
-			offer, exist := c.OffersMgr.GetOfferByDigest(digest)
+			d := cidoffer.DecodeMessageDigest(digest)
+			offer, exist := c.OffersMgr.GetOfferByDigest(d)
 			fundedPaymentChannel[i] = exist
 			found = exist
 

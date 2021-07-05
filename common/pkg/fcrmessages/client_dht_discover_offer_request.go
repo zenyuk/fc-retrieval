@@ -20,25 +20,24 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/nodeid"
 )
 
 // clientDHTDiscoverOfferRequest is the requset from client to gateway to ask for cid offer via DHT
 type clientDHTDiscoverOfferRequest struct {
-	PieceCID        string                                `json:"piece_cid"`
-	Nonce           int64                                 `json:"nonce"`
-	GatewaysDigests [][][cidoffer.CIDOfferDigestSize]byte `json:"gateways_digests"`
-	GatewayIDs      []string                              `json:"gateway_ids"`
-	PaychAddr       string                                `json:"payment_channel_address"`
-	Voucher         string                                `json:"voucher"`
+	PieceCID        string     `json:"piece_cid"`
+	Nonce           int64      `json:"nonce"`
+	GatewaysDigests [][]string `json:"gateways_digests"`
+	GatewayIDs      []string   `json:"gateway_ids"`
+	PaychAddr       string     `json:"payment_channel_address"`
+	Voucher         string     `json:"voucher"`
 }
 
 // EncodeClientDHTDiscoverOfferRequest is used to get the FCRMessage of clientDHTDiscoverOfferRequest
 func EncodeClientDHTDiscoverOfferRequest(
 	pieceCID *cid.ContentID,
 	nonce int64,
-	gatewaysDigests [][][cidoffer.CIDOfferDigestSize]byte,
+	gatewaysDigests [][]string,
 	gatewayIDs []nodeid.NodeID,
 	paychAddr string,
 	voucher string,
@@ -61,7 +60,7 @@ func EncodeClientDHTDiscoverOfferRequest(
 func DecodeClientDHTDiscoverOfferRequest(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
-	[][][cidoffer.CIDOfferDigestSize]byte, // gateway offer digests
+	[][]string, // gateway offer digests
 	[]nodeid.NodeID, // gateway id
 	string, // payment channel address
 	string, // voucher

@@ -54,12 +54,11 @@ func HandleClientStandardCIDDiscoverRequestV2(writer rest.ResponseWriter, reques
 	receive, err := c.PaymentMgr.Receive(paymentChannelAddress, voucher)
 	if err == nil && receive.Cmp(c.Settings.SearchPrice) >= 0 {
 		// success
-		subOfferDigests := make([][cidoffer.CIDOfferDigestSize]byte, 0)
+		subOfferDigests := make([]string, 0)
 		fundedPaymentChannel := make([]bool, 0)
 
 		for _, offer := range offers {
-			subOfferDigests = append(subOfferDigests, offer.GetMessageDigest())
-			//TODO: ? all items are always false
+			subOfferDigests = append(subOfferDigests, cidoffer.EncodeMessageDigest(offer.GetMessageDigest()))
 			fundedPaymentChannel = append(fundedPaymentChannel, false)
 		}
 

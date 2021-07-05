@@ -20,23 +20,22 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 )
 
 // gatewayDHTDiscoverOfferRequest is the request to implement the payment system
 type gatewayDHTDiscoverOfferRequest struct {
-	PieceCID     string                              `json:"piece_cid"`
-	Nonce        int64                               `json:"nonce"`
-	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offer_digests"`
-	PaychAddr    string                              `json:"payment_channel_address"`
-	Voucher      string                              `json:"voucher"`
+	PieceCID     string   `json:"piece_cid"`
+	Nonce        int64    `json:"nonce"`
+	OfferDigests []string `json:"offer_digests"`
+	PaychAddr    string   `json:"payment_channel_address"`
+	Voucher      string   `json:"voucher"`
 }
 
 // EncodeGatewayDHTDiscoverOfferRequest is used to get the FCRMessage of gatewayDHTDiscoverOfferRequest
 func EncodeGatewayDHTDiscoverOfferRequest(
 	pieceCID *cid.ContentID,
 	nonce int64,
-	offerDigests [][cidoffer.CIDOfferDigestSize]byte,
+	offerDigests []string,
 	paychAddr string,
 	voucher string,
 ) (*FCRMessage, error) {
@@ -57,18 +56,18 @@ func EncodeGatewayDHTDiscoverOfferRequest(
 func DecodeGatewayDHTDiscoverOfferRequest(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
-	[][cidoffer.CIDOfferDigestSize]byte, // offer_digest
+	[]string, // offer_digest
 	string, // payment channel address
 	string, // voucher
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != GatewayDHTDiscoverOfferRequestType {
-		return nil, 0, [][cidoffer.CIDOfferDigestSize]byte{}, "", "", errors.New("message type mismatch")
+		return nil, 0, []string{}, "", "", errors.New("message type mismatch")
 	}
 	msg := gatewayDHTDiscoverOfferRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, 0, [][cidoffer.CIDOfferDigestSize]byte{}, "", "", err
+		return nil, 0, []string{}, "", "", err
 	}
 	contentID, _ := cid.NewContentIDFromHexString(msg.PieceCID)
 	return contentID, msg.Nonce, msg.OfferDigests, msg.PaychAddr, msg.Voucher, nil

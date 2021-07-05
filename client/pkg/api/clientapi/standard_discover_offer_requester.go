@@ -32,7 +32,7 @@ func (c *Client) RequestStandardDiscoverOffer(
 	contentID *cid.ContentID,
 	nonce int64,
 	ttl int64,
-	offerDigests [][cidoffer.CIDOfferDigestSize]byte,
+	offerDigests []string,
 	paychAddr string,
 	voucher string,
 ) ([]cidoffer.SubCIDOffer, error) {
