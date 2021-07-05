@@ -45,20 +45,21 @@ import (
 // Test the Provider Admin API.
 var providerConfig = config.NewConfig(".env.provider")
 var gatewayConfig = config.NewConfig(".env.gateway")
-var containersAndPorts map[string]tc.ContainerPorts
+var registerConfig = config.NewConfig(".env.register")
+var containers tc.AllContainers
 
 func TestMain(m *testing.M) {
 	const testName = "provider-admin"
 	ctx := context.Background()
 	var network *testcontainers.Network
 	var err error
-	containersAndPorts, network, err = tc.StartContainers(ctx, 1, 1, testName, true)
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, gatewayConfig, providerConfig, registerConfig)
 	if err != nil {
 		logging.Error("%s failed, container starting error: %s", testName, err.Error())
-		tc.StopContainers(ctx, containersAndPorts, network)
+		tc.StopContainers(ctx, testName, containers, network)
 		os.Exit(1)
 	}
-	defer tc.StopContainers(ctx, containersAndPorts, network)
+	defer tc.StopContainers(ctx, testName, containers, network)
 	m.Run()
 }
 
@@ -85,12 +86,9 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		t.FailNow()
 	}
 
-	registerSrvDomainName := "register"
-	registerHostPort := containersAndPorts[registerSrvDomainName].GuestToHostPorts[9020].Port()
-	registerApiEndpoint := "http://" + registerSrvDomainName + ":" + registerHostPort
-
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, true, true, 2*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, false, true, 10*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
@@ -133,9 +131,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		os.Exit(1)
 	}
 	gatewayName := "gateway-0"
-	gatewayPorts := containersAndPorts[gatewayName]
-	//gatewayApiEndpoint, providerApiEndpoint, clientApiEndpoint, adminApiEndpoint := gatewayPorts.GetGatewayHostApiEndpoints(gatewayName, gatewayConfig)
-	_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := gatewayPorts.GetGatewayHostApiEndpoints(gatewayName, gatewayConfig)
+	_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 	gatewayRegistrar := register.NewGatewayRegister(
 		gatewayID.ToString(),
 		gatewayConfig.GetString("GATEWAY_ADDRESS"),
@@ -174,9 +170,7 @@ func TestInitProviderAdminNoRetrievalKey(t *testing.T) {
 		os.Exit(1)
 	}
 	providerName := "provider-0"
-	providerPorts := containersAndPorts[providerName]
-	//gatewayApiEndpoint, clientApiEndpoint, adminApiEndpoint := providerPorts.GetProviderHostApiEndpoints(providerName, providerConfig)
-	_, _, providerAdminApiEndpoint := providerPorts.GetProviderHostApiEndpoints(providerName, providerConfig)
+	_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
 	providerRegistrar := register.NewProviderRegister(
 		providerID.ToString(),
 		providerConfig.GetString("PROVIDER_ADDRESS"),
