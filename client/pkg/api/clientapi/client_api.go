@@ -19,7 +19,7 @@ type ClientApi interface {
 		gatewayIDs []nodeid.NodeID,
 		contentID *cid.ContentID,
 		nonce int64,
-		offersDigests [][][cidoffer.CIDOfferDigestSize]byte,
+		offersDigests [][]string,
 		paymentChannelAddr string,
 		voucher string,
 	) ([]GatewaySubOffers, error)
@@ -64,7 +64,7 @@ type ClientApi interface {
 		contentID *cid.ContentID,
 		nonce int64,
 		ttl int64,
-		offerDigests [][cidoffer.CIDOfferDigestSize]byte,
+		offerDigests []string,
 		paychAddr string,
 		voucher string,
 	) ([]cidoffer.SubCIDOffer, error)
@@ -85,7 +85,7 @@ type ClientApi interface {
 		ttl int64,
 		paychAddr string,
 		voucher string,
-	) ([][cidoffer.CIDOfferDigestSize]byte, bool, string, error)
+	) ([]string, bool, string, error)
 }
 
 func NewClientApi() ClientApi {

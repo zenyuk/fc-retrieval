@@ -481,7 +481,7 @@ func (c *FilecoinRetrievalClient) FindOffersDHTDiscoveryV2(contentID *cid.Conten
 	}
 
 	var addedSubOffersCount int
-	var offersDigestsFromAllGateways [][][cidoffer.CIDOfferDigestSize]byte
+	var offersDigestsFromAllGateways [][]string
 	for i := 0; i < len(contactedGateways); i++ {
 		contactedGatewayID := contactedGateways[i]
 		resp := contactedResp[i]

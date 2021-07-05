@@ -68,11 +68,11 @@ func HandleGatewayDHTDiscoverRequestV2(_ *fcrp2pserver.FCRServerReader, writer *
 	// Respond to the request
 	offers, exists := c.OffersMgr.GetOffers(pieceCID)
 
-	subCIDOfferDigests := make([][cidoffer.CIDOfferDigestSize]byte, 0)
+	subCIDOfferDigests := make([]string, 0)
 	fundedPaymentChannel := make([]bool, 0)
 
 	for _, offer := range offers {
-		subCIDOfferDigests = append(subCIDOfferDigests, offer.GetMessageDigest())
+		subCIDOfferDigests = append(subCIDOfferDigests, cidoffer.EncodeMessageDigest(offer.GetMessageDigest()))
 		fundedPaymentChannel = append(fundedPaymentChannel, false)
 	}
 	var response *fcrmessages.FCRMessage

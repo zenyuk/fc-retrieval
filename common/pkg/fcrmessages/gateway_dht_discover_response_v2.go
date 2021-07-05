@@ -20,18 +20,17 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 )
 
 // gatewayDHTDiscoverResponseV2 is the response to gatewayDHTDiscoverRequest
 type gatewayDHTDiscoverResponseV2 struct {
-	PieceCID             string                              `json:"piece_cid"`
-	Nonce                int64                               `json:"nonce"`
-	Found                bool                                `json:"found"`
-	SubCIDOfferDigests   [][cidoffer.CIDOfferDigestSize]byte `json:"sub_cid_offer_digest"`
-	FundedPaymentChannel []bool                              `json:"funded_payment_channel"`
-	PaymentRequired      bool                                `json:"payment_required"` // when true means caller have to pay first, using the PaymentChannel field
-	PaymentChannel       string                              `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
+	PieceCID             string   `json:"piece_cid"`
+	Nonce                int64    `json:"nonce"`
+	Found                bool     `json:"found"`
+	SubCIDOfferDigests   []string `json:"sub_cid_offer_digest"`
+	FundedPaymentChannel []bool   `json:"funded_payment_channel"`
+	PaymentRequired      bool     `json:"payment_required"` // when true means caller have to pay first, using the PaymentChannel field
+	PaymentChannel       string   `json:"payment_channel"`  // payment channel address used in conjunction with PaymentRequired field
 }
 
 // EncodeGatewayDHTDiscoverResponseV2 is used to get the FCRMessage of gatewayDHTDiscoverResponseV2
@@ -39,7 +38,7 @@ func EncodeGatewayDHTDiscoverResponseV2(
 	pieceCID *cid.ContentID,
 	nonce int64,
 	found bool,
-	offers [][cidoffer.CIDOfferDigestSize]byte,
+	offers []string,
 	fundedPaymentChannel []bool,
 	paymentRequired bool,
 	paymentChannel string,
@@ -64,7 +63,7 @@ func DecodeGatewayDHTDiscoverResponseV2(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
 	bool, // found
-	[][cidoffer.CIDOfferDigestSize]byte, // sub cid offers digest
+	[]string, // sub cid offers digest
 	[]bool, // fundedPaymentChannel
 	bool, // paymentRequired
 	string, // paymentChannel

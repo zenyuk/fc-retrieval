@@ -69,7 +69,8 @@ func HandleGatewayDHTOfferRequest(_ *fcrp2pserver.FCRServerReader, writer *fcrp2
 	const found = true
 
 	for i, digest := range offerDigests {
-		offer, exist := c.OffersMgr.GetOfferByDigest(digest)
+		d := cidoffer.DecodeMessageDigest(digest)
+		offer, exist := c.OffersMgr.GetOfferByDigest(d)
 		fundedPaymentChannel[i] = exist
 
 		cidOffer, err := offer.GenerateSubCIDOffer(pieceCID)

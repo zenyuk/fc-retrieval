@@ -86,10 +86,10 @@ func RequestProviderPublishGroupOffer(reader *fcrp2pserver.FCRServerReader, writ
 	if err != nil {
 		return nil, err
 	}
-
+	candy := cidoffer.DecodeMessageDigest(candidate)
 	digest := offer.GetMessageDigest()
 	// Add offer to storage
-	if bytes.Equal(candidate[:], digest[:]) {
+	if bytes.Equal(candy[:], digest[:]) {
 		logging.Info("Digest is OK! Add offer to storage")
 		c.NodeOfferMapLock.Lock()
 		defer c.NodeOfferMapLock.Unlock()

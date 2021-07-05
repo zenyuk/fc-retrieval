@@ -19,12 +19,12 @@ func TestEncodeProviderPublishGroupOfferResponse(t *testing.T) {
 	var mockExpiry int64 = 42
 	var mockQos uint64 = 43
 	mockOffer, err := cidoffer.NewCIDOffer(mockProviderID, mockCids, mockPrice, mockExpiry, mockQos)
-	mockMsgDigest := mockOffer.GetMessageDigest()
+	mockMsgDigest := cidoffer.EncodeMessageDigest(mockOffer.GetMessageDigest())
 	validMsg := &FCRMessage{
 		messageType:       301,
 		protocolVersion:   1,
 		protocolSupported: []int32{1, 1},
-		messageBody:       []byte(`{"gateway_id":"0000000000000000000000000000000000000000000000000000000000000042","digest":[179,39,63,55,115,199,133,123,164,143,223,117,88,234,218,129,141,20,110,11,165,108,175,4,83,15,0,120,195,74,216,203]}`),
+		messageBody:       []byte(`{"gateway_id":"0000000000000000000000000000000000000000000000000000000000000042","digest":"syc/N3PHhXukj991WOragY0UbgulbK8EUw8AeMNK2Ms="}`),
 		signature:         "",
 	}
 
@@ -42,7 +42,7 @@ func TestDecodeProviderPublishGroupOfferResponse(t *testing.T) {
 	var mockExpiry int64 = 42
 	var mockQos uint64 = 43
 	mockOffer, err := cidoffer.NewCIDOffer(mockProviderID, mockCids, mockPrice, mockExpiry, mockQos)
-	mockMsgDigest := mockOffer.GetMessageDigest()
+	mockMsgDigest := cidoffer.EncodeMessageDigest(mockOffer.GetMessageDigest())
 
 	mockOfferResponse, _ := json.Marshal(providerPublishGroupOfferResponse{
 		GatewaydID: mockProviderID.ToString(),

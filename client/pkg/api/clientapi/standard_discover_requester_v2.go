@@ -19,7 +19,6 @@ import (
 	"fmt"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/fcrmessages"
 	"github.com/ConsenSys/fc-retrieval/common/pkg/register"
 )
@@ -32,7 +31,7 @@ func (c *Client) RequestStandardDiscoverV2(
 	ttl int64,
 	paychAddr string,
 	voucher string,
-) (offerDigests [][cidoffer.CIDOfferDigestSize]byte, paymentRequired bool, paymentChannelAddrToTopup string, err error) {
+) (offerDigests []string, paymentRequired bool, paymentChannelAddrToTopup string, err error) {
 
 	// Construct request
 	request, err := fcrmessages.EncodeClientStandardDiscoverRequestV2(contentID, nonce, ttl, paychAddr, voucher)

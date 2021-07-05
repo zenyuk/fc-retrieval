@@ -20,17 +20,16 @@ import (
 	"errors"
 
 	"github.com/ConsenSys/fc-retrieval/common/pkg/cid"
-	"github.com/ConsenSys/fc-retrieval/common/pkg/cidoffer"
 )
 
 // clientStandardDiscoverOfferRequest is the requset from client to gateway to ask for cid offer
 type clientStandardDiscoverOfferRequest struct {
-	PieceCID     string                              `json:"piece_cid"`
-	Nonce        int64                               `json:"nonce"`
-	TTL          int64                               `json:"ttl"`
-	OfferDigests [][cidoffer.CIDOfferDigestSize]byte `json:"offer_digests"`
-	PaychAddr    string                              `json:"payment_channel_address"`
-	Voucher      string                              `json:"voucher"`
+	PieceCID     string   `json:"piece_cid"`
+	Nonce        int64    `json:"nonce"`
+	TTL          int64    `json:"ttl"`
+	OfferDigests []string `json:"offer_digests"`
+	PaychAddr    string   `json:"payment_channel_address"`
+	Voucher      string   `json:"voucher"`
 }
 
 // EncodeClientStandardDiscoverOfferRequest is used to get the FCRMessage of clientStandardDiscoverOfferRequest
@@ -38,7 +37,7 @@ func EncodeClientStandardDiscoverOfferRequest(
 	pieceCID *cid.ContentID,
 	nonce int64,
 	ttl int64,
-	offerDigests [][cidoffer.CIDOfferDigestSize]byte,
+	offerDigests []string,
 	paychAddr string,
 	voucher string,
 ) (*FCRMessage, error) {
@@ -61,18 +60,18 @@ func DecodeClientStandardDiscoverOfferRequest(fcrMsg *FCRMessage) (
 	*cid.ContentID, // piece cid
 	int64, // nonce
 	int64, // ttl
-	[][cidoffer.CIDOfferDigestSize]byte, // offer_digest
+	[]string, // offer_digest
 	string, // payment channel address
 	string, // voucher
 	error, // error
 ) {
 	if fcrMsg.GetMessageType() != ClientStandardDiscoverOfferRequestType {
-		return nil, 0, 0, [][cidoffer.CIDOfferDigestSize]byte{}, "", "", errors.New("message type mismatch")
+		return nil, 0, 0, []string{}, "", "", errors.New("message type mismatch")
 	}
 	msg := clientStandardDiscoverOfferRequest{}
 	err := json.Unmarshal(fcrMsg.GetMessageBody(), &msg)
 	if err != nil {
-		return nil, 0, 0, [][cidoffer.CIDOfferDigestSize]byte{}, "", "", err
+		return nil, 0, 0, []string{}, "", "", err
 	}
 	contentID, _ := cid.NewContentIDFromHexString(msg.PieceCID)
 	return contentID, msg.Nonce, msg.TTL, msg.OfferDigests, msg.PaychAddr, msg.Voucher, nil
