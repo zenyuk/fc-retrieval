@@ -55,10 +55,15 @@ jobs:
           command: |
             make lotus-images
 
-      - run: make itest-poc1
-      - run: make itest-poc2js
+#      - run: make itest-poc1
+#      - run: make itest-poc2js
+#
+#      - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
 
-      - run: docker build -t consensys/fc-retrieval/itest -f itest/Dockerfile .
+      ## debugging
+      - run: docker build -t consensys/fc-retrieval/gateway -f gateway/Dockerfile .
+      - run: docker build -t consensys/fc-retrieval/provider -f provider/Dockerfile .
+      - run: docker build -t consensys/fc-retrieval/register -f register/Dockerfile .
 
       - run: cd itest; go test -p 1 -count=1 -v github.com/ConsenSys/fc-retrieval/itest/pkg/lotus-full-node
       - run: cd itest; go test -p 1 -count=1 -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
