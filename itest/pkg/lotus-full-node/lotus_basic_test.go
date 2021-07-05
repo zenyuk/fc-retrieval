@@ -32,6 +32,7 @@ import (
 
 	"github.com/testcontainers/testcontainers-go"
 
+	"github.com/ConsenSys/fc-retrieval/itest/config"
 	tc "github.com/ConsenSys/fc-retrieval/itest/pkg/util/test-containers"
 
 	"github.com/filecoin-project/go-jsonrpc"
@@ -46,9 +47,12 @@ var containers tc.AllContainers
 func TestMain(m *testing.M) {
 	const testName = "lotus-connectivity"
 	ctx := context.Background()
+	var gatewayConfig = config.NewConfig(".env.gateway")
+	var providerConfig = config.NewConfig(".env.provider")
+	var registerConfig = config.NewConfig(".env.register")
 	var network *testcontainers.Network
 	var err error
-	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, nil, nil, nil)
+	containers, network, err = tc.StartContainers(ctx, 1, 1, testName, true, gatewayConfig, providerConfig, registerConfig)
 	if err != nil {
 		logging.Error("%s test failed, container starting error: %s", testName, err.Error())
 		tc.StopContainers(ctx, testName, containers, network)
