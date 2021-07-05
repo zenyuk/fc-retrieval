@@ -65,6 +65,7 @@ jobs:
       - run: docker build -t consensys/fc-retrieval/provider -f provider/Dockerfile .
       - run: docker build -t consensys/fc-retrieval/register -f register/Dockerfile .
 
+      - run: export HOSTALIASES=itest/.hosts
       - run: cd itest; go test -p 1 -count=1 -v github.com/ConsenSys/fc-retrieval/itest/pkg/lotus-full-node
       - run: cd itest; go test -p 1 -count=1 -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-gateway
       - run: cd itest; go test -p 1 -count=1 -v github.com/ConsenSys/fc-retrieval/itest/pkg/client-init

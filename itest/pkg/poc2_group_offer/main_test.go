@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/testcontainers/testcontainers-go"
+
 	"github.com/ConsenSys/fc-retrieval/common/pkg/logging"
 	"github.com/ConsenSys/fc-retrieval/itest/config"
 	fil "github.com/ConsenSys/fc-retrieval/itest/pkg/util/filecoin-facade"
@@ -20,20 +22,24 @@ var lotusToken string
 var superAcct string
 var gatewayConfig = config.NewConfig(".env.gateway")
 var providerConfig = config.NewConfig(".env.provider")
+var registerConfig = config.NewConfig(".env.register")
+var containers tc.AllContainers
 
 func TestMain(m *testing.M) {
+	const testName = "poc2-group-offer"
 	lotusToken, superAcct = fil.GetLotusToken()
 	logging.Info("Lotus token is: %s", lotusToken)
 	logging.Info("Super Acct is %s", superAcct)
 
-	const testName = "poc2-group-offer"
+	var network *testcontainers.Network
+	var err error
 	ctx := context.Background()
-	containersAndPorts, network, err := tc.StartContainers(ctx, 33, 3, testName, true)
+	containers, network, err = tc.StartContainers(ctx, 33, 3, testName, true, gatewayConfig, providerConfig, registerConfig)
 	if err != nil {
 		logging.Error("%s failed, container starting error: %s", testName, err.Error())
-		tc.StopContainers(ctx, containersAndPorts, network)
+		tc.StopContainers(ctx, testName, containers, network)
 		os.Exit(1)
 	}
-	defer tc.StopContainers(ctx, containersAndPorts, network)
+	defer tc.StopContainers(ctx, testName, containers, network)
 	m.Run()
 }
