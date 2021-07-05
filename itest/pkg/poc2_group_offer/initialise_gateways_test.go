@@ -20,6 +20,9 @@ func TestInitialiseGateways(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	ctx := context.Background()
+	lotusToken, superAcct := fil.GetLotusToken()
+	lotusDaemonApiEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	var lotusAP = "http://" + lotusDaemonApiEndpoint + "/rpc/v0"
 	var err error
 	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
@@ -31,9 +34,11 @@ func TestInitialiseGateways(t *testing.T) {
 		panic(err)
 	}
 
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+
 	confBuilder := fcrgatewayadmin.CreateSettings()
 	confBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	confBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	confBuilder.SetRegisterURL(registerApiEndpoint)
 	conf := confBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*conf)
 
@@ -64,20 +69,21 @@ func TestInitialiseGateways(t *testing.T) {
 		}
 		gwIDs = append(gwIDs, gatewayID)
 
-		identifier := fmt.Sprintf("-%v", i)
+		gatewayName := fmt.Sprintf("gateway-%v", i)
 		gatewayRegistrar := register.NewGatewayRegister(
 			gatewayID.ToString(),
 			walletAddress,
 			gatewayRootPubKey,
 			gatewayRetrievalPubKey,
 			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-			gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
+			gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 		)
 
-		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
+		err = gwAdmin.InitialiseGatewayV2(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			logging.Error("gateway initialising error: %s", err.Error())
 			t.FailNow()

@@ -13,6 +13,9 @@ func TestNewAccounts(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	ctx := context.Background()
+	lotusToken, superAcct := fil.GetLotusToken()
+	lotusDaemonApiEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	var lotusAP = "http://" + lotusDaemonApiEndpoint + "/rpc/v0"
 	var err error
 	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {

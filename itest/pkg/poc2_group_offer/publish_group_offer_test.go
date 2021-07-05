@@ -27,6 +27,9 @@ func TestPublishGroupOffer(t *testing.T) {
 	t.Log("/*******************************************************/")
 
 	ctx := context.Background()
+	lotusToken, superAcct := fil.GetLotusToken()
+	lotusDaemonApiEndpoint, _ := containers.Lotus.GetLostHostApiEndpoints()
+	var lotusAP = "http://" + lotusDaemonApiEndpoint + "/rpc/v0"
 	var err error
 	privateKeys, accountAddrs, err := fil.GenerateAccount(ctx, lotusAP, lotusToken, superAcct, 37)
 	if err != nil {
@@ -41,22 +44,49 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Create and start register manager
-	var rm = fcrregistermgr.NewFCRRegisterMgr(gatewayConfig.GetString("REGISTER_API_URL"), true, true, 10*time.Second)
+	registerApiEndpoint := "http://" + containers.Register.GetRegisterHostApiEndpoint()
+	var rm = fcrregistermgr.NewFCRRegisterMgr(registerApiEndpoint, false, true, 10*time.Second)
 	if err := rm.Start(); err != nil {
 		logging.Error("error starting Register Manager: %s", err.Error())
 		t.FailNow()
 	}
 	defer rm.ShutdownAndWait()
 
+	walletKey := privateKeys[0]
+	// walletAddress := accountAddrs[0]
+	privateKeys = privateKeys[1:]
+	accountAddrs = accountAddrs[1:]
+
+	// Configure client
+	clientConfBuilder := fcrclient.CreateSettings()
+	clientConfBuilder.SetEstablishmentTTL(101)
+	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
+	clientConfBuilder.SetRegisterURL(registerApiEndpoint)
+	clientConfBuilder.SetWalletPrivateKey(walletKey)
+	clientConfBuilder.SetLotusAP(lotusAP)
+	clientConfBuilder.SetLotusAuthToken(lotusToken)
+	clientConf := clientConfBuilder.Build()
+	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf, rm)
+	if !assert.Nil(t, err, "Error should be nil") {
+		t.Fatal(err)
+	}
+	res := client.PaymentMgr()
+	if !assert.NotNil(t, res, "Fail to initialise a payment manager") {
+		t.FailNow()
+	}
+
 	// Configure gateway admin
 	gConfBuilder := fcrgatewayadmin.CreateSettings()
 	gConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	gConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
+	gConfBuilder.SetRegisterURL(registerApiEndpoint)
 	gConf := gConfBuilder.Build()
 	gwAdmin := fcrgatewayadmin.NewFilecoinRetrievalGatewayAdmin(*gConf)
 
 	// Initialise gateways
-	var gwIDs []*nodeid.NodeID
+
+	// map between gateway ID and gateway name
+	var gateways = make(map[string]*nodeid.NodeID)
+
 	// Only initialise 32 gateways, with one extra to initialise later to test list single cid offer
 	for i := 0; i < 32; i++ {
 		walletKey := privateKeys[0]
@@ -77,22 +107,23 @@ func TestPublishGroupOffer(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		gwIDs = append(gwIDs, gatewayID)
 
-		identifier := fmt.Sprintf("-%v", i)
+		gatewayName := fmt.Sprintf("gateway-%v", i)
+		gateways[gatewayName] = gatewayID
+		_, _, gatewayClientApiEndpoint, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
 		gatewayRegistrar := register.NewGatewayRegister(
 			gatewayID.ToString(),
 			walletAddress,
 			gatewayRootPubKey,
 			gatewayRetrievalPubKey,
 			gatewayConfig.GetString("GATEWAY_REGION_CODE"),
-			gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_GATEWAY")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_PROVIDER")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_CLIENT")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_CLIENT")[7:],
-			gatewayConfig.GetString("NETWORK_INFO_ADMIN")[:7]+identifier+gatewayConfig.GetString("NETWORK_INFO_ADMIN")[7:],
+			gatewayName+":"+gatewayConfig.GetString("BIND_GATEWAY_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_PROVIDER_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_REST_API"),
+			gatewayName+":"+gatewayConfig.GetString("BIND_ADMIN_API"),
 		)
 
-		err = gwAdmin.InitialiseGatewayV2(gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		err = gwAdmin.InitialiseGatewayV2(gatewayAdminApiEndpoint, gatewayRegistrar, gatewayRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			logging.Error("gateway initialising error: %s", err.Error())
 			t.FailNow()
@@ -102,15 +133,27 @@ func TestPublishGroupOffer(t *testing.T) {
 			logging.Error("gateway registering error: %s", err.Error())
 			t.FailNow()
 		}
+
+		// add to client
+		added := client.AddGatewaysToUse([]*nodeid.NodeID{gatewayID})
+		if !assert.Equal(t, 1, added, "1 gateway should be added") {
+			t.FailNow()
+		}
+		activatedCount := client.AddActiveGateways(gatewayClientApiEndpoint, []*nodeid.NodeID{gatewayID})
+		if !assert.Equal(t, 1, activatedCount, "1 gateway should be active") {
+			t.FailNow()
+		}
 	}
 
 	// Initialise providers
 	pConfBuilder := fcrprovideradmin.CreateSettings()
 	pConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	pConfBuilder.SetRegisterURL(providerConfig.GetString("REGISTER_API_URL"))
+	pConfBuilder.SetRegisterURL(registerApiEndpoint)
 	pConf := pConfBuilder.Build()
 	pAdmin := fcrprovideradmin.NewFilecoinRetrievalProviderAdmin(*pConf)
-	var pIDs []*nodeid.NodeID
+
+	// map between provider ID and provider name
+	var providers = make(map[string]*nodeid.NodeID)
 	for i := 0; i < 3; i++ {
 		walletKey := privateKeys[0]
 		walletAddress := accountAddrs[0]
@@ -119,21 +162,24 @@ func TestPublishGroupOffer(t *testing.T) {
 
 		providerRootPubKey, providerRetrievalPubKey, providerRetrievalPrivateKey, err := cr.GenerateKeys()
 		providerID := nodeid.NewRandomNodeID()
-		pIDs = append(pIDs, providerID)
 
-		identifier := fmt.Sprintf("-%v", i)
+		providerName := fmt.Sprintf("provider-%v", i)
+		providers[providerName] = providerID
+		// get endpoint for Docker host
+		_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
+
 		providerRegistrar := register.NewProviderRegister(
 			providerID.ToString(),
 			walletAddress,
 			providerRootPubKey,
 			providerRetrievalPubKey,
 			providerConfig.GetString("PROVIDER_REGION_CODE"),
-			providerConfig.GetString("NETWORK_INFO_GATEWAY")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_GATEWAY")[8:],
-			providerConfig.GetString("NETWORK_INFO_CLIENT")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_CLIENT")[8:],
-			providerConfig.GetString("NETWORK_INFO_ADMIN")[:8]+identifier+providerConfig.GetString("NETWORK_INFO_ADMIN")[8:],
+			providerName+":"+providerConfig.GetString("BIND_GATEWAY_API"),
+			providerName+":"+providerConfig.GetString("BIND_REST_API"),
+			providerName+":"+providerConfig.GetString("BIND_ADMIN_API"),
 		)
 		// Initialise the provider using provider admin
-		err = pAdmin.InitialiseProviderV2(providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
+		err = pAdmin.InitialiseProviderV2(providerAdminApiEndpoint, providerRegistrar, providerRetrievalPrivateKey, fcrcrypto.DecodeKeyVersion(1), walletKey, lotusAP, lotusToken)
 		if err != nil {
 			panic(err)
 		}
@@ -144,49 +190,18 @@ func TestPublishGroupOffer(t *testing.T) {
 		}
 	}
 
-	walletKey := privateKeys[0]
-	// walletAddress := accountAddrs[0]
-	privateKeys = privateKeys[1:]
-	accountAddrs = accountAddrs[1:]
-
-	// Configure client
-	clientConfBuilder := fcrclient.CreateSettings()
-	clientConfBuilder.SetEstablishmentTTL(101)
-	clientConfBuilder.SetBlockchainPrivateKey(blockchainPrivateKey)
-	clientConfBuilder.SetRegisterURL(gatewayConfig.GetString("REGISTER_API_URL"))
-	clientConfBuilder.SetWalletPrivateKey(walletKey)
-	clientConfBuilder.SetLotusAP(lotusAP)
-	clientConfBuilder.SetLotusAuthToken(lotusToken)
-	clientConf := clientConfBuilder.Build()
-	client, err := fcrclient.NewFilecoinRetrievalClient(*clientConf, rm)
-	if !assert.Nil(t, err, "Error should be nil") {
-		t.Fatal(err)
-	}
-	res := client.PaymentMgr()
-	if !assert.NotNil(t, res, "Fail to initialise a payment manager") {
-		t.FailNow()
-	}
-
-	added := client.AddGatewaysToUse(gwIDs)
-	if !assert.Equal(t, 32, added, "32 gateways should be added") {
-		t.FailNow()
-	}
-
-	added = client.AddActiveGateways(gwIDs)
-	if !assert.Equal(t, 32, added, "32 gateways should be active") {
-		t.FailNow()
-	}
-
 	// Force providers and gateways to update
-	for _, p := range pIDs {
-		err := pAdmin.ForceUpdate(p)
+	for providerName, providerID := range providers {
+		_, _, providerAdminApiEndpoint := containers.Providers[providerName].GetProviderHostApiEndpoints()
+		err := pAdmin.ForceUpdate(providerAdminApiEndpoint, providerID)
 		if err != nil {
 			logging.Error("provider update error: %s", err)
 			t.FailNow()
 		}
 	}
-	for _, g := range gwIDs {
-		err := gwAdmin.ForceUpdate(g)
+	for gatewayName, gatewayID := range gateways {
+		_, _, _, gatewayAdminApiEndpoint := containers.Gateways[gatewayName].GetGatewayHostApiEndpoints()
+		err := gwAdmin.ForceUpdate(gatewayAdminApiEndpoint, gatewayID)
 		if err != nil {
 			logging.Error("gateway update error: %s", err)
 			t.FailNow()
@@ -207,7 +222,8 @@ func TestPublishGroupOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate := time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishGroupCID(pIDs[0], []cid.ContentID{*contentID01, *contentID02, *contentID03}, 42, expiryDate, 42)
+	_, _, providerAdminApiEndpoint := containers.Providers["provider-0"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providers["provider-0"], []cid.ContentID{*contentID01, *contentID02, *contentID03}, 42, expiryDate, 42)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,13 +242,15 @@ func TestPublishGroupOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	expiryDate = time.Now().Local().Add(time.Hour * time.Duration(24)).Unix()
-	err = pAdmin.PublishGroupCID(pIDs[1], []cid.ContentID{*contentID11, *contentID12, *contentID13}, 42, expiryDate, 42)
+	_, _, providerAdminApiEndpoint = containers.Providers["provider-1"].GetProviderHostApiEndpoints()
+	err = pAdmin.PublishGroupCID(providerAdminApiEndpoint, providers["provider-1"], []cid.ContentID{*contentID11, *contentID12, *contentID13}, 42, expiryDate, 42)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Query gateway 0 for offer 0
-	offers, err := client.FindOffersStandardDiscoveryV2(contentID01, gwIDs[0], 1)
+	_, _, gatewayClientApiEndpoint, _ := containers.Gateways["gateway-0"].GetGatewayHostApiEndpoints()
+	offers, err := client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID01, gateways["gateway-0"], 1)
 	if err != nil {
 		panic(err)
 	}
@@ -241,7 +259,7 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Query gateway 0 for offer 1
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID11, gwIDs[0], 1)
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID11, gateways["gateway-0"], 1)
 	if err != nil {
 		panic(err)
 	}
@@ -251,7 +269,8 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Query gateway 1 for offer 0
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID01, gwIDs[1], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-1"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID01, gateways["gateway-1"], 1)
 	if err != nil {
 		panic(err)
 	}
@@ -261,7 +280,7 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Query gateway 1 for offer 1
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID11, gwIDs[1], 1)
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID11, gateways["gateway-1"], 1)
 	if err != nil {
 		panic(err)
 	}
@@ -270,7 +289,8 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Query gateway 2 for offer 0
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID01, gwIDs[2], 1)
+	_, _, gatewayClientApiEndpoint, _ = containers.Gateways["gateway-2"].GetGatewayHostApiEndpoints()
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID01, gateways["gateway-2"], 1)
 	if err != nil {
 		panic(err)
 	}
@@ -280,7 +300,7 @@ func TestPublishGroupOffer(t *testing.T) {
 	}
 
 	// Query gateway 2 for offer 1
-	offers, err = client.FindOffersStandardDiscoveryV2(contentID11, gwIDs[2], 1)
+	offers, err = client.FindOffersStandardDiscoveryV2(gatewayClientApiEndpoint, contentID11, gateways["gateway-2"], 1)
 	if err != nil {
 		panic(err)
 	}
